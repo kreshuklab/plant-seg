@@ -1,0 +1,18 @@
+
+
+path: "/mnt/localdata0/lcerrone/FOR_paper/TUM_Ovules_Dataset/Ovules_test_final/ds3_predictions/"
+
+unet_prediction:
+  model_name: "unet_ds3x"
+
+  device: "cuda"
+  # patch size given to the network (adapt to fit in your GPU mem)
+  patch: [100, 224, 0]
+  # stride between patches (make sure the the patches overlap in order to get smoother prediction maps)
+  stride: [40, 100, 0]
+  version: best # alternative is last
+
+segmentation:
+  name: "MultiCut"
+  multicut_beta: 0.5
+  save_directory: "MultiCut"
