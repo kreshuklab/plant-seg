@@ -3,7 +3,6 @@ import os
 import argparse
 import yaml
 import h5py
-#import torch
 from models.checkmodels import check_models
 
 
@@ -27,16 +26,22 @@ def _load_config():
     return config
 
 
-def _import_predction_pipeline(_config, all_paths):
+def _create_predict_config(_config, all_paths):
+    """ Creates the configuration file needed for running the neural network inference"""
+
+    # Load template config
     config = yaml.load(open("./predictions/config_predict_template.yaml", 'r'), Loader=yaml.FullLoader)
 
+    # Add patch and stride size
     if "patch" in _config.keys():
         config["datasets"]["patch"] = _config["patch"]
     if "stride" in _config.keys():
         config["datasets"]["stride"] = _config["stride"]
 
+    # Add paths to raw data
     config["datasets"]["test_path"] = all_paths
 
+    # Add correct device for inference
     if _config["device"] == 'cuda':
         config["device"] = 0 # torch.device("cuda:0")
     elif _config["device"] == 'cpu':
@@ -44,17 +49,28 @@ def _import_predction_pipeline(_config, all_paths):
     else:
         raise NotImplementedError
 
-    check_models(_config['model_name'])
+    # check if all files are in the data directory (~/.plantseg_models/)
+    check_models(_config['model_name'], update_files=_config['model_update'])
 
+    # Add model path
     home = os.path.expanduser("~")
     config["model_path"] = f"{home}/.plantseg_models/'{_config['model_name']}'/'{_config['version']}'_checkpoint.pytorch"
 
+    # Load train config and add missing info
     config_train = yaml.load(open(f"{home}/.plantseg_models/{_config['model_name']}/config_train.yml", 'r'),
                              Loader=yaml.FullLoader)
+    #
     for key, value in config_train["model"].items():
         config["model"][key] = value
+    return config
 
-    print(config)
+
+def _import_predction_pipeline(_config, all_paths):
+    import torch
+    from predictions.predict import ModelPredictions
+    config = _create_predict_config(_config, all_paths)
+    model_predictions = ModelPredictions(config)
+    return model_predictions
 
 
 def _import_segmentation_algorithm(config):
@@ -90,28 +106,38 @@ def _load_file(path, dataset):
     return data
 
 
+def dummy(phase):
+    print(f"Skipping {phase}: Nothing to do")
+    return 0
+
+
 def raw2seg():
+    # Load general configuration file
     config = _load_config()
+
+    # read files
     all_paths = _read_path(config)
-    segmentation = _import_segmentation_algorithm(config["segmentation"])
-    print("Segmentation Pipeline Initialized - Params:", segmentation.__dict__)
 
-    predictions = _import_predction_pipeline(config["unet_prediction"], all_paths)
+    # Import predictions pipeline
+    if 'unet_predictions' in config.keys():
+        predictions = _import_predction_pipeline(config["unet_prediction"], all_paths)
+    else:
+        predictions = dummy("predictions")
 
+    # Import segmentation pipeline
+    if "segmentation" in config.keys():
+        segmentation = _import_segmentation_algorithm(config["segmentation"])
+        print("Segmentation Pipeline Initialized - Params:", segmentation.__dict__)
+    else:
+        segmentation = dummy("segmentation")
 
-    for file_path in all_paths:
-        _create_dir_structure(file_path, "predtest", config["segmentation"]["name"])
+    # Create directory structure for segmentation results
+    [_create_dir_structure(file_path, config["unet_prediction"]["model_name"], config["segmentation"]["name"]) for file_path in all_paths]
 
-        break
-
-
-def raw2pmaps():
-    print("raw2pmaps")
-
-
-def pmaps2seg():
-    print("pmaps2seg")
-
+    # Run pipelines
+    print("Inference start")
+    predictions()
+    segmentation()
 
 if __name__ == "__main__":
     raw2seg()

@@ -37,30 +37,28 @@ def _get_predictor(model, loader, output_file, config):
     return predictor_class(model, loader, output_file, config, **predictor_config)
 
 
-def main():
-    # Load configuration
-    config = load_config()
+class ModelPredictions:
+    def __init__(self, config):
+        self.config = config
 
-    # Create the model
-    model = get_model(config)
+        # Create the model
+        model = get_model(config)
 
-    # Load model state
-    model_path = config['model_path']
-    logger.info(f'Loading model from {model_path}...')
-    utils.load_checkpoint(model_path, model)
-    logger.info(f"Sending the model to '{config['device']}'")
-    model = model.to(config['device'])
+        # Load model state
+        model_path = config['model_path']
+        logger.info(f'Loading model from {model_path}...')
+        utils.load_checkpoint(model_path, model)
+        logger.info(f"Sending the model to '{config['device']}'")
+        self.model = model.to(config['device'])
 
-    logger.info('Loading HDF5 datasets...')
-    for test_loader in get_test_loaders(config):
-        logger.info(f"Processing '{test_loader.dataset.file_path}'...")
+        logger.info('Loading HDF5 datasets...')
 
-        output_file = _get_output_file(test_loader.dataset)
+    def __call__(self):
+        for test_loader in get_test_loaders(self.config):
+            logger.info(f"Processing '{test_loader.dataset.file_path}'...")
 
-        predictor = _get_predictor(model, test_loader, output_file, config)
-        # run the model prediction on the entire dataset and save to the 'output_file' H5
-        predictor.predict()
+            output_file = _get_output_file(test_loader.dataset)
 
-
-if __name__ == '__main__':
-    main()
+            predictor = _get_predictor(self.model, test_loader, output_file, self.config)
+            # run the model prediction on the entire dataset and save to the 'output_file' H5
+            predictor.predict()
