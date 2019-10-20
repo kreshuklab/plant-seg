@@ -26,10 +26,23 @@ def _load_config():
     return config
 
 
+def _import_preprocessing_pipeline(_config):
+    from dataprocessing.dataprocessing import DataPreProcessing
+    processing = DataPreProcessing(_config)
+    return processing
+
+
+def _import_postprocessing_pipeline(_config):
+    from dataprocessing.dataprocessing import DataPostProcessing
+    processing = DataPostProcessing(_config)
+    return processing
+
+
 def _create_predict_config(_config, all_paths):
     """ Creates the configuration file needed for running the neural network inference"""
 
     # Load template config
+    import torch
     config = yaml.load(open("./predictions/config_predict_template.yaml", 'r'), Loader=yaml.FullLoader)
 
     # Add patch and stride size
@@ -43,9 +56,9 @@ def _create_predict_config(_config, all_paths):
 
     # Add correct device for inference
     if _config["device"] == 'cuda':
-        config["device"] = 0 # torch.device("cuda:0")
+        config["device"] = torch.device("cuda:0")
     elif _config["device"] == 'cpu':
-        config["device"] = 0 # torch.device("cpu")
+        config["device"] = torch.device("cpu")
     else:
         raise NotImplementedError
 
@@ -66,7 +79,6 @@ def _create_predict_config(_config, all_paths):
 
 
 def _import_predction_pipeline(_config, all_paths):
-    import torch
     from predictions.predict import ModelPredictions
     config = _create_predict_config(_config, all_paths)
     model_predictions = ModelPredictions(config)
@@ -118,26 +130,42 @@ def raw2seg():
     # read files
     all_paths = _read_path(config)
 
+    if 'preprocessing' in config.keys():
+        preprocessing = _import_preprocessing_pipeline(config["preprocessing"])
+    else:
+        preprocessing = dummy("prepocessing")
+
     # Import predictions pipeline
     if 'unet_predictions' in config.keys():
         predictions = _import_predction_pipeline(config["unet_prediction"], all_paths)
+        if config["postprocessing"] in config["unet_prediction"].keys():
+            predictions_postprocessing = _import_postprocessing_pipeline(config["unet_prediction"]["postprocessing"])
     else:
         predictions = dummy("predictions")
+        segmentation_postprocessing = dummy("predictions postprocessing")
 
     # Import segmentation pipeline
     if "segmentation" in config.keys():
         segmentation = _import_segmentation_algorithm(config["segmentation"])
         print("Segmentation Pipeline Initialized - Params:", segmentation.__dict__)
+        if config["postprocessing"] in config["unet_prediction"].keys():
+            segmentation_postprocessing = _import_postprocessing_pipeline(config["segmentation"]["postprocessing"])
+
     else:
         segmentation = dummy("segmentation")
+        segmentation_postprocessing = dummy("segmentation postprocessing")
 
     # Create directory structure for segmentation results
     [_create_dir_structure(file_path, config["unet_prediction"]["model_name"], config["segmentation"]["name"]) for file_path in all_paths]
 
     # Run pipelines
     print("Inference start")
+    preprocessing()
     predictions()
+    predictions_postprocessing()
     segmentation()
+    segmentation_postprocessing()
+
 
 if __name__ == "__main__":
     raw2seg()

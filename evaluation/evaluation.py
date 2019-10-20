@@ -174,7 +174,7 @@ def write_csv(output_path, results):
         dict_writer.writeheader()
         dict_writer.writerows(results)
 
-"""
+
 if __name__ == "__main__":
     # read config
     eval_config = load_config()
@@ -210,4 +210,3 @@ if __name__ == "__main__":
 
     # Save CSV
     write_csv(eval_config["output_csv"], results)
-"""
