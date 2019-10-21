@@ -14,7 +14,6 @@ class DataPostProcessing3D:
         self.paths = paths
 
         # convert from tiff
-        self.safe = config["safe"]
         self.safe_directory = config["safe_directory"]
         self.convert = config["tiff"]
 
@@ -31,14 +30,11 @@ class DataPostProcessing3D:
             image = image if image.ndim == 3 else image[0]
             image = self.down_sample(image, self.factor, self.order)
 
-            if self.safe:
-                os.makedirs(f"{ os.path.dirname(path)}/{ self.safe_directory }/", exist_ok=True)
-                file_name = os.path.split(os.path.basename(path))
-                h5_file_path = f"{os.path.dirname(path)}/{self.safe_directory}/{file_name}"
-            else:
-                h5_file_path = path
-
+            os.makedirs(f"{ os.path.dirname(path)}/{ self.safe_directory }/", exist_ok=True)
+            file_name = os.path.split(os.path.basename(path))
+            h5_file_path = f"{os.path.dirname(path)}/{self.safe_directory}/{file_name}"
             image = image.astype(np.uint16)
+
             if self.convert:
                 tiff_file_path = f"{os.path.splitext(h5_file_path)[0]}.tiff"
                 tifffile.imsave(tiff_file_path, data=image, dtype=image.dtype,
@@ -58,7 +54,6 @@ class DataPreProcessing3D:
         self.paths = paths
 
         # convert from tiff
-        self.safe = config["safe"]
         self.safe_directory = config["safe_directory"]
         self.convert = config["tiff"]
         self.dataset = "raw"
@@ -97,12 +92,9 @@ class DataPreProcessing3D:
             image = self.filter(image, self.param)
             image = self.down_sample(image, self.factor, self.order)
 
-            if self.safe:
-                os.makedirs(f"{os.path.dirname(path)}/{self.safe_directory}/", exist_ok=True)
-                file_name = os.path.splitext(os.path.basename(path))[0]
-                h5_file_path = f"{os.path.dirname(path)}/{self.safe_directory}/{file_name}.h5"
-            else:
-                h5_file_path = path
+            os.makedirs(f"{os.path.dirname(path)}/{self.safe_directory}/", exist_ok=True)
+            file_name = os.path.splitext(os.path.basename(path))[0]
+            h5_file_path = f"{os.path.dirname(path)}/{self.safe_directory}/{file_name}.h5"
 
             with h5py.File(h5_file_path, "w") as f:
                 image = 255 * ((image - np.min(image)) / (np.max(image) - np.min(image)))

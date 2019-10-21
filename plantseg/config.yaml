@@ -1,13 +1,16 @@
 # Contains the path to the directory or file to process
-path: "/home/lcerrone/Downloads/stacksForLorenzo/C_ox_main_t3.tif"
+path: "/home/lcerrone/Downloads/stacksForLorenzo/A_col0_dws20190426_T3.tif"
 
 preprocessing:
-  # convert from tiff
+  # convert from tiff if True else h5 file will be assumed
   tiff: True
-  safe: True
+  # create a new sub folder where all results will be stored
   safe_directory: "preprocessing"
-  factor: [0.25, 0.25, 0.25]
-  order: 1
+
+  # rescaling the volume is essential for the generalization of the networks. The rescaling factor can be computed as the resolution
+  # of the volume at hand divided by the resolution of the dataset used in training. Be carfull, if the difference is too large check for a different model.
+  factor: [1, 1, 1]
+  order: 2
 
 unet_prediction:
   # Trained model name, more info on available models and custom models in the README
