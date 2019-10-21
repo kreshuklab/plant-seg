@@ -12,6 +12,7 @@ from elf.segmentation.multicut import multicut_kernighan_lin, transform_probabil
 
 class MulticutFromPmaps:
     def __init__(self,
+                 predictions_paths,
                  save_directory="MultiCut",
                  multicut_beta=0.5,
                  run_ws=True,
@@ -24,6 +25,7 @@ class MulticutFromPmaps:
                  n_threads=6):
 
         # name subdirectory created for the segmentation file + generic config
+        self.predictions_paths = predictions_paths
         self.save_directory = save_directory
         self.n_threads = n_threads
 
@@ -41,35 +43,35 @@ class MulticutFromPmaps:
         # Post processing size threshold
         self.post_minsize = post_minsize
 
-    def __call__(self, predictions_path):
+    def __call__(self,):
 
         # Generate some random affinities:
-        pmaps = h5py.File(predictions_path, "r")
-        pmaps = np.array(pmaps["predictions"][0], dtype=np.float32)
+        for predictions_path in self.predictions_paths:
+            pmaps = h5py.File(predictions_path, "r")
+            pmaps = np.array(pmaps["predictions"][0], dtype=np.float32)
 
-        runtime = time.time()
-        segmentation = self.segment_volume(pmaps)
+            runtime = time.time()
+            segmentation = self.segment_volume(pmaps)
 
-        if self.post_minsize > self.ws_minsize:
-            segmentation, _ = apply_size_filter(segmentation, pmaps, self.post_minsize)
+            if self.post_minsize > self.ws_minsize:
+                segmentation, _ = apply_size_filter(segmentation, pmaps, self.post_minsize)
 
-        runtime = time.time() - runtime
+            runtime = time.time() - runtime
 
-        os.makedirs(os.path.dirname(predictions_path) + "/" + self.save_directory + "/", exist_ok=True)
-        h5_file_path = (os.path.dirname(predictions_path) +
-                        "/" + self.save_directory + "/" + os.path.basename(predictions_path))
+            os.makedirs(os.path.dirname(predictions_path) + "/" + self.save_directory + "/", exist_ok=True)
+            h5_file_path = (os.path.dirname(predictions_path) +
+                            "/" + self.save_directory + "/" + os.path.basename(predictions_path))
 
-        h5_file_path = os.path.splitext(h5_file_path)[0] + "_multicut" + ".h5"
+            h5_file_path = os.path.splitext(h5_file_path)[0] + "_multicut" + ".h5"
 
-        self.runtime = runtime
-        self._log_params(h5_file_path)
+            self.runtime = runtime
+            self._log_params(h5_file_path)
 
-        # Save output results
-        with h5py.File(h5_file_path, "w") as file:
-            file.create_dataset("segmentation", data=segmentation.astype(np.uint16), compression='gzip')
+            # Save output results
+            with h5py.File(h5_file_path, "w") as file:
+                file.create_dataset("segmentation", data=segmentation.astype(np.uint16), compression='gzip')
 
-        print("Clustering took {} s".format(runtime))
-        return h5_file_path
+            print("Clustering took {} s".format(runtime))
 
     def _log_params(self, file):
         import yaml

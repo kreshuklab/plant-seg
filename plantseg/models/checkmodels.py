@@ -5,21 +5,21 @@ config_train = "/config_train.yml"
 best_model = "/best_checkpoint.pytorch"
 last_model = "/last_checkpoint.pytorch"
 
-def check_models(model_name, update_files=True):
+
+def check_models(model_name, update_files=False):
     """
     Simple script to check and download trained modules
     """
-
-    model_dir = os.path.expanduser("~") + "/.plantseg_models/" + model_name + "/"
+    model_dir = os.path.join(os.path.expanduser("~"), ".plantseg_models", model_name)
 
     # Check if model directory exist if not create it
     if ~os.path.exists(model_dir):
         os.makedirs(model_dir, exist_ok=True)
 
     # Check if files are there, if not download them
-    if (~os.path.exists(model_dir + config_train) or
-            ~os.path.exists(model_dir + best_model) or
-            ~os.path.exists(model_dir + last_model) or
+    if (not os.path.exists(model_dir + config_train) or
+            not os.path.exists(model_dir + best_model) or
+            not os.path.exists(model_dir + last_model) or
             update_files):
 
         # Read config

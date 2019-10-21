@@ -10,7 +10,8 @@ import os
 
 
 class DataPostProcessing3D:
-    def __init__(self, config):
+    def __init__(self, config, paths):
+        self.paths = paths
 
         # convert from tiff
         self.safe = config["safe"]
@@ -22,7 +23,7 @@ class DataPostProcessing3D:
         self.order = config["order"]
 
     def __call__(self, paths):
-        for path in paths:
+        for path in self.paths:
             print(f"Postprocessing {path}")
             with h5py.File(path, "r") as f:
                 image = f[self.dataset][...]
@@ -53,14 +54,16 @@ class DataPostProcessing3D:
 
 
 class DataPreProcessing3D:
-    def __init__(self, config):
+    def __init__(self, config, paths):
+        self.paths = paths
 
         # convert from tiff
         self.safe = config["safe"]
         self.safe_directory = config["safe_directory"]
         self.convert = config["tiff"]
+        self.dataset = "raw"
 
-        if "filter" in config.key():
+        if "filter" in config.keys():
             # filters
             if "median" == config["filter"]:
                 self.param = config["param"]
@@ -79,8 +82,8 @@ class DataPreProcessing3D:
         self.factor = config["factor"]
         self.order = config["order"]
 
-    def __call__(self, paths):
-        for path in paths:
+    def __call__(self,):
+        for path in self.paths:
             print(f"Preprocessing {path}")
             if self.convert:
                 image = tifffile.imread(path)
@@ -95,9 +98,9 @@ class DataPreProcessing3D:
             image = self.down_sample(image, self.factor, self.order)
 
             if self.safe:
-                os.makedirs(f"{ os.path.dirname(path)}/{ self.safe_directory }/", exist_ok=True)
-                file_name = os.path.split(os.path.basename(path))
-                h5_file_path = f"{os.path.dirname(path)}/{self.safe_directory}/{file_name}"
+                os.makedirs(f"{os.path.dirname(path)}/{self.safe_directory}/", exist_ok=True)
+                file_name = os.path.splitext(os.path.basename(path))[0]
+                h5_file_path = f"{os.path.dirname(path)}/{self.safe_directory}/{file_name}.h5"
             else:
                 h5_file_path = path
 
@@ -112,7 +115,10 @@ class DataPreProcessing3D:
 
     @staticmethod
     def down_sample(image, factor, order):
-        return zoom(image, zoom=factor, order=order)
+        if np.prod(factor) == 1:
+            return image
+        else:
+            return zoom(image, zoom=factor, order=order)
 
     @staticmethod
     def median(image, radius):

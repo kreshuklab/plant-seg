@@ -1,6 +1,8 @@
 import importlib
 import os
+import sys
 
+sys.path.append(os.path.abspath('/home/lcerrone/PycharmProjects/pytorch-3dunet'))
 from datasets.hdf5 import get_test_loaders
 from unet3d import utils
 from unet3d.config import load_config
@@ -9,8 +11,10 @@ from unet3d.model import get_model
 logger = utils.get_logger('UNet3DPredictor')
 
 
-def _get_output_file(dataset, suffix='_predictions'):
-    return f'{os.path.splitext(dataset.file_path)[0]}{suffix}.h5'
+def _get_output_file(dataset, model_name, suffix='_predictions'):
+    basepath, basename = os.path.split(dataset.file_path)
+    basename = f"{os.path.splitext(basename)[0]}{suffix}.h5"
+    return os.path.join(basepath, model_name, basename)
 
 
 def _get_dataset_names(config, number_of_datasets, prefix='predictions'):
@@ -46,6 +50,8 @@ class ModelPredictions:
 
         # Load model state
         model_path = config['model_path']
+        self.model_name = config["model_name"]
+
         logger.info(f'Loading model from {model_path}...')
         utils.load_checkpoint(model_path, model)
         logger.info(f"Sending the model to '{config['device']}'")
@@ -57,8 +63,7 @@ class ModelPredictions:
         for test_loader in get_test_loaders(self.config):
             logger.info(f"Processing '{test_loader.dataset.file_path}'...")
 
-            output_file = _get_output_file(test_loader.dataset)
-
+            output_file = _get_output_file(test_loader.dataset, self.model_name)
             predictor = _get_predictor(self.model, test_loader, output_file, self.config)
             # run the model prediction on the entire dataset and save to the 'output_file' H5
             predictor.predict()

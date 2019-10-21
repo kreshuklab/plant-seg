@@ -1,13 +1,21 @@
 # Contains the path to the directory or file to process
-path: "/mnt/localdata0/lcerrone/FOR_paper/TUM_Ovules_Dataset/Ovules_test_final/ds3_predictions/"
+path: "/home/lcerrone/Downloads/stacksForLorenzo/C_ox_main_t3.tif"
+
+preprocessing:
+  # convert from tiff
+  tiff: True
+  safe: True
+  safe_directory: "preprocessing"
+  factor: [0.25, 0.25, 0.25]
+  order: 1
 
 unet_prediction:
   # Trained model name, more info on available models and custom models in the README
-  model_name: "unet_ds3x"
+  model_name: "unet_ds2x_bce"
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
-  device: "cuda"
+  device: "cpu"
   # patch size given to the network (adapt to fit in your GPU mem)
-  patch: [100, 224, 224]
+  patch: [32, 128, 128]
   # stride between patches (make sure the the patches overlap in order to get smoother prediction maps)
   stride: [40, 100, 100]
   # "best" refers to best performing on the val set (recommended), alternatively "last" refers to the last version before interruption
