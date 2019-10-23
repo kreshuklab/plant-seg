@@ -1,12 +1,12 @@
 # Contains the path to the directory or file to process
-path: "/home/lcerrone/Downloads/stacksForLorenzo/A_col0_dws20190426_T3.tif"
+path: "/home/lcerrone/Downloads/stacksForLorenzo/"
+extension: "tiff"
 
 preprocessing:
   # convert from tiff if True else h5 file will be assumed
   tiff: True
   # create a new sub folder where all results will be stored
   safe_directory: "preprocessing"
-
   # rescaling the volume is essential for the generalization of the networks. The rescaling factor can be computed as the resolution
   # of the volume at hand divided by the resolution of the dataset used in training. Be carfull, if the difference is too large check for a different model.
   factor: [1, 1, 1]
