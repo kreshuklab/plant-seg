@@ -44,7 +44,7 @@ $ python plantseg/plantseg.py --config ./config.yaml
 ```
 ### Guide to Custom Configuration File:
 The configuration file define all operations in our pipeline all parameters and data to process.
-We provide in the [example](example/README.md) directory several configuration example for different usage.
+We provide in the [example](examples/README.md) directory several configuration example for different usage.
 Some key design choices:
 * path key: is used to define the file to process or if multiple files the directory containing the data 
 (and extension).
