@@ -52,7 +52,7 @@ All instructions are in [segmentation](plantseg/segmentation/README.md) director
 * Import Error while predicting: This could be caused by a non standard location of the [pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet) directory.
 Please edit line 4 of [predict.py](plantseg/predictions/predict.py) with your custom path.
 ```python
-pytorch_3dunet_default_directory = /CUSTOM_PATH/pytorch-3dunet/
+pytorch_3dunet_default_directory = "/CUSTOM_PATH/pytorch-3dunet/"
 ```
 
 
