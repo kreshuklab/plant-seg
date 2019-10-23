@@ -4,10 +4,10 @@ import sys
 
 # To be changed in case of non standard installation
 ##################################################################################################
-pytorch_default_directory = os.path.join(os.path.expanduser("~"), "plant-seg", "pytorch-3dunet") #
+pytorch_3dunet_default_directory = os.path.join(os.path.expanduser("~"), "plant-seg", "pytorch-3dunet") #
 ##################################################################################################
 
-sys.path.append(os.path.abspath(pytorch_default_directory))
+sys.path.append(os.path.abspath(pytorch_3dunet_default_directory))
 from datasets.hdf5 import get_test_loaders
 from unet3d import utils
 from unet3d.config import load_config

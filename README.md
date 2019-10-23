@@ -49,5 +49,27 @@ In the [models](plantseg/models/README.md) directory we list details of all pre-
 configuration file style but due to anaconda environment incompatibilities installing a further enviroment is needed.
 All instructions are in [segmentation](plantseg/segmentation/README.md) directory.
 ## Trubleshooting:
+* Import Error while predicting: This could be caused by a non standard location of the [pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet) directory.
+Please edit line 4 of [predict.py](plantseg/predictions/predict.py) with your custom path.
+```python
+pytorch_3dunet_default_directory = /CUSTOM_PATH/pytorch-3dunet/
+```
 
-## Training on New Data
+
+## Training on New Data:
+For training new models we rely on the [pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet). 
+A similar configuration file can be used for training on new data, all detailed instructions can be found  in the repo.
+When the network is trained it is enough to copy the following file inside a directory:
+* configuration file used for training named: config_train.yml
+* configuration file used for training named: model_best.torch
+* configuration file used for training named: model_last.torch
+
+The later two files are automatically generated during training and contains all neural networks parameters.
+The directory created have to be placed in the default location
+```bash
+$ ~/plant_seg/
+```
+Now you can simply use your model for prediction by eding the [model_name:](config.yaml) key in the prediction config file.\
+If you want your model to be part of the opensource zoo of models please contact us.
+
+## Citation:
