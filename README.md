@@ -1,6 +1,6 @@
 # plant-seg
 [plant-seg](plantseg) is a tool for cell instance aware segmentation in densely packed 3D volumetric images.
-The pipeline is fully described in [Wolny et al. 2019](https://link), and uses a two stages segmentation strategy (Neural Network + Segmentation).
+The pipelin uses a two stages segmentation strategy (Neural Network + Segmentation).
 The pipeline is tooned for plant cell tissue acquired with confocal and light sheet microscopy.
 Pre-trained model are provided.  
 
