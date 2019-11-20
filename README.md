@@ -78,7 +78,7 @@ The directory created have to be placed in the default location
 ```bash
 $ ~/plant_seg/
 ```
-Now you can simply use your model for prediction by editing the [model_name:](config.yaml) key in the prediction config file.\
+Now you can simply use your model for prediction by editing the [model_name:](plantseg/config.yaml) key in the prediction config file.\
 If you want your model to be part of the open-source zoo of models please contact us.
 
 ## Citation:

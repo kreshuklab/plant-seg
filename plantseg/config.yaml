@@ -1,18 +1,22 @@
 # Contains the path to the directory or file to process
-path: "/home/lcerrone/Downloads/stacksForLorenzo/"
-extension: "tiff"
+path: "/home/lcerrone/Downloads/stacksForLorenzo/test/"
 
 preprocessing:
+  state: True
   # convert from tiff if True else h5 file will be assumed
-  tiff: True
+  extension: tiff
   # create a new sub folder where all results will be stored
-  safe_directory: "preprocessing"
+  save_directory: "preprocessing"
   # rescaling the volume is essential for the generalization of the networks. The rescaling factor can be computed as the resolution
   # of the volume at hand divided by the resolution of the dataset used in training. Be carfull, if the difference is too large check for a different model.
-  factor: [1, 1, 1]
+  factor: [0.2, 0.5, 0.5]
   order: 2
 
+  filter: gaussian
+  param: 1.0
+
 unet_prediction:
+  state: True
   # Trained model name, more info on available models and custom models in the README
   model_name: "unet_ds2x_bce"
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
@@ -26,9 +30,30 @@ unet_prediction:
   # If "True" forces downloading networks for the online repos
   model_update: False
 
+  postprocessing:
+    state: True
+    tiff: False
+    factor: [1, 1, 1]
+    order: 2
+
+
 segmentation:
+  state: True
   # Name of the algorithm to use for inferences
   name: "MultiCut"
   # Optional parameters here (redefine standard parameters, check segmentation modules for more info)
   multicut_beta: 0.5
   save_directory: "MultiCut"
+  run_ws: True
+  ws_2D: True
+  ws_threshold: 0.5
+  ws_minsize: 50
+  ws_sigma: 2.0
+  ws_w_sigma: 0
+  post_minsize: 50
+  postprocessing:
+    state: True
+    tiff: False
+    factor: [1, 1, 1]
+    order: 0
+

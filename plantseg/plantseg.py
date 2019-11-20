@@ -7,8 +7,17 @@ from models.checkmodels import check_models
 
 
 def _read_path(config):
-    path, ext = os.path.splitext(config["path"])
-    return sorted(glob.glob(f"{path}*{ext}"))
+    if os.path.isdir(config["path"]):
+        path = os.path.join(config["path"], "*")
+    else:
+        path, ext = os.path.splitext(config["path"])
+        path = f"{path}*{ext}"
+    paths = glob.glob(path)
+    only_file = []
+    for path in paths:
+        if os.path.isfile(path):
+            only_file.append(path)
+    return sorted(only_file)
 
 
 def _generate_new_paths(all_paths, new_name, suffix=''):
@@ -41,9 +50,9 @@ def _import_preprocessing_pipeline(_config, all_paths):
     return processing
 
 
-def _import_postprocessing_pipeline(_config):
+def _import_postprocessing_pipeline(_config, all_paths, dataset):
     from dataprocessing.dataprocessing import DataPostProcessing3D
-    processing = DataPostProcessing3D(_config)
+    processing = DataPostProcessing3D(_config, all_paths, dataset)
     return processing
 
 
@@ -52,7 +61,9 @@ def _create_predict_config(_config, all_paths):
 
     # Load template config
     import torch
-    config = yaml.load(open("./predictions/config_predict_template.yaml", 'r'), Loader=yaml.FullLoader)
+    file_dir = os.path.dirname(os.path.abspath('__file__'))
+    config = yaml.load(open(os.path.join(file_dir, "predictions", "config_predict_template.yaml"), 'r'),
+                       Loader=yaml.FullLoader)
 
     # Add patch and stride size
     if "patch" in _config.keys():
@@ -92,7 +103,6 @@ def _create_predict_config(_config, all_paths):
         config["model"][key] = value
 
     config["model_name"] = _config["model_name"]
-    print(config)
     return config
 
 
@@ -144,49 +154,77 @@ class dummy:
         print(f"Skipping {self.phase}: Nothing to do")
 
 
-def raw2seg():
-    # Load general configuration file
-    config = _load_config()
-
+def raw2seg(config):
     # read files
     all_paths_raw = _read_path(config)
-    # creates segmentation processed paths
-    all_paths_processed = _generate_new_paths(all_paths_raw, config["preprocessing"]["safe_directory"])
-    all_paths_predicted = _generate_new_paths(all_paths_processed, config["unet_prediction"]["model_name"], suffix="_predictions")
 
     # creates predictions paths
 
     # Create directory structure for segmentation results
-    [_create_dir_structure(file_path,
-                           config["preprocessing"]["safe_directory"],
-                           config["unet_prediction"]["model_name"],
-                           config["segmentation"]["name"]) for file_path in all_paths_raw]
+    if "preprocessing" in config:
+        if "save_directory" in config["preprocessing"]:
+            preprocessing_save_directory = config["preprocessing"]["save_directory"]
+        else:
+            preprocessing_save_directory = ""
+    else:
+        preprocessing_save_directory = ""
 
-    if 'preprocessing' in config.keys():
+    if "unet_prediction" in config:
+        if "model_name" in config["unet_prediction"]:
+            unet_save_directory = config["unet_prediction"]["model_name"]
+        else:
+            unet_save_directory = ""
+    else:
+        unet_save_directory = ""
+
+    if "segmentation" in config:
+        if "save_directory" in config["segmentation"]:
+            segmentation_save_directory = config["segmentation"]["save_directory"]
+        else:
+            segmentation_save_directory = ""
+    else:
+        segmentation_save_directory = ""
+
+    [_create_dir_structure(file_path,
+                           preprocessing_save_directory,
+                           unet_save_directory,
+                           segmentation_save_directory) for file_path in all_paths_raw]
+
+    if 'preprocessing' in config.keys() and config['preprocessing']['state']:
+        # creates segmentation processed paths
+        all_paths_processed = _generate_new_paths(all_paths_raw, config["preprocessing"]["save_directory"])
         preprocessing = _import_preprocessing_pipeline(config["preprocessing"], all_paths_raw)
     else:
+        all_paths_processed = all_paths_raw
         preprocessing = dummy("prepocessing")
 
     # Import predictions pipeline
-    if 'unet_prediction' in config.keys():
+    if 'unet_prediction' in config.keys() and config['unet_prediction']['state']:
+        all_paths_predicted = _generate_new_paths(all_paths_processed, config["unet_prediction"]["model_name"],
+                                                  suffix="_predictions")
         predictions = _import_predction_pipeline(config["unet_prediction"], all_paths_processed)
-        if "postprocessing" in config["unet_prediction"].keys():
+        if "postprocessing" in config["unet_prediction"].keys() and\
+                config['unet_prediction']['postprocessing']['state']:
             predictions_postprocessing = _import_postprocessing_pipeline(config["unet_prediction"]["postprocessing"],
-                                                                         all_paths_predicted)
+                                                                         all_paths_predicted, "predictions")
         else:
             predictions_postprocessing = dummy("predictions postprocessing")
 
     else:
+        all_paths_predicted = all_paths_processed
         predictions = dummy("predictions")
         predictions_postprocessing = dummy("predictions postprocessing")
 
     # Import segmentation pipeline
-    if "segmentation" in config.keys():
+    if "segmentation" in config.keys() and config['segmentation']['state']:
+        all_paths_segmented = _generate_new_paths(all_paths_predicted, config["segmentation"]["save_directory"],
+                                                  suffix=f"_{config['segmentation']['save_directory']}".lower())
         segmentation = _import_segmentation_algorithm(config["segmentation"], all_paths_predicted)
         print("Segmentation Pipeline Initialized - Params:", segmentation.__dict__)
-        if "postprocessing" in config["unet_prediction"].keys():
+        if "postprocessing" in config["unet_prediction"].keys() and \
+                config['segmentation']['postprocessing']['state']:
             segmentation_postprocessing = _import_postprocessing_pipeline(config["segmentation"]["postprocessing"],
-                                                                          all_paths_raw)
+                                                                          all_paths_segmented, "segmentation")
         else:
             segmentation_postprocessing = dummy("predictions postprocessing")
 
@@ -197,11 +235,19 @@ def raw2seg():
     # Run pipelines
     print("Inference start")
     preprocessing()
+
+    print("Starting Predictions")
     predictions()
+    print("Predictions Done")
     predictions_postprocessing()
+
+    print("Starting Segmentation")
     segmentation()
     segmentation_postprocessing()
+    print("All Done!")
 
 
 if __name__ == "__main__":
-    raw2seg()
+    # Load general configuration file
+    config = _load_config()
+    raw2seg(config)

@@ -10,27 +10,31 @@ import os
 
 
 class DataPostProcessing3D:
-    def __init__(self, config, paths):
+    def __init__(self, config, paths, dataset="raw"):
         self.paths = paths
 
         # convert from tiff
-        self.safe_directory = config["safe_directory"]
+        self.safe_directory = "postprocessing"
         self.convert = config["tiff"]
+        self.dataset = dataset
 
         # rescaling
         self.factor = config["factor"]
         self.order = config["order"]
 
-    def __call__(self, paths):
+    def __call__(self, ):
         for path in self.paths:
             print(f"Postprocessing {path}")
+            # Load h5 from predictions or segmentation
             with h5py.File(path, "r") as f:
                 image = f[self.dataset][...]
 
+            # Resample
             image = image if image.ndim == 3 else image[0]
             image = self.down_sample(image, self.factor, self.order)
 
-            os.makedirs(f"{ os.path.dirname(path)}/{ self.safe_directory }/", exist_ok=True)
+            # Save as h5 of as tiff
+            os.makedirs(f"{ os.path.dirname(path)}/{ self.safe_directory}/", exist_ok=True)
             file_name = os.path.split(os.path.basename(path))
             h5_file_path = f"{os.path.dirname(path)}/{self.safe_directory}/{file_name}"
             image = image.astype(np.uint16)
@@ -50,13 +54,13 @@ class DataPostProcessing3D:
 
 
 class DataPreProcessing3D:
-    def __init__(self, config, paths):
+    def __init__(self, config, paths, dataset="raw"):
         self.paths = paths
 
         # convert from tiff
-        self.safe_directory = config["safe_directory"]
-        self.convert = config["tiff"]
-        self.dataset = "raw"
+        self.safe_directory = config["save_directory"]
+        self.convert = config["extension"]
+        self.dataset = dataset
 
         if "filter" in config.keys():
             # filters
@@ -80,18 +84,27 @@ class DataPreProcessing3D:
     def __call__(self,):
         for path in self.paths:
             print(f"Preprocessing {path}")
-            if self.convert:
+
+            # Load file
+            _, ext = os.path.splitext(path)
+            if ext == ".tiff" or ext == ".tif":
                 image = tifffile.imread(path)
-            else:
+            elif ext == ".hdf" or ext == ".h5" or ext == ".hd5":
                 with h5py.File(path, "r") as f:
                     image = f[self.dataset][...]
+            else:
+                print("Data extension not understood")
+                raise NotImplementedError
 
+            # Normalize
             image = image.astype(np.float32)
             image = (image - np.min(image)) / (np.max(image) - np.min(image))
 
+            # Apply filters
             image = self.filter(image, self.param)
             image = self.down_sample(image, self.factor, self.order)
 
+            # Save file
             os.makedirs(f"{os.path.dirname(path)}/{self.safe_directory}/", exist_ok=True)
             file_name = os.path.splitext(os.path.basename(path))[0]
             h5_file_path = f"{os.path.dirname(path)}/{self.safe_directory}/{file_name}.h5"
