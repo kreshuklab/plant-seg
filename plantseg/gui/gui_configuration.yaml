@@ -1,0 +1,78 @@
+plant_segapp:
+  initial_size: "400x400"
+  row_weights:
+    0: 1
+    1: 8
+    2: 1
+    3: 1
+
+  columns_weights:
+    0: 1
+
+  title: "Plant-Seg"
+  bg: "white"
+  green:
+    - 208
+    - 240
+    - 192
+
+  browser_frame:
+    row: 0
+    column: 0
+    row_weights:
+      0: 1
+    columns_weights:
+      0: 1
+      1: 4
+      2: 1
+      3: 1
+    bg: "white"
+    highlightthickness: 3
+    padx: 10
+    pady: 10
+    buttons_bg: "white"
+
+  configuration_frame:
+    row: 1
+    column: 0
+    row_weights:
+      0: 1
+    columns_weights:
+      0: 1
+      1: 1
+      2: 1
+      3: 1
+    bg: "white"
+    highlightthickness: 3
+    padx: 10
+    pady: 10
+    buttons_bg: "white"
+
+
+  run_frame:
+    row: 2
+    column: 0
+    row_weights:
+      0: 1
+    columns_weights:
+      0: 7
+      1: 1
+      2: 1
+      3: 3
+    bg: "white"
+    highlightthickness: 3
+    padx: 10
+    pady: 10
+
+  out_frame:
+    row: 3
+    column: 0
+    row_weights:
+      0: 1
+    columns_weights:
+      0: 200
+      1: 1
+    bg: "white"
+    highlightthickness: 3
+    padx: 10
+    pady: 10
