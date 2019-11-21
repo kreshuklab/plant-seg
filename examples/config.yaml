@@ -2,20 +2,24 @@
 path: "/home/lcerrone/Downloads/stacksForLorenzo/test/"
 
 preprocessing:
+  # enable/disable preprocessing
   state: True
   # convert from tiff if True else h5 file will be assumed
   extension: tiff
   # create a new sub folder where all results will be stored
   save_directory: "preprocessing"
   # rescaling the volume is essential for the generalization of the networks. The rescaling factor can be computed as the resolution
-  # of the volume at hand divided by the resolution of the dataset used in training. Be carfull, if the difference is too large check for a different model.
+  # of the volume at hand divided by the resolution of the dataset used in training. Be careful, if the difference is too large check for a different model.
   factor: [0.2, 0.5, 0.5]
+  # the order of the spline interpolation
   order: 2
-
+  # optional: perform Gaussian smoothing or median filtering on the input. Accepted values: 'gaussian'/'median'
   filter: gaussian
-  param: 1.0
+  # sigma (gaussian) or disc radius (median)
+  filter_param: 1.0
 
 unet_prediction:
+  # enable/disable UNet prediction
   state: True
   # Trained model name, more info on available models and custom models in the README
   model_name: "unet_ds2x_bce"
@@ -38,16 +42,24 @@ unet_prediction:
 
 
 segmentation:
+  # enable/disable segmentation
   state: True
   # Name of the algorithm to use for inferences
   name: "MultiCut"
-  # Optional parameters here (redefine standard parameters, check segmentation modules for more info)
+  # Segmentation specific parameters here
+  # balance under-/over-segmentation; 0 - aim for undersegmentation, 1 - aim for oversegmentation
   multicut_beta: 0.5
+  # directory where to save the results
   save_directory: "MultiCut"
+  # enable/disable watershed
   run_ws: True
+  # use 2D instead of 3D watershed
   ws_2D: True
+  # probability maps threshold
   ws_threshold: 0.5
+  # minimum size of the superpixels
   ws_minsize: 50
+  # sigma for the gaussian smoothing of the distance transform
   ws_sigma: 2.0
   ws_w_sigma: 0
   post_minsize: 50

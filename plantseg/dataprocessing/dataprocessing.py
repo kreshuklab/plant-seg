@@ -65,11 +65,11 @@ class DataPreProcessing3D:
         if "filter" in config.keys():
             # filters
             if "median" == config["filter"]:
-                self.param = config["param"]
+                self.param = config["filter_param"]
                 self.filter = self.median
 
             elif "gaussian" == config["filter"]:
-                self.param = config["param"]
+                self.param = config["filter_param"]
                 self.filter = self.gaussian
             else:
                 raise NotImplementedError

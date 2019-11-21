@@ -43,18 +43,19 @@ Now to run the pipeline simply type
 $ python plantseg/plantseg.py --config ./config.yaml
 ```
 ### Guide to Custom Configuration File:
-The configuration file define all operations in our pipeline all parameters and data to process.
-We provide in the [example](examples/README.md) directory several configuration example for different usage.
+The configuration file defines all the operations in our pipeline together with the data to be processed.
+Please refer to [config.yaml](examples/config.yaml) for a sample configuration of the pipeline and detailed explanation
+of all of the parameters.
+
 Some key design choices:
-* path key: is used to define the file to process or if multiple files the directory containing the data 
-(and extension).
-* preprocessing key: contains a simple set of possible operation you would need to run on your data before 
-the neural network. If data are ready for neural network processing delete the entire section to skip.
-More details in the config.yaml
-* prediction key: contains all parameters relevant for predicting the neural network. 
-In the [models](plantseg/models/README.md) directory we list details of all pre-trained model we provide.
-* segmentation: contains all needed to run the Multicut pipeline. All other pipelines can be run with the same
-configuration file style but due to anaconda environment incompatibilities installing a further environment is needed.
+* `path` attribute: is used to define either the file to process or the directory containing the data.
+* `preprocessing` attribute: contains a simple set of possible operation you would need to run on your data before the neural network. 
+If data are ready for neural network processing either delete the entire section or set `state: False` in order to skip this step.
+* `prediction` attribute: contains all parameters relevant for predicting the neural network. 
+In the [models](plantseg/models/README.md) directory we list details of all pre-trained models we provide.
+* `segmentation` attribute: contains all parameters needed to run the Multicut pipeline. 
+All other pipelines can be run with the same configuration file style but due to anaconda environment incompatibilities 
+installing a further environment is needed.
 All instructions are in [segmentation](plantseg/segmentation/README.md) directory.
 
 ## Trubleshooting:
@@ -78,7 +79,7 @@ The directory created have to be placed in the default location
 ```bash
 $ ~/plant_seg/
 ```
-Now you can simply use your model for prediction by editing the [model_name:](plantseg/config.yaml) key in the prediction config file.\
+Now you can simply use your model for prediction by editing the [model_name:](examples/config.yaml) key in the prediction config file.\
 If you want your model to be part of the open-source zoo of models please contact us.
 
 ## Citation:
