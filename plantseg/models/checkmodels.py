@@ -23,7 +23,8 @@ def check_models(model_name, update_files=False):
             update_files):
 
         # Read config
-        config = yaml.load(open("./models/models_zoo.yaml", 'r'), Loader=yaml.FullLoader)
+        model_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models_zoo.yaml")
+        config = yaml.load(open(model_file, 'r'), Loader=yaml.FullLoader)
         url = config[model_name]
 
         # wget models and training config
