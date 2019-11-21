@@ -52,7 +52,7 @@ def _import_preprocessing_pipeline(_config, all_paths):
 
 def _import_postprocessing_pipeline(_config, all_paths, dataset):
     from dataprocessing.dataprocessing import DataPostProcessing3D
-    processing = DataPostProcessing3D(_config, all_paths, dataset)
+    processing = DataPostProcessing3D(_config, all_paths, dataset, data_type=dataset)
     return processing
 
 
