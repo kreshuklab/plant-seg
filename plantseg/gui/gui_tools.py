@@ -91,6 +91,7 @@ class StdoutRedirect:
         self.widget.insert(tkinter.END, f"{data}")
         self.widget.configure(state='disabled')
         self.widget.yview_moveto(1)
+        self.widget.update()
 
     def flush(self):
         pass

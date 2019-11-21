@@ -1,5 +1,5 @@
 # Contains the path to the directory or file to process
-path: "/home/lcerrone/Downloads/stacksForLorenzo/test/"
+path:
 
 preprocessing:
   # enable/disable preprocessing
@@ -70,4 +70,5 @@ segmentation:
     tiff: False
     factor: [1, 1, 1]
     order: 0
+
 

@@ -5,7 +5,7 @@ import os
 import sys
 import webbrowser
 from tkinter import font
-from gui.gui_tools import Files2Process, run_reporterror, StdoutRedirector, convert_rgb
+from gui.gui_tools import Files2Process, report_error, StdoutRedirect, convert_rgb
 
 
 class PlantSegApp:
@@ -62,7 +62,7 @@ class PlantSegApp:
         self.build_all()
 
         self.plant_segapp.protocol("WM_DELETE_WINDOW", self.close)
-        sys.stdout = StdoutRedirector(self.out_text)
+        sys.stdout = StdoutRedirect(self.out_text)
         self.plant_segapp.mainloop()
 
     def update_font(self, size=10, family="helvetica"):
@@ -134,12 +134,6 @@ class PlantSegApp:
 
         # Define file reader
         file_to_process = Files2Process(self.plantseg_config)
-        if file_to_process is None:
-            print("empty")
-            print(file_to_process.files.get())
-        else:
-            print("full")
-            print(file_to_process.files.get())
 
         x = tkinter.Label(browser_frame0, bg="white", text="File or Directory to Process", font=self.font_bold)
 
@@ -366,7 +360,6 @@ class PlantSegApp:
                                                                         dict1="segmentation",
                                                                         dict2=False)
         self.plantseg_config = plantseg_config
-        print(self.plantseg_config)
 
     def save_config(self):
         """ save yaml from current entries in the gui"""
@@ -387,10 +380,10 @@ class PlantSegApp:
         for key in self.plantseg_config.keys():
             print(f"{key}: {self.plantseg_config[key]}")
 
-        try:
-            raw2seg(self.plantseg_config)
-        except Exception as e:
-            run_reporterror(e)
+        #try:
+        raw2seg(self.plantseg_config)
+        #except Exception as e:
+        #    report_error(e)
 
         self.run_button["state"] = "normal"
 
