@@ -36,15 +36,6 @@ def _create_dir_structure(file_path, preprocessing_name='', model_name='', seg_n
     os.makedirs(dir_path, exist_ok=True)
 
 
-def _load_config():
-    parser = argparse.ArgumentParser(description='Plant cell instance segmentation script')
-    parser.add_argument('--config', type=str, help='Path to the YAML config file', required=True)
-    args = parser.parse_args()
-
-    config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
-    return config
-
-
 def _import_preprocessing_pipeline(_config, all_paths):
     from .dataprocessing.dataprocessing import DataPreProcessing3D
     processing = DataPreProcessing3D(_config, all_paths)
@@ -246,9 +237,3 @@ def raw2seg(config):
     segmentation()
     segmentation_postprocessing()
     print("All Done!")
-
-
-if __name__ == "__main__":
-    # Load general configuration file
-    config = _load_config()
-    raw2seg(config)

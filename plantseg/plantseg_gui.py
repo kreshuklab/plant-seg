@@ -1,6 +1,8 @@
+# TODO this should also only use relative imports for imports from this package.
+# I would recommend to also move the entry point for the gui into the parent directory
 import tkinter
 import yaml
-from plantseg import raw2seg
+from .raw2seg import raw2seg
 import os
 import sys
 import webbrowser
