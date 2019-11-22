@@ -1,1 +1,1 @@
-from .plantseg import raw2seg
+from .raw2seg import raw2seg

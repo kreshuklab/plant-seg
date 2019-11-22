@@ -35,12 +35,12 @@ Our Pipeline is completely configuration file based and does not require any cod
 To run it is necessary to activate the correct anaconda environment. (Assuming the pipeline is setup in 
 the default location) Type in the terminal
 ```bash
-$ cd ~/plant_seg/
+$ cd plant_seg
 $ conda activate plant_seg
 ```
 Now to run the pipeline simply type
 ```bash
-$ python plantseg/plantseg.py --config ./config.yaml
+$ python plantseg.py --config ./examples/config.yaml
 ```
 ### Guide to Custom Configuration File:
 The configuration file defines all the operations in our pipeline together with the data to be processed.
@@ -58,7 +58,7 @@ All other pipelines can be run with the same configuration file style but due to
 installing a further environment is needed.
 All instructions are in [segmentation](plantseg/segmentation/README.md) directory.
 
-## Trubleshooting:
+## Troubleshooting:
 * Import Error while predicting: This could be caused by a non standard location of the [pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet) directory.
 Please edit line 7 of [predict.py](plantseg/predictions/predict.py) with your custom path.
 ```python

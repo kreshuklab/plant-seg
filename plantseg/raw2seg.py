@@ -3,7 +3,8 @@ import os
 import argparse
 import yaml
 import h5py
-from models.checkmodels import check_models
+
+from .models.checkmodels import check_models
 
 
 def _read_path(config):
@@ -35,23 +36,14 @@ def _create_dir_structure(file_path, preprocessing_name='', model_name='', seg_n
     os.makedirs(dir_path, exist_ok=True)
 
 
-def _load_config():
-    parser = argparse.ArgumentParser(description='Plant cell instance segmentation script')
-    parser.add_argument('--config', type=str, help='Path to the YAML config file', required=True)
-    args = parser.parse_args()
-
-    config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
-    return config
-
-
 def _import_preprocessing_pipeline(_config, all_paths):
-    from dataprocessing.dataprocessing import DataPreProcessing3D
+    from .dataprocessing.dataprocessing import DataPreProcessing3D
     processing = DataPreProcessing3D(_config, all_paths)
     return processing
 
 
 def _import_postprocessing_pipeline(_config, all_paths, dataset):
-    from dataprocessing.dataprocessing import DataPostProcessing3D
+    from .dataprocessing.dataprocessing import DataPostProcessing3D
     processing = DataPostProcessing3D(_config, all_paths, dataset, data_type=dataset)
     return processing
 
@@ -61,7 +53,7 @@ def _create_predict_config(_config, all_paths):
 
     # Load template config
     import torch
-    file_dir = os.path.dirname(os.path.abspath('__file__'))
+    file_dir = os.path.dirname(os.path.abspath(__file__))
     config = yaml.load(open(os.path.join(file_dir, "predictions", "config_predict_template.yaml"), 'r'),
                        Loader=yaml.FullLoader)
 
@@ -107,7 +99,7 @@ def _create_predict_config(_config, all_paths):
 
 
 def _import_predction_pipeline(_config, all_paths):
-    from predictions.predict import ModelPredictions
+    from .predictions.predict import ModelPredictions
     config = _create_predict_config(_config, all_paths)
     model_predictions = ModelPredictions(config)
     return model_predictions
@@ -117,16 +109,16 @@ def _import_segmentation_algorithm(config, predictions_paths):
     name = config["name"]
 
     if name == "GASP" or name == "MutexWS":
-        from segmentation.gasp import GaspFromPmaps as Segmentation
+        from .segmentation.gasp import GaspFromPmaps as Segmentation
 
     elif name == "DtWatershed":
-        from segmentation.watershed import DtWatershedFromPmaps as Segmentation
+        from .segmentation.watershed import DtWatershedFromPmaps as Segmentation
 
     elif name == "MultiCut":
-        from segmentation.multicut import MulticutFromPmaps as Segmentation
+        from .segmentation.multicut import MulticutFromPmaps as Segmentation
 
     elif name == "RandomWalker":
-        from segmentation.randomwalker import DtRandomWalkerFromPmaps as Segmentation
+        from .segmentation.randomwalker import DtRandomWalkerFromPmaps as Segmentation
 
     else:
         raise NotImplementedError
@@ -245,9 +237,3 @@ def raw2seg(config):
     segmentation()
     segmentation_postprocessing()
     print("All Done!")
-
-
-if __name__ == "__main__":
-    # Load general configuration file
-    config = _load_config()
-    raw2seg(config)
