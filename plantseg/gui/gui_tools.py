@@ -50,7 +50,7 @@ def convert_rgb(rgb=(0, 0, 0)):
 def list_models():
     """ list model zoo """
     model_config = os.path.split(os.path.abspath('__file__'))[0]
-    model_config = os.path.join(model_config, "models", "models_zoo.yaml")
+    model_config = os.path.join(model_config, "plantseg", "models", "models_zoo.yaml")
     model_config = yaml.load(open(model_config, 'r'),
                              Loader=yaml.FullLoader)
     models = list(model_config.keys())

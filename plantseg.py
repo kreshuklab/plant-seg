@@ -1,17 +1,34 @@
 import argparse
 import yaml
 from plantseg import raw2seg
+from plantseg.plantsegapp import PlantSegApp
 
 
-def _load_config():
+def parser():
     parser = argparse.ArgumentParser(description='Plant cell instance segmentation script')
-    parser.add_argument('--config', type=str, help='Path to the YAML config file', required=True)
+    parser.add_argument('--config', type=str, help='Path to the YAML config file', required=False)
+    parser.add_argument('--gui', action='store_true', help='Path to the YAML config file', required=False)
     args = parser.parse_args()
+    return args
 
+
+def load_config(args):
     config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
     return config
 
+
 if __name__ == "__main__":
-    # Load general configuration file
-    config = _load_config()
-    raw2seg(config)
+    # Load general configuration files
+    args = parser()
+
+    if args.gui:
+        PlantSegApp()
+
+    elif args.config is not None:
+        config = load_config(args)
+        raw2seg(config)
+
+    else:
+        raise ValueError("Not enough arguments. Please use: \n"
+                         " --gui for launching the graphical pipeline configurator or \n"
+                         " -- config 'path_to_config.yaml' for launching the pipeline from command line")
