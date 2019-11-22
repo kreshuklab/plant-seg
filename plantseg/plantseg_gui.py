@@ -58,8 +58,6 @@ class PlantSegApp:
         # init blocks
         self.update_font(size=20)
         self.build_all()
-        self.update_font(size=int(self.plant_segapp.winfo_width()/60))
-        self.build_all()
 
         self.plant_segapp.protocol("WM_DELETE_WINDOW", self.close)
         sys.stdout = StdoutRedirect(self.out_text)
@@ -109,7 +107,7 @@ class PlantSegApp:
         self.update_font(self.font_size)
 
         self.update_config()
-        self.init_frame1()
+        self.build_all()
 
     def size_down(self):
         self.font_size -= 2
@@ -117,7 +115,7 @@ class PlantSegApp:
         self.update_font(self.font_size)
 
         self.update_config()
-        self.init_frame1()
+        self.build_all()
 
     def init_frame0(self):
         # =============================================================================================================
