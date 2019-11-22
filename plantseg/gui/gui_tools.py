@@ -7,11 +7,16 @@ stick_all = tkinter.N + tkinter.S + tkinter.E + tkinter.W
 
 class Files2Process:
     def __init__(self, config):
+        """ Browse for file and directory """
         self.files = tkinter.StringVar()
-        self.files.set(os.path.expanduser("~"))
+        if config["path"] is None:
+            self.files.set(os.path.expanduser("~"))
+        else:
+            self.files.set(config["path"])
         self.config = config
 
     def browse_for_file(self):
+        """ browse for file """
         current_file_dir, _ = os.path.split(self.files.get())
         current_file_dir = (os.path.expanduser("~") if len(os.path.expanduser("~")) > len(current_file_dir)
                             else current_file_dir)
@@ -26,6 +31,7 @@ class Files2Process:
         self.config["path"] = file_name
 
     def browse_for_directory(self):
+        """ browse for directory """
         current_file_dir, _ = os.path.split(self.files.get())
         current_file_dir = (os.path.expanduser("~") if len(os.path.expanduser("~")) > len(current_file_dir)
                             else current_file_dir)
@@ -36,11 +42,13 @@ class Files2Process:
 
 
 def convert_rgb(rgb=(0, 0, 0)):
+    """ rgb to tkinter friendly format"""
     rgb = tuple(rgb)
     return "#%02x%02x%02x" % rgb
 
 
 def list_models():
+    """ list model zoo """
     model_config = os.path.split(os.path.abspath('__file__'))[0]
     model_config = os.path.join(model_config, "models", "models_zoo.yaml")
     model_config = yaml.load(open(model_config, 'r'),
@@ -50,6 +58,7 @@ def list_models():
 
 
 def var_to_tkinter(var):
+    """ transform python variables in tkinter variables"""
     if isinstance(var, bool):
         tk_var = tkinter.BooleanVar()
 
@@ -69,7 +78,7 @@ def var_to_tkinter(var):
     return tk_var
 
 
-class StdoutRedirector:
+class StdoutRedirect:
     """
     A class for redirecting stdout to this Text widget.
     """
@@ -82,12 +91,14 @@ class StdoutRedirector:
         self.widget.insert(tkinter.END, f"{data}")
         self.widget.configure(state='disabled')
         self.widget.yview_moveto(1)
+        self.widget.update()
 
     def flush(self):
         pass
 
 
-def run_reporterror(data):
+def report_error(data):
+    """ creates pop up and show error messages """
     data = data if type(data) is str else f"Unknown Error. Error type: {type(data)} \n {data}"
 
     popup = tkinter.Tk()

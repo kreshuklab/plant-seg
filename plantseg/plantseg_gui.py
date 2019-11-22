@@ -7,7 +7,7 @@ import os
 import sys
 import webbrowser
 from tkinter import font
-from gui.gui_tools import Files2Process, run_reporterror, StdoutRedirector, convert_rgb
+from gui.gui_tools import Files2Process, report_error, StdoutRedirect, convert_rgb
 
 
 class PlantSegApp:
@@ -36,8 +36,6 @@ class PlantSegApp:
         # Init main app and configure
         self.plant_segapp = tkinter.Tk()
         self.plant_segapp.tk.call('tk', 'scaling', 1.0)
-        self.helv_bold = font.Font(family='Helvetica', weight="bold")
-        self.helv = font.Font(family='Helvetica')
 
         self.plant_segapp.resizable(width=True, height=True)
         [tkinter.Grid.rowconfigure(self.plant_segapp, int(key), weight=value)
@@ -56,36 +54,70 @@ class PlantSegApp:
         self.configuration_frame1 = None
         self.run_frame2, self.run_button = None, None
         self.out_text = None
+        self.font_size = None
+        self.font_bold, self.font = None, None
 
         # init blocks
+        self.update_font(size=20)
+        self.build_all()
+
+        self.plant_segapp.protocol("WM_DELETE_WINDOW", self.close)
+        sys.stdout = StdoutRedirect(self.out_text)
+        self.plant_segapp.mainloop()
+
+    def update_font(self, size=10, family="helvetica"):
+        self.font_size = size
+        self.font_bold = font.Font(family=family, size=self.font_size, weight="bold")
+        self.font = font.Font(family=family, size=self.font_size)
+
+    def build_all(self):
         self.build_menu()
         self.init_frame0()
         self.init_frame1()
         self.init_frame2()
         self.init_frame3()
 
-        self.plant_segapp.protocol("WM_DELETE_WINDOW", self.close)
-        sys.stdout = StdoutRedirector(self.out_text)
-        self.plant_segapp.mainloop()
-
     def build_menu(self):
         menubar = tkinter.Menu(self.plant_segapp)
         menubar["bg"] = convert_rgb(self.app_config["green"])
         filemenu = tkinter.Menu(menubar, tearoff=0)
         filemenu["bg"] = "white"
-        filemenu.add_command(label="Open", command=self.open_config, font=self.helv)
-        filemenu.add_command(label="Save", command=self.save_config, font=self.helv)
+        filemenu.add_command(label="Open", command=self.open_config, font=self.font)
+        filemenu.add_command(label="Save", command=self.save_config, font=self.font)
         filemenu.add_separator()
-        filemenu.add_command(label="Exit", command=self.close, font=self.helv)
-        menubar.add_cascade(label="File", menu=filemenu, font=self.helv)
+        filemenu.add_command(label="Exit", command=self.close, font=self.font)
+        menubar.add_cascade(label="File", menu=filemenu, font=self.font)
+
+        preferencesmenu = tkinter.Menu(menubar, tearoff=0)
+        preferencesmenu["bg"] = "white"
+
+        preferencesmenu.add_command(label="Size +", command=self.size_up, font=self.font)
+        preferencesmenu.add_command(label="Size -", command=self.size_down, font=self.font)
+        menubar.add_cascade(label="Preferences", menu=preferencesmenu, font=self.font)
 
         helpmenu = tkinter.Menu(menubar, tearoff=0)
-        helpmenu.add_command(label="Help Index",  command=self.open_documentation, font=self.helv)
-        helpmenu.add_command(label="About...", font=self.helv)
+        helpmenu.add_command(label="Help Index", command=self.open_documentation, font=self.font)
+        helpmenu.add_command(label="About...", font=self.font)
         helpmenu["bg"] = "white"
-        menubar.add_cascade(label="Help", menu=helpmenu, font=self.helv)
+        menubar.add_cascade(label="Help", menu=helpmenu, font=self.font)
 
         self.plant_segapp.config(menu=menubar)
+
+    def size_up(self):
+        self.font_size += 2
+        self.font_size = min(100, self.font_size)
+        self.update_font(self.font_size)
+
+        self.update_config()
+        self.build_all()
+
+    def size_down(self):
+        self.font_size -= 2
+        self.font_size = max(0, self.font_size)
+        self.update_font(self.font_size)
+
+        self.update_config()
+        self.build_all()
 
     def init_frame0(self):
         # =============================================================================================================
@@ -103,18 +135,18 @@ class PlantSegApp:
         # Define file reader
         file_to_process = Files2Process(self.plantseg_config)
 
-        x = tkinter.Label(browser_frame0, bg="white", text="File or Directory to Process", font=self.helv_bold)
+        x = tkinter.Label(browser_frame0, bg="white", text="File or Directory to Process", font=self.font_bold)
 
         x.grid(column=0, row=0, padx=10, pady=10, sticky=self.stick_all)
 
         x = tkinter.Entry(browser_frame0, textvar=file_to_process.files,
-                          font=self.helv)
+                          font=self.font)
         x.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
         x = tkinter.Button(browser_frame0, bg="white", text="File",
-                           command=file_to_process.browse_for_file, font=self.helv_bold)
+                           command=file_to_process.browse_for_file, font=self.font_bold)
         x.grid(column=2, row=0, padx=0, pady=0, sticky=self.stick_all)
         x = tkinter.Button(browser_frame0, bg="white", text="Directory",
-                           command=file_to_process.browse_for_directory, font=self.helv_bold)
+                           command=file_to_process.browse_for_directory, font=self.font_bold)
         x.grid(column=3, row=0, padx=0, pady=0, sticky=self.stick_all)
         self.file_to_process = file_to_process
 
@@ -158,17 +190,17 @@ class PlantSegApp:
         run_frame2["bg"] = run_config["bg"]
 
         x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
-                           text="Docs", font=self.helv_bold)
+                           text="Docs", font=self.font_bold)
         x.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
         x["command"] = self.open_documentation
 
         x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
-                           text="Reset", font=self.helv_bold)
+                           text="Reset", font=self.font_bold)
         x.grid(column=2, row=0, padx=10, pady=10, sticky=self.stick_all)
         x["command"] = self.reset_config
 
         self.run_button = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
-                                         text="Run", command=self._run, font=self.helv_bold)
+                                         text="Run", command=self._run, font=self.font_bold)
         self.run_button.grid(column=3, row=0, padx=10, pady=10, sticky=self.stick_all)
 
         self.run_frame2 = run_frame2
@@ -198,7 +230,7 @@ class PlantSegApp:
         out_text.config(yscrollcommand=scroll_bar.set)
         out_text.grid(column=0, row=0, padx=10, pady=10, sticky=self.stick_all)
         out_text.configure(state='disabled')
-        out_text.configure(font=self.helv)
+        out_text.configure(font=self.font)
         scroll_bar.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
         self.out_text = out_text
 
@@ -224,10 +256,17 @@ class PlantSegApp:
     def init_menus(self, config):
         """ Initialize menu entries"""
         from gui.gui_widgets import PreprocessingFrame, UnetPredictionFrame, SegmentationFrame, PostFrame
-        pre_proc_obj = PreprocessingFrame(self.configuration_frame1, config, col=0, module_name="Data Pre-Processing")
-        predictions_obj = UnetPredictionFrame(self.configuration_frame1, config, col=1, module_name="3D - Unet")
-        segmentation_obj = SegmentationFrame(self.configuration_frame1, config, col=2, module_name="Segmentation")
-        post_obj = PostFrame(self.configuration_frame1, config, col=3)
+        pre_proc_obj = PreprocessingFrame(self.configuration_frame1, config,
+                                          col=0, module_name="Data Pre-Processing",
+                                          font=self.font)
+        predictions_obj = UnetPredictionFrame(self.configuration_frame1, config,
+                                              col=1, module_name="3D - Unet",
+                                              font=self.font)
+        segmentation_obj = SegmentationFrame(self.configuration_frame1, config,
+                                             col=2, module_name="Segmentation",
+                                             font=self.font)
+        post_obj = PostFrame(self.configuration_frame1, config,
+                             col=3, font=self.font)
         return pre_proc_obj, predictions_obj, segmentation_obj, post_obj
 
     @staticmethod
@@ -244,10 +283,10 @@ class PlantSegApp:
 
         def close_action_and_save():
             """save current configuration and close the app"""
-            plantseg_config = self.update_config()
+            self.update_config()
             plant_config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')), "config_custom.yaml")
             with open(plant_config_path, "w") as f:
-                yaml.dump(plantseg_config, f)
+                yaml.dump(self.plantseg_config, f)
 
             close_action()
 
@@ -281,7 +320,7 @@ class PlantSegApp:
          self.predictions_obj,
          self.segmentation_obj,
          self.post_obj) = self.init_menus(plantseg_config)
-        return None
+        self.plantseg_config = plantseg_config
 
     def open_config(self):
         """ open new config"""
@@ -289,13 +328,13 @@ class PlantSegApp:
                                                                title="Select file",
                                                                filetypes=(("yaml files", "*.yaml"),
                                                                           ("yaml files", "*.yml")))
-
         plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
 
         (self.pre_proc_obj,
          self.predictions_obj,
          self.segmentation_obj,
          self.post_obj) = self.init_menus(plantseg_config)
+        self.plantseg_config = plantseg_config
 
     def update_config(self):
         """ create from gui an updated yaml dictionary"""
@@ -320,27 +359,31 @@ class PlantSegApp:
         plantseg_config = self.segmentation_obj.check_and_update_config(plantseg_config,
                                                                         dict1="segmentation",
                                                                         dict2=False)
-        return plantseg_config
+        self.plantseg_config = plantseg_config
 
     def save_config(self):
         """ save yaml from current entries in the gui"""
-        plantseg_config = self.update_config()
+        self.update_config()
         save_path = tkinter.filedialog.asksaveasfilename(initialdir=os.path.expanduser("~"),
                                                          defaultextension="yaml",
                                                          filetypes=(("yaml files", "*.yaml"),))
         with open(save_path, "w") as f:
-            yaml.dump(plantseg_config, f)
+            yaml.dump(self.plantseg_config, f)
 
     def _run(self):
         """ create a yaml config from the gui and run the pipeline accordingly"""
         self.run_button["state"] = "disabled"
-        plantseg_config = self.update_config()
+        self.update_config()
         self.plant_segapp.update()
 
-        try:
-            raw2seg(plantseg_config)
-        except Exception as e:
-            run_reporterror(e)
+        print(f"Final config:")
+        for key in self.plantseg_config.keys():
+            print(f"{key}: {self.plantseg_config[key]}")
+
+        #try:
+        raw2seg(self.plantseg_config)
+        #except Exception as e:
+        #    report_error(e)
 
         self.run_button["state"] = "normal"
 

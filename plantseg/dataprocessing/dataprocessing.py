@@ -10,7 +10,7 @@ import os
 
 
 class DataPostProcessing3D:
-    def __init__(self, config, paths, dataset="raw"):
+    def __init__(self, config, paths, dataset="raw", data_type="segmentation"):
         self.paths = paths
 
         # convert from tiff
@@ -22,6 +22,8 @@ class DataPostProcessing3D:
         self.factor = config["factor"]
         self.order = config["order"]
 
+        self.data_type = data_type
+
     def __call__(self, ):
         for path in self.paths:
             print(f"Postprocessing {path}")
@@ -29,24 +31,38 @@ class DataPostProcessing3D:
             with h5py.File(path, "r") as f:
                 image = f[self.dataset][...]
 
-            # Resample
+            # Re-sample
             image = image if image.ndim == 3 else image[0]
             image = self.down_sample(image, self.factor, self.order)
 
             # Save as h5 of as tiff
             os.makedirs(f"{ os.path.dirname(path)}/{ self.safe_directory}/", exist_ok=True)
-            file_name = os.path.split(os.path.basename(path))
+            file_name = os.path.basename(path)
             h5_file_path = f"{os.path.dirname(path)}/{self.safe_directory}/{file_name}"
-            image = image.astype(np.uint16)
+
+            if self.data_type == "segmentation":
+                image = image.astype(np.uint16)
+
+            elif self.data_type == "predictions":
+                image = (image - image.min())/(image.max() - image.min())
+                image = (image * np.iinfo(np.uint16).max).astype(np.uint16)
+            else:
+                raise NotImplementedError
 
             if self.convert:
                 tiff_file_path = f"{os.path.splitext(h5_file_path)[0]}.tiff"
-                tifffile.imsave(tiff_file_path, data=image, dtype=image.dtype,
-                                bigtiff=True, imagej=True,
-                                resolution=(1, 1), metadata={'spacing': 1, 'unit': 'um'})
+                tifffile.imsave(tiff_file_path,
+                                data=image,
+                                dtype=image.dtype,
+                                bigtiff=True,
+                                resolution=(1, 1),
+                                metadata={'spacing': 1, 'unit': 'um'})
             else:
                 with h5py.File(h5_file_path, "w") as f:
-                    f.create_dataset(self.dataset, data=image, chunks=True,  compression='gzip')
+                    f.create_dataset(self.dataset,
+                                     data=image,
+                                     chunks=True,
+                                     compression='gzip')
 
     @staticmethod
     def down_sample(image, factor, order):
@@ -59,17 +75,16 @@ class DataPreProcessing3D:
 
         # convert from tiff
         self.safe_directory = config["save_directory"]
-        self.convert = config["extension"]
         self.dataset = dataset
 
-        if "filter" in config.keys():
+        if config["filter"]["state"]:
             # filters
-            if "median" == config["filter"]:
-                self.param = config["filter_param"]
+            if "median" == config["filter"]["type"]:
+                self.param = config["filter"]["param"]
                 self.filter = self.median
 
-            elif "gaussian" == config["filter"]:
-                self.param = config["filter_param"]
+            elif "gaussian" == config["filter"]["type"]:
+                self.param = config["filter"]["param"]
                 self.filter = self.gaussian
             else:
                 raise NotImplementedError
