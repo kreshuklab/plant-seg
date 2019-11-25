@@ -25,7 +25,7 @@ def check_models(model_name, update_files=False):
         # Read config
         model_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models_zoo.yaml")
         config = yaml.load(open(model_file, 'r'), Loader=yaml.FullLoader)
-        url = config[model_name]
+        url = config[model_name]["path"]
 
         # wget models and training config
         wget.download(url + config_train[1:], out=model_dir)

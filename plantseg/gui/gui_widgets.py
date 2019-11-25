@@ -2,8 +2,7 @@ import tkinter
 from .gui_tools import convert_rgb, var_to_tkinter, list_models
 
 stick_all = tkinter.N + tkinter.S + tkinter.E + tkinter.W
-stick_n = tkinter.N + tkinter.E + tkinter.W
-stick_e = tkinter.N + tkinter.E
+stick_n = tkinter.E + tkinter.W #tkinter.N + tkinter.S + tkinter.E + tkinter.W
 
 
 class MenuEntry:
@@ -711,11 +710,11 @@ class PostFrame:
         config["unet_prediction"]["postprocessing"]["state"] = True
 
         self.post_pred_obj = PostPredictionsFrame(self.post_frame, config, row=0, font=font)
-        self.post_pred_obj.show.set(False)
+        # self.post_pred_obj.show.set(False)
         self.post_pred_obj.checkbox["bg"] = "white"
 
         self.post_seg_obj = PostSegmentationFrame(self.post_frame, config, row=1, font=font)
-        self.post_seg_obj.show.set(False)
+        # self.post_seg_obj.show.set(False)
         self.post_seg_obj.checkbox["bg"] = "white"
 
         self.post_frame.update()

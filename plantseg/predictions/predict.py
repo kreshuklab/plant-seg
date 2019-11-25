@@ -4,8 +4,7 @@ import sys
 
 # To be changed in case of non standard installation
 ##################################################################################################
-pytorch_3dunet_default_directory = os.path.join(os.path.expanduser("~"),
-                                                "PycharmProjects",
+pytorch_3dunet_default_directory = os.path.join(os.path.expanduser("~"),                         #
                                                 "plant-seg",                                     #
                                                 "pytorch-3dunet")                                #
 ##################################################################################################

@@ -1,5 +1,6 @@
 plant_segapp:
   initial_size: "400x400"
+  fontsize: 18
   row_weights:
     0: 1
     1: 5
