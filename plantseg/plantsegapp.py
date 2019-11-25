@@ -36,6 +36,11 @@ class PlantSegApp:
         self.plant_segapp = tkinter.Tk()
         self.plant_segapp.tk.call('tk', 'scaling', 1.0)
 
+        # Set icon
+        icon_path = self.get_icon_path()
+        icon = tkinter.PhotoImage(file=icon_path)
+        self.plant_segapp.tk.call('wm', 'iconphoto', self.plant_segapp._w, icon)
+
         self.plant_segapp.resizable(width=True, height=True)
         [tkinter.Grid.rowconfigure(self.plant_segapp, int(key), weight=value)
          for key, value in self.app_config["row_weights"].items()]
@@ -157,7 +162,7 @@ class PlantSegApp:
         (self.pre_proc_obj,
          self.predictions_obj,
          self.segmentation_obj,
-         self.post_obj) = self.init_menus(self.plantseg_config)
+         self.post_obj) = self.init_menus()
 
     def init_frame2(self):
         # =============================================================================================================
@@ -196,17 +201,6 @@ class PlantSegApp:
 
         self.run_frame2 = run_frame2
 
-    def auto_rescale(self):
-        model_key = self.predictions_obj.custom_key["model_name"].tk_value.get()
-        path_model_config = os.path.split(os.path.abspath('__file__'))[0]
-        path_model_config = os.path.join(path_model_config, "plantseg", "models", "models_zoo.yaml")
-        model_config = yaml.load(open(path_model_config, 'r'),
-                                 Loader=yaml.FullLoader)
-        net_resolution = model_config[model_key]["resolution"]
-
-        from plantseg.gui.gui_tools import AutoResPopup
-        AutoResPopup(net_resolution, self.plantseg_config, self.pre_proc_obj, self.post_obj, self.font)
-
     def init_frame3(self):
         # ============================================================================================================
         # Frame 3                                                                                                     #
@@ -224,27 +218,65 @@ class PlantSegApp:
         out_frame3["highlightthickness"] = out_config["highlightthickness"]
         out_frame3["bg"] = out_config["bg"]
 
-        out_text = tkinter.Text(out_frame3, height=6)
+        out_text = tkinter.Text(out_frame3, height=12)
         scroll_bar = tkinter.Scrollbar(out_frame3)
         scroll_bar["bg"] = out_config["bg"]
 
         scroll_bar.config(command=out_text.yview)
         out_text.config(yscrollcommand=scroll_bar.set)
         out_text.grid(column=0, row=0, padx=10, pady=10, sticky=self.stick_all)
-        out_text.configure(state='disabled')
         out_text.configure(font=self.font)
         scroll_bar.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
+
+        """
+        icon_path = "/home/lcerrone/Downloads/Webp.net-resizeimage (5).png" #self.get_icon_path()
+        icon = tkinter.PhotoImage(file=icon_path, format='png')
+        out_text.image_create(tkinter.END, image=icon)
+        out_text.image = icon
+        
+        """
+        out_text.configure(state='disabled')
         self.out_text = out_text
 
+    # End init modules ========= Begin Config Read/Write
+
     @staticmethod
-    def load_config(name="config_gui_custom.yaml"):
+    def get_model_path():
+        # Working directory path + relative dir structure to yaml file
+        config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
+                                   "plantseg", "models", "models_zoo.yaml")
+        return config_path
+
+    @staticmethod
+    def get_last_config_path(name="config_gui_last.yaml"):
+        # Working directory path + relative dir structure to yaml file
+        config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
+                                   "plantseg", name)
+        return config_path
+
+    @staticmethod
+    def get_app_config_path(name="gui_configuration.yaml"):
+        # Working directory path + relative dir structure to yaml file
+        config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
+                                   "plantseg", "gui", name)
+        return config_path
+
+    @staticmethod
+    def get_icon_path(name="FOR2581_Logo_FINAL_no_text.png"):
+        # Working directory path + relative dir structure to yaml file
+        icon_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
+                                 "plantseg", "gui", name)
+        return icon_path
+
+
+    def load_config(self, name="config_gui_last.yaml"):
         """Load the last (or if not possible a standard) config"""
-        plant_config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
-                                         "plantseg",
-                                         name)
+        plant_config_path = self.get_last_config_path(name)
+
         if os.path.exists(plant_config_path):
             plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
         else:
+            # Do not modify this location
             plant_config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
                                              "plantseg",
                                              "config_gui_template.yaml")
@@ -252,29 +284,63 @@ class PlantSegApp:
 
         return plant_config_path, plantseg_config
 
-    @staticmethod
-    def load_app_config(config="gui_configuration.yaml"):
+    def load_app_config(self, config="gui_configuration.yaml"):
         """Load gui style config"""
-        conf_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
-                                 "plantseg",
-                                 "gui",
-                                 config)
+        conf_path = self.get_app_config_path(config)
         app_config = yaml.load(open(conf_path, 'r'), Loader=yaml.FullLoader)["plant_segapp"]
         return app_config
 
-    def init_menus(self, config):
-        """ Initialize menu entries"""
+    def reset_config(self):
+        """ reset to default config, do not change path"""
+        plant_config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
+                                         "plantseg"
+                                         "config_gui_template.yaml")
+        plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
+
+        (self.pre_proc_obj,
+         self.predictions_obj,
+         self.segmentation_obj,
+         self.post_obj) = self.init_menus(plantseg_config)
+        self.plantseg_config = plantseg_config
+
+    def open_config(self):
+        """ open new config"""
+        plant_config_path = tkinter.filedialog.askopenfilename(initialdir=os.path.expanduser("~"),
+                                                               title="Select file",
+                                                               filetypes=(("yaml files", "*.yaml"),
+                                                                          ("yaml files", "*.yml")))
+        if len(plant_config_path) > 0:
+            plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
+            (self.pre_proc_obj,
+             self.predictions_obj,
+             self.segmentation_obj,
+             self.post_obj) = self.init_menus()
+            self.plantseg_config = plantseg_config
+
+    def save_config(self):
+        """ save yaml from current entries in the gui"""
+        self.update_config()
+        save_path = tkinter.filedialog.asksaveasfilename(initialdir=os.path.expanduser("~"),
+                                                         defaultextension=".yaml",
+                                                         filetypes=(("yaml files", "*.yaml"),))
+        if len(save_path) > 0:
+            with open(save_path, "w") as f:
+                yaml.dump(self.plantseg_config, f)
+
+    # End config Read/Write ========= Begin Others
+    def init_menus(self):
+        """ Initialize menu entries from config"""
         from .gui.gui_widgets import PreprocessingFrame, UnetPredictionFrame, SegmentationFrame, PostFrame
-        pre_proc_obj = PreprocessingFrame(self.configuration_frame1, config,
+        pre_proc_obj = PreprocessingFrame(self.configuration_frame1, self.plantseg_config,
                                           col=0, module_name="Data Pre-Processing",
                                           font=self.font)
-        predictions_obj = UnetPredictionFrame(self.configuration_frame1, config,
+        predictions_obj = UnetPredictionFrame(self.configuration_frame1, self.plantseg_config,
                                               col=1, module_name="3D - Unet",
                                               font=self.font)
-        segmentation_obj = SegmentationFrame(self.configuration_frame1, config,
+        segmentation_obj = SegmentationFrame(self.configuration_frame1, self.plantseg_config,
                                              col=2, module_name="Segmentation",
                                              font=self.font)
-        post_obj = PostFrame(self.configuration_frame1, config,
+        post_obj = PostFrame(self.configuration_frame1, self.plantseg_config,
                              col=3, font=self.font)
         return pre_proc_obj, predictions_obj, segmentation_obj, post_obj
 
@@ -284,6 +350,7 @@ class PlantSegApp:
         webbrowser.open("https://github.com/hci-unihd/plant-seg")
 
     def size_up(self):
+        """ adjust font size in the main widget"""
         self.font_size += 2
         self.font_size = min(100, self.font_size)
         self.update_font(self.font_size)
@@ -292,6 +359,7 @@ class PlantSegApp:
         self.build_all()
 
     def size_down(self):
+        """ adjust font size in the main widget"""
         self.font_size -= 2
         self.font_size = max(0, self.font_size)
         self.update_font(self.font_size)
@@ -299,11 +367,28 @@ class PlantSegApp:
         self.update_config()
         self.build_all()
 
+    def auto_rescale(self):
+        """ This method open a popup windows that automatically set the scaling
+         factor from the resolution given by the user"""
+
+        model_key = self.predictions_obj.custom_key["model_name"].tk_value.get()
+        path_model_config = self.get_model_path()
+
+        model_config = yaml.load(open(path_model_config, 'r'),
+                                 Loader=yaml.FullLoader)
+
+        net_resolution = model_config[model_key]["resolution"]
+
+        from plantseg.gui.gui_tools import AutoResPopup
+        AutoResPopup(net_resolution, self.plantseg_config, self.pre_proc_obj, self.post_obj, self.font)
+
     @staticmethod
     def restart_program():
         """Restarts the current program.
         Note: this function does not return. Any cleanup action (like
-        saving data) must be done before calling this function."""
+        saving data) must be done before calling this function.
+        source: https://www.daniweb.com/programming/software-development/code/260268/restart-your-python-program
+        """
         python = sys.executable
         os.execl(python, python, *sys.argv)
 
@@ -317,9 +402,9 @@ class PlantSegApp:
         def close_action_and_save():
             """save current configuration and close the app"""
             self.update_config()
-            plant_config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
-                                             "plantseg",
-                                             "config_gui_custom.yaml")
+
+            plant_config_path = self.get_last_config_path()
+
             with open(plant_config_path, "w") as f:
                 yaml.dump(self.plantseg_config, f)
 
@@ -346,39 +431,15 @@ class PlantSegApp:
         x = tkinter.Button(button_frame, bg="white", text="Yes", command=close_action_and_save)
         x.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
 
-    def reset_config(self):
-        """ reset to default config"""
-        plant_config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
-                                         "plantseg"
-                                         "config_gui_template.yaml")
-        plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
-
-        (self.pre_proc_obj,
-         self.predictions_obj,
-         self.segmentation_obj,
-         self.post_obj) = self.init_menus(plantseg_config)
-        self.plantseg_config = plantseg_config
-
-    def open_config(self):
-        """ open new config"""
-        plant_config_path = tkinter.filedialog.askopenfilename(initialdir=os.path.expanduser("~"),
-                                                               title="Select file",
-                                                               filetypes=(("yaml files", "*.yaml"),
-                                                                          ("yaml files", "*.yml")))
-        plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
-
-        (self.pre_proc_obj,
-         self.predictions_obj,
-         self.segmentation_obj,
-         self.post_obj) = self.init_menus(plantseg_config)
-        self.plantseg_config = plantseg_config
-
     def update_config(self):
         """ create from gui an updated yaml dictionary"""
+
+        # open a template config
         plantseg_config = yaml.load(open(self.plant_config_path, 'r'), Loader=yaml.FullLoader)
 
+        # fill with modules input
         plantseg_config["path"] = self.file_to_process.files.get()
-        # Update config
+
         plantseg_config = self.pre_proc_obj.check_and_update_config(plantseg_config,
                                                                     dict1="preprocessing",
                                                                     dict2=False)
@@ -396,31 +457,31 @@ class PlantSegApp:
         plantseg_config = self.segmentation_obj.check_and_update_config(plantseg_config,
                                                                         dict1="segmentation",
                                                                         dict2=False)
+        # Save plantseg_config
         self.plantseg_config = plantseg_config
-
-    def save_config(self):
-        """ save yaml from current entries in the gui"""
-        self.update_config()
-        save_path = tkinter.filedialog.asksaveasfilename(initialdir=os.path.expanduser("~"),
-                                                         defaultextension="yaml",
-                                                         filetypes=(("yaml files", "*.yaml"),))
-        with open(save_path, "w") as f:
-            yaml.dump(self.plantseg_config, f)
 
     def _run(self):
         """ create a yaml config from the gui and run the pipeline accordingly"""
+        # Disable run button to avoid multiple actions.
         self.run_button["state"] = "disabled"
+
+        # Update config file from gui's menu
         self.update_config()
         self.plant_segapp.update()
 
+        # Print last config
         print(f"Final config:")
         for key in self.plantseg_config.keys():
             print(f"{key}: {self.plantseg_config[key]}")
 
+        # Run the pipeline
         try:
             raw2seg(self.plantseg_config)
         except Exception as e:
+            # If an error occur generate a popup.
+            # NB. stderror is still the sys default. Errors outside the pipeline will be reported in the terminal.
             traceback.print_exc()
             report_error(e)
 
+        # Enable the run button
         self.run_button["state"] = "normal"
