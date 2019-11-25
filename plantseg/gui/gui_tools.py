@@ -96,6 +96,9 @@ class StdoutRedirect:
     def flush(self):
         pass
 
+    def fileno(self):
+        return 0
+
 
 def report_error(data):
     """ creates pop up and show error messages """
