@@ -116,10 +116,9 @@ class PlantSegApp:
         # =============================================================================================================
         browser_frame0 = tkinter.Frame(self.plant_segapp)
         browser_config = self.app_config["browser_frame"]
-        [tkinter.Grid.rowconfigure(browser_frame0, int(key), weight=value)
-         for key, value in browser_config["row_weights"].items()]
-        [tkinter.Grid.columnconfigure(browser_frame0, int(key), weight=value)
-         for key, value in browser_config["columns_weights"].items()]
+
+        self.config_row_column(browser_frame0, browser_config)
+
         browser_frame0.grid(row=int(browser_config["row"]), column=int(browser_config["column"]), sticky=self.stick_all)
         browser_frame0["bg"] = browser_config["bg"]
 
@@ -147,10 +146,8 @@ class PlantSegApp:
         # =============================================================================================================
         configuration_frame1 = tkinter.Frame(self.plant_segapp)
         configuration_config = self.app_config["configuration_frame"]
-        [tkinter.Grid.rowconfigure(configuration_frame1, int(key), weight=value)
-         for key, value in configuration_config["row_weights"].items()]
-        [tkinter.Grid.columnconfigure(configuration_frame1, int(key), weight=value)
-         for key, value in configuration_config["columns_weights"].items()]
+        self.config_row_column(configuration_frame1, configuration_config)
+
         configuration_frame1.grid(row=int(configuration_config["row"]),
                                   column=int(configuration_config["column"]),
                                   sticky=self.stick_all)
@@ -170,10 +167,9 @@ class PlantSegApp:
         # =============================================================================================================
         run_frame2 = tkinter.Frame(self.plant_segapp)
         run_config = self.app_config["run_frame"]
-        [tkinter.Grid.rowconfigure(run_frame2, int(key), weight=value)
-         for key, value in run_config["row_weights"].items()]
-        [tkinter.Grid.columnconfigure(run_frame2, int(key), weight=value)
-         for key, value in run_config["columns_weights"].items()]
+
+        self.config_row_column(run_frame2, run_config)
+
         run_frame2.grid(row=int(run_config["row"]),
                         column=int(run_config["column"]),
                         sticky=self.stick_all)
@@ -207,10 +203,7 @@ class PlantSegApp:
         # ============================================================================================================
         out_frame3 = tkinter.Frame(self.plant_segapp)
         out_config = self.app_config["out_frame"]
-        [tkinter.Grid.rowconfigure(out_frame3, int(key), weight=value)
-         for key, value in out_config["row_weights"].items()]
-        [tkinter.Grid.columnconfigure(out_frame3, int(key), weight=value)
-         for key, value in out_config["columns_weights"].items()]
+        self.config_row_column(out_frame3, out_config)
 
         out_frame3.grid(row=int(out_config["row"]),
                         column=int(out_config["column"]),
@@ -268,7 +261,6 @@ class PlantSegApp:
                                  "plantseg", "gui", name)
         return icon_path
 
-
     def load_config(self, name="config_gui_last.yaml"):
         """Load the last (or if not possible a standard) config"""
         plant_config_path = self.get_last_config_path(name)
@@ -300,7 +292,7 @@ class PlantSegApp:
         (self.pre_proc_obj,
          self.predictions_obj,
          self.segmentation_obj,
-         self.post_obj) = self.init_menus(plantseg_config)
+         self.post_obj) = self.init_menus()
         self.plantseg_config = plantseg_config
 
     def open_config(self):
@@ -343,6 +335,13 @@ class PlantSegApp:
         post_obj = PostFrame(self.configuration_frame1, self.plantseg_config,
                              col=3, font=self.font)
         return pre_proc_obj, predictions_obj, segmentation_obj, post_obj
+
+    @staticmethod
+    def config_row_column(frame, config):
+        _ = [tkinter.Grid.rowconfigure(frame, int(key), weight=value)
+             for key, value in config["row_weights"].items()]
+        _ = [tkinter.Grid.columnconfigure(frame, int(key), weight=value)
+             for key, value in config["columns_weights"].items()]
 
     @staticmethod
     def open_documentation():
