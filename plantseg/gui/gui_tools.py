@@ -100,15 +100,96 @@ class StdoutRedirect:
         return 0
 
 
-def report_error(data):
+def report_error(data, font=None):
     """ creates pop up and show error messages """
     data = data if type(data) is str else f"Unknown Error. Error type: {type(data)} \n {data}"
+
+    default = "The complete error message is reported in the terminal." \
+              " Please, if the error persist let us know by opening an issue on https://github.com/hci-unihd/plant-seg."
 
     popup = tkinter.Tk()
     popup.title("Error")
     popup["bg"] = "white"
     tkinter.Grid.rowconfigure(popup, 0, weight=1)
+    tkinter.Grid.rowconfigure(popup, 1, weight=2)
     tkinter.Grid.columnconfigure(popup, 0, weight=1)
 
-    x = tkinter.Label(popup, bg=convert_rgb((240, 192, 208)), text=data)
+    x = tkinter.Label(popup, bg="white", text=default, font=font)
     x.grid(column=0, row=0, padx=10, pady=10, sticky=stick_all)
+
+    x = tkinter.Label(popup, bg=convert_rgb((240, 192, 208)), text=data, font=font)
+    x.grid(column=0, row=1, padx=10, pady=10, sticky=stick_all)
+
+
+class AutoResPopup:
+
+    def __init__(self, net_resolution, config, preprocessing_menu, postprocessing_menu, font=None):
+        self.net_resolution = net_resolution
+        self.config = config
+        self.preprocessing_menu, self.postprocessing_menu = preprocessing_menu, postprocessing_menu
+
+        popup = tkinter.Toplevel()
+        popup.title("Auto Re-Scale")
+        popup.configure(bg="white")
+        self.popup = popup
+        tkinter.Grid.rowconfigure(popup, 0, weight=2)
+        tkinter.Grid.rowconfigure(popup, 1, weight=1)
+        tkinter.Grid.rowconfigure(popup, 2, weight=1)
+
+        tkinter.Grid.columnconfigure(popup, 0, weight=1)
+        self.stick_all = tkinter.N + tkinter.S + tkinter.W + tkinter.E
+
+        popup_instructions = tkinter.Frame(popup)
+        tkinter.Grid.rowconfigure(popup_instructions, 0, weight=1)
+        tkinter.Grid.columnconfigure(popup_instructions, 0, weight=1)
+        popup_instructions.grid(row=0, column=0, sticky=self.stick_all)
+        popup_instructions.configure(bg="white")
+        label1 = tkinter.Label(popup_instructions, bg="white", text="Please insert your data resolution",
+                               font=font)
+        label1.grid(column=0,
+                    row=0,
+                    padx=10,
+                    pady=10,
+                    sticky=self.stick_all)
+
+        from plantseg.gui.gui_widgets import ListEntry
+        self.list_entry = ListEntry(popup, "Data resolution (\u03BCm): ", row=1, column=0, type=float,
+                                    font=font)
+        self.list_entry(net_resolution, [])
+
+        popup_button = tkinter.Frame(popup)
+        popup_button.configure(bg="white")
+        tkinter.Grid.rowconfigure(popup_button, 0, weight=1)
+        tkinter.Grid.columnconfigure(popup_button, 0, weight=1)
+        popup_button.grid(row=2, column=0, sticky=self.stick_all)
+        button = tkinter.Button(popup_button, bg="white", text="Apply", command=self.update_input_resolution,
+                                font=font)
+        button.grid(column=0,
+                    row=0,
+                    padx=10,
+                    pady=10,
+                    sticky=self.stick_all)
+
+    def update_input_resolution(self):
+        self.user_input = [self.list_entry.tk_value[i].get() for i in range(3)]
+        scaling_factor = [self.user_input[i] / self.net_resolution[i] for i in range(3)]
+
+        [self.preprocessing_menu.custom_key["factor"].tk_value[i].set(scaling_factor[i])
+         for i in range(3)]
+        [self.postprocessing_menu.post_pred_obj.custom_key["factor"].tk_value[i].set(1.0 / scaling_factor[i])
+         for i in range(3)]
+        [self.postprocessing_menu.post_seg_obj.custom_key["factor"].tk_value[i].set(1.0 / scaling_factor[i])
+         for i in range(3)]
+
+        self.config = self.preprocessing_menu.check_and_update_config(self.config,
+                                                                      dict1="preprocessing",
+                                                                      dict2=False)
+
+        self.config = self.postprocessing_menu.post_pred_obj.check_and_update_config(self.config,
+                                                                                     dict1="unet_prediction",
+                                                                                     dict2="postprocessing")
+
+        self.config = self.postprocessing_menu.post_pred_obj.check_and_update_config(self.config,
+                                                                                     dict1="segmentation",
+                                                                                     dict2="postprocessing")
+        self.popup.destroy()
