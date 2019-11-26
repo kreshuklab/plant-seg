@@ -33,6 +33,7 @@ class DataPostProcessing3D:
 
             # Re-sample
             image = image if image.ndim == 3 else image[0]
+            print(self.order, self.data_type)
             image = self.down_sample(image, self.factor, self.order)
 
             # Save as h5 of as tiff

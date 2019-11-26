@@ -340,7 +340,7 @@ class ModuleFramePrototype:
             if dict2:
                 config[dict1][dict2]["state"] = False
             else:
-                config[dict1]["state"] = True
+                config[dict1]["state"] = False
 
         return config
 

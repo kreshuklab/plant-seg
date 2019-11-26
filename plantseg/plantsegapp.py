@@ -287,13 +287,12 @@ class PlantSegApp:
         plant_config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
                                          "plantseg"
                                          "config_gui_template.yaml")
-        plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
+        self.plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
 
         (self.pre_proc_obj,
          self.predictions_obj,
          self.segmentation_obj,
          self.post_obj) = self.init_menus()
-        self.plantseg_config = plantseg_config
 
     def open_config(self):
         """ open new config"""
@@ -307,7 +306,6 @@ class PlantSegApp:
              self.predictions_obj,
              self.segmentation_obj,
              self.post_obj) = self.init_menus()
-            self.plantseg_config = self.plantseg_config
 
     def save_config(self):
         """ save yaml from current entries in the gui"""
