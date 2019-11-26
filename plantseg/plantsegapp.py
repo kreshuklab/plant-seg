@@ -302,12 +302,12 @@ class PlantSegApp:
                                                                filetypes=(("yaml files", "*.yaml"),
                                                                           ("yaml files", "*.yml")))
         if len(plant_config_path) > 0:
-            plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
+            self.plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
             (self.pre_proc_obj,
              self.predictions_obj,
              self.segmentation_obj,
              self.post_obj) = self.init_menus()
-            self.plantseg_config = plantseg_config
+            self.plantseg_config = self.plantseg_config
 
     def save_config(self):
         """ save yaml from current entries in the gui"""
