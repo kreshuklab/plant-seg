@@ -153,7 +153,7 @@ def raw2seg(config):
     # creates predictions paths
 
     # Create directory structure for segmentation results
-    if "preprocessing" in config:
+    if 'preprocessing' in config.keys() and config['preprocessing']['state']:
         if "save_directory" in config["preprocessing"]:
             preprocessing_save_directory = config["preprocessing"]["save_directory"]
         else:
@@ -161,7 +161,7 @@ def raw2seg(config):
     else:
         preprocessing_save_directory = ""
 
-    if "unet_prediction" in config:
+    if 'unet_prediction' in config.keys() and config['unet_prediction']['state']:
         if "model_name" in config["unet_prediction"]:
             unet_save_directory = config["unet_prediction"]["model_name"]
         else:
@@ -169,7 +169,7 @@ def raw2seg(config):
     else:
         unet_save_directory = ""
 
-    if "segmentation" in config:
+    if "segmentation" in config.keys() and config['segmentation']['state']:
         if "save_directory" in config["segmentation"]:
             segmentation_save_directory = config["segmentation"]["save_directory"]
         else:
@@ -182,6 +182,7 @@ def raw2seg(config):
                            unet_save_directory,
                            segmentation_save_directory) for file_path in all_paths_raw]
 
+    # Import pre processing pipeline
     if 'preprocessing' in config.keys() and config['preprocessing']['state']:
         # creates segmentation processed paths
         all_paths_processed = _generate_new_paths(all_paths_raw, config["preprocessing"]["save_directory"])
@@ -195,6 +196,8 @@ def raw2seg(config):
         all_paths_predicted = _generate_new_paths(all_paths_processed, config["unet_prediction"]["model_name"],
                                                   suffix="_predictions")
         predictions = _import_predction_pipeline(config["unet_prediction"], all_paths_processed)
+
+        # Import post-processing
         if "postprocessing" in config["unet_prediction"].keys() and\
                 config['unet_prediction']['postprocessing']['state']:
             predictions_postprocessing = _import_postprocessing_pipeline(config["unet_prediction"]["postprocessing"],
@@ -210,15 +213,17 @@ def raw2seg(config):
     # Import segmentation pipeline
     if "segmentation" in config.keys() and config['segmentation']['state']:
         all_paths_segmented = _generate_new_paths(all_paths_predicted, config["segmentation"]["save_directory"],
-                                                  suffix=f"_{config['segmentation']['save_directory']}".lower())
+                                                  suffix="_multicut")
         segmentation = _import_segmentation_algorithm(config["segmentation"], all_paths_predicted)
         print("Segmentation Pipeline Initialized - Params:", segmentation.__dict__)
-        if "postprocessing" in config["unet_prediction"].keys() and \
+
+        # Import post-processing
+        if "postprocessing" in config["segmentation"].keys() and \
                 config['segmentation']['postprocessing']['state']:
             segmentation_postprocessing = _import_postprocessing_pipeline(config["segmentation"]["postprocessing"],
                                                                           all_paths_segmented, "segmentation")
         else:
-            segmentation_postprocessing = dummy("predictions postprocessing")
+            segmentation_postprocessing = dummy("segmentation postprocessing")
 
     else:
         segmentation = dummy("segmentation")

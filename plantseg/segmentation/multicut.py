@@ -58,9 +58,12 @@ class MulticutFromPmaps:
 
             runtime = time.time() - runtime
 
-            os.makedirs(os.path.dirname(predictions_path) + "/" + self.save_directory + "/", exist_ok=True)
-            h5_file_path = (os.path.dirname(predictions_path) +
-                            "/" + self.save_directory + "/" + os.path.basename(predictions_path))
+            os.makedirs(os.path.join(os.path.dirname(predictions_path),
+                                     self.save_directory), exist_ok=True)
+
+            h5_file_path = os.path.join(os.path.dirname(predictions_path),
+                                        self.save_directory,
+                                        os.path.basename(predictions_path))
 
             h5_file_path = os.path.splitext(h5_file_path)[0] + "_multicut" + ".h5"
 

@@ -400,6 +400,7 @@ class PreprocessingFrame(ModuleFramePrototype):
         super().__init__(self.preprocessing_frame, module_name, font=font)
         self.module = "preprocessing"
         self.config = config
+
         self.show = tkinter.BooleanVar()
         self.show.set(True)
         self.checkbox["variable"] = self.show
@@ -459,6 +460,7 @@ class UnetPredictionFrame(ModuleFramePrototype):
         super().__init__(self.prediction_frame, module_name, font=font)
         self.module = "unet_prediction"
         self.config = config
+
         self.show = tkinter.BooleanVar()
         self.show.set(config[self.module]["state"])
         self.checkbox["variable"] = self.show
@@ -602,6 +604,7 @@ class PostSegmentationFrame(ModuleFramePrototype):
         super().__init__(self.post_frame, module_name, font=font)
         self.module = "postprocessing"
         self.config = config["segmentation"]
+
         self.show = tkinter.BooleanVar()
         self.show.set(self.config[self.module]["state"])
         self.checkbox["variable"] = self.show

@@ -448,7 +448,7 @@ class PlantSegApp:
                                                                        dict1="unet_prediction",
                                                                        dict2=False)
 
-        plantseg_config = self.post_obj.post_pred_obj.check_and_update_config(plantseg_config,
+        plantseg_config = self.post_obj.post_seg_obj.check_and_update_config(plantseg_config,
                                                                               dict1="segmentation",
                                                                               dict2="postprocessing")
         plantseg_config = self.segmentation_obj.check_and_update_config(plantseg_config,
