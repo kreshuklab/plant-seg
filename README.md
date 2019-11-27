@@ -28,20 +28,34 @@ $ cd plant-seg
 $ git clone https://github.com/hci-unihd/pytorch-3dunet
 $ conda env create -n plant-seg -f ./plant_seg.yml
 ```
-The pipeline will be placed inside your home directory. If you want to use a a custom loaction please look at the
+The pipeline will be placed inside your home directory. If you want to use a custom location please look at the
  troubleshooting for all info.
-### Pipeline Usage:
+### Pipeline Usage (command line):
 Our Pipeline is completely configuration file based and does not require any coding.
 To run it is necessary to activate the correct anaconda environment. (Assuming the pipeline is setup in 
 the default location) Type in the terminal
 ```bash
-$ cd plant_seg
+$ cd ~/plant_seg
 $ conda activate plant_seg
 ```
 Now to run the pipeline simply type
 ```bash
 $ python plantseg.py --config ./examples/config.yaml
 ```
+
+### Pipeline Usage (GUI):
+Our Pipeline can be called by using a basic user interface that allow for dynamically run the pipeline.
+To run it is necessary to activate the correct anaconda environment. (Assuming the pipeline is setup in 
+the default location) Type in the terminal
+```bash
+$ cd ~/plant_seg
+$ conda activate plant_seg
+```
+Now to run the GUI simply type
+```bash
+$ python plantseg.py --gui
+```
+
 ### Guide to Custom Configuration File:
 The configuration file defines all the operations in our pipeline together with the data to be processed.
 Please refer to [config.yaml](examples/config.yaml) for a sample configuration of the pipeline and detailed explanation
@@ -59,7 +73,49 @@ installing a further environment is needed.
 All instructions are in [segmentation](plantseg/segmentation/README.md) directory.
 
 ## Troubleshooting:
-* Import Error while predicting: This could be caused by a non standard location of the [pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet) directory.
+* **Conda packages install fails**: If your attempt to install the pipeline failed while executing  
+```
+conda env create -n plant-seg -f ./plant_seg.yml
+```
+You can manually create a working environment.
+The necessary commands are: 
+```
+conda create -n plant_seg python=3.7
+conda activate plant_seg
+conda install -c anaconda h5py
+conda install -c anaconda pywget
+conda install -c anaconda pyyaml
+conda install -c anaconda scipy
+conda install scikit-learn
+conda install -c conda-forge tifffile
+conda install -c conda-forge matplotlib
+conda install -c conda-forge scikit-image
+conda install -c conda-forge -c cpape elf
+```
+
+Our pipeline uses the pytorch library for the CNN predictions. To benefit from the GPU performance boost the right
+ version of pytorch must be installed. If your machine has a working version of CUDA installed you can check the version 
+ by executing in the terminal:
+```` 
+cat /usr/local/cuda/version.txt
+````
+according to the output one must execute on of the following:
+```
+conda install pytorch torchvision cpuonly -c pytorch # if no gpu is installed in the computer
+# or
+conda install pytorch torchvision cudatoolkit=9.2 -c pytorch # if your cuda version is 9.2
+# or
+conda install pytorch torchvision cudatoolkit=10.1 -c pytorch # if your cuda version is 10.1
+```
+
+Lastly install the remaining dependencies using:
+```
+pip install --upgrade tensorflow
+pip install tensorboardX
+```
+
+
+* **Import Error while predicting**: This could be caused by a non standard location of the [pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet) directory.
 Please edit line 7 of [predict.py](plantseg/predictions/predict.py) with your custom path.
 ```python
 pytorch_3dunet_default_directory = "/CUSTOM_PATH/pytorch-3dunet/"
