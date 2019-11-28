@@ -35,8 +35,8 @@ Our Pipeline is completely configuration file based and does not require any cod
 To run it is necessary to activate the correct anaconda environment. (Assuming the pipeline is setup in 
 the default location) Type in the terminal
 ```bash
-$ cd ~/plant_seg
-$ conda activate plant_seg
+$ cd ~/plant-seg
+$ conda activate plant-seg
 ```
 Now to run the pipeline simply type
 ```bash
@@ -48,8 +48,8 @@ Our Pipeline can be called by using a basic user interface that allow for dynami
 To run it is necessary to activate the correct anaconda environment. (Assuming the pipeline is setup in 
 the default location) Type in the terminal
 ```bash
-$ cd ~/plant_seg
-$ conda activate plant_seg
+$ cd ~/plant-seg
+$ conda activate plant-seg
 ```
 Now to run the GUI simply type
 ```bash
