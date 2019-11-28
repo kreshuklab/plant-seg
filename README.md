@@ -133,7 +133,7 @@ When the network is trained it is enough to copy the following file inside a dir
 The later two files are automatically generated during training and contains all neural networks parameters.
 The directory created have to be placed in the default location
 ```bash
-$ ~/plant_seg/
+$ ~/plant-seg/
 ```
 Now you can simply use your model for prediction by editing the [model_name:](examples/config.yaml) key in the prediction config file.\
 If you want your model to be part of the open-source zoo of models please contact us.
