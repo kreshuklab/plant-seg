@@ -1,9 +1,10 @@
 import os
+import sys
 import wget
 import yaml
-config_train = "/config_train.yml"
-best_model = "/best_checkpoint.pytorch"
-last_model = "/last_checkpoint.pytorch"
+config_train = "config_train.yml"
+best_model = "best_checkpoint.pytorch"
+last_model = "last_checkpoint.pytorch"
 
 
 def check_models(model_name, update_files=False):
@@ -16,10 +17,16 @@ def check_models(model_name, update_files=False):
     if ~os.path.exists(model_dir):
         os.makedirs(model_dir, exist_ok=True)
 
+    model_config_path = os.path.exists(os.path.join(model_dir, config_train))
+    model_best_path = os.path.exists(os.path.join(model_dir, best_model))
+    model_last_path = os.path.exists(os.path.join(model_dir, last_model))
+
     # Check if files are there, if not download them
-    if (not os.path.exists(model_dir + config_train) or
-            not os.path.exists(model_dir + best_model) or
-            not os.path.exists(model_dir + last_model) or
+    print(40*"--")
+
+    if (not model_config_path or
+            not model_best_path or
+            not model_last_path or
             update_files):
 
         # Read config
@@ -28,7 +35,13 @@ def check_models(model_name, update_files=False):
         url = config[model_name]["path"]
 
         # wget models and training config
-        wget.download(url + config_train[1:], out=model_dir)
-        wget.download(url + best_model[1:], out=model_dir)
-        wget.download(url + last_model[1:], out=model_dir)
+        temp_stdout = sys.stdout  # Hack! stdout has to go back to sys stdout because of progress bar
+        sys.stdout = sys.__stdout__
+
+        wget.download(url + config_train, out=model_dir)
+        wget.download(url + best_model, out=model_dir)
+        wget.download(url + last_model, out=model_dir)
+
+        sys.stdout = temp_stdout  # return stdout to gui
+
     return 0
