@@ -153,7 +153,7 @@ class AutoResPopup:
                     sticky=self.stick_all)
 
         from plantseg.gui.gui_widgets import ListEntry
-        self.list_entry = ListEntry(popup, "Data resolution (\u03BCm): ", row=1, column=0, type=float,
+        self.list_entry = ListEntry(popup, "Resolution of the data set to predict (zxy \u03BCm): ", row=1, column=0, type=float,
                                     font=font)
         self.list_entry(net_resolution, [])
 

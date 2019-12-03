@@ -402,6 +402,8 @@ class PreprocessingFrame(ModuleFramePrototype):
         self.config = config
 
         self.show = tkinter.BooleanVar()
+        # TODO fix state will reset and not load from the config
+        # self.show.set(config[self.module]["state"])
         self.show.set(True)
         self.checkbox["variable"] = self.show
         self.checkbox["command"] = self.show_options
@@ -462,7 +464,9 @@ class UnetPredictionFrame(ModuleFramePrototype):
         self.config = config
 
         self.show = tkinter.BooleanVar()
-        self.show.set(config[self.module]["state"])
+        # TODO fix state will reset and not load from the config
+        # self.show.set(config[self.module]["state"])
+        self.show.set(True)
         self.checkbox["variable"] = self.show
         self.checkbox["command"] = self.show_options
 
@@ -525,7 +529,10 @@ class SegmentationFrame(ModuleFramePrototype):
         self.module = "segmentation"
         self.config = config
         self.show = tkinter.BooleanVar()
-        self.show.set(config[self.module]["state"])
+
+        # TODO fix state will reset and not load from the config
+        # self.show.set(config[self.module]["state"])
+        self.show.set(True)
         self.checkbox["variable"] = self.show
         self.checkbox["command"] = self.show_options
 
@@ -543,7 +550,7 @@ class SegmentationFrame(ModuleFramePrototype):
                                                         _type=float,
                                                         _font=font),
                            "ws_2D": MenuEntry(self.segmentation_frame,
-                                              text="WS in 2D: ",
+                                              text="Run WS in 2D: ",
                                               row=3,
                                               column=0,
                                               menu={"True", "False"},
@@ -562,13 +569,13 @@ class SegmentationFrame(ModuleFramePrototype):
                                                      _type=float,
                                                      _font=font),
                            "ws_minsize": SimpleEntry(self.segmentation_frame,
-                                                     text="WS Minimum Size: ",
+                                                     text="WS Minimum Size: (voxels)",
                                                      row=6,
                                                      column=0,
                                                      _type=int,
                                                      _font=font),
                            "post_minsize": SimpleEntry(self.segmentation_frame,
-                                                       text="Minimum Size: ",
+                                                       text="Minimum Size: (voxels)",
                                                        row=7,
                                                        column=0,
                                                        _type=int,

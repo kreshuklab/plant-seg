@@ -3,6 +3,7 @@ import glob
 import numpy as np
 import time
 import h5py
+import tifffile
 import nifty
 import nifty.graph.rag as nrag
 from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
@@ -47,8 +48,42 @@ class MulticutFromPmaps:
 
         # Generate some random affinities:
         for predictions_path in self.predictions_paths:
-            pmaps = h5py.File(predictions_path, "r")
-            pmaps = np.array(pmaps["predictions"][0], dtype=np.float32)
+            # Load file
+            _, ext = os.path.splitext(predictions_path)
+            pmaps = None
+            if ext == ".tiff" or ext == ".tif":
+                pmaps = tifffile.imread(predictions_path)
+                pmaps = (pmaps - pmaps.min()) / (pmaps.max() - pmaps.min()).astype(np.float32)
+
+            elif ext == ".hdf" or ext == ".h5" or ext == ".hd5":
+                with h5py.File(predictions_path, "r") as f:
+                    # Check for h5 dataset
+                    if "predictions" in f.keys():
+                        # predictions is the first choice
+                        dataset = "predictions"
+                    elif "raw" in f.keys():
+                        # raw is the second choice
+                        dataset = "raw"
+                    else:
+                        print("H5 dataset name not understood")
+                        raise NotImplementedError
+
+                    # Load data
+                    if len(f[dataset].shape) == 3:
+                        pmaps = f[dataset][...].astype(np.float32)
+                    elif len(f[dataset].shape) == 4:
+                        pmaps = f[dataset][0, ...].astype(np.float32)
+                    else:
+                        print(f[dataset].shape)
+                        print("Data shape not understood, data must be 3D or 4D")
+                        raise NotImplementedError
+
+            else:
+                print("Data extension not understood")
+                raise NotImplementedError
+            assert pmaps.ndim == 3, "Input probability maps must be 3D tiff or h5 (zxy) or" \
+                                    " 4D (czxy)," \
+                                    " where the fist channel contains the neural network boundary predictions"
 
             runtime = time.time()
             segmentation = self.segment_volume(pmaps)
