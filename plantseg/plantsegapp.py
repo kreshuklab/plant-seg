@@ -40,6 +40,7 @@ class PlantSegApp:
         icon_path = self.get_icon_path()
         icon = tkinter.PhotoImage(file=icon_path)
         self.plant_segapp.tk.call('wm', 'iconphoto', self.plant_segapp._w, icon)
+        self.plant_segapp.tk.call('wm', 'iconphoto', self.plant_segapp._w, icon)
 
         self.plant_segapp.resizable(width=True, height=True)
         [tkinter.Grid.rowconfigure(self.plant_segapp, int(key), weight=value)
@@ -243,8 +244,7 @@ class PlantSegApp:
     @staticmethod
     def get_last_config_path(name="config_gui_last.yaml"):
         # Working directory path + relative dir structure to yaml file
-        config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
-                                   "plantseg", name)
+        config_path = os.path.join(os.path.expanduser("~"), "plantseg_models", "configs", "name")
         return config_path
 
     @staticmethod
@@ -310,7 +310,10 @@ class PlantSegApp:
     def save_config(self):
         """ save yaml from current entries in the gui"""
         self.update_config()
-        save_path = tkinter.filedialog.asksaveasfilename(initialdir=os.path.expanduser("~"),
+        default_start = os.path.join(os.path.expanduser("~"), "plantseg_models", "configs")
+        os.makedirs(default_start, exist_ok=True)
+
+        save_path = tkinter.filedialog.asksaveasfilename(initialdir=default_start,
                                                          defaultextension=".yaml",
                                                          filetypes=(("yaml files", "*.yaml"),))
         if len(save_path) > 0:
