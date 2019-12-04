@@ -53,6 +53,11 @@ class MulticutFromPmaps:
             pmaps = None
             if ext == ".tiff" or ext == ".tif":
                 pmaps = tifffile.imread(predictions_path)
+
+                # squeeze extra dimension
+                if len(pmaps.shape) == 4:
+                    pmaps = pmaps[0]
+
                 pmaps = (pmaps - pmaps.min()) / (pmaps.max() - pmaps.min()).astype(np.float32)
 
             elif ext == ".hdf" or ext == ".h5" or ext == ".hd5":
