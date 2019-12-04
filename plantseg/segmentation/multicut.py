@@ -128,11 +128,9 @@ class MulticutFromPmaps:
             f.write(yaml.dump(dict_file))
 
     def segment_volume(self, pmaps):
-        #if self.run_ws:
+
         if self.ws_2D:
             ws = self.ws_dt_2D(pmaps)
-            #rint("return ws")
-            #return ws
         else:
             ws, _ = distance_transform_watershed(pmaps, self.ws_threshold, self.ws_sigma, min_size=self.ws_minsize)
 
