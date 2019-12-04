@@ -244,7 +244,7 @@ class PlantSegApp:
     @staticmethod
     def get_last_config_path(name="config_gui_last.yaml"):
         # Working directory path + relative dir structure to yaml file
-        config_path = os.path.join(os.path.expanduser("~"), "plantseg_models", "configs", "name")
+        config_path = os.path.join(os.path.expanduser("~"), ".plantseg_models", "configs", name)
         return config_path
 
     @staticmethod
@@ -296,7 +296,9 @@ class PlantSegApp:
 
     def open_config(self):
         """ open new config"""
-        plant_config_path = tkinter.filedialog.askopenfilename(initialdir=os.path.expanduser("~"),
+        default_start = os.path.join(os.path.expanduser("~"), ".plantseg_models", "configs")
+        os.makedirs(default_start, exist_ok=True)
+        plant_config_path = tkinter.filedialog.askopenfilename(initialdir=default_start,
                                                                title="Select file",
                                                                filetypes=(("yaml files", "*.yaml"),
                                                                           ("yaml files", "*.yml")))
@@ -310,7 +312,7 @@ class PlantSegApp:
     def save_config(self):
         """ save yaml from current entries in the gui"""
         self.update_config()
-        default_start = os.path.join(os.path.expanduser("~"), "plantseg_models", "configs")
+        default_start = os.path.join(os.path.expanduser("~"), ".plantseg_models", "configs")
         os.makedirs(default_start, exist_ok=True)
 
         save_path = tkinter.filedialog.asksaveasfilename(initialdir=default_start,
