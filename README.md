@@ -24,8 +24,8 @@ Follow the instructions to complete the anaconda installation.
 - Now we can download and configure the pipeline. 
 ```bash
 $ git clone https://github.com/hci-unihd/plant-seg
+$ git clone https://github.com/hci-unihd/pytorch-3dunet ~/.plantseg_models/pytorch-3dunet
 $ cd plant-seg
-$ git clone https://github.com/hci-unihd/pytorch-3dunet
 $ conda env create -n plant-seg -f ./plant_seg.yml
 ```
 The pipeline will be placed inside your home directory. If you want to use a custom location please look at the
