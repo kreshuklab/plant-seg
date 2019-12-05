@@ -222,13 +222,6 @@ class PlantSegApp:
         out_text.configure(font=self.font)
         scroll_bar.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
 
-        """
-        icon_path = "/home/lcerrone/Downloads/Webp.net-resizeimage (5).png" #self.get_icon_path()
-        icon = tkinter.PhotoImage(file=icon_path, format='png')
-        out_text.image_create(tkinter.END, image=icon)
-        out_text.image = icon
-        
-        """
         out_text.configure(state='disabled')
         self.out_text = out_text
 
