@@ -29,6 +29,8 @@ datasets:
   patch: [100, 224, 224]
   # stride between patches (make sure the the patches overlap in order to get smoother prediction maps)
   stride: [40, 100, 100]
+  # Define padding mode (Best to keep it True)
+  mirror_padding: true
   # path to the raw data within the H5
   raw_internal_path: raw
   # how many subprocesses to use for data loading
