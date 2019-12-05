@@ -25,7 +25,7 @@ Follow the instructions to complete the anaconda installation.
 ```bash
 $ git clone https://github.com/hci-unihd/plant-seg
 $ git clone https://github.com/hci-unihd/pytorch-3dunet ~/.plantseg_models/pytorch-3dunet
-$ git mkdir ~/.plantseg_models/configs/
+$ mkdir ~/.plantseg_models/configs/
 $ cd plant-seg
 $ conda env create -n plant-seg -f ./plant_seg.yml
 ```
