@@ -20,6 +20,7 @@ def check_models(model_name, update_files=False):
     model_config_path = os.path.exists(os.path.join(model_dir, config_train))
     model_best_path = os.path.exists(os.path.join(model_dir, best_model))
     model_last_path = os.path.exists(os.path.join(model_dir, last_model))
+    model_last_path = True
 
     # Check if files are there, if not download them
     if (not model_config_path or
