@@ -10,7 +10,7 @@ import csv
 
 seg_key = "predictions"
 gt_key = "label"
-sigma = 1
+sigma = 1.3  # Dafault on Ovulese
 
 
 def blur_boundary(boundary, sigma):
@@ -37,40 +37,44 @@ if __name__ == "__main__":
     import os
 
     # Change those
-    """
-    name_files = ["ds1_unet",
-                  "ds2_unet",
-                  "ds3_unet",
-                  "resunet_ds1x",
-                  "resunet_ds2x",
-                  "resunet_ds3x",
-                  "unet_ds2x_dice",
-                  "unet_ds2x_dice_lr2",
-                  "unet_ds2x_dice_no_wd",
-                  "unet_ds2x_lr2",
-                  "unet_ds2x_no_wd",
-                  "unet_ds2x_wd_00001"]
+    name_files = [## "resunet_ds2x_bce_gcr",
+                  ## "unet_ds2x_bce_cgr",
+                  ## "unet_ds2x_bce_crg",
+                  ## "unet_ds2x_bce_gcr",
+                  "unet_ds2x_bce_gcr_aff",
+                  ## "unet_ds2x_bce_gcr_all",
+                  ## "unet_ds2x_bce_gcr_noise",
+                  ## "unet_ds2x_dice_gcr",
+                  "unet_ds2x_dice_gcr_aff"]
+                  ## "unet_ds2x_dice_gcr_all"]
 
-    all_paths = ["ds1_predictions/unet_ds1x",
-                 "ds2_predictions/unet_ds2x",
-                 "ds3_predictions/unet_ds3x",
-                 "ds1_predictions/resunet_ds1x",
-                 "ds2_predictions/resunet_ds2x",
-                 "ds3_predictions/resunet_ds3x",
-                 "ds2_predictions/unet_ds2x_dice",
-                 "ds2_predictions/unet_ds2x_dice_lr2",
-                 "ds2_predictions/unet_ds2x_dice_no_wd",
-                 "ds2_predictions/unet_ds2x_lr2",
-                 "ds2_predictions/unet_ds2x_no_wd",
-                 "ds2_predictions/unet_ds2x_wd_00001"]
-    """
+    all_paths = [## "resunet_ds2x_bce_gcr",
+                 ## "unet_ds2x_bce_cgr",
+                 ## "unet_ds2x_bce_crg",
+                 ## "unet_ds2x_bce_gcr",
+                 "unet_ds2x_bce_gcr_aff",
+                 ## "unet_ds2x_bce_gcr_all",
+                 ## "unet_ds2x_bce_gcr_noise",
+                 ##"unet_ds2x_dice_gcr",
+                 "unet_ds2x_dice_gcr_aff"]
+                 ##"unet_ds2x_dice_gcr_all"]
 
-    name_files = ["ds_dice_aff"]
-    all_paths = ["ds2_predictions/unet_ds2x_bce_aff"]
+    name_files = [##"unet_ds1x_bce_aff_gcr",
+                 ##"unet_ds1x_bce_cgr",
+                 ##"unet_ds1x_bce_aff_crg",
+                 "unet_ds1x_bce_aff_cgr"]
+                 ## "unet_ds1x_bce_gcr"]
+
+    all_paths = [## "unet_ds1x_bce_aff_gcr",
+                 ## "unet_ds1x_bce_cgr",
+                 ## "unet_ds1x_bce_aff_crg",
+                 "unet_ds1x_bce_aff_cgr"]
+                 ## "unet_ds1x_bce_gcr"]
+
 
     for file_name, path in zip(name_files, all_paths):
-        all_gt = sorted(glob.glob("/mnt/localdata0/lcerrone/FOR_paper/TUM_Ovules_Dataset/Ovules_test_final/ds2_predictions/*.h5"))
-        all_seg = sorted(glob.glob("/mnt/localdata0/lcerrone/FOR_paper/TUM_Ovules_Dataset/Ovules_test_final/" + path + "/*ons.h5"))
+        all_gt = sorted(glob.glob("/export/home/lcerrone/Datasets/COS-RootPrimordia2/test/*.h5"))
+        all_seg = sorted(glob.glob("/export/home/lcerrone/Datasets/COS-RootPrimordia2/test/" + path + "/*ons.h5"))
 
         results = []
         for pmap_file, gt_file in zip(all_seg, all_gt):

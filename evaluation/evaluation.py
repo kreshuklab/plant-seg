@@ -15,9 +15,9 @@ import yaml
 from scipy.ndimage import zoom
 from skimage.morphology import binary_dilation, ball
 
-from .rand import adapted_rand
-from .simple_hash import simple_hash
-from .voi import voi
+from rand import adapted_rand
+from simple_hash import simple_hash
+from voi import voi
 
 # Add new metrics if needed
 metrics = {"voi": voi,

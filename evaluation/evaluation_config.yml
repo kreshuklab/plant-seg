@@ -1,18 +1,18 @@
 # H5 file structure
 gt_name: "label"
-seg_name: "segmentation/multicut"
+seg_name: "segmentation"
 
 # Files location GT files and Segmentation files have to share a single ID number in order to be matched
-gt_dir: "/home_sdc/lcerrone_tmp/Datasets/TUM_Ovules_Dataset/Ovules_test_final/ds2_predictions/" # Path to ground truth  directory files at full resolution or dictionary with tuple of ground truth and segmentation. Files must be h5
-seg_dir: "/home_sdc/lcerrone_tmp/Datasets/TUM_Ovules_Dataset/Ovules_test_final/ds3_predictions/unet_ds3x/multicut_segmentation/" # (Optional) Path to predicted segmentation files at any resolution. Files must be h5 or tiff
+gt_dir: "/export/home/lcerrone/Datasets/TUM_Ovules_Dataset/Ovules_test_final/" # Path to ground truth  directory files at full resolution or dictionary with tuple of ground truth and segmentation. Files must be h5
+seg_dir: "/export/home/lcerrone/Datasets/TUM_Ovules_Dataset/Ovules_test_final/unet_ds2x_bce_gcr/MultiCut/" # (Optional) Path to predicted segmentation files at any resolution. Files must be h5 or tiff
 
-train_config_file: "/home_sdc/lcerrone_tmp/PycharmProjects/FOR2581-segmentation/TUM-Ovules/networks/FOR_paper_experiments/unet_ds2x/config_train.yml" # (Optional) Path to config file used for experiments
+# train_config_file: "/home_sdc/lcerrone_tmp/PycharmProjects/FOR2581-segmentation/TUM-Ovules/networks/FOR_paper_experiments/unet_ds2x/config_train.yml" # (Optional) Path to config file used for experiments
 # (Optional) Segmentation Algorithm config file. Empty if it does not exists
 
 # Output
-output_csv: "./ds3_mc.csv" # Path to output CSV file
+output_csv: "./ds2_mc_gcr.csv" # Path to output CSV file
 
 # Custom notes, for comments not in the training configuration file
 metadata: # (Optional)
-  segmentation_algorithm: "Multi Cut final old" # Segmentation algorithm
-  down_sampling: [1, 3, 3] # For example if there is any down sampling
+  segmentation_algorithm: "MultiCut" # Segmentation algorithm
+  down_sampling: [1, 2, 2] # For example if there is any down sampling
