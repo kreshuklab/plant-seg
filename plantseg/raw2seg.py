@@ -204,7 +204,6 @@ def raw2seg(config):
                                                                          all_paths_predicted, "predictions")
         else:
             predictions_postprocessing = dummy("predictions postprocessing")
-
     else:
         all_paths_predicted = all_paths_processed
         predictions = dummy("predictions")
