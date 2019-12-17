@@ -9,6 +9,8 @@ seg_dir: "/export/home/lcerrone/Datasets/TUM_Ovules_Dataset/Ovules_test_final/un
 # train_config_file: "/home_sdc/lcerrone_tmp/PycharmProjects/FOR2581-segmentation/TUM-Ovules/networks/FOR_paper_experiments/unet_ds2x/config_train.yml" # (Optional) Path to config file used for experiments
 # (Optional) Segmentation Algorithm config file. Empty if it does not exists
 
+seg_background_zero: True # If true the background (default 0) is not modified in the evaluation script. If False, the larger object in the segmentation gets the label 0
+
 # Output
 output_csv: "./ds2_mc_gcr.csv" # Path to output CSV file
 

@@ -74,7 +74,7 @@ def automatic_file_matching(all_gt, all_seg):
     return zip(all_gt, all_seg)
 
 
-def run_evaluation(gtarray, segarray):
+def run_evaluation(gtarray, segarray, seg_background_zero=False):
     timer = - time.time()
     # Check for problems in data types
     # double check for type and sign to allow a bit of slack in using _
@@ -108,27 +108,14 @@ def run_evaluation(gtarray, segarray):
         segarray = zoom(segarray, factor, order=0).astype(np.uint32)
 
     print("- Relabeling data and Masking")
-    # Relabel data and add 1 to avoid masking artifact
-    # Since the background in the ground truth is not always connected we opted for ignoring the
-    # biggest segment in the volume. This is always the external region of the volume.
-    # gtarray = vigra.analysis.relabelConsecutive(gtarray)[0] + 1
-    # gtarray = vigra.analysis.labelVolume(gtarray.astype(np.uint32))
-
-    # print("- Masking GT background in the GT")
-    # value, counts = np.unique(gtarray, return_counts=True)
-    # gt_background_mask = gtarray == value[counts.argmax()]
-    # gt_background_mask = binary_dilation(gt_background_mask, ball(3))
-    # gtarray[gt_background_mask] = 0
-
-    segarray = vigra.analysis.relabelConsecutive(segarray)[0] + 1
-    print("- Masking prediction background in the prediction")
-    value, counts = np.unique(segarray, return_counts=True)
-    segarray[segarray == value[counts.argmax()]] = 0
-
-    # The following is commented because does not change the scores
-    # Mask gt background with erosion to avoid penalty for missing cells in the GT
-    # print("- Masking GT background in the prediction")
-    # segarray[gt_background_mask] = 0
+    if not seg_background_zero:
+        # Relabel data and add 1 to avoid masking artifact
+        # Since the background in the ground truth is not always connected we opted for ignoring the
+        # biggest segment in the volume. This is always the external region of the volume.
+        segarray = vigra.analysis.relabelConsecutive(segarray)[0] + 1
+        print("- Masking prediction background in the prediction")
+        value, counts = np.unique(segarray, return_counts=True)
+        segarray[segarray == value[counts.argmax()]] = 0
 
     # Run all metric
     print("- Start evaluations")
@@ -183,6 +170,9 @@ if __name__ == "__main__":
     result_placeholder = create_result_placeholder(eval_config, metrics=metrics)
     results = []
 
+    seg_background_zero = (eval_config["seg_background_zero"] if eval_config["seg_background_zero"] in eval_config
+                           else True)
+
     # Make sure that GT and segmentation directories are present in the FS
     assert os.path.isdir(eval_config["gt_dir"]) and os.path.isdir(eval_config["seg_dir"])
 
@@ -205,7 +195,7 @@ if __name__ == "__main__":
                 _segarray = seg[eval_config["seg_name"]][...]
                 _gtarray = gt[eval_config["gt_name"]][...]
 
-        _scores = run_evaluation(_gtarray, _segarray)
+        _scores = run_evaluation(_gtarray, _segarray, seg_background_zero)
         results.append(collect_results(result_placeholder, _scores, _gt, _seg))
 
     # Save CSV
