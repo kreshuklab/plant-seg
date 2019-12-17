@@ -2,12 +2,14 @@ import h5py
 import numpy as np
 import os
 import time
+import tifffile
 from GASP.segmentation import GaspFromAffinities, WatershedOnDistanceTransformFromAffinities
 from GASP.segmentation.watershed import SizeThreshAndGrowWithWS
 
 
 class GaspFromPmaps:
     def __init__(self,
+                 predictions_paths,
                  save_directory="GASP",
                  gasp_linkage_criteria='average',
                  gasp_beta_bias=0.5,
@@ -23,6 +25,7 @@ class GaspFromPmaps:
         self.n_threads = n_threads
 
         # GASP parameters
+        self.predictions_paths = predictions_paths
         self.gasp_linkage_criteria = gasp_linkage_criteria
         self.gasp_beta_bias = gasp_beta_bias
 
@@ -35,77 +38,114 @@ class GaspFromPmaps:
         # Post processing size threshold
         self.post_minsize = post_minsize
 
-    def __call__(self, predictions_path):
+    def __call__(self):
+        for predictions_path in self.predictions_paths:
+            # Load file
+            _, ext = os.path.splitext(predictions_path)
+            pmaps = None
+            if ext == ".tiff" or ext == ".tif":
+                pmaps = tifffile.imread(predictions_path)
 
-        # Generate some random affinities:
-        affinities = h5py.File(predictions_path, "r")
-        affinities = np.array(affinities["predictions"], dtype=np.float32)
+                # squeeze extra dimension
+                if len(pmaps.shape) == 4:
+                    pmaps = pmaps[0]
 
-        # Pmaps are interpreted as affinities
-        affinities = np.concatenate((affinities[[0]],
-                                     affinities[[0]],
-                                     affinities[[0]]))
+                pmaps = (pmaps - pmaps.min()) / (pmaps.max() - pmaps.min()).astype(np.float32)
 
-        offsets = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
-        # Shift is required to correct alligned affinities
-        affinities = self.shift_affinities(affinities, offsets=offsets)
+            elif ext == ".hdf" or ext == ".h5" or ext == ".hd5":
+                with h5py.File(predictions_path, "r") as f:
+                    # Check for h5 dataset
+                    if "predictions" in f.keys():
+                        # predictions is the first choice
+                        dataset = "predictions"
+                    elif "raw" in f.keys():
+                        # raw is the second choice
+                        dataset = "raw"
+                    else:
+                        print("H5 dataset name not understood")
+                        raise NotImplementedError
 
-        # invert affinities
-        affinities = 1 - affinities
+                    # Load data
+                    if len(f[dataset].shape) == 3:
+                        pmaps = f[dataset][...].astype(np.float32)
+                    elif len(f[dataset].shape) == 4:
+                        pmaps = f[dataset][0, ...].astype(np.float32)
+                    else:
+                        print(f[dataset].shape)
+                        print("Data shape not understood, data must be 3D or 4D")
+                        raise NotImplementedError
 
-        # Run GASP:
-        if self.run_ws:
-            # In this case the agglomeration is initialized with superpixels:
-            # use additional option 'intersect_with_boundary_pixels' to break the SP along the boundaries
-            # (see CREMI-experiments script for an example)
+            else:
+                print("Data extension not understood")
+                raise NotImplementedError
+            assert pmaps.ndim == 3, "Input probability maps must be 3D tiff or h5 (zxy) or" \
+                                    " 4D (czxy)," \
+                                    " where the fist channel contains the neural network boundary predictions"
 
-            superpixel_gen = WatershedOnDistanceTransformFromAffinities(offsets,
-                                                                        threshold=self.ws_threshold,
-                                                                        min_segment_size=self.ws_minsize,
-                                                                        preserve_membrane=True,
-                                                                        sigma_seeds=self.ws_sigma,
-                                                                        stacked_2d=False,
-                                                                        used_offsets=[0, 1, 2],
-                                                                        offset_weights=[0, 1, 2],
-                                                                        n_threads=self.n_threads)
+            # Pmaps are interpreted as affinities
+            affinities = np.stack([pmaps, pmaps, pmaps], axis=0)
 
-        else:
-            superpixel_gen = None
+            offsets = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
+            # Shift is required to correct alligned affinities
+            affinities = self.shift_affinities(affinities, offsets=offsets)
 
-        run_GASP_kwargs = {'linkage_criteria': self.gasp_linkage_criteria,
-                           'add_cannot_link_constraints': False,
-                           'use_efficient_implementations': False}
+            # invert affinities
+            affinities = 1 - affinities
 
-        # Init and run Gasp
-        gasp_instance = GaspFromAffinities(offsets,
-                                           superpixel_generator=superpixel_gen,
-                                           run_GASP_kwargs=run_GASP_kwargs,
-                                           n_threads=self.n_threads,
-                                           beta_bias=self.gasp_beta_bias)
+            # Run GASP:
+            if self.run_ws:
+                # In this case the agglomeration is initialized with superpixels:
+                # use additional option 'intersect_with_boundary_pixels' to break the SP along the boundaries
+                # (see CREMI-experiments script for an example)
 
-        runtime = time.time()
-        final_segmentation, _ = gasp_instance(affinities)
+                superpixel_gen = WatershedOnDistanceTransformFromAffinities(offsets,
+                                                                            threshold=self.ws_threshold,
+                                                                            min_segment_size=self.ws_minsize,
+                                                                            preserve_membrane=True,
+                                                                            sigma_seeds=self.ws_sigma,
+                                                                            stacked_2d=False,
+                                                                            used_offsets=[0, 1, 2],
+                                                                            offset_weights=[0, 1, 2],
+                                                                            n_threads=self.n_threads)
 
-        # init and run size threshold
-        size_tresh = SizeThreshAndGrowWithWS(self.post_minsize, offsets)
-        final_segmentation = size_tresh(affinities, final_segmentation)
+            else:
+                superpixel_gen = None
 
-        runtime = time.time() - runtime
+            run_GASP_kwargs = {'linkage_criteria': self.gasp_linkage_criteria,
+                               'add_cannot_link_constraints': False,
+                               'use_efficient_implementations': False}
 
-        os.makedirs(os.path.dirname(predictions_path) + "/" + self.save_directory + "/", exist_ok=True)
-        h5_file_path = (os.path.dirname(predictions_path) +
-                        "/" + self.save_directory + "/" + os.path.basename(predictions_path))
+            # Init and run Gasp
+            gasp_instance = GaspFromAffinities(offsets,
+                                               superpixel_generator=superpixel_gen,
+                                               run_GASP_kwargs=run_GASP_kwargs,
+                                               n_threads=self.n_threads,
+                                               beta_bias=self.gasp_beta_bias)
 
-        h5_file_path = os.path.splitext(h5_file_path)[0] + "_gasp_" + run_GASP_kwargs['linkage_criteria'] + ".h5"
+            runtime = time.time()
+            final_segmentation, _ = gasp_instance(affinities)
 
-        self.runtime = runtime
-        self._log_params(h5_file_path)
-        # Save output results
-        with h5py.File(h5_file_path, "w") as file:
-            file.create_dataset("segmentation", data=final_segmentation.astype(np.uint16), compression='gzip')
+            # init and run size threshold
+            size_tresh = SizeThreshAndGrowWithWS(self.post_minsize, offsets)
+            final_segmentation = size_tresh(affinities, final_segmentation)
+            runtime = time.time() - runtime
 
-        print("Clustering took {} s".format(runtime))
-        return h5_file_path
+            os.makedirs(os.path.join(os.path.dirname(predictions_path),
+                                     self.save_directory), exist_ok=True)
+
+            h5_file_path = os.path.join(os.path.dirname(predictions_path),
+                                        self.save_directory,
+                                        os.path.basename(predictions_path))
+
+            h5_file_path = os.path.splitext(h5_file_path)[0] + "_gasp_" + run_GASP_kwargs['linkage_criteria'] + ".h5"
+
+            self.runtime = runtime
+            self._log_params(h5_file_path)
+
+            # Save output results
+            with h5py.File(h5_file_path, "w") as file:
+                file.create_dataset("segmentation", data=final_segmentation.astype(np.uint16), compression='gzip')
+            print("Clustering took {} s".format(runtime))
 
     def _log_params(self, file):
         import yaml
