@@ -59,12 +59,12 @@ def _create_predict_config(_config, all_paths):
 
     # Add patch and stride size
     if "patch" in _config.keys():
-        config["datasets"]["patch"] = _config["patch"]
+        config["loaders"]["test"]["slice_builder"]["patch_shape"] = _config["patch"]
     if "stride" in _config.keys():
-        config["datasets"]["stride"] = _config["stride"]
+        config["loaders"]["test"]["slice_builder"]["stride_shape"] = _config["stride"]
 
     # Add paths to raw data
-    config["datasets"]["test_path"] = all_paths
+    config["loaders"]["test"]["file_paths"] = all_paths
 
     # Add correct device for inference
     if _config["device"] == 'cuda':

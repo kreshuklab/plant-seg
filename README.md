@@ -1,12 +1,12 @@
 # plant-seg
 [plant-seg](plantseg) is a tool for cell instance aware segmentation in densely packed 3D volumetric images.
-The pipelin uses a two stages segmentation strategy (Neural Network + Segmentation).
-The pipeline is tooned for plant cell tissue acquired with confocal and light sheet microscopy.
-Pre-trained model are provided.  
+The pipeline uses a two stages segmentation strategy (Neural Network + Segmentation).
+The pipeline is tuned for plant cell tissue acquired with confocal and light sheet microscopy.
+Pre-trained models are provided.  
 
 ## Prerequisites
 * Linux
-* CUDA (Optional)
+* Nvidia GPU + CUDA (Optional)
 
 ## Getting Started
 ### Setup on Linux:
@@ -29,8 +29,9 @@ $ mkdir ~/.plantseg_models/configs/
 $ cd plant-seg
 $ conda env create -n plant-seg -f ./plant_seg.yml
 ```
-The pipeline will be placed inside your home directory. If you want to use a custom location please look at the
- troubleshooting for all info.
+The PlantSeg related files (models, configs) will be placed inside your home directory under `~/.plantseg_models`. 
+If you want to use a custom location please look at the troubleshooting guide.
+
 ### Pipeline Usage (command line):
 Our Pipeline is completely configuration file based and does not require any coding.
 To run it is necessary to activate the correct anaconda environment. (Assuming the pipeline is setup in 
