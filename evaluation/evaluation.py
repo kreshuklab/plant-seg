@@ -170,7 +170,7 @@ if __name__ == "__main__":
     result_placeholder = create_result_placeholder(eval_config, metrics=metrics)
     results = []
 
-    seg_background_zero = (eval_config["seg_background_zero"] if eval_config["seg_background_zero"] in eval_config
+    seg_background_zero = (eval_config["seg_background_zero"] if "seg_background_zero" in eval_config
                            else True)
 
     # Make sure that GT and segmentation directories are present in the FS
