@@ -82,7 +82,7 @@ conda env create -n plant-seg -f ./plant_seg.yml
 You can manually create a working environment.
 The necessary commands are: 
 ```
-conda create -n plant_seg python=3.7
+conda create -n plant-seg python=3.7
 conda activate plant_seg
 conda install -c anaconda h5py
 conda install -c anaconda pywget
