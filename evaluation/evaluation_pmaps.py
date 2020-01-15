@@ -1,16 +1,13 @@
+import argparse
+import os
 import h5py
 from skimage.filters import gaussian
 from skimage.segmentation import find_boundaries
 from scipy.ndimage import zoom
 import numpy as np
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, precision_score, recall_score
 from datetime import datetime
 import csv
-
-
-seg_key = "predictions"
-gt_key = "label"
-sigma = 1.3  # Dafault on Ovulese
 
 
 def blur_boundary(boundary, sigma):
@@ -32,78 +29,111 @@ def write_csv(output_path, results):
         dict_writer.writerows(results)
 
 
+def parse():
+    parser = argparse.ArgumentParser(description='Pmaps Quality Evaluation Script')
+    parser.add_argument('--gt', type=str,
+                        help='Path to directory with the ground truth files', required=True)
+    parser.add_argument('--predictions', type=str,
+                        help='Path to directory with the predictions files', required=True)
+    parser.add_argument('--threshold', type=float,
+                        help='threshold at which the predictions will be binarized', required=True)
+    parser.add_argument('--p-key', type=str, default="predictions",
+                        help='predictions dataset name inside h5', required=False)
+    parser.add_argument('--gt-key', type=str, default="label",
+                        help='ground truth dataset name inside h5', required=False)
+    parser.add_argument('--sigma', type=float, default=1.3,
+                        help='Must match the default smoothing used in training. Default ovules 1.3', required=False)
+    args = parser.parse_args()
+    return args
+
+
+def pmaps_evaluation(gt_path,
+                     predictions_path,
+                     thresholds,
+                     out_name="pmaps_evaluation",
+                     p_key="predictions",
+                     gt_key="label",
+                     sigma=1.3):
+    if type(thresholds) is float:
+        assert thresholds < 1 or thresholds > 0, "threshold must be float between 0 and 1."
+        thresholds = [thresholds]
+
+    elif type(thresholds) is list:
+        for _t in thresholds:
+            assert _t < 1 or _t > 0, "threshold must be float between 0 and 1."
+    else:
+        TypeError("thresholds type not understood")
+
+    all_predictions, all_gt = [], []
+    if os.path.isdir(gt_path) and os.path.isdir(predictions_path):
+        print("Correct ordering is not guaranteed!!! Please check the correctness at each run.")
+        all_gt = sorted(glob.glob(gt_path + "/*.h5"))
+        all_predictions = sorted(glob.glob(predictions_path + "/*.h5"))
+        assert len(all_gt) == len(all_predictions), "ground truth and predictions must have same length."
+    elif os.path.isfile(gt_path) and os.path.isfile(predictions_path):
+        all_gt = [gt_path]
+        all_predictions = [predictions_path]
+
+    else:
+        NotImplementedError("gt and predictions inputs must be directories or single files. "
+                            "Moreover, types must match.")
+
+    results = []
+    for pmap_file, gt_file in zip(all_predictions, all_gt):
+        print("Processing (gt, pmap): ", gt_file, pmap_file)
+        with h5py.File(gt_file, 'r') as gt_f:
+            with h5py.File(pmap_file, 'r') as pmap_f:
+                print("seg shape, gt shape: ", pmap_f[p_key].shape, gt_f[gt_key].shape)
+                pmap = pmap_f[p_key][0, ...]
+                gt = gt_f[gt_key][...]
+
+        # Resize segmentation to gt size for apple to apple comparison in the scores
+        if gt.shape != pmap.shape:
+            factor = tuple([g_shape / seg_shape for g_shape, seg_shape in zip(gt.shape, pmap.shape)])
+            pmap = zoom(pmap, factor)
+
+        # generate gt boundaries
+        boundaries = find_boundaries(gt, connectivity=2)
+        boundaries = blur_boundary(boundaries, sigma)
+
+        for threshold in thresholds:
+            _pmap = np.zeros_like(pmap)
+            # binarize predictions
+            _pmap[pmap >= threshold] = 1
+            _pmap[pmap < threshold] = 0
+
+            # Measure accuracy
+            mask = (_pmap == boundaries)
+            accuracy = (np.sum(mask) / mask.size)
+
+            # Measure scores
+            precision = precision_score(boundaries.ravel(), _pmap.ravel())
+            recall = recall_score(boundaries.ravel(), _pmap.ravel())
+            f1 = 2 * ((precision * recall) / (precision + recall))
+
+            print(f"threshold: {threshold:0.2f},"
+                  f" accuracy: {accuracy:0.3f},"
+                  f" f1 score: {f1:0.3f},"
+                  f" precision: {precision:0.3f},"
+                  f" recall: {recall:0.3f}")
+
+            results.append({"threshold": threshold,
+                            "gt": gt_file,
+                            "pmap": pmap_file,
+                            "accuracy": accuracy,
+                            "precision": precision,
+                            "recall": recall,
+                            "f1 score": f1})
+    write_csv(out_name, results)
+
+
 if __name__ == "__main__":
     import glob
     import os
-
-    # Change those
-    name_files = [## "resunet_ds2x_bce_gcr",
-                  ## "unet_ds2x_bce_cgr",
-                  ## "unet_ds2x_bce_crg",
-                  ## "unet_ds2x_bce_gcr",
-                  "unet_ds2x_bce_gcr_aff",
-                  ## "unet_ds2x_bce_gcr_all",
-                  ## "unet_ds2x_bce_gcr_noise",
-                  ## "unet_ds2x_dice_gcr",
-                  "unet_ds2x_dice_gcr_aff"]
-                  ## "unet_ds2x_dice_gcr_all"]
-
-    all_paths = [## "resunet_ds2x_bce_gcr",
-                 ## "unet_ds2x_bce_cgr",
-                 ## "unet_ds2x_bce_crg",
-                 ## "unet_ds2x_bce_gcr",
-                 "unet_ds2x_bce_gcr_aff",
-                 ## "unet_ds2x_bce_gcr_all",
-                 ## "unet_ds2x_bce_gcr_noise",
-                 ##"unet_ds2x_dice_gcr",
-                 "unet_ds2x_dice_gcr_aff"]
-                 ##"unet_ds2x_dice_gcr_all"]
-
-    name_files = [##"unet_ds1x_bce_aff_gcr",
-                 ##"unet_ds1x_bce_cgr",
-                 ##"unet_ds1x_bce_aff_crg",
-                 "unet_ds1x_bce_aff_cgr"]
-                 ## "unet_ds1x_bce_gcr"]
-
-    all_paths = [## "unet_ds1x_bce_aff_gcr",
-                 ## "unet_ds1x_bce_cgr",
-                 ## "unet_ds1x_bce_aff_crg",
-                 "unet_ds1x_bce_aff_cgr"]
-                 ## "unet_ds1x_bce_gcr"]
-
-
-    for file_name, path in zip(name_files, all_paths):
-        all_gt = sorted(glob.glob("/export/home/lcerrone/Datasets/COS-RootPrimordia2/test/*.h5"))
-        all_seg = sorted(glob.glob("/export/home/lcerrone/Datasets/COS-RootPrimordia2/test/" + path + "/*ons.h5"))
-
-        results = []
-        for pmap_file, gt_file in zip(all_seg, all_gt):
-            print("Processing (gt, pmap): ", gt_file, pmap_file)
-            with h5py.File(gt_file, 'r') as gt_f:
-                with h5py.File(pmap_file, 'r') as pmap_f:
-                    print("seg shape, gt shape: ", pmap_f[seg_key].shape, gt_f[gt_key].shape)
-                    pmap = pmap_f[seg_key][0, ...]
-                    gt = gt_f[gt_key][...]
-
-            # Resize segmentation to gt size for apple to apple comparison in the scores
-            if gt.shape != pmap.shape:
-                factor = tuple([g_shape / seg_shape for g_shape, seg_shape in zip(gt.shape, pmap.shape)])
-                pmap = zoom(pmap, factor)
-
-            boundaries = find_boundaries(gt, connectivity=2)
-            boundaries = blur_boundary(boundaries, sigma)
-
-            pmap[pmap >= 0.5] = 1
-            pmap[pmap < 0.5] = 0
-
-            mask = (pmap == boundaries)
-            accuracy = (mask.sum()/mask.size)
-            print("accuracy: ", accuracy)
-
-            f1 = f1_score(boundaries.ravel(), pmap.ravel())
-
-            print("f1 score: ", f1)
-            results.append({"gt": gt_file, "pmap": pmap_file, "accuracy": accuracy, "f1 score": f1})
-
-        write_csv(file_name + ".csv", results)
-
+    args = parse()
+    pmaps_evaluation(args.gt,
+                     args.predictions,
+                     args.threshold,
+                     p_key=args.p_key,
+                     gt_key=args.gt_key,
+                     sigma=args.sigma)
