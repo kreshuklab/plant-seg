@@ -1,5 +1,6 @@
-# plant-seg
-[plant-seg](plantseg) is a tool for cell instance aware segmentation in densely packed 3D volumetric images.
+![alt text](./plantseg/gui/logo.png)
+# PlantSeg
+[PlantSeg](plantseg) is a tool for cell instance aware segmentation in densely packed 3D volumetric images.
 The pipeline uses a two stages segmentation strategy (Neural Network + Segmentation).
 The pipeline is tuned for plant cell tissue acquired with confocal and light sheet microscopy.
 Pre-trained models are provided.  
@@ -10,7 +11,8 @@ Pre-trained models are provided.
 
 ## Getting Started
 ### Setup on Linux:
-- First step required to use the pipeline is installing anaconda python. If you already have a working anaconda setup you can go directly to next item. 
+- First step required to use the pipeline is installing anaconda python.
+ If you already have a working anaconda setup you can go directly to next item. 
 To download anaconda python open a terminal and type:
 ```Bash
 $  wget https://repo.anaconda.com/archive/Anaconda3-2019.10-Linux-x86_64.sh
@@ -19,17 +21,55 @@ Then start the install by typing:
 ```bash
 $ bash ./Anaconda3-2019.10-Linux-x86_64.sh
 ```
-Follow the instructions to complete the anaconda installation. 
+Follow the instructions to complete the anaconda installation.
+ To activate the environment restart your terminal.
 
 - Now we can download and configure the pipeline. 
 ```bash
 $ git clone https://github.com/hci-unihd/plant-seg
 $ git clone https://github.com/hci-unihd/pytorch-3dunet ~/.plantseg_models/pytorch-3dunet
 $ mkdir ~/.plantseg_models/configs/
-$ cd plant-seg
-$ conda env create -n plant-seg -f ./plant_seg.yml
 ```
 The PlantSeg related files (models, configs) will be placed inside your home directory under `~/.plantseg_models`. 
+Create a new environment for PlantSeg by typing:
+```bash
+$ conda create -n plant-seg python=3.7
+$ conda activate plant-seg
+$ conda install -c anaconda h5py pywget pyyaml scikit-learn
+$ conda install -c conda-forge tifffile matplotlib scikit-image
+```
+Install MultiCut dependency:
+```bash
+$ conda install -c conda-forge -c cpape elf
+```
+Install GASP dependency:
+```bash
+$ git clone https://github.com/abailoni/GASP.git ~/.plantseg_models/GASP/
+$ cd ~/.plantseg_models/GASP/
+$ python setup.py install
+$ cd
+```
+Our pipeline uses the pytorch library for the CNN predictions. To benefit from the GPU performance boost the right
+ version of pytorch must be installed. 
+ If your machine has a working version of CUDA installed you can check the version 
+ by executing in the terminal:
+```` 
+cat /usr/local/cuda/version.txt
+````
+according to the output one must execute on of the following:
+```
+conda install pytorch torchvision cpuonly -c pytorch # if no gpu is installed in the computer
+# or
+conda install pytorch torchvision cudatoolkit=9.2 -c pytorch # if your cuda version is 9.2
+# or
+conda install pytorch torchvision cudatoolkit=10.1 -c pytorch # if your cuda version is 10.1
+```
+Lastly install the remaining dependencies using:
+```
+pip install --upgrade tensorflow
+pip install tensorboardX
+pip install "pillow<7"
+```
 If you want to use a custom location please look at the troubleshooting guide.
 
 ### Pipeline Usage (command line):
@@ -75,54 +115,12 @@ installing a further environment is needed.
 All instructions are in [segmentation](plantseg/segmentation/README.md) directory.
 
 ## Troubleshooting:
-* **Conda packages install fails**: If your attempt to install the pipeline failed while executing  
-```
-conda env create -n plant-seg -f ./plant_seg.yml
-```
-You can manually create a working environment.
-The necessary commands are: 
-```
-conda create -n plant-seg python=3.7
-conda activate plant_seg
-conda install -c anaconda h5py
-conda install -c anaconda pywget
-conda install -c anaconda pyyaml
-conda install -c anaconda scipy
-conda install scikit-learn
-conda install -c conda-forge tifffile
-conda install -c conda-forge matplotlib
-conda install -c conda-forge scikit-image
-conda install -c conda-forge -c cpape elf
-```
-
-Our pipeline uses the pytorch library for the CNN predictions. To benefit from the GPU performance boost the right
- version of pytorch must be installed. If your machine has a working version of CUDA installed you can check the version 
- by executing in the terminal:
-```` 
-cat /usr/local/cuda/version.txt
-````
-according to the output one must execute on of the following:
-```
-conda install pytorch torchvision cpuonly -c pytorch # if no gpu is installed in the computer
-# or
-conda install pytorch torchvision cudatoolkit=9.2 -c pytorch # if your cuda version is 9.2
-# or
-conda install pytorch torchvision cudatoolkit=10.1 -c pytorch # if your cuda version is 10.1
-```
-
-Lastly install the remaining dependencies using:
-```
-pip install --upgrade tensorflow
-pip install tensorboardX
-```
-
-
-* **Import Error while predicting**: This could be caused by a non standard location of the [pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet) directory.
+* **Import Error while predicting**: This could be caused by a non standard location of the 
+[pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet) directory.
 Please edit line 7 of [predict.py](plantseg/predictions/predict.py) with your custom path.
 ```python
 pytorch_3dunet_default_directory = "/CUSTOM_PATH/pytorch-3dunet/"
 ```
-
 
 ## Training on New Data:
 For training new models we rely on the [pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet). 
@@ -137,7 +135,8 @@ The directory created have to be placed in the default location
 ```bash
 $ ~/.plantseg_models/
 ```
-Now you can simply use your model for prediction by editing the [model_name:](examples/config.yaml) key in the prediction config file.\
+Now you can simply use your model for prediction by editing the [model_name:](examples/config.yaml)
+ key in the prediction config file.\
 If you want your model to be part of the open-source zoo of models please contact us.
 
 ## Citation:
