@@ -36,13 +36,17 @@ def parse():
     parser.add_argument('--predictions', type=str,
                         help='Path to directory with the predictions files', required=True)
     parser.add_argument('--threshold', type=float,
-                        help='threshold at which the predictions will be binarized', required=True)
+                        help='threshold at which the predictions will be binarized',
+                        required=False, default=0.5)
+    parser.add_argument('--out-file', type=float,
+                        help='define name (and location) of output file (final name: out-file + timestamp + .csv)',
+                        required=False, default="pmaps_evaluation")
     parser.add_argument('--p-key', type=str, default="predictions",
                         help='predictions dataset name inside h5', required=False)
     parser.add_argument('--gt-key', type=str, default="label",
                         help='ground truth dataset name inside h5', required=False)
     parser.add_argument('--sigma', type=float, default=1.3,
-                        help='Must match the default smoothing used in training. Default ovules 1.3', required=False)
+                        help='must match the default smoothing used in training. Default ovules 1.3', required=False)
     args = parser.parse_args()
     return args
 
@@ -134,6 +138,7 @@ if __name__ == "__main__":
     pmaps_evaluation(args.gt,
                      args.predictions,
                      args.threshold,
+                     out_name=args.out_file,
                      p_key=args.p_key,
                      gt_key=args.gt_key,
                      sigma=args.sigma)
