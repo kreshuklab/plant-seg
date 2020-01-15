@@ -13,7 +13,6 @@ import numpy as np
 import vigra
 import yaml
 from scipy.ndimage import zoom
-from skimage.morphology import binary_dilation, ball
 
 from rand import adapted_rand
 from simple_hash import simple_hash
@@ -116,6 +115,11 @@ def run_evaluation(gtarray, segarray, seg_background_zero=False):
         print("- Masking prediction background in the prediction")
         value, counts = np.unique(segarray, return_counts=True)
         segarray[segarray == value[counts.argmax()]] = 0
+
+        print("- Remove background")
+        mask = gtarray != 0
+        gtarray = gtarray[mask].ravel()
+        segarray = segarray[mask].ravel()
 
     # Run all metric
     print("- Start evaluations")
