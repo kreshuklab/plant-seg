@@ -3,16 +3,16 @@ gt_name: "label"
 seg_name: "segmentation"
 
 # Files location GT files and Segmentation files have to share a single ID number in order to be matched
-gt_dir: "/export/home/lcerrone/Datasets/TUM_Ovules_Dataset/Ovules_test_final/" # Path to ground truth  directory files at full resolution or dictionary with tuple of ground truth and segmentation. Files must be h5
-seg_dir: "/export/home/lcerrone/Datasets/TUM_Ovules_Dataset/Ovules_test_final/unet_ds2x_bce_gcr/MultiCut/" # (Optional) Path to predicted segmentation files at any resolution. Files must be h5 or tiff
+gt_dir: TO BE FILL # Path to ground truth  directory files at full resolution or dictionary with tuple of ground truth and segmentation. Files must be h5
+seg_dir: TO BE FILL # (Optional) Path to predicted segmentation files at any resolution. Files must be h5 or tiff
 
-# train_config_file: "/home_sdc/lcerrone_tmp/PycharmProjects/FOR2581-segmentation/TUM-Ovules/networks/FOR_paper_experiments/unet_ds2x/config_train.yml" # (Optional) Path to config file used for experiments
+# train_config_file: # (Optional) Path to config file used for experiments
 # (Optional) Segmentation Algorithm config file. Empty if it does not exists
 
-seg_background_zero: True # If true the background (default 0) is not modified in the evaluation script. If False, the larger object in the segmentation gets the label 0
+seg_background_zero: True # If true the background (default label 0) is not modified in the evaluation script. If False, the larger object in the segmentation gets the label 0 and the pixels belonging to the ground truth gets masked out.
 
 # Output
-output_csv: "./ds2_mc_gcr.csv" # Path to output CSV file
+output_csv: "./test_config" # Path to output CSV file
 
 # Custom notes, for comments not in the training configuration file
 metadata: # (Optional)
