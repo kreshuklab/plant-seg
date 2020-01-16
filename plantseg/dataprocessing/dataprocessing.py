@@ -102,18 +102,45 @@ class DataPreProcessing3D:
 
             # Load file
             _, ext = os.path.splitext(path)
+            image = None
             if ext == ".tiff" or ext == ".tif":
                 image = tifffile.imread(path)
+                # squeeze extra dimension
+                if len(image.shape) == 4:
+                    image = image[0]
+
             elif ext == ".hdf" or ext == ".h5" or ext == ".hd5":
                 with h5py.File(path, "r") as f:
-                    image = f[self.dataset][...]
+                    # Check for h5 dataset
+                    if "predictions" in f.keys():
+                        # predictions is the first choice
+                        dataset = "predictions"
+                    elif "raw" in f.keys():
+                        # raw is the second choice
+                        dataset = "raw"
+                    else:
+                        print("H5 dataset name not understood")
+                        raise NotImplementedError
+
+                    # Load data
+                    if len(f[dataset].shape) == 3:
+                        image = f[dataset][...].astype(np.float32)
+                    elif len(f[dataset].shape) == 4:
+                        image = f[dataset][0, ...].astype(np.float32)
+                    else:
+                        print(f[dataset].shape)
+                        print("Data shape not understood, data must be 3D or 4D")
+                        raise NotImplementedError
+
             else:
                 print("Data extension not understood")
                 raise NotImplementedError
-
+            assert image.ndim == 3, "Input probability maps must be 3D tiff or h5 (zxy) or" \
+                                    " 4D (czxy)," \
+                                    " where the fist channel contains the neural network boundary predictions"
             # Normalize
             image = image.astype(np.float32)
-            image = (image - np.min(image)) / (np.max(image) - np.min(image))
+            image = (image - np.min(image)) / (np.max(image) - np.min(image)).astype(np.float32)
 
             # Apply filters
             image = self.filter(image, self.param)
