@@ -1,4 +1,4 @@
 #Conda build
 In order to create conda package:
 
-Run: conda build conda-recipe/meta.yaml -c conda-forge
+Run: conda build conda-recipe/meta.yaml -c conda-forge -c cpape -c abailoni -c awolny

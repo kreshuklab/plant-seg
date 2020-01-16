@@ -21,9 +21,11 @@ requirements:
     - scikit-learn
     - tifffile
     - vigra
-    - elf
     - torchvision
     - pytorch
+    - elf
+    - gasp
+    - pytorch-3dunet
 
 test:
   requires:
