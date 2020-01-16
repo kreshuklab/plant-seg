@@ -3,6 +3,7 @@ from .gui_tools import convert_rgb, var_to_tkinter, list_models
 
 stick_all = tkinter.N + tkinter.S + tkinter.E + tkinter.W
 stick_n = tkinter.E + tkinter.W #tkinter.N + tkinter.S + tkinter.E + tkinter.W
+stick_n2 = tkinter.N + tkinter.E + tkinter.W
 
 
 class MenuEntry:
@@ -32,6 +33,8 @@ class MenuEntry:
         if default is None:
             self.tk_value.set(sorted(list(self.menu))[0])
         else:
+            if type(default) == bool:
+                default = "True" if default else "False"
             self.tk_value.set(default)
 
     def __call__(self, value, obj_collection):
@@ -390,7 +393,7 @@ class PreprocessingFrame(ModuleFramePrototype):
                                       row=0,
                                       padx=self.preprocessing_style["padx"],
                                       pady=self.preprocessing_style["pady"],
-                                      sticky=stick_all)
+                                      sticky=stick_n2)
 
         [tkinter.Grid.rowconfigure(self.preprocessing_frame, i, weight=w)
          for i, w in enumerate(self.preprocessing_style["row_weights"])]
@@ -452,7 +455,7 @@ class UnetPredictionFrame(ModuleFramePrototype):
                                     row=0,
                                     padx=self.prediction_style["padx"],
                                     pady=self.prediction_style["pady"],
-                                    sticky=stick_all)
+                                    sticky=stick_n2)
 
         [tkinter.Grid.rowconfigure(self.prediction_frame, i, weight=w)
          for i, w in enumerate(self.prediction_style["row_weights"])]
@@ -518,7 +521,7 @@ class SegmentationFrame(ModuleFramePrototype):
                                       row=0,
                                       padx=self.segmentation_style["padx"],
                                       pady=self.segmentation_style["pady"],
-                                      sticky=stick_all)
+                                      sticky=stick_n2)
 
         [tkinter.Grid.rowconfigure(self.segmentation_frame, i, weight=w)
          for i, w in enumerate(self.segmentation_style["row_weights"])]
@@ -537,46 +540,53 @@ class SegmentationFrame(ModuleFramePrototype):
         self.checkbox["command"] = self.show_options
 
         self.obj_collection = []
-        self.custom_key = {"save_directory": SimpleEntry(self.segmentation_frame,
+        self.custom_key = {"name": MenuEntry(self.segmentation_frame,
+                                              text="Algorithm",
+                                              row=1,
+                                              column=0,
+                                              menu={"MultiCut", "GASP", "MutexWS", "DtWatershed"},
+                                              default=config[self.module]["name"],
+                                              font=font),
+                            "save_directory": SimpleEntry(self.segmentation_frame,
                                                          text="Save Directory: ",
-                                                         row=1,
+                                                         row=2,
                                                          column=0,
                                                          _type=str,
                                                          _font=font),
-                           "multicut_beta": SimpleEntry(self.segmentation_frame,
-                                                        text="MC Beta: ",
-                                                        row=2,
+                           "beta": SimpleEntry(self.segmentation_frame,
+                                                        text="Beta: ",
+                                                        row=3,
                                                         column=0,
                                                         _type=float,
                                                         _font=font),
                            "ws_2D": MenuEntry(self.segmentation_frame,
                                               text="Run WS in 2D: ",
-                                              row=3,
+                                              row=4,
                                               column=0,
                                               menu={"True", "False"},
                                               default=config[self.module]["ws_2D"],
                                               font=font),
                            "ws_sigma": SimpleEntry(self.segmentation_frame,
                                                    text="WS Seeds Sigma: ",
-                                                   row=4,
+                                                   row=5,
                                                    column=0,
                                                    _type=float,
                                                    _font=font),
                            "ws_w_sigma": SimpleEntry(self.segmentation_frame,
                                                      text="WS Boundary Sigma: ",
-                                                     row=5,
+                                                     row=6,
                                                      column=0,
                                                      _type=float,
                                                      _font=font),
                            "ws_minsize": SimpleEntry(self.segmentation_frame,
                                                      text="WS Minimum Size: (voxels)",
-                                                     row=6,
+                                                     row=7,
                                                      column=0,
                                                      _type=int,
                                                      _font=font),
                            "post_minsize": SimpleEntry(self.segmentation_frame,
                                                        text="Minimum Size: (voxels)",
-                                                       row=7,
+                                                       row=8,
                                                        column=0,
                                                        _type=int,
                                                        _font=font),
@@ -652,7 +662,7 @@ class PostPredictionsFrame(ModuleFramePrototype):
                              row=row,
                              padx=self.post_style["padx"],
                              pady=self.post_style["pady"],
-                             sticky=stick_all)
+                             sticky=stick_n2)
 
         [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w)
          for i, w in enumerate(self.post_style["row_weights"])]
@@ -708,7 +718,7 @@ class PostFrame:
                              row=0,
                              padx=self.post_style["padx"],
                              pady=self.post_style["pady"],
-                             sticky=stick_all)
+                             sticky=stick_n2)
 
         [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w)
          for i, w in enumerate(self.post_style["row_weights"])]
@@ -730,3 +740,9 @@ class PostFrame:
         self.post_frame.update()
         self.post_seg_obj.show_options()
         self.post_pred_obj.show_options()
+
+        self.post_pred_obj.show.set(False)
+        self.post_pred_obj.show_options()
+
+        self.post_seg_obj.show.set(False)
+        self.post_seg_obj.show_options()

@@ -50,7 +50,7 @@ segmentation:
   name: "MultiCut"
   # Segmentation specific parameters here
   # balance under-/over-segmentation; 0 - aim for undersegmentation, 1 - aim for oversegmentation
-  multicut_beta: 0.5
+  beta: 0.5
   # directory where to save the results
   save_directory: "MultiCut"
   # enable/disable watershed

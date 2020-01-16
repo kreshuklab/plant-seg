@@ -1,6 +1,5 @@
 import glob
 import os
-import argparse
 import yaml
 import h5py
 
@@ -117,13 +116,14 @@ def _import_segmentation_algorithm(config, predictions_paths):
     elif name == "MultiCut":
         from .segmentation.multicut import MulticutFromPmaps as Segmentation
 
-    elif name == "RandomWalker":
-        from .segmentation.randomwalker import DtRandomWalkerFromPmaps as Segmentation
-
     else:
         raise NotImplementedError
 
     segmentation = Segmentation(predictions_paths)
+
+    if name == "MutexWS":
+        segmentation.__dict__["gasp_linkage_criteria"] = 'mutex_watershed'
+
     for name in segmentation.__dict__.keys():
         if name in config:
             segmentation.__dict__[name] = config[name]
