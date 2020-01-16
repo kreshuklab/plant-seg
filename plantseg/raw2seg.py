@@ -9,15 +9,20 @@ from .models.checkmodels import check_models
 def _read_path(config):
     if os.path.isdir(config["path"]):
         path = os.path.join(config["path"], "*")
+        paths = glob.glob(path)
+        only_file = []
+        for path in paths:
+            if os.path.isfile(path):
+                only_file.append(path)
+        return sorted(only_file)
+
     else:
         path, ext = os.path.splitext(config["path"])
-        path = f"{path}*{ext}"
-    paths = glob.glob(path)
-    only_file = []
-    for path in paths:
-        if os.path.isfile(path):
-            only_file.append(path)
-    return sorted(only_file)
+        if ext in [".tiff", ".tif", ".hdf", ".h5", ".hd5"]:
+            return [config["path"]]
+        else:
+            print("Data extension not understood")
+            raise NotImplementedError
 
 
 def _generate_new_paths(all_paths, new_name, suffix=''):
@@ -30,7 +35,9 @@ def _generate_new_paths(all_paths, new_name, suffix=''):
 
 
 def _create_dir_structure(file_path, preprocessing_name='', model_name='', seg_name=''):
+    print(file_path)
     dir_path = os.path.dirname(file_path)
+    print(dir_path)
     dir_path = os.path.join(dir_path, preprocessing_name, model_name, seg_name)
     os.makedirs(dir_path, exist_ok=True)
 
