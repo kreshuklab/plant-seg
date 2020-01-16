@@ -15,7 +15,7 @@ class MulticutFromPmaps:
     def __init__(self,
                  predictions_paths,
                  save_directory="MultiCut",
-                 multicut_beta=0.5,
+                 beta=0.5,
                  run_ws=True,
                  ws_2D=True,
                  ws_threshold=0.5,
@@ -31,7 +31,7 @@ class MulticutFromPmaps:
         self.n_threads = n_threads
 
         # Multicut Parameters
-        self.multicut_beta = multicut_beta
+        self.beta = beta
 
         # Watershed parameters
         self.run_ws = run_ws
@@ -140,7 +140,7 @@ class MulticutFromPmaps:
         probs = features[:, 0]  # mean edge prob
         edge_sizes = features[:, 1]
         # Prob -> edge costs
-        costs = transform_probabilities_to_costs(probs, edge_sizes=edge_sizes, beta=self.multicut_beta)
+        costs = transform_probabilities_to_costs(probs, edge_sizes=edge_sizes, beta=self.beta)
         # Creating graph
         graph = nifty.graph.undirectedGraph(rag.numberOfNodes)
         graph.insertEdges(rag.uvIds())
@@ -154,7 +154,11 @@ class MulticutFromPmaps:
         max_idx = 1
         for i in range(pmaps.shape[0]):
             _pmaps = pmaps[i]
-            _ws, _ = distance_transform_watershed(_pmaps, self.ws_threshold, self.ws_sigma, sigma_weights=self.ws_w_sigma, min_size=self.ws_minsize)
+            _ws, _ = distance_transform_watershed(_pmaps,
+                                                  self.ws_threshold,
+                                                  self.ws_sigma,
+                                                  sigma_weights=self.ws_w_sigma,
+                                                  min_size=self.ws_minsize)
             _ws = _ws + max_idx
             max_idx = _ws.max()
             ws[i] = _ws

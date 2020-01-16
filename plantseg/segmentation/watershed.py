@@ -76,7 +76,6 @@ class DtWatershedFromPmaps:
                                     " 4D (czxy)," \
                                     " where the fist channel contains the neural network boundary predictions"
 
-
             # Pmaps are interpreted as affinities
             affinities = np.stack([pmaps, pmaps, pmaps], axis=0)
 

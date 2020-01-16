@@ -12,8 +12,9 @@ class GaspFromPmaps:
                  predictions_paths,
                  save_directory="GASP",
                  gasp_linkage_criteria='average',
-                 gasp_beta_bias=0.5,
+                 bias=0.5,
                  run_ws=True,
+                 ws_2D=True,
                  ws_threshold=0.6,
                  ws_minsize=50,
                  ws_sigma=0.3,
@@ -27,10 +28,11 @@ class GaspFromPmaps:
         # GASP parameters
         self.predictions_paths = predictions_paths
         self.gasp_linkage_criteria = gasp_linkage_criteria
-        self.gasp_beta_bias = gasp_beta_bias
+        self.bias = bias
 
         # Watershed parameters
         self.run_ws = run_ws
+        self.ws_2d = ws_2D
         self.ws_threshold = ws_threshold
         self.ws_minsize = ws_minsize
         self.ws_sigma = ws_sigma
@@ -97,13 +99,12 @@ class GaspFromPmaps:
                 # In this case the agglomeration is initialized with superpixels:
                 # use additional option 'intersect_with_boundary_pixels' to break the SP along the boundaries
                 # (see CREMI-experiments script for an example)
-
                 superpixel_gen = WatershedOnDistanceTransformFromAffinities(offsets,
                                                                             threshold=self.ws_threshold,
                                                                             min_segment_size=self.ws_minsize,
                                                                             preserve_membrane=True,
                                                                             sigma_seeds=self.ws_sigma,
-                                                                            stacked_2d=False,
+                                                                            stacked_2d=not self.ws_2d,
                                                                             used_offsets=[0, 1, 2],
                                                                             offset_weights=[0, 1, 2],
                                                                             n_threads=self.n_threads)
@@ -120,7 +121,7 @@ class GaspFromPmaps:
                                                superpixel_generator=superpixel_gen,
                                                run_GASP_kwargs=run_GASP_kwargs,
                                                n_threads=self.n_threads,
-                                               beta_bias=self.gasp_beta_bias)
+                                               beta_bias=self.bias)
 
             runtime = time.time()
             final_segmentation, _ = gasp_instance(affinities)
