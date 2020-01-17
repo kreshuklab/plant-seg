@@ -1,9 +1,9 @@
 import h5py
 import numpy as np
 from scipy.ndimage import zoom
-from skimage.morphology import disk
+from skimage.morphology import ball
 from skimage.filters import median
-from vigra.filters import gaussianSmoothing, discMedian
+from vigra.filters import gaussianSmoothing
 import tifffile
 import os
 
@@ -168,7 +168,7 @@ class DataPreProcessing3D:
 
     @staticmethod
     def median(image, radius):
-        return discMedian(image, radius)
+        return median(image, ball(radius))
 
     @staticmethod
     def gaussian(image, sigma):
