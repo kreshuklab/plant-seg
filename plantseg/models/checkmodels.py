@@ -2,6 +2,7 @@ import os
 import sys
 import wget
 import yaml
+from plantseg import plantseg_global_path
 config_train = "config_train.yml"
 best_model = "best_checkpoint.pytorch"
 last_model = "last_checkpoint.pytorch"
@@ -29,7 +30,7 @@ def check_models(model_name, update_files=False):
             update_files):
 
         # Read config
-        model_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models_zoo.yaml")
+        model_file = os.path.join(plantseg_global_path, "resources", "models_zoo.yaml")
         config = yaml.load(open(model_file, 'r'), Loader=yaml.FullLoader)
         url = config[model_name]["path"]
 

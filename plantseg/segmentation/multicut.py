@@ -1,5 +1,4 @@
 import os
-import glob
 import numpy as np
 import time
 import h5py

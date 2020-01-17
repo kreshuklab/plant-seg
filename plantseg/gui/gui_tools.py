@@ -2,6 +2,7 @@ import tkinter
 from tkinter import filedialog
 import os
 import yaml
+from plantseg import plantseg_global_path
 stick_all = tkinter.N + tkinter.S + tkinter.E + tkinter.W
 
 
@@ -49,8 +50,7 @@ def convert_rgb(rgb=(0, 0, 0)):
 
 def list_models():
     """ list model zoo """
-    model_config = os.path.split(os.path.abspath('__file__'))[0]
-    model_config = os.path.join(model_config, "plantseg", "models", "models_zoo.yaml")
+    model_config = os.path.join(plantseg_global_path, 'resources', 'models_zoo.yaml')
     model_config = yaml.load(open(model_config, 'r'),
                              Loader=yaml.FullLoader)
     models = list(model_config.keys())

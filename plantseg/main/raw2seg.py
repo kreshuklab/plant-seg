@@ -2,9 +2,8 @@ import glob
 import os
 import yaml
 import h5py
-
-from .models.checkmodels import check_models
-
+from plantseg import plantseg_global_path
+from ..models.checkmodels import check_models
 
 def _read_path(config):
     if os.path.isdir(config["path"]):
@@ -35,21 +34,19 @@ def _generate_new_paths(all_paths, new_name, suffix=''):
 
 
 def _create_dir_structure(file_path, preprocessing_name='', model_name='', seg_name=''):
-    print(file_path)
     dir_path = os.path.dirname(file_path)
-    print(dir_path)
     dir_path = os.path.join(dir_path, preprocessing_name, model_name, seg_name)
     os.makedirs(dir_path, exist_ok=True)
 
 
 def _import_preprocessing_pipeline(_config, all_paths):
-    from .dataprocessing.dataprocessing import DataPreProcessing3D
+    from ..dataprocessing.dataprocessing import DataPreProcessing3D
     processing = DataPreProcessing3D(_config, all_paths)
     return processing
 
 
 def _import_postprocessing_pipeline(_config, all_paths, dataset):
-    from .dataprocessing.dataprocessing import DataPostProcessing3D
+    from ..dataprocessing.dataprocessing import DataPostProcessing3D
     processing = DataPostProcessing3D(_config, all_paths, dataset, data_type=dataset)
     return processing
 
@@ -59,8 +56,7 @@ def _create_predict_config(_config, all_paths):
 
     # Load template config
     import torch
-    file_dir = os.path.dirname(os.path.abspath(__file__))
-    config = yaml.load(open(os.path.join(file_dir, "predictions", "config_predict_template.yaml"), 'r'),
+    config = yaml.load(open(os.path.join(plantseg_global_path, "resources", "config_predict_template.yaml"), 'r'),
                        Loader=yaml.FullLoader)
 
     # Add patch and stride size
@@ -105,7 +101,7 @@ def _create_predict_config(_config, all_paths):
 
 
 def _import_predction_pipeline(_config, all_paths):
-    from .predictions.predict import ModelPredictions
+    from ..predictions.predict import ModelPredictions
     config = _create_predict_config(_config, all_paths)
     model_predictions = ModelPredictions(config)
     return model_predictions
@@ -115,13 +111,13 @@ def _import_segmentation_algorithm(config, predictions_paths):
     name = config["name"]
 
     if name == "GASP" or name == "MutexWS":
-        from .segmentation.gasp import GaspFromPmaps as Segmentation
+        from ..segmentation.gasp import GaspFromPmaps as Segmentation
 
     elif name == "DtWatershed":
-        from .segmentation.watershed import DtWatershedFromPmaps as Segmentation
+        from ..segmentation.watershed import DtWatershedFromPmaps as Segmentation
 
     elif name == "MultiCut":
-        from .segmentation.multicut import MulticutFromPmaps as Segmentation
+        from ..segmentation.multicut import MulticutFromPmaps as Segmentation
 
     else:
         raise NotImplementedError
@@ -218,8 +214,24 @@ def raw2seg(config):
 
     # Import segmentation pipeline
     if "segmentation" in config.keys() and config['segmentation']['state']:
+        name = config['segmentation']['name']
+        if name == 'GASP':
+            suffix = '_gasp_average'
+
+        elif name == "MutexWS":
+            suffix = '_gasp_mutex_watershed'
+
+        elif name == "DtWatershed":
+            suffix = '_watershed'
+
+        elif name == "MultiCut":
+            suffix = '_multicut'
+
+        else:
+            raise NotImplementedError
+
         all_paths_segmented = _generate_new_paths(all_paths_predicted, config["segmentation"]["save_directory"],
-                                                  suffix="_multicut")
+                                                  suffix=suffix)
         segmentation = _import_segmentation_algorithm(config["segmentation"], all_paths_predicted)
         print("Segmentation Pipeline Initialized - Params:", segmentation.__dict__)
 

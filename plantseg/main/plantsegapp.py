@@ -5,9 +5,9 @@ import os
 import sys
 import webbrowser
 from tkinter import font
-from .gui.gui_tools import Files2Process, report_error, StdoutRedirect, convert_rgb
+from ..gui.gui_tools import Files2Process, report_error, StdoutRedirect, convert_rgb
 import traceback
-
+from plantseg import plantseg_global_path
 
 class PlantSegApp:
     def __init__(self):
@@ -39,7 +39,6 @@ class PlantSegApp:
         # Set icon
         icon_path = self.get_icon_path()
         icon = tkinter.PhotoImage(file=icon_path)
-        self.plant_segapp.tk.call('wm', 'iconphoto', self.plant_segapp._w, icon)
         self.plant_segapp.tk.call('wm', 'iconphoto', self.plant_segapp._w, icon)
 
         self.plant_segapp.resizable(width=True, height=True)
@@ -226,12 +225,10 @@ class PlantSegApp:
         self.out_text = out_text
 
     # End init modules ========= Begin Config Read/Write
-
     @staticmethod
     def get_model_path():
         # Working directory path + relative dir structure to yaml file
-        config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
-                                   "plantseg", "models", "models_zoo.yaml")
+        config_path = os.path.join(plantseg_global_path, "resources", "models_zoo.yaml")
         return config_path
 
     @staticmethod
@@ -243,15 +240,13 @@ class PlantSegApp:
     @staticmethod
     def get_app_config_path(name="gui_configuration.yaml"):
         # Working directory path + relative dir structure to yaml file
-        config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
-                                   "plantseg", "gui", name)
+        config_path = os.path.join(plantseg_global_path, "resources", name)
         return config_path
 
     @staticmethod
     def get_icon_path(name="FOR2581_Logo_FINAL_no_text.png"):
         # Working directory path + relative dir structure to yaml file
-        icon_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
-                                 "plantseg", "gui", name)
+        icon_path = os.path.join(plantseg_global_path, "resources", name)
         return icon_path
 
     def load_config(self, name="config_gui_last.yaml"):
@@ -318,7 +313,7 @@ class PlantSegApp:
     # End config Read/Write ========= Begin Others
     def init_menus(self):
         """ Initialize menu entries from config"""
-        from .gui.gui_widgets import PreprocessingFrame, UnetPredictionFrame, SegmentationFrame, PostFrame
+        from ..gui.gui_widgets import PreprocessingFrame, UnetPredictionFrame, SegmentationFrame, PostFrame
         pre_proc_obj = PreprocessingFrame(self.configuration_frame1, self.plantseg_config,
                                           col=0, module_name="Data Pre-Processing",
                                           font=self.font)
