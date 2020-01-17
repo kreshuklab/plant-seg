@@ -5,12 +5,12 @@ The pipeline uses a two stages segmentation strategy (Neural Network + Segmentat
 The pipeline is tuned for plant cell tissue acquired with confocal and light sheet microscopy.
 Pre-trained models are provided.  
 
-## Prerequisites
+## Getting Started
+### Prerequisites
 * Linux
 * Nvidia GPU + CUDA (Optional)
 
-## Getting Started
-### Setup on Linux:
+### Install Anaconda python
 - First step required to use the pipeline is installing anaconda python.
  If you already have a working anaconda setup you can go directly to next item. 
 To download anaconda python open a terminal and type:
@@ -22,6 +22,62 @@ Then start the install by typing:
 $ bash ./Anaconda3-2019.10-Linux-x86_64.sh
 ```
 Follow the instructions to complete the anaconda installation.
+
+### Install PlantSeg using conda
+The tool can installed by executing on the terminal
+```
+conda create -n plant-seg --use-local -c abailoni -c cpape -c awolny -c conda-forge plantseg
+```
+
+### Pipeline Usage (command line):
+Our Pipeline is completely configuration file based and does not require any coding.
+To run it is necessary to activate the correct anaconda environment. (Assuming the pipeline is setup in 
+the default location) Type in the terminal
+```bash
+$ conda activate plant-seg
+```
+Now to run the pipeline simply type
+```bash
+$ plantseg --config ./examples/config.yaml
+```
+
+### Pipeline Usage (GUI):
+Our Pipeline can be called by using a basic user interface that allow for dynamically run the pipeline.
+To run it is necessary to activate the correct anaconda environment. (Assuming the pipeline is setup in 
+the default location) Type in the terminal
+```bash
+$ conda activate plant-seg
+```
+Now to run the GUI simply type
+```bash
+$ plantseg --gui
+```
+
+### Guide to Custom Configuration File:
+The configuration file defines all the operations in our pipeline together with the data to be processed.
+Please refer to [config.yaml](examples/config.yaml) for a sample configuration of the pipeline and detailed explanation
+of all of the parameters.
+
+Some key design choices:
+* `path` attribute: is used to define either the file to process or the directory containing the data.
+* `preprocessing` attribute: contains a simple set of possible operation you would need to run on your data before the neural network. 
+If data are ready for neural network processing either delete the entire section or set `state: False` in order to skip this step.
+* `prediction` attribute: contains all parameters relevant for predicting the neural network. 
+In the [models](plantseg/models/README.md) directory we list details of all pre-trained models we provide.
+* `segmentation` attribute: contains all parameters needed to run the Multicut pipeline. 
+All other pipelines can be run with the same configuration file style but due to anaconda environment incompatibilities 
+installing a further environment is needed.
+All instructions are in [segmentation](plantseg/segmentation/README.md) directory.
+
+## Troubleshooting:
+* **Import Error while predicting**: This could be caused by a non standard location of the 
+[pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet) directory.
+Please edit line 7 of [predict.py](plantseg/predictions/predict.py) with your custom path.
+```python
+pytorch_3dunet_default_directory = "/CUSTOM_PATH/pytorch-3dunet/"
+```
+
+### Setup on Linux:
  To activate the environment restart your terminal.
 
 - Now we can download and configure the pipeline. 
@@ -66,56 +122,6 @@ pip install tensorboardX
 pip install "pillow<7"
 ```
 If you want to use a custom location please look at the troubleshooting guide.
-
-### Pipeline Usage (command line):
-Our Pipeline is completely configuration file based and does not require any coding.
-To run it is necessary to activate the correct anaconda environment. (Assuming the pipeline is setup in 
-the default location) Type in the terminal
-```bash
-$ cd ~/plant-seg
-$ conda activate plant-seg
-```
-Now to run the pipeline simply type
-```bash
-$ python plantseg.py --config ./examples/config.yaml
-```
-
-### Pipeline Usage (GUI):
-Our Pipeline can be called by using a basic user interface that allow for dynamically run the pipeline.
-To run it is necessary to activate the correct anaconda environment. (Assuming the pipeline is setup in 
-the default location) Type in the terminal
-```bash
-$ cd ~/plant-seg
-$ conda activate plant-seg
-```
-Now to run the GUI simply type
-```bash
-$ python plantseg.py --gui
-```
-
-### Guide to Custom Configuration File:
-The configuration file defines all the operations in our pipeline together with the data to be processed.
-Please refer to [config.yaml](examples/config.yaml) for a sample configuration of the pipeline and detailed explanation
-of all of the parameters.
-
-Some key design choices:
-* `path` attribute: is used to define either the file to process or the directory containing the data.
-* `preprocessing` attribute: contains a simple set of possible operation you would need to run on your data before the neural network. 
-If data are ready for neural network processing either delete the entire section or set `state: False` in order to skip this step.
-* `prediction` attribute: contains all parameters relevant for predicting the neural network. 
-In the [models](plantseg/models/README.md) directory we list details of all pre-trained models we provide.
-* `segmentation` attribute: contains all parameters needed to run the Multicut pipeline. 
-All other pipelines can be run with the same configuration file style but due to anaconda environment incompatibilities 
-installing a further environment is needed.
-All instructions are in [segmentation](plantseg/segmentation/README.md) directory.
-
-## Troubleshooting:
-* **Import Error while predicting**: This could be caused by a non standard location of the 
-[pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet) directory.
-Please edit line 7 of [predict.py](plantseg/predictions/predict.py) with your custom path.
-```python
-pytorch_3dunet_default_directory = "/CUSTOM_PATH/pytorch-3dunet/"
-```
 
 ## Training on New Data:
 For training new models we rely on the [pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet). 
