@@ -27,7 +27,6 @@ Follow the instructions to complete the anaconda installation.
 - Now we can download and configure the pipeline. 
 ```bash
 $ git clone https://github.com/hci-unihd/plant-seg
-$ git clone https://github.com/hci-unihd/pytorch-3dunet ~/.plantseg_models/pytorch-3dunet
 $ mkdir ~/.plantseg_models/configs/
 ```
 The PlantSeg related files (models, configs) will be placed inside your home directory under `~/.plantseg_models`. 
@@ -35,8 +34,7 @@ Create a new environment for PlantSeg by typing:
 ```bash
 $ conda create -n plant-seg python=3.7
 $ conda activate plant-seg
-$ conda install -c anaconda h5py pywget pyyaml scikit-learn
-$ conda install -c conda-forge tifffile matplotlib scikit-image
+$ conda install -c conda-forge h5py pywget pyyaml scikit-learn tifffile scikit-image scipy=1.2
 ```
 Install MultiCut dependency:
 ```bash
@@ -44,10 +42,7 @@ $ conda install -c conda-forge -c cpape elf
 ```
 Install GASP dependency:
 ```bash
-$ git clone https://github.com/abailoni/GASP.git ~/.plantseg_models/GASP/
-$ cd ~/.plantseg_models/GASP/
-$ python setup.py install
-$ cd
+$ conda create -n GASP_env -c abailoni -c conda-forge gasp
 ```
 Our pipeline uses the pytorch library for the CNN predictions. To benefit from the GPU performance boost the right
  version of pytorch must be installed. 

@@ -1,6 +1,5 @@
 import h5py
 import numpy as np
-import glob
 from scipy.ndimage import zoom
 from skimage.morphology import disk
 from skimage.filters import median
