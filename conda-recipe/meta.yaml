@@ -3,16 +3,24 @@ package:
   version: 1.0.0
 
 source:
-  git_rev: v1.0.0
-  git_url: https://github.com/hci-unihd/plant-seg.git
+  # git_rev: v1.0.0
+  path: ..
+
+build:
+  script: "pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
+  number: 1
+
+  entry_points:
+    - plantseg = plantseg.main.plantseg:main
 
 requirements:
   build:
     - python
-    - setuptools
+    - pip
 
   run:
     - python 3.7
+    - pillow<7
     - h5py
     - pywget
     - pyyaml
