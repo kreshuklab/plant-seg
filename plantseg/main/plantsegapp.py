@@ -257,8 +257,8 @@ class PlantSegApp:
             plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
         else:
             # Do not modify this location
-            plant_config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
-                                             "plantseg",
+            plant_config_path = os.path.join(plantseg_global_path,
+                                             "resources",
                                              "config_gui_template.yaml")
             plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
 
@@ -272,8 +272,8 @@ class PlantSegApp:
 
     def reset_config(self):
         """ reset to default config, do not change path"""
-        plant_config_path = os.path.join(os.path.dirname(os.path.abspath('__file__')),
-                                         "plantseg"
+        plant_config_path = os.path.join(plantseg_global_path,
+                                         "resources",
                                          "config_gui_template.yaml")
         self.plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
 
