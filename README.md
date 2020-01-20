@@ -77,7 +77,23 @@ The PlantSeg related files (models, configs) will be placed inside your home dir
 Our pipeline uses the PyTorch library for the CNN predictions. PlantSeg can be run on systems without GPU, however 
 for maximum performance we recommend that the application is run on a machine with a high performance GPU for deep learning.
 
-## Training on New Data:
+## Docker image
+We also provide a docker image with plantseg package.
+
+**Linux only**: In oder to execute the docker image in the GUI mode, fist we need to allow everyone to access X server
+on the docker host. This can be done by invoking the following command in the terminal:
+```bash
+xhost +
+
+```
+The just run:
+```
+docker run -it --rm -v PATH_TO_DATASET:/root/datasets -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY plantseg
+
+```
+this will start the _PlantSeg_ GUI application. `PATH_TO_DATASET` is the directory on the docker host where the data to be processed are stored.
+
+## Training on New Data
 For training new models we rely on the [pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet). 
 A similar configuration file can be used for training on new data and all the instructions can be found in the repo.
 When the network is trained it is enough to copy the following files into the `~/.plantseg_models/` directory:
@@ -92,4 +108,4 @@ Now you can simply use your model for prediction by editing the [model_name:](ex
  
 If you want your model to be part of the open-source model zoo provided with this package, please contact us.
 
-## Citation:
+## Citation
