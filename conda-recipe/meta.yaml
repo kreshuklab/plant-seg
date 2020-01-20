@@ -31,7 +31,7 @@ requirements:
     - vigra
     - torchvision
     - pytorch
-    - elf
+    - elf =0.1.0
     - gasp
     - pytorch-3dunet
 
