@@ -1,12 +1,92 @@
+# Simple dictionary containing the models repository urls
+# OwnCould link is obtained by creating a Public Link to a directory: <OC_BASE_URL>/s/<dir ID>/download?path...?files=
 
-#Simple dictionary containing the models repository urls
-unet_ds2x_bce:
+## Aliases for best performing networks for confocal and light-sheet
+generic_confocal_3d_unet:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2Funet_bce_ds2x&files=
+  resolution: [0.235, 0.150, 0.150]
+  description: Unet trained on confocal images on half-resolution in XY with BCE loss.
+generic_light_sheet_3d_unet:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_ds1x&files=
+  resulution: [0.25, 0.1625, 0.1625]
+  description: Unet trained on light-sheet images on original resolution with BCE Loss.
+
+## Ovules
+confocal_unet_bce_ds1x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2Funet_bce_ds1x&files=
+  resolution: [0.235, 0.075, 0.075]
+  description: Unet trained on confocal images on original resolution with BCE loss.
+confocal_unet_bce_ds2x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2Funet_bce_ds2x&files=
+  resolution: [0.235, 0.150, 0.150]
+  description: Unet trained on confocal images on half-resolution in XY with BCE loss.
+confocal_unet_dice_ds1x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2Funet_dice_ds1x&files=
+  resolution: [0.235, 0.075, 0.075]
+  description: Unet trained on confocal images on original resolution with Dice Loss.
+confocal_unet_dice_ds2x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2Funet_dice_ds2x&files=
+  resolution: [0.235, 0.150, 0.150]
+  description: Unet trained on confocal images on half-resolution in XY with Dice Loss.
+confocal_resunet_bce_ds1x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2Fresunet_bce_ds1x&files=
+  resolution: [0.235, 0.075, 0.075]
+  description: Residual Unet trained on confocal images on original resolution with BCE loss.
+confocal_resunet_bce_ds2x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2Fresunet_bce_ds2x&files=
+  resolution: [0.235, 0.150, 0.150]
+  description: Residual Unet trained on confocal images on half-resolution in XY with BCE loss.
+confocal_resunet_dice_ds1x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2Fresunet_dice_ds1x&files=
+  resolution: [0.235, 0.075, 0.075]
+  description: Residual Unet trained on confocal images on original resolution with Dice loss.
+confocal_resunet_dice_ds2x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2Fresunet_dice_ds2x&files=
+  resolution: [0.235, 0.150, 0.150]
+  description: Residual Unet trained on confocal images on half-resolution in XY with Dice loss.
+
+
+## Root
+lightsheet_unet_bce_ds1x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_ds1x&files=
+  resulution: [0.25, 0.1625, 0.1625]
+  description: Unet trained on light-sheet images on original resolution with BCE Loss.
+lightsheet_unet_bce_ds2x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_ds2x&files=
+  resulution: [0.25, 0.325, 0.325]
+  description: Unet trained on light-sheet images on half-resolution in XY with BCE Loss.
+lightsheet_unet_dice_ds1x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_dice_ds1x&files=
+  resulution: [0.25, 0.1625, 0.1625]
+  description: Unet trained on light-sheet images on original resolution with Dice Loss.
+lightsheet_unet_dice_ds2x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_dice_ds2x&files=
+  resulution: [0.25, 0.325, 0.325]
+  description: Unet trained on light-sheet images on half-resolution in XY with Dice Loss.
+lightsheet_resunet_bce_ds1x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Fresunet_bce_ds1x&files=
+  resulution: [0.25, 0.1625, 0.1625]
+  description: Residual Unet trained on light-sheet images on original resolution with BCE Loss.
+lightsheet_resunet_bce_ds2x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Fresunet_bce_ds2x&files=
+  resulution: [0.25, 0.325, 0.325]
+  description: Residual Unet trained on light-sheet images on half-resolution in XY with BCE Loss.
+lightsheet_resunet_dice_ds1x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Fresunet_dice_ds1x&files=
+  resulution: [0.25, 0.1625, 0.1625]
+  description: Residual Unet trained on light-sheet images on original resolution with Dice Loss.
+lightsheet_resunet_dice_ds2x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Fresunet_dice_ds2x&files=
+  resulution: [0.25, 0.325, 0.325]
+  description: Residual Unet trained on light-sheet images on half-resolution in XY with Dice Loss.
+
+
+# Old networks
+ovules+unet_ds2x_bce:
   path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2Funet_ds2x_bce&files=
   resolution: [0.235, 0.150, 0.150]
-  description: Unet trained on Ovules.
-unet_bce_with_aff:
+  description: Unet trained on ovules.
+root_unet_bce_with_aff:
   path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_with_aff_t0t3t9t25t35t40t49&files=
   resulution: [0.25, 0.1625, 0.1625]
   description: Unet trained on root.
-
-
