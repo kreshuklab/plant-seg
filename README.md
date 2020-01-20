@@ -120,4 +120,4 @@ If you want your model to be part of the open-source model zoo provided with thi
 	URL = {https://www.biorxiv.org/content/early/2020/01/18/2020.01.17.910562},\
 	eprint = {https://www.biorxiv.org/content/early/2020/01/18/2020.01.17.910562.full.pdf},\
 	journal = {bioRxiv}\
-}\
+}
