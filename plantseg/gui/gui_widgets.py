@@ -566,6 +566,14 @@ class SegmentationFrame(ModuleFramePrototype):
                                               menu={"True", "False"},
                                               default=config[self.module]["ws_2D"],
                                               font=font),
+
+                           "ws_threshold": SimpleEntry(self.segmentation_frame,
+                                                   text="WS Threshold",
+                                                   row=6,
+                                                   column=0,
+                                                   _type=float,
+                                                   _font=font),
+
                            "ws_sigma": SimpleEntry(self.segmentation_frame,
                                                    text="WS Seeds Sigma: ",
                                                    row=5,
