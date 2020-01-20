@@ -119,6 +119,7 @@ Now you can simply use your model for prediction by editing the [model_name:](ex
 If you want your model to be part of the open-source model zoo provided with this package, please contact us.
 
 ## Citation
+```
 @article {Wolny2020.01.17.910562,\
 	author = {Wolny, Adrian and Cerrone, Lorenzo and Vijayan, Athul and Tofanelli, Rachele and Barro, Amaya Vilches and Louveaux, Marion and Wenzl, Christian and Steigleder, Susanne and Pape, Constantin and Bailoni, Alberto and Duran-Nebreda, Salva and Bassel, George and Lohmann, Jan U. and Hamprecht, Fred A. and Schneitz, Kay and Maizel, Alexis and Kreshuk, Anna},\
 	title = {Accurate And Versatile 3D Segmentation Of Plant Tissues At Cellular Resolution},\
@@ -130,3 +131,4 @@ If you want your model to be part of the open-source model zoo provided with thi
 	eprint = {https://www.biorxiv.org/content/early/2020/01/18/2020.01.17.910562.full.pdf}, \
 	journal = {bioRxiv} \
 }
+```
