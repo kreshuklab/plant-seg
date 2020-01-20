@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-(open('plantseg/__version__.py').read())
+exec(open('plantseg/__version__.py').read())
 setup(
     name='plantseg',
     version=__version__,
