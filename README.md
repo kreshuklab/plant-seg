@@ -78,7 +78,8 @@ Our pipeline uses the PyTorch library for the CNN predictions. PlantSeg can be r
 for maximum performance we recommend that the application is run on a machine with a high performance GPU for deep learning.
 
 ## Docker image
-We also provide a docker image with plantseg package.
+We also provide a docker image with plantseg package installed.
+Make sure that [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) is installed on the docker host.
 
 **Linux only**: In oder to execute the docker image in the GUI mode, fist we need to allow everyone to access X server
 on the docker host. This can be done by invoking the following command in the terminal:
@@ -88,7 +89,7 @@ xhost +
 ```
 The just run:
 ```
-docker run -it --rm -v PATH_TO_DATASET:/root/datasets -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY plantseg
+docker run -it --rm -v PATH_TO_DATASET:/root/datasets -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY wolny/plantseg
 
 ```
 this will start the _PlantSeg_ GUI application. `PATH_TO_DATASET` is the directory on the docker host where the data to be processed are stored.
