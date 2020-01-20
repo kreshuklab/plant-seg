@@ -3,10 +3,11 @@ import yaml
 from .raw2seg import raw2seg
 from .plantsegapp import PlantSegApp
 
+
 def parser():
     parser = argparse.ArgumentParser(description='Plant cell instance segmentation script')
     parser.add_argument('--config', type=str, help='Path to the YAML config file', required=False)
-    parser.add_argument('--gui', action='store_true', help='Path to the YAML config file', required=False)
+    parser.add_argument('--gui', action='store_true', help='Launch GUI configurator', required=False)
     args = parser.parse_args()
     return args
 

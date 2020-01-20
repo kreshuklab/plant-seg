@@ -3,5 +3,5 @@ In order to create conda package:
 
 Run: 
 ```
-conda build conda-recipe/meta.yaml -c abailoni -c cpape -c awolny -c conda-forge
+conda build conda-recipe -c abailoni -c cpape -c awolny -c conda-forge
 ```

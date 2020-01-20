@@ -2,25 +2,9 @@ import importlib
 import os
 import sys
 
-# To be changed in case of non standard installation
-"""
-##################################################################################################
-pytorch_3dunet_default_directory = os.path.join(os.path.expanduser("~"),                         #
-                                                ".plantseg_models",                              #
-                                                "pytorch-3dunet")                                #
-##################################################################################################
-sys.path.append(pytorch_3dunet_default_directory)
-"""
-
-from datasets.hdf5 import get_test_loaders
-from unet3d import utils
-from unet3d.config import load_config
-from unet3d.model import get_model
-
-# Uncomment when  3d-unet recipe is solved
-#from pytorch3dunet.datasets.hdf5 import get_test_loaders
-#from pytorch3dunet.unet3d import utils
-#from pytorch3dunet.unet3d.model import get_model
+from pytorch3dunet.datasets.hdf5 import get_test_loaders
+from pytorch3dunet.unet3d import utils
+from pytorch3dunet.unet3d.model import get_model
 
 logger = utils.get_logger('UNet3DPredictor')
 
@@ -49,7 +33,7 @@ def _get_predictor(model, loader, output_file, config):
     predictor_config = config.get('predictor', {})
     class_name = predictor_config.get('name', 'StandardPredictor')
 
-    m = importlib.import_module('unet3d.predictor')
+    m = importlib.import_module('pytorch3dunet.unet3d.predictor')
     predictor_class = getattr(m, class_name)
 
     return predictor_class(model, loader, output_file, config, **predictor_config)

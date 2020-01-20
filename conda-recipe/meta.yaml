@@ -1,9 +1,8 @@
 package:
   name: plantseg
-  version: 1.0.0
+  version: {{ GIT_DESCRIBE_TAG }}
 
 source:
-  # git_rev: v1.0.0
   path: ..
 
 build:
@@ -20,6 +19,7 @@ requirements:
 
   run:
     - python 3.7
+    # TODO: remove pillow dep after new torchvision release
     - pillow<7
     - h5py
     - pywget
@@ -36,9 +36,14 @@ requirements:
     - pytorch-3dunet
 
 test:
+  imports:
+    - plantseg
+    - plantseg.gui
+    - plantseg.segmentation
   requires:
     - pytest
   run:
-    - pytest tests/
+    - pytest
 about:
   home: https://github.com/hci-unihd/plant-seg
+  license: MIT
