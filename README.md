@@ -118,17 +118,44 @@ Now you can simply use your model for prediction by editing the [model_name:](ex
  
 If you want your model to be part of the open-source model zoo provided with this package, please contact us.
 
+## Troubleshooting
+* If you stumble in the following error message:
+```
+AssertionError:
+The NVIDIA driver on your system is too old (found version xxxx).
+Please update your GPU driver by downloading and installing a new
+version from the URL: http://www.nvidia.com/Download/index.aspx
+Alternatively, go to: http://pytorch.org to install
+a PyTorch version that has been compiled with your version
+of the CUDA driver.
+```
+It means that your cuda installation does not match the default in plantseg. 
+You can check your current cuda version by typing in the terminal
+```
+cat /usr/local/cuda/version.txt
+```
+Then you can re-install PlantSeg according with your cuda version by using for cuda 10.1
+```
+conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge cudatoolkit=10.1 plantseg
+```
+or for cuda 9.2
+```
+conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge cudatoolkit=9.2 plantseg
+```
 ## Citation
 ```
-@article {Wolny2020.01.17.910562,\
-	author = {Wolny, Adrian and Cerrone, Lorenzo and Vijayan, Athul and Tofanelli, Rachele and Barro, Amaya Vilches and Louveaux, Marion and Wenzl, Christian and Steigleder, Susanne and Pape, Constantin and Bailoni, Alberto and Duran-Nebreda, Salva and Bassel, George and Lohmann, Jan U. and Hamprecht, Fred A. and Schneitz, Kay and Maizel, Alexis and Kreshuk, Anna},\
-	title = {Accurate And Versatile 3D Segmentation Of Plant Tissues At Cellular Resolution},\
-	elocation-id = {2020.01.17.910562},\
-	year = {2020},\
-	doi = {10.1101/2020.01.17.910562},\
-	publisher = {Cold Spring Harbor Laboratory},\
-	URL = {https://www.biorxiv.org/content/early/2020/01/18/2020.01.17.910562}, \
-	eprint = {https://www.biorxiv.org/content/early/2020/01/18/2020.01.17.910562.full.pdf}, \
-	journal = {bioRxiv} \
+@article {Wolny2020.01.17.910562,
+	author = {Wolny, Adrian and Cerrone, Lorenzo and Vijayan, Athul and Tofanelli, Rachele and Barro,
+              Amaya Vilches and Louveaux, Marion and Wenzl, Christian and Steigleder, Susanne and Pape, 
+              Constantin and Bailoni, Alberto and Duran-Nebreda, Salva and Bassel, George and Lohmann,
+              Jan U. and Hamprecht, Fred A. and Schneitz, Kay and Maizel, Alexis and Kreshuk, Anna},
+	title = {Accurate And Versatile 3D Segmentation Of Plant Tissues At Cellular Resolution},
+	elocation-id = {2020.01.17.910562},
+	year = {2020},
+	doi = {10.1101/2020.01.17.910562},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2020/01/18/2020.01.17.910562}, 
+	eprint = {https://www.biorxiv.org/content/early/2020/01/18/2020.01.17.910562.full.pdf},
+	journal = {bioRxiv}
 }
 ```
