@@ -94,6 +94,15 @@ docker run -it --rm -v PATH_TO_DATASET:/root/datasets -v /tmp/.X11-unix:/tmp/.X1
 ```
 this will start the _PlantSeg_ GUI application. `PATH_TO_DATASET` is the directory on the docker host where the data to be processed are stored.
 
+## Datasets
+We publicly release the datasets used for training the networks which available as part of the _PlantSeg_ package.
+Please refer to [our publication](https://www.biorxiv.org/content/10.1101/2020.01.17.910562v1) for more details about the datasets:
+- _Arabidopsis thaliana_ ovules dataset (raw confocal images + ground truth labels) can be downloaded from [here](https://oc.embl.de/index.php/s/yUl0GGCYDfxxVVm)
+- _Arabidopsis thaliana_ lateral root (raw light sheet images + ground truth labels) can be downloaded from [here](https://oc.embl.de/index.php/s/gNXDHhOS4GwBlZT)
+
+## Pre-trained networks
+
+
 ## Training on New Data
 For training new models we rely on the [pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet). 
 A similar configuration file can be used for training on new data and all the instructions can be found in the repo.
