@@ -1,5 +1,5 @@
 # PlantSeg 
-Basi
+
 ## File Browser 
 
 ## Pipeline 
