@@ -181,7 +181,7 @@ class FilterEntry:
     def __call__(self, value, obj_collection):
         self.tk_value = [tkinter.BooleanVar(), tkinter.StringVar(), tkinter.DoubleVar()]
         self.tk_value[0].set(False)
-        self.tk_value[1].set("median")
+        self.tk_value[1].set("gaussian")
         self.tk_value[2].set(1.0)
 
         label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)

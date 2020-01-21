@@ -24,7 +24,7 @@ unet_prediction:
   # enable/disable UNet prediction
   state: True
   # Trained model name, more info on available models and custom models in the README
-  model_name: "unet_ds2x_bce"
+  model_name: "generic_confocal_3d_unet"
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
   device: "cpu"
   # patch size given to the network (adapt to fit in your GPU mem)
