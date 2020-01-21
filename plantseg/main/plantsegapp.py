@@ -337,7 +337,7 @@ class PlantSegApp:
     @staticmethod
     def open_documentation():
         """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/Documentation-GUI/")
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/tree/1.0.3/Documentation-GUI")
 
     def size_up(self):
         """ adjust font size in the main widget"""

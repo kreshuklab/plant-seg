@@ -2,8 +2,8 @@ import tkinter
 from .gui_tools import convert_rgb, var_to_tkinter, list_models
 
 stick_all = tkinter.N + tkinter.S + tkinter.E + tkinter.W
-stick_n = tkinter.E + tkinter.W #tkinter.N + tkinter.S + tkinter.E + tkinter.W
-stick_n2 = tkinter.N + tkinter.E + tkinter.W
+stick_ew = tkinter.E + tkinter.W
+stick_new = tkinter.N + tkinter.E + tkinter.W
 
 
 class MenuEntry:
@@ -27,7 +27,7 @@ class MenuEntry:
 
         [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
         [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
-        self.frame.grid(row=row, column=column, sticky=stick_n)
+        self.frame.grid(row=row, column=column, sticky=stick_ew)
 
         self.tk_value = tkinter.StringVar()
         if default is None:
@@ -82,7 +82,7 @@ class SimpleEntry:
 
         [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
         [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
-        self.frame.grid(row=row, column=column, sticky=stick_n)
+        self.frame.grid(row=row, column=column, sticky=stick_ew)
 
         self.tk_value = None
 
@@ -94,14 +94,14 @@ class SimpleEntry:
                     row=0,
                     padx=self.style["padx"],
                     pady=self.style["pady"],
-                    sticky=stick_n)
+                    sticky=tkinter.W)
 
         entry1 = tkinter.Entry(self.frame, textvar=self.tk_value, font=self.font)
         entry1.grid(column=1,
                     row=0,
                     padx=self.style["padx"],
                     pady=self.style["pady"],
-                    sticky=stick_n)
+                    sticky=tkinter.E)
 
         obj_collection.append(label1)
         obj_collection.append(entry1)
@@ -128,7 +128,7 @@ class BoolEntry:
 
         [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
         [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
-        self.frame.grid(row=row, column=column, sticky=stick_n)
+        self.frame.grid(row=row, column=column, sticky=stick_ew)
 
         self.tk_value = None
 
@@ -140,14 +140,14 @@ class BoolEntry:
                     row=0,
                     padx=self.style["padx"],
                     pady=self.style["pady"],
-                    sticky=stick_n)
+                    sticky=stick_ew)
 
         entry1 = tkinter.Checkbutton(self.frame, variable=self.tk_value, bg=self.style["bg"], font=self.font)
         entry1.grid(column=1,
                     row=0,
                     padx=self.style["padx"],
                     pady=self.style["pady"],
-                    sticky=stick_n)
+                    sticky=stick_ew)
 
         obj_collection.append(label1)
         obj_collection.append(entry1)
@@ -174,7 +174,7 @@ class FilterEntry:
 
         [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
         [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
-        self.frame.grid(row=row, column=column, sticky=stick_n)
+        self.frame.grid(row=row, column=column, sticky=stick_ew)
 
         self.tk_value = None
 
@@ -243,7 +243,7 @@ class ListEntry:
 
         [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
         [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
-        self.frame.grid(row=row, column=column, sticky=stick_n)
+        self.frame.grid(row=row, column=column, sticky=stick_ew)
 
         self.tk_value = None
 
@@ -258,21 +258,21 @@ class ListEntry:
                     row=0,
                     padx=self.style["padx"],
                     pady=self.style["pady"],
-                    sticky=stick_n)
+                    sticky=stick_ew)
 
         entry1 = tkinter.Entry(self.frame, textvar=self.tk_value[0], width=3, font=self.font)
         entry1.grid(column=1,
                     row=0,
                     padx=(self.style["padx"], 0),
                     pady=self.style["pady"],
-                    sticky=stick_n)
+                    sticky=stick_ew)
         entry1["bg"] = "white"
 
         entry2 = tkinter.Entry(self.frame, textvar=self.tk_value[1], width=3, font=self.font)
         entry2.grid(column=2,
                     row=0,
                     pady=self.style["pady"],
-                    sticky=stick_n)
+                    sticky=stick_ew)
         entry2["bg"] = "white"
 
         entry3 = tkinter.Entry(self.frame, textvar=self.tk_value[2], width=3, font=self.font)
@@ -280,7 +280,7 @@ class ListEntry:
                     row=0,
                     padx=(0, self.style["padx"]),
                     pady=self.style["pady"],
-                    sticky=stick_n)
+                    sticky=stick_ew)
         entry3["bg"] = "white"
 
         obj_collection.append(label1)
@@ -393,7 +393,7 @@ class PreprocessingFrame(ModuleFramePrototype):
                                       row=0,
                                       padx=self.preprocessing_style["padx"],
                                       pady=self.preprocessing_style["pady"],
-                                      sticky=stick_n2)
+                                      sticky=stick_new)
 
         [tkinter.Grid.rowconfigure(self.preprocessing_frame, i, weight=w)
          for i, w in enumerate(self.preprocessing_style["row_weights"])]
@@ -423,18 +423,24 @@ class PreprocessingFrame(ModuleFramePrototype):
                                                row=2,
                                                column=0,
                                                font=font),
-                           "order": SimpleEntry(self.preprocessing_frame,
-                                                text="Interpolation: ",
-                                                row=3,
-                                                column=0,
-                                                _type=int,
-                                                _font=font),
+                           "order": MenuEntry(self.preprocessing_frame,
+                                              text="Interpolation: ",
+                                              row=3,
+                                              column=0,
+                                              menu=[0, 1, 2],
+                                              default=2),
                            "filter": FilterEntry(self.preprocessing_frame,
                                                  text="Filter: ",
                                                  row=4,
                                                  column=0,
                                                  font=font),
                            }
+        # "order": SimpleEntry(self.preprocessing_frame,
+        #                     text="Interpolation: ",
+        #                     row=3,
+        #                     column=0,
+        #                     _type=int,
+        #                     _font=font),
 
         self.show_options()
 
@@ -452,10 +458,10 @@ class UnetPredictionFrame(ModuleFramePrototype):
 
         self.prediction_frame["bg"] = self.prediction_style["bg"]
         self.prediction_frame.grid(column=col,
-                                    row=0,
-                                    padx=self.prediction_style["padx"],
-                                    pady=self.prediction_style["pady"],
-                                    sticky=stick_n2)
+                                   row=0,
+                                   padx=self.prediction_style["padx"],
+                                   pady=self.prediction_style["pady"],
+                                   sticky=stick_new)
 
         [tkinter.Grid.rowconfigure(self.prediction_frame, i, weight=w)
          for i, w in enumerate(self.prediction_style["row_weights"])]
@@ -488,7 +494,7 @@ class UnetPredictionFrame(ModuleFramePrototype):
                                               type=int,
                                               font=font),
                            "stride": ListEntry(self.prediction_frame,
-                                               text="Stride: ",
+                                               text="Stride:    ",
                                                row=3,
                                                column=0,
                                                type=int,
@@ -518,10 +524,10 @@ class SegmentationFrame(ModuleFramePrototype):
 
         self.segmentation_frame["bg"] = self.segmentation_style["bg"]
         self.segmentation_frame.grid(column=col,
-                                      row=0,
-                                      padx=self.segmentation_style["padx"],
-                                      pady=self.segmentation_style["pady"],
-                                      sticky=stick_n2)
+                                     row=0,
+                                     padx=self.segmentation_style["padx"],
+                                     pady=self.segmentation_style["pady"],
+                                     sticky=stick_new)
 
         [tkinter.Grid.rowconfigure(self.segmentation_frame, i, weight=w)
          for i, w in enumerate(self.segmentation_style["row_weights"])]
@@ -568,7 +574,7 @@ class SegmentationFrame(ModuleFramePrototype):
                                               font=font),
 
                            "ws_threshold": SimpleEntry(self.segmentation_frame,
-                                                   text="WS Threshold",
+                                                   text="WS Threshold ",
                                                    row=5,
                                                    column=0,
                                                    _type=float,
@@ -587,13 +593,13 @@ class SegmentationFrame(ModuleFramePrototype):
                                                      _type=float,
                                                      _font=font),
                            "ws_minsize": SimpleEntry(self.segmentation_frame,
-                                                     text="WS Minimum Size: (voxels)",
+                                                     text="WS Minimum Size: (voxels) ",
                                                      row=8,
                                                      column=0,
                                                      _type=int,
                                                      _font=font),
                            "post_minsize": SimpleEntry(self.segmentation_frame,
-                                                       text="Minimum Size: (voxels)",
+                                                     text="Minimum Size: (voxels) ",
                                                        row=9,
                                                        column=0,
                                                        _type=int,
@@ -670,7 +676,7 @@ class PostPredictionsFrame(ModuleFramePrototype):
                              row=row,
                              padx=self.post_style["padx"],
                              pady=self.post_style["pady"],
-                             sticky=stick_n2)
+                             sticky=stick_new)
 
         [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w)
          for i, w in enumerate(self.post_style["row_weights"])]
@@ -726,7 +732,7 @@ class PostFrame:
                              row=0,
                              padx=self.post_style["padx"],
                              pady=self.post_style["pady"],
-                             sticky=stick_n2)
+                             sticky=stick_new)
 
         [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w)
          for i, w in enumerate(self.post_style["row_weights"])]
