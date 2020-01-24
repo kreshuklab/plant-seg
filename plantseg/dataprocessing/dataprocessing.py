@@ -65,6 +65,7 @@ class DataPostProcessing3D:
 
     @staticmethod
     def down_sample(image, factor, order):
+        order = int(order)
         return zoom(image, zoom=factor, order=order)
 
 
@@ -161,6 +162,7 @@ class DataPreProcessing3D:
 
     @staticmethod
     def down_sample(image, factor, order):
+        order = int(order)
         if np.prod(factor) == 1:
             return image
         else:
