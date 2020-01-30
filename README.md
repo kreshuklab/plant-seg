@@ -129,19 +129,36 @@ Alternatively, go to: http://pytorch.org to install
 a PyTorch version that has been compiled with your version
 of the CUDA driver.
 ```
+or:
+```
+    raise AssertionError("Torch not compiled with CUDA enabled")
+AssertionError: Torch not compiled with CUDA enabled
+
+```
 It means that your cuda installation does not match the default in plantseg. 
 You can check your current cuda version by typing in the terminal
 ```
 cat /usr/local/cuda/version.txt
 ```
-Then you can re-install PlantSeg according with your cuda version by using for cuda 10.1
+Then you can re-install the pytorch version compatible with your cuda by activating your `plant-seg` environment:
 ```
-conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge cudatoolkit=10.1 plantseg
+conda activate plant-seg
 ```
-or for cuda 9.2
+and 
 ```
-conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge cudatoolkit=9.2 plantseg
+conda install -c pytorch torchvision cudatoolkit=<YOU_CUDA_VERSION> pytorch
 ```
+e.g. for cuda 9.2
+```
+conda install -c pytorch torchvision cudatoolkit=9.2 pytorch
+```
+
+Alternatively one can create the `plant-seg` environment from scratch and ensuring the correct version of cuda/pytorch, by:
+```
+conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge cudatoolkit=<YOU_CUDA_VERSION> plantseg
+
+```
+
 ## Citation
 ```
 @article {Wolny2020.01.17.910562,
