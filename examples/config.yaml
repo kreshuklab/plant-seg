@@ -1,11 +1,11 @@
 # Contains the path to the directory or file to process
-path: "/home/lcerrone/Downloads/stacksForLorenzo/test/"
+path:
 
 preprocessing:
   # enable/disable preprocessing
   state: True
   # create a new sub folder where all results will be stored
-  save_directory: "preprocessing"
+  save_directory: "PreProcessing"
   # rescaling the volume is essential for the generalization of the networks. The rescaling factor can be computed as the resolution
   # of the volume at hand divided by the resolution of the dataset used in training. Be careful, if the difference is too large check for a different model.
   factor: [1.0, 1.0, 1.0]
@@ -20,11 +20,11 @@ preprocessing:
     # sigma (gaussian) or disc radius (median)
     filter_param: 1.0
 
-unet_prediction:
+cnn_prediction:
   # enable/disable UNet prediction
   state: True
   # Trained model name, more info on available models and custom models in the README
-  model_name: "unet_ds2x_bce"
+  model_name: "generic_confocal_3d_unet"
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
   device: "cpu"
   # patch size given to the network (adapt to fit in your GPU mem)
@@ -36,11 +36,15 @@ unet_prediction:
   # If "True" forces downloading networks for the online repos
   model_update: False
 
-  postprocessing:
-    state: True
-    tiff: False
-    factor: [1, 1, 1]
-    order: 2
+cnn_postprocessing:
+  # enable/disable cnn post processing
+  state: False
+  # if True convert to result to tiff
+  tiff: False
+  # rescaling factor
+  factor: [1, 1, 1]
+  # spline order for rescaling
+  order: 2
 
 
 segmentation:
@@ -50,7 +54,7 @@ segmentation:
   name: "MultiCut"
   # Segmentation specific parameters here
   # balance under-/over-segmentation; 0 - aim for undersegmentation, 1 - aim for oversegmentation
-  multicut_beta: 0.5
+  beta: 0.5
   # directory where to save the results
   save_directory: "MultiCut"
   # enable/disable watershed
@@ -59,15 +63,22 @@ segmentation:
   ws_2D: True
   # probability maps threshold
   ws_threshold: 0.5
-  # minimum size of the superpixels
+  # set the minimum superpixels size
   ws_minsize: 50
   # sigma for the gaussian smoothing of the distance transform
   ws_sigma: 2.0
+  # sigma for the gaussian smoothing of boundary
   ws_w_sigma: 0
+  # set the minimum segment size in the final segmentation
   post_minsize: 50
-  postprocessing:
-    state: True
-    tiff: False
-    factor: [1, 1, 1]
-    order: 0
+
+segmentation_postprocessing:
+  # enable/disable segmentation post processing
+  state: False
+  # if True convert to result to tiff
+  tiff: False
+  # rescaling factor
+  factor: [1, 1, 1]
+  # spline order for rescaling (keep 0 for segmentation post processing
+  order: 0
 
