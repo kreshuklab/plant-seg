@@ -749,6 +749,6 @@ class PostFrame:
         [tkinter.Grid.columnconfigure(self.post_frame, i, weight=w)
          for i, w in enumerate(self.post_style["columns_weights"])]
 
-        ##
+        # init frames
         self.post_pred_obj = PostPredictionsFrame(self.post_frame, config, row=0, font=font, show_all=True)
         self.post_seg_obj = PostSegmentationFrame(self.post_frame, config, row=1, font=font, show_all=True)

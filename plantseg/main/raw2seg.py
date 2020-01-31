@@ -10,8 +10,8 @@ def import_preprocessing_pipeline(input_paths, _config):
 def import_cnn_pipeline(input_paths, _config):
     from plantseg.predictions import create_predict_config
     from ..predictions.predict import ModelPredictions
-    ccn_config = create_predict_config(input_paths, _config)
-    model_predictions = ModelPredictions(ccn_config)
+    cnn_config = create_predict_config(input_paths, _config)
+    model_predictions = ModelPredictions(cnn_config)
     return model_predictions
 
 
@@ -36,9 +36,10 @@ def import_segmentation_postprocessing_pipeline(input_paths, _config):
 class SetupProcess:
     def __init__(self, paths, config, pipeline_name, import_function):
         if pipeline_name in config.keys() and config[pipeline_name]['state']:
-            print(pipeline_name, config[pipeline_name])
+            # Import pipeline and assign paths
             self.pipeline = import_function(paths, config[pipeline_name])
         else:
+            # If pipeline is not configured or state=False use dummy
             self.pipeline = dummy(paths, pipeline_name)
 
     def __call__(self):
