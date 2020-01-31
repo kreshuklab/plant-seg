@@ -20,7 +20,7 @@ preprocessing:
     # sigma (gaussian) or disc radius (median)
     filter_param: 1.0
 
-unet_prediction:
+cnn_prediction:
   # enable/disable UNet prediction
   state: True
   # Trained model name, more info on available models and custom models in the README
@@ -36,11 +36,11 @@ unet_prediction:
   # If "True" forces downloading networks for the online repos
   model_update: False
 
-  postprocessing:
-    state: True
-    tiff: False
-    factor: [1, 1, 1]
-    order: 2
+cnn_postprocessing:
+  state: True
+  tiff: False
+  factor: [1, 1, 1]
+  order: 2
 
 
 segmentation:
@@ -65,10 +65,11 @@ segmentation:
   ws_sigma: 2.0
   ws_w_sigma: 0
   post_minsize: 50
-  postprocessing:
-    state: True
-    tiff: False
-    factor: [1, 1, 1]
-    order: 0
+
+segmentation_postprocessing:
+  state: True
+  tiff: False
+  factor: [1, 1, 1]
+  order: 0
 
 

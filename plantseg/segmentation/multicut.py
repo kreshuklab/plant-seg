@@ -1,16 +1,14 @@
-import os
 import numpy as np
 import time
-import h5py
-import tifffile
 import nifty
 import nifty.graph.rag as nrag
 from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
 from elf.segmentation.features import compute_rag
 from elf.segmentation.multicut import multicut_kernighan_lin, transform_probabilities_to_costs
+from plantseg import GenericProcessing
 
 
-class MulticutFromPmaps:
+class MulticutFromPmaps(GenericProcessing):
     def __init__(self,
                  predictions_paths,
                  save_directory="MultiCut",
@@ -24,12 +22,13 @@ class MulticutFromPmaps:
                  post_minsize=50,
                  n_threads=6):
 
-        # name subdirectory created for the segmentation file + generic config
-        self.predictions_paths = predictions_paths
-        self.save_directory = save_directory
-        self.n_threads = n_threads
+        super().__init__(predictions_paths,
+                         input_type="data_float32",
+                         output_type="labels",
+                         save_directory=save_directory)
 
         # Multicut Parameters
+        self.outputs_paths = []
         self.beta = beta
 
         # Watershed parameters
@@ -43,51 +42,16 @@ class MulticutFromPmaps:
         # Post processing size threshold
         self.post_minsize = post_minsize
 
-    def __call__(self,):
+        # Multithread
+        self.n_threads = n_threads
 
-        # Generate some random affinities:
+    def __call__(self):
         for predictions_path in self.predictions_paths:
+            output_path, exist = self.create_output_path(predictions_path,
+                                                         prefix="_multicut",
+                                                         out_ext=".h5")
             # Load file
-            _, ext = os.path.splitext(predictions_path)
-            pmaps = None
-            if ext == ".tiff" or ext == ".tif":
-                pmaps = tifffile.imread(predictions_path)
-
-                # squeeze extra dimension
-                if len(pmaps.shape) == 4:
-                    pmaps = pmaps[0]
-
-                pmaps = (pmaps - pmaps.min()) / (pmaps.max() - pmaps.min()).astype(np.float32)
-
-            elif ext == ".hdf" or ext == ".h5" or ext == ".hd5":
-                with h5py.File(predictions_path, "r") as f:
-                    # Check for h5 dataset
-                    if "predictions" in f.keys():
-                        # predictions is the first choice
-                        dataset = "predictions"
-                    elif "raw" in f.keys():
-                        # raw is the second choice
-                        dataset = "raw"
-                    else:
-                        print("H5 dataset name not understood")
-                        raise NotImplementedError
-
-                    # Load data
-                    if len(f[dataset].shape) == 3:
-                        pmaps = f[dataset][...].astype(np.float32)
-                    elif len(f[dataset].shape) == 4:
-                        pmaps = f[dataset][0, ...].astype(np.float32)
-                    else:
-                        print(f[dataset].shape)
-                        print("Data shape not understood, data must be 3D or 4D")
-                        raise NotImplementedError
-
-            else:
-                print("Data extension not understood")
-                raise NotImplementedError
-            assert pmaps.ndim == 3, "Input probability maps must be 3D tiff or h5 (zxy) or" \
-                                    " 4D (czxy)," \
-                                    " where the fist channel contains the neural network boundary predictions"
+            pmaps = self.load_stack(predictions_path)
 
             runtime = time.time()
             segmentation = self.segment_volume(pmaps)
@@ -95,42 +59,23 @@ class MulticutFromPmaps:
             if self.post_minsize > self.ws_minsize:
                 segmentation, _ = apply_size_filter(segmentation, pmaps, self.post_minsize)
 
+            # stop real world clock timer
             runtime = time.time() - runtime
 
-            os.makedirs(os.path.join(os.path.dirname(predictions_path),
-                                     self.save_directory), exist_ok=True)
-
-            h5_file_path = os.path.join(os.path.dirname(predictions_path),
-                                        self.save_directory,
-                                        os.path.basename(predictions_path))
-
-            h5_file_path = os.path.splitext(h5_file_path)[0] + "_multicut" + ".h5"
-
+            self.save_output(segmentation,
+                             output_path,
+                             dataset="segmentation")
             self.runtime = runtime
-            self._log_params(h5_file_path)
-
-            # Save output results
-            with h5py.File(h5_file_path, "w") as file:
-                file.create_dataset("segmentation", data=segmentation.astype(np.uint16), compression='gzip')
-
             print("Clustering took {} s".format(runtime))
-
-    def _log_params(self, file):
-        import yaml
-        file = os.path.splitext(file)[0] + ".yaml"
-        dict_file = {"algorithm": self.__class__.__name__}
-
-        for name, value in self.__dict__.items():
-            dict_file[name] = value
-
-        with open(file, "w") as f:
-            f.write(yaml.dump(dict_file))
+            self.outputs_paths.append(output_path)
+        return self.outputs_paths
 
     def segment_volume(self, pmaps):
-
         if self.ws_2D:
+            # WS in 2D
             ws = self.ws_dt_2D(pmaps)
         else:
+            # WS in 3D
             ws, _ = distance_transform_watershed(pmaps, self.ws_threshold, self.ws_sigma, min_size=self.ws_minsize)
 
         rag = compute_rag(ws, 1)
@@ -143,7 +88,7 @@ class MulticutFromPmaps:
         # Creating graph
         graph = nifty.graph.undirectedGraph(rag.numberOfNodes)
         graph.insertEdges(rag.uvIds())
-        # Solving multicut
+        # Solving Multicut
         node_labels = multicut_kernighan_lin(graph, costs)
         return nifty.tools.take(node_labels, ws)
 

@@ -1,6 +1,5 @@
 import importlib
 import os
-import sys
 
 from pytorch3dunet.datasets.hdf5 import get_test_loaders
 from pytorch3dunet.unet3d import utils
@@ -12,21 +11,8 @@ logger = utils.get_logger('UNet3DPredictor')
 def _get_output_file(dataset, model_name, suffix='_predictions'):
     basepath, basename = os.path.split(dataset.file_path)
     basename = f"{os.path.splitext(basename)[0]}{suffix}.h5"
+    os.makedirs(os.path.join(basepath, model_name), exist_ok=True)
     return os.path.join(basepath, model_name, basename)
-
-
-def _get_dataset_names(config, number_of_datasets, prefix='predictions'):
-    dataset_names = config.get('dest_dataset_name')
-    if dataset_names is not None:
-        if isinstance(dataset_names, str):
-            return [dataset_names]
-        else:
-            return dataset_names
-    else:
-        if number_of_datasets == 1:
-            return [prefix]
-        else:
-            return [f'{prefix}{i}' for i in range(number_of_datasets)]
 
 
 def _get_predictor(model, loader, output_file, config):
