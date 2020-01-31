@@ -38,9 +38,10 @@ cnn_prediction:
 
 cnn_postprocessing:
   # enable/disable cnn post processing
-  state: False
+  state: True
   # if True convert to result to tiff
   tiff: False
+  output_type: "data_uint8"
   # rescaling factor
   factor: [1, 1, 1]
   # spline order for rescaling
@@ -51,12 +52,12 @@ segmentation:
   # enable/disable segmentation
   state: True
   # Name of the algorithm to use for inferences
-  name: "MultiCut"
+  name: "GASP"
   # Segmentation specific parameters here
   # balance under-/over-segmentation; 0 - aim for undersegmentation, 1 - aim for oversegmentation
-  beta: 0.5
+  beta: 0.6
   # directory where to save the results
-  save_directory: "MultiCut"
+  save_directory: "GASP"
   # enable/disable watershed
   run_ws: True
   # use 2D instead of 3D watershed
@@ -74,7 +75,7 @@ segmentation:
 
 segmentation_postprocessing:
   # enable/disable segmentation post processing
-  state: False
+  state: True
   # if True convert to result to tiff
   tiff: False
   # rescaling factor

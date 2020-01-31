@@ -161,7 +161,7 @@ class PlantSegApp:
         (self.pre_proc_obj,
          self.predictions_obj,
          self.segmentation_obj,
-         self.post_obj) = self.init_menus()
+         self.post_obj) = self.init_menus(show_all=True)
 
     def init_frame2(self):
         # =============================================================================================================
@@ -313,20 +313,21 @@ class PlantSegApp:
                 yaml.dump(self.plantseg_config, f)
 
     # End config Read/Write ========= Begin Others
-    def init_menus(self):
+    def init_menus(self, show_all=True):
         """ Initialize menu entries from config"""
         from ..gui.gui_widgets import PreprocessingFrame, UnetPredictionFrame, SegmentationFrame, PostFrame
         pre_proc_obj = PreprocessingFrame(self.configuration_frame1, self.plantseg_config,
                                           col=0, module_name="Data Pre-Processing",
-                                          font=self.font)
+                                          font=self.font, show_all=show_all)
         predictions_obj = UnetPredictionFrame(self.configuration_frame1, self.plantseg_config,
                                               col=1, module_name="3D-Unet",
-                                              font=self.font)
+                                              font=self.font, show_all=show_all)
         segmentation_obj = SegmentationFrame(self.configuration_frame1, self.plantseg_config,
                                              col=2, module_name="Segmentation",
-                                             font=self.font)
+                                             font=self.font, show_all=show_all)
         post_obj = PostFrame(self.configuration_frame1, self.plantseg_config,
-                             col=3, font=self.font)
+                             col=3, font=self.font, show_all=show_all)
+
         return pre_proc_obj, predictions_obj, segmentation_obj, post_obj
 
     @staticmethod
@@ -433,22 +434,19 @@ class PlantSegApp:
         plantseg_config["path"] = self.file_to_process.files.get()
 
         plantseg_config = self.pre_proc_obj.check_and_update_config(plantseg_config,
-                                                                    dict1="preprocessing",
-                                                                    dict2=False)
+                                                                    dict_key="preprocessing")
+
+        plantseg_config = self.predictions_obj.check_and_update_config(plantseg_config,
+                                                                       dict_key="cnn_prediction")
 
         plantseg_config = self.post_obj.post_pred_obj.check_and_update_config(plantseg_config,
-                                                                              dict1="unet_prediction",
-                                                                              dict2="postprocessing")
-        plantseg_config = self.predictions_obj.check_and_update_config(plantseg_config,
-                                                                       dict1="unet_prediction",
-                                                                       dict2=False)
+                                                                              dict_key="cnn_postprocessing")
+
+        plantseg_config = self.segmentation_obj.check_and_update_config(plantseg_config,
+                                                                        dict_key="segmentation")
 
         plantseg_config = self.post_obj.post_seg_obj.check_and_update_config(plantseg_config,
-                                                                              dict1="segmentation",
-                                                                              dict2="postprocessing")
-        plantseg_config = self.segmentation_obj.check_and_update_config(plantseg_config,
-                                                                        dict1="segmentation",
-                                                                        dict2=False)
+                                                                             dict_key="segmentation_postprocessing")
         # Save plantseg_config
         self.plantseg_config = plantseg_config
 

@@ -182,14 +182,12 @@ class AutoResPopup:
          for i in range(3)]
 
         self.config = self.preprocessing_menu.check_and_update_config(self.config,
-                                                                      dict1="preprocessing",
-                                                                      dict2=False)
+                                                                      dict_key="preprocessing")
 
         self.config = self.postprocessing_menu.post_pred_obj.check_and_update_config(self.config,
-                                                                                     dict1="unet_prediction",
-                                                                                     dict2="postprocessing")
+                                                                                     dict_key="cnn_postprocessing")
 
         self.config = self.postprocessing_menu.post_pred_obj.check_and_update_config(self.config,
-                                                                                     dict1="segmentation",
-                                                                                     dict2="postprocessing")
+                                                                                     dict_key="segmentation"
+                                                                                              "_postprocessing")
         self.popup.destroy()
