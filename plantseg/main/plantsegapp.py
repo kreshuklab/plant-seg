@@ -9,8 +9,9 @@ from ..gui.gui_tools import Files2Process, report_error, StdoutRedirect, convert
 import traceback
 from plantseg import plantseg_global_path
 
+
 class PlantSegApp:
-    def __init__(self):
+    def __init__(self, debug=False):
         # Init main app
         # App Setup ===================================================================================================
         # *--------------------------------------------------------------------------------------*
@@ -66,7 +67,8 @@ class PlantSegApp:
         self.build_all()
 
         self.plant_segapp.protocol("WM_DELETE_WINDOW", self.close)
-        sys.stdout = StdoutRedirect(self.out_text)
+        if not debug:
+            sys.stdout = StdoutRedirect(self.out_text)
         self.plant_segapp.mainloop()
 
     def update_font(self, size=10, family="helvetica"):
@@ -318,7 +320,7 @@ class PlantSegApp:
                                           col=0, module_name="Data Pre-Processing",
                                           font=self.font)
         predictions_obj = UnetPredictionFrame(self.configuration_frame1, self.plantseg_config,
-                                              col=1, module_name="3D - Unet",
+                                              col=1, module_name="3D-Unet",
                                               font=self.font)
         segmentation_obj = SegmentationFrame(self.configuration_frame1, self.plantseg_config,
                                              col=2, module_name="Segmentation",
@@ -337,7 +339,7 @@ class PlantSegApp:
     @staticmethod
     def open_documentation():
         """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/tree/1.0.3/Documentation-GUI")
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/tree/master/Documentation-GUI")
 
     def size_up(self):
         """ adjust font size in the main widget"""
