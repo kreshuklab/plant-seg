@@ -331,19 +331,12 @@ class ModuleFramePrototype:
 
         return config
 
-    def check_and_update_config(self, config, dict1, dict2):
+    def check_and_update_config(self, config, dict_key):
         if self.show.get():
-            if dict2:
-                config[dict1][dict2]["state"] = True
-                self.update_config(config[dict1][dict2])
-            else:
-                config[dict1]["state"] = True
-                self.update_config(config[dict1])
+            config[dict_key]["state"] = True
+            self.update_config(config[dict_key])
         else:
-            if dict2:
-                config[dict1][dict2]["state"] = False
-            else:
-                config[dict1]["state"] = False
+            config[dict_key]["state"] = False
 
         return config
 
@@ -378,7 +371,7 @@ class ModuleFramePrototype:
 
 
 class PreprocessingFrame(ModuleFramePrototype):
-    def __init__(self, frame, config, col=0, module_name="preprocessing", font=None):
+    def __init__(self, frame, config, col=0, module_name="preprocessing", font=None, show_all=True):
         self.preprocessing_frame = tkinter.Frame(frame)
         self.preprocessing_style = {"bg": "white",
                       "padx": 10,
@@ -405,9 +398,11 @@ class PreprocessingFrame(ModuleFramePrototype):
         self.config = config
 
         self.show = tkinter.BooleanVar()
-        # TODO fix state will reset and not load from the config
-        # self.show.set(config[self.module]["state"])
-        self.show.set(True)
+        if show_all:
+            self.show.set(True)
+        else:
+            self.show.set(self.config[self.module]["state"])
+
         self.checkbox["variable"] = self.show
         self.checkbox["command"] = self.show_options
 
@@ -435,18 +430,12 @@ class PreprocessingFrame(ModuleFramePrototype):
                                                  column=0,
                                                  font=font),
                            }
-        # "order": SimpleEntry(self.preprocessing_frame,
-        #                     text="Interpolation: ",
-        #                     row=3,
-        #                     column=0,
-        #                     _type=int,
-        #                     _font=font),
 
         self.show_options()
 
 
 class UnetPredictionFrame(ModuleFramePrototype):
-    def __init__(self, frame, config, col=0, module_name="preprocessing", font=None):
+    def __init__(self, frame, config, col=0, module_name="preprocessing", font=None, show_all=True):
         self.prediction_frame = tkinter.Frame(frame)
         self.prediction_style = {"bg": "white",
                       "padx": 10,
@@ -469,13 +458,15 @@ class UnetPredictionFrame(ModuleFramePrototype):
          for i, w in enumerate(self.prediction_style["columns_weights"])]
 
         super().__init__(self.prediction_frame, module_name, font=font)
-        self.module = "unet_prediction"
+        self.module = "cnn_prediction"
         self.config = config
-
         self.show = tkinter.BooleanVar()
-        # TODO fix state will reset and not load from the config
-        # self.show.set(config[self.module]["state"])
-        self.show.set(True)
+
+        if show_all:
+            self.show.set(True)
+        else:
+            self.show.set(self.config[self.module]["state"])
+
         self.checkbox["variable"] = self.show
         self.checkbox["command"] = self.show_options
 
@@ -512,7 +503,7 @@ class UnetPredictionFrame(ModuleFramePrototype):
 
 
 class SegmentationFrame(ModuleFramePrototype):
-    def __init__(self, frame, config, col=0, module_name="segmentation", font=None):
+    def __init__(self, frame, config, col=0, module_name="segmentation", font=None, show_all=True):
         self.segmentation_frame = tkinter.Frame(frame)
         self.segmentation_style = {"bg": "white",
                       "padx": 10,
@@ -539,9 +530,11 @@ class SegmentationFrame(ModuleFramePrototype):
         self.config = config
         self.show = tkinter.BooleanVar()
 
-        # TODO fix state will reset and not load from the config
-        # self.show.set(config[self.module]["state"])
-        self.show.set(True)
+        if show_all:
+            self.show.set(True)
+        else:
+            self.show.set(self.config[self.module]["state"])
+
         self.checkbox["variable"] = self.show
         self.checkbox["command"] = self.show_options
 
@@ -605,11 +598,12 @@ class SegmentationFrame(ModuleFramePrototype):
                                                        _type=int,
                                                        _font=font),
                            }
+
         self.show_options()
 
 
 class PostSegmentationFrame(ModuleFramePrototype):
-    def __init__(self, frame, config, row=0, module_name="Segmentation Post Processing", font=None):
+    def __init__(self, frame, config, row=0, module_name="Segmentation Post Processing", font=None, show_all=True):
         self.post_frame = tkinter.Frame(frame)
         self.post_style = {"bg": "white",
                       "padx": 0,
@@ -633,11 +627,15 @@ class PostSegmentationFrame(ModuleFramePrototype):
          for i, w in enumerate(self.post_style["columns_weights"])]
 
         super().__init__(self.post_frame, module_name, font=font)
-        self.module = "postprocessing"
-        self.config = config["segmentation"]
+        self.module = "cnn_postprocessing"
+        self.config = config
 
         self.show = tkinter.BooleanVar()
-        self.show.set(self.config[self.module]["state"])
+        if show_all:
+            self.show.set(True)
+        else:
+            self.show.set(self.config[self.module]["state"])
+
         self.checkbox["variable"] = self.show
         self.checkbox["command"] = self.show_options
 
@@ -659,7 +657,7 @@ class PostSegmentationFrame(ModuleFramePrototype):
 
 
 class PostPredictionsFrame(ModuleFramePrototype):
-    def __init__(self, frame, config, row=0, module_name="Prediction Post Processing", font=None):
+    def __init__(self, frame, config, row=0, module_name="Prediction Post Processing", font=None, show_all=True):
         self.post_frame = tkinter.Frame(frame)
         self.post_style = {"bg": "white",
                       "padx": 0,
@@ -684,11 +682,15 @@ class PostPredictionsFrame(ModuleFramePrototype):
          for i, w in enumerate(self.post_style["columns_weights"])]
 
         super().__init__(self.post_frame, module_name, font=font)
-        self.module = "postprocessing"
-        self.config = config["unet_prediction"]
+        self.module = "cnn_postprocessing"
+        self.config = config
 
         self.show = tkinter.BooleanVar()
-        self.show.set(self.config[self.module]["state"])
+        if show_all:
+            self.show.set(True)
+        else:
+            self.show.set(self.config[self.module]["state"])
+
         self.checkbox["variable"] = self.show
         self.checkbox["command"] = self.show_options
 
@@ -710,13 +712,21 @@ class PostPredictionsFrame(ModuleFramePrototype):
                                                 column=0,
                                                 _type=int,
                                                 _font=font),
+
+                           "output_type": MenuEntry(self.post_frame,
+                                                    text="Cast Predictions: ",
+                                                    row=4,
+                                                    column=0,
+                                                    menu=["data_uint8", "data_uint32"],
+                                                    default=config[self.module]["output_type"],
+                                                    font=font)
                            }
 
         self.show_options()
 
 
 class PostFrame:
-    def __init__(self, frame, config, col=0, font=None):
+    def __init__(self, frame, config, col=0, font=None, show_all=True):
         self.post_frame = tkinter.Frame(frame)
         self.post_style = {"bg": "white",
                                    "padx": 10,
@@ -740,23 +750,5 @@ class PostFrame:
          for i, w in enumerate(self.post_style["columns_weights"])]
 
         ##
-        config["segmentation"]["postprocessing"]["state"] = True
-        config["unet_prediction"]["postprocessing"]["state"] = True
-
-        self.post_pred_obj = PostPredictionsFrame(self.post_frame, config, row=0, font=font)
-        # self.post_pred_obj.show.set(False)
-        self.post_pred_obj.checkbox["bg"] = "white"
-
-        self.post_seg_obj = PostSegmentationFrame(self.post_frame, config, row=1, font=font)
-        # self.post_seg_obj.show.set(False)
-        self.post_seg_obj.checkbox["bg"] = "white"
-
-        self.post_frame.update()
-        self.post_seg_obj.show_options()
-        self.post_pred_obj.show_options()
-
-        self.post_pred_obj.show.set(False)
-        self.post_pred_obj.show_options()
-
-        self.post_seg_obj.show.set(False)
-        self.post_seg_obj.show_options()
+        self.post_pred_obj = PostPredictionsFrame(self.post_frame, config, row=0, font=font, show_all=True)
+        self.post_seg_obj = PostSegmentationFrame(self.post_frame, config, row=1, font=font, show_all=True)
