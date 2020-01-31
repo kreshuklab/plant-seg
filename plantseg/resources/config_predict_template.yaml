@@ -11,8 +11,6 @@ model:
   layer_order:
   # feature maps scale factor
   f_maps:
-  # basic module
-  basic_module:
   # number of groups in the groupnorm
   num_groups:
   # apply element-wise nn.Sigmoid after the final 1x1 convolution, otherwise apply nn.Softmax
