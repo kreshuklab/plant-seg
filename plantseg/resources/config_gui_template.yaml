@@ -5,7 +5,7 @@ preprocessing:
   # enable/disable preprocessing
   state: True
   # create a new sub folder where all results will be stored
-  save_directory: "preprocessing"
+  save_directory: "PreProcessing"
   # rescaling the volume is essential for the generalization of the networks. The rescaling factor can be computed as the resolution
   # of the volume at hand divided by the resolution of the dataset used in training. Be careful, if the difference is too large check for a different model.
   factor: [1.0, 1.0, 1.0]
@@ -37,9 +37,13 @@ cnn_prediction:
   model_update: False
 
 cnn_postprocessing:
-  state: True
+  # enable/disable cnn post processing
+  state: False
+  # if True convert to result to tiff
   tiff: False
+  # rescaling factor
   factor: [1, 1, 1]
+  # spline order for rescaling
   order: 2
 
 
@@ -59,17 +63,24 @@ segmentation:
   ws_2D: True
   # probability maps threshold
   ws_threshold: 0.5
-  # minimum size of the superpixels
+  # set the minimum superpixels size
   ws_minsize: 50
   # sigma for the gaussian smoothing of the distance transform
   ws_sigma: 2.0
+  # sigma for the gaussian smoothing of boundary
   ws_w_sigma: 0
+  # set the minimum segment size in the final segmentation
   post_minsize: 50
 
 segmentation_postprocessing:
-  state: True
+  # enable/disable segmentation post processing
+  state: False
+  # if True convert to result to tiff
   tiff: False
+  # rescaling factor
   factor: [1, 1, 1]
+  # spline order for rescaling (keep 0 for segmentation post processing
   order: 0
+
 
 
