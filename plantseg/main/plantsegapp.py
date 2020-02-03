@@ -67,7 +67,8 @@ class PlantSegApp:
         self.build_all()
 
         self.plant_segapp.protocol("WM_DELETE_WINDOW", self.close)
-        if not debug:
+        self.debug = debug
+        if not self.debug:
             sys.stdout = StdoutRedirect(self.out_text)
         self.plant_segapp.mainloop()
 
@@ -459,11 +460,6 @@ class PlantSegApp:
         self.update_config()
         self.plant_segapp.update()
 
-        # Print last config
-        print(f"Final config:")
-        for key in self.plantseg_config.keys():
-            print(f"{key}: {self.plantseg_config[key]}")
-
         # Run the pipeline
         try:
             raw2seg(self.plantseg_config)
@@ -472,6 +468,9 @@ class PlantSegApp:
             # NB. stderror is still the sys default. Errors outside the pipeline will be reported in the terminal.
             traceback.print_exc()
             report_error(e)
+
+            if not self.debug:
+                sys.stdout = StdoutRedirect(self.out_text)
 
         # Enable the run button
         self.run_button["state"] = "normal"

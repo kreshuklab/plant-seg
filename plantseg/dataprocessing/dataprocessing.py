@@ -1,3 +1,4 @@
+import time
 import numpy as np
 from scipy.ndimage import zoom
 from skimage.filters import median
@@ -54,6 +55,7 @@ class DataPostProcessing3D(GenericProcessing):
 
     def __call__(self, ):
         for path in self.paths:
+            runtime = time.time()
             print(f"Postprocessing {path}")
             # Load h5 from predictions or segmentation
             output_path, exist = self.create_output_path(path,
@@ -64,6 +66,9 @@ class DataPostProcessing3D(GenericProcessing):
             image = _rescale(image, self.factor, self.order)
             self.save_output(image, output_path, dataset=self.dataset)
             self.outputs_paths.append(output_path)
+
+            runtime = time.time() - runtime
+            print(" - PostProcessing took {} s".format(runtime))
 
         # returns input paths for postprocessing are not updated.
         return self.paths
@@ -112,6 +117,7 @@ class DataPreProcessing3D(GenericProcessing):
 
     def __call__(self, ):
         for path in self.paths:
+            runtime = time.time()
             print(f"PreProcessing {path}")
             # Load h5 from predictions or segmentation
             output_path, exist = self.create_output_path(path,
@@ -124,5 +130,8 @@ class DataPreProcessing3D(GenericProcessing):
 
             self.save_output(image, output_path, dataset=self.dataset)
             self.outputs_paths.append(output_path)
+
+            runtime = time.time() - runtime
+            print(" - PreProcessing took {} s".format(runtime))
 
         return self.outputs_paths

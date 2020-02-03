@@ -1,5 +1,9 @@
 import glob
 import os
+import warnings
+
+warnings.simplefilter('once', UserWarning)
+allowed_data_format = [".tiff", ".tif", ".hdf", ".h5", ".hd5"]
 
 
 def load_paths(config):
@@ -8,13 +12,18 @@ def load_paths(config):
         paths = glob.glob(path)
         only_file = []
         for path in paths:
-            if os.path.isfile(path):
+            _, ext = os.path.splitext(path)
+            if os.path.isfile(path) and ext in allowed_data_format:
+                print(f" - Valid input file found: {path}")
                 only_file.append(path)
+            else:
+                print(f" - Non-valid input file found: {path}, skipped!")
+                warnings.warn("Allowed file formats are: .tiff, .tif, .hdf, .h5, .hd5.")
         return sorted(only_file)
 
     else:
         path, ext = os.path.splitext(config["path"])
-        if ext in [".tiff", ".tif", ".hdf", ".h5", ".hd5"]:
+        if ext in allowed_data_format:
             return [config["path"]]
         else:
             print("Data extension not understood")

@@ -48,8 +48,10 @@ class SetupProcess:
 
 def raw2seg(config):
     # read files
+    print("File paths loading...")
     paths = load_paths(config)
 
+    print("\nStart processing... see terminal for verbose logs")
     all_pipelines = [('preprocessing', import_preprocessing_pipeline),
                      ('cnn_prediction', import_cnn_pipeline),
                      ('cnn_postprocessing', import_cnn_postprocessing_pipeline),
@@ -62,4 +64,4 @@ def raw2seg(config):
         # run pipeline and update paths
         paths = pipeline()
 
-    print("All done!")
+    print("All done! \n")

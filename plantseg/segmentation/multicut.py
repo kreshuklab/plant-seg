@@ -47,6 +47,7 @@ class MulticutFromPmaps(GenericProcessing):
 
     def __call__(self):
         for predictions_path in self.predictions_paths:
+            print(f"Segmenting {predictions_path}")
             output_path, exist = self.create_output_path(predictions_path,
                                                          prefix="_multicut",
                                                          out_ext=".h5")
@@ -59,15 +60,15 @@ class MulticutFromPmaps(GenericProcessing):
             if self.post_minsize > self.ws_minsize:
                 segmentation, _ = apply_size_filter(segmentation, pmaps, self.post_minsize)
 
-            # stop real world clock timer
-            runtime = time.time() - runtime
-
             self.save_output(segmentation,
                              output_path,
                              dataset="segmentation")
+
+            # stop real world clock timer
+            runtime = time.time() - runtime
             self.runtime = runtime
-            print("Clustering took {} s".format(runtime))
             self.outputs_paths.append(output_path)
+            print(" - Clustering took {} s".format(runtime))
         return self.outputs_paths
 
     def segment_volume(self, pmaps):

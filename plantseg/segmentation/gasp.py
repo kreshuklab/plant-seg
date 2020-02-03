@@ -44,6 +44,7 @@ class GaspFromPmaps(GenericProcessing):
 
     def __call__(self):
         for predictions_path in self.predictions_paths:
+            print(f"Segmenting {predictions_path}")
             output_path, exist = self.create_output_path(predictions_path,
                                                          prefix="_gasp_" + self.gasp_linkage_criteria,
                                                          out_ext=".h5")
@@ -107,11 +108,12 @@ class GaspFromPmaps(GenericProcessing):
             else:
                 raise NotImplementedError
 
+            self.save_output(segmentation, output_path, dataset="segmentation")
+
             # stop real world clock timer
             runtime = time.time() - runtime
-            self.save_output(segmentation, output_path, dataset="segmentation")
             self.runtime = runtime
-            print("Clustering took {} s".format(runtime))
+            print(" - Clustering took {} s".format(runtime))
             self.outputs_paths.append(output_path)
 
         return self.outputs_paths
