@@ -68,7 +68,7 @@ class DataPostProcessing3D(GenericProcessing):
             self.outputs_paths.append(output_path)
 
             runtime = time.time() - runtime
-            print(f" - PostProcessing took {runtime:0.2} s")
+            print(f" - PostProcessing took {runtime:.2f} s")
 
         # returns input paths for postprocessing are not updated.
         return self.paths
@@ -132,6 +132,6 @@ class DataPreProcessing3D(GenericProcessing):
             self.outputs_paths.append(output_path)
 
             runtime = time.time() - runtime
-            print(f" - PreProcessing took {runtime:0.2} s")
+            print(f" - PreProcessing took {runtime:.2f} s")
 
         return self.outputs_paths

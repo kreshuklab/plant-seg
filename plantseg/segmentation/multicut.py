@@ -68,7 +68,7 @@ class MulticutFromPmaps(GenericProcessing):
             runtime = time.time() - runtime
             self.runtime = runtime
             self.outputs_paths.append(output_path)
-            print(f" - Clustering took {runtime} s")
+            print(f" - Clustering took {runtime:.2f} s")
         return self.outputs_paths
 
     def segment_volume(self, pmaps):

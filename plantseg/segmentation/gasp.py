@@ -113,7 +113,7 @@ class GaspFromPmaps(GenericProcessing):
             # stop real world clock timer
             runtime = time.time() - runtime
             self.runtime = runtime
-            print(f" - Clustering took {runtime} s")
+            print(f" - Clustering took {runtime:.2f} s")
             self.outputs_paths.append(output_path)
 
         return self.outputs_paths

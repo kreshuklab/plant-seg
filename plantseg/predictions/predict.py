@@ -66,7 +66,7 @@ class ModelPredictions:
             self.path_out.append(output_file)
 
             runtime = time.time() - runtime
-            print(f" - Predicting took {runtime:0.2} s", file=self.gui_out)
+            print(f" - Predicting took {runtime:.2f} s", file=self.gui_out)
 
         sys.stdout = self.gui_out
         return self.path_out
