@@ -61,3 +61,5 @@ def raw2seg(config):
         pipeline = SetupProcess(paths, config, pipeline_name, import_pipeline)
         # run pipeline and update paths
         paths = pipeline()
+
+    print("All done!")
