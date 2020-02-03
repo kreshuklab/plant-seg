@@ -31,6 +31,7 @@ class ModelPredictions:
 
         # Create the model
         model = get_model(config)
+        self.path_out = []
 
         # Load model state
         model_path = config['model_path']
@@ -51,3 +52,6 @@ class ModelPredictions:
             predictor = _get_predictor(self.model, test_loader, output_file, self.config)
             # run the model prediction on the entire dataset and save to the 'output_file' H5
             predictor.predict()
+            self.path_out.append(output_file)
+
+        return self.path_out
