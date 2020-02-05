@@ -5,7 +5,7 @@ from tkinter import filedialog
 import yaml
 
 from plantseg import plantseg_global_path
-from plantseg.gui import stick_all, stick_ew, var_to_tkinter
+from plantseg.gui import stick_all, stick_ew, var_to_tkinter, convert_rgb
 
 current_model = None
 
@@ -245,9 +245,8 @@ class FilterEntry:
 
 class RescaleEntry:
     """ Special widget for rescale """
-    def __init__(self, frame, config, text="Text", row=0, column=0, type=float, font=None):
+    def __init__(self, frame, text="Text", row=0, column=0, type=float, font=None):
         self.frame = tkinter.Frame(frame)
-        self.config = config
 
         self.text = f"{text}"
         self.type = type
