@@ -31,7 +31,7 @@ def create_predict_config(paths, _config):
                     _stride = [int(p * stride_factor) for p in patch]
             config["loaders"]["test"]["slice_builder"]["stride_shape"] = _stride
         else:
-            NotImplementedError
+            raise NotImplementedError
 
     # Add paths to raw data
     config["loaders"]["test"]["file_paths"] = paths
