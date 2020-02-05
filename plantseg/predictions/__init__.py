@@ -5,6 +5,8 @@ import yaml
 from plantseg import plantseg_global_path
 from ..models.checkmodels import check_models
 
+stride_menu = [("Accurate (slower)", 0.5), ("Balanced", 0.75), ("Draft (faster)", 0.9)]
+
 
 def create_predict_config(paths, _config):
     """ Creates the configuration file needed for running the neural network inference"""
@@ -15,10 +17,22 @@ def create_predict_config(paths, _config):
                        Loader=yaml.FullLoader)
 
     # Add patch and stride size
+    patch, stride = _config["patch"], _config["stride"]
     if "patch" in _config.keys():
-        config["loaders"]["test"]["slice_builder"]["patch_shape"] = _config["patch"]
+        config["loaders"]["test"]["slice_builder"]["patch_shape"] = patch
+
     if "stride" in _config.keys():
-        config["loaders"]["test"]["slice_builder"]["stride_shape"] = _config["stride"]
+        stride, _stride = _config["stride"], []
+        if type(stride) is list:
+            config["loaders"]["test"]["slice_builder"]["stride_shape"] = stride
+        elif type(stride) is str:
+            for stride_key, stride_factor in stride_menu:
+                if stride == stride_key:
+                    _stride = [int(p * stride_factor) for p in patch]
+            config["loaders"]["test"]["slice_builder"]["stride_shape"] = _stride
+        else:
+            NotImplementedError
+
 
     # Add paths to raw data
     config["loaders"]["test"]["file_paths"] = paths

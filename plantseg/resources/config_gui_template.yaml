@@ -30,7 +30,7 @@ cnn_prediction:
   # patch size given to the network (adapt to fit in your GPU mem)
   patch: [32, 128, 128]
   # stride between patches (make sure the the patches overlap in order to get smoother prediction maps)
-  stride: [20, 100, 100]
+  stride: "Balanced"
   # "best" refers to best performing on the val set (recommended), alternatively "last" refers to the last version before interruption
   version: best
   # If "True" forces downloading networks for the online repos
@@ -41,7 +41,7 @@ cnn_postprocessing:
   state: True
   # if True convert to result to tiff
   tiff: False
-  output_type: "data_uint8"
+  output_type: "data_float32"
   # rescaling factor
   factor: [1, 1, 1]
   # spline order for rescaling

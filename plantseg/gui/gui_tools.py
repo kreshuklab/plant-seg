@@ -14,6 +14,8 @@ current_model = None
 # Menu entries Prototypes
 #
 ######################################################################################################################
+
+
 class MenuEntry:
     """ Standard menu widget """
     def __init__(self, frame, text="Text", row=0, column=0, menu=(), is_model=False, default=None, font=None):
@@ -241,6 +243,72 @@ class FilterEntry:
         obj_collection.append(entry2)
         obj_collection.append(entry3)
         return obj_collection
+
+class MenuEntryStride:
+    """ Standard menu widget """
+    def __init__(self, frame, text="Text", row=0, column=0, menu=(), is_model=False, default=None, font=None):
+        self.frame = tkinter.Frame(frame)
+
+        self.text = f"{text}"
+
+        self.menu = menu
+        self.style = {"bg": "white",
+                      "padx": 10,
+                      "pady": 10,
+                      "row_weights": [1],
+                      "columns_weights": [1, 1],
+                      "height": 4,
+                      }
+
+        self.frame["bg"] = self.style["bg"]
+        self.font = font
+
+        [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
+        [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
+        self.frame.grid(row=row, column=column, sticky=stick_ew)
+
+        self.tk_value = tkinter.StringVar()
+        if default is None:
+            self.tk_value.set(sorted(list(self.menu))[0])
+        else:
+            if type(default) == bool:
+                default = "True" if default else "False"
+            self.tk_value.set(default)
+
+        self.is_model = is_model
+        if self.is_model:
+            self.update_model_name(default)
+
+    def __call__(self, value, obj_collection):
+
+        label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
+        label1.grid(column=0,
+                    row=0,
+                    padx=self.style["padx"],
+                    pady=self.style["pady"],
+                    sticky=stick_all)
+
+        if self.is_model:
+            entry1 = tkinter.OptionMenu(self.frame, self.tk_value, *self.menu, command=self.update_model_name)
+        else:
+            entry1 = tkinter.OptionMenu(self.frame, self.tk_value, *self.menu)
+
+        entry1.config(font=self.font)
+        entry1["menu"].config(bg="white")
+        entry1.config(bg="white")
+        entry1.grid(column=1,
+                    row=0,
+                    padx=self.style["padx"],
+                    pady=self.style["pady"],
+                    sticky=stick_all)
+
+        obj_collection.append(label1)
+        obj_collection.append(entry1)
+        return obj_collection
+
+    def update_model_name(self, value):
+        global current_model
+        current_model = value
 
 
 class RescaleEntry:
