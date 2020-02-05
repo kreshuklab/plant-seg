@@ -33,7 +33,6 @@ def create_predict_config(paths, _config):
         else:
             NotImplementedError
 
-
     # Add paths to raw data
     config["loaders"]["test"]["file_paths"] = paths
 
