@@ -1,293 +1,8 @@
 import tkinter
-from .gui_tools import convert_rgb, var_to_tkinter, list_models
 
-stick_all = tkinter.N + tkinter.S + tkinter.E + tkinter.W
-stick_ew = tkinter.E + tkinter.W
-stick_new = tkinter.N + tkinter.E + tkinter.W
-
-
-class MenuEntry:
-    """ Standard menu widget """
-    def __init__(self, frame, text="Text", row=0, column=0, menu=(), default=None, font=None):
-        self.frame = tkinter.Frame(frame)
-
-        self.text = f"{text}"
-
-        self.menu = menu
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [1, 1],
-                      "height": 4,
-                      }
-
-        self.frame["bg"] = self.style["bg"]
-        self.font = font
-
-        [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
-        self.frame.grid(row=row, column=column, sticky=stick_ew)
-
-        self.tk_value = tkinter.StringVar()
-        if default is None:
-            self.tk_value.set(sorted(list(self.menu))[0])
-        else:
-            if type(default) == bool:
-                default = "True" if default else "False"
-            self.tk_value.set(default)
-
-    def __call__(self, value, obj_collection):
-
-        label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
-
-        entry1 = tkinter.OptionMenu(self.frame, self.tk_value, *self.menu)
-        entry1.config(font=self.font)
-        entry1["menu"].config(bg="white")
-        entry1.config(bg="white")
-        entry1.grid(column=1,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
-
-        obj_collection.append(label1)
-        obj_collection.append(entry1)
-        return obj_collection
-
-
-class SimpleEntry:
-    """ Standard open entry widget """
-    def __init__(self, frame, text="Text", row=0, column=0, _type=str, _font=None):
-        self.frame = tkinter.Frame(frame)
-
-        self.text = f"{text}"
-
-        self.type = _type
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [1, 1],
-                      "height": 4,
-                      }
-
-        self.frame["bg"] = self.style["bg"]
-        self.font = _font
-
-        [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
-        self.frame.grid(row=row, column=column, sticky=stick_ew)
-
-        self.tk_value = None
-
-    def __call__(self, value, obj_collection):
-        self.tk_value = var_to_tkinter(self.type(value))
-
-        label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=tkinter.W)
-
-        entry1 = tkinter.Entry(self.frame, textvar=self.tk_value, font=self.font)
-        entry1.grid(column=1,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=tkinter.E)
-
-        obj_collection.append(label1)
-        obj_collection.append(entry1)
-        return obj_collection
-
-
-class BoolEntry:
-    """ Standard boolean widget """
-    def __init__(self, frame, text="Text", row=0, column=0, font=None):
-        self.frame = tkinter.Frame(frame)
-
-        self.text = f"{text}"
-
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [1, 1],
-                      "height": 4,
-                      }
-
-        self.frame["bg"] = self.style["bg"]
-        self.font = font
-
-        [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
-        self.frame.grid(row=row, column=column, sticky=stick_ew)
-
-        self.tk_value = None
-
-    def __call__(self, value, obj_collection):
-        self.tk_value = tkinter.BooleanVar(value)
-
-        label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
-
-        entry1 = tkinter.Checkbutton(self.frame, variable=self.tk_value, bg=self.style["bg"], font=self.font)
-        entry1.grid(column=1,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
-
-        obj_collection.append(label1)
-        obj_collection.append(entry1)
-        return obj_collection
-
-
-class FilterEntry:
-    """ Special widget for filter """
-    def __init__(self, frame, text="Text", row=0, column=0, font=None):
-        self.frame = tkinter.Frame(frame)
-
-        self.text = f"{text}"
-
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [1, 1, 3, 1],
-                      "height": 4,
-                      }
-
-        self.frame["bg"] = self.style["bg"]
-        self.font = font
-
-        [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
-        self.frame.grid(row=row, column=column, sticky=stick_ew)
-
-        self.tk_value = None
-
-    def __call__(self, value, obj_collection):
-        self.tk_value = [tkinter.BooleanVar(), tkinter.StringVar(), tkinter.DoubleVar()]
-        self.tk_value[0].set(False)
-        self.tk_value[1].set("gaussian")
-        self.tk_value[2].set(1.0)
-
-        label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
-
-        entry1 = tkinter.Checkbutton(self.frame, variable=self.tk_value[0], bg=self.style["bg"], font=self.font)
-        entry1.grid(column=1,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
-
-        entry2 = tkinter.OptionMenu(self.frame, self.tk_value[1], *{"median", "gaussian"})
-        entry2["menu"].config(font=self.font)
-        entry2["menu"].config(bg="white")
-        entry2.config(font=self.font)
-        entry2.config(bg="white")
-        entry2.grid(column=2,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
-
-        entry3 = tkinter.Entry(self.frame, textvar=self.tk_value[2], width=3)
-        entry3.grid(column=3,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
-
-        obj_collection.append(label1)
-        obj_collection.append(entry1)
-        obj_collection.append(entry2)
-        obj_collection.append(entry3)
-        return obj_collection
-
-
-class ListEntry:
-    """ Standard triplet list widget """
-    def __init__(self, frame, text="Text", row=0, column=0, type=float, font=None):
-        self.frame = tkinter.Frame(frame)
-
-        self.text = f"{text}"
-        self.type = type
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [3, 1, 1, 1],
-                      "height": 4,
-                      }
-
-        self.frame["bg"] = self.style["bg"]
-        self.font = font
-
-        [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
-        self.frame.grid(row=row, column=column, sticky=stick_ew)
-
-        self.tk_value = None
-
-    def __call__(self, value, obj_collection):
-        tk_type = tkinter.DoubleVar if self.type is float else tkinter.IntVar
-
-        self.tk_value = [tk_type() for _ in range(3)]
-        [self.tk_value[i].set(self.type(value[i])) for i in range(3)]
-
-        label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
-
-        entry1 = tkinter.Entry(self.frame, textvar=self.tk_value[0], width=3, font=self.font)
-        entry1.grid(column=1,
-                    row=0,
-                    padx=(self.style["padx"], 0),
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
-        entry1["bg"] = "white"
-
-        entry2 = tkinter.Entry(self.frame, textvar=self.tk_value[1], width=3, font=self.font)
-        entry2.grid(column=2,
-                    row=0,
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
-        entry2["bg"] = "white"
-
-        entry3 = tkinter.Entry(self.frame, textvar=self.tk_value[2], width=3, font=self.font)
-        entry3.grid(column=3,
-                    row=0,
-                    padx=(0, self.style["padx"]),
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
-        entry3["bg"] = "white"
-
-        obj_collection.append(label1)
-        obj_collection.append(entry1)
-        obj_collection.append(entry2)
-        obj_collection.append(entry3)
-        return obj_collection
+from plantseg.gui import convert_rgb, list_models
+from plantseg.gui import stick_all, stick_new
+from plantseg.gui.gui_tools import ListEntry, SimpleEntry, FilterEntry, RescaleEntry, MenuEntry
 
 
 class ModuleFramePrototype:
@@ -324,7 +39,7 @@ class ModuleFramePrototype:
 
         else:
             self.checkbox["bg"] = "white"
-            self.update_config(config[module])
+            self.update_config(config, module)
 
             for obj in self.obj_collection:
                 obj.grid_forget()
@@ -334,37 +49,50 @@ class ModuleFramePrototype:
     def check_and_update_config(self, config, dict_key):
         if self.show.get():
             config[dict_key]["state"] = True
-            self.update_config(config[dict_key])
+            config = self.update_config(config, dict_key)
         else:
             config[dict_key]["state"] = False
 
         return config
 
-    def update_config(self, config):
+    def update_config(self, config, dict_key):
+        print(dict_key)
+        print(config[dict_key])
         for key, obj in self.custom_key.items():
-            if key in config:
+            if key in config[dict_key]:
                 if isinstance(obj, MenuEntry):
                     str_value = obj.tk_value.get()
                     str_value = True if str_value == "True" else str_value
                     str_value = False if str_value == "False" else str_value
-                    config[key] = str_value
+                    config[dict_key][key] = str_value
 
                 elif isinstance(obj, SimpleEntry):
                     str_value = obj.tk_value.get()
-                    config[key] = obj.type(str_value)
+                    config[dict_key][key] = obj.type(str_value)
 
                 elif isinstance(obj, FilterEntry):
                     if obj.tk_value[0].get():
-                        config["filter"]["state"] = True
-                        config["filter"]["type"] = obj.tk_value[1].get()
-                        config["filter"]["param"] = float(obj.tk_value[2].get())
+                        config[dict_key]["filter"]["state"] = True
+                        config[dict_key]["filter"]["type"] = obj.tk_value[1].get()
+                        config[dict_key]["filter"]["param"] = float(obj.tk_value[2].get())
                     else:
-                        config["filter"]["state"] = False
+                        config[dict_key]["filter"]["state"] = False
+
+                elif isinstance(obj, RescaleEntry):
+                    values = [obj.tk_value[0].get(), obj.tk_value[1].get(), obj.tk_value[2].get()]
+                    values = [obj.type(values[0]), obj.type(values[1]), obj.type(values[2])]
+                    ivalues = [1 / values[0], 1 / values[1], 1 / values[2]]
+
+                    config[dict_key]["factor"] = values
+                    config["cnn_postprocessing"]["factor"] = ivalues
+                    config["segmentation_postprocessing"]["factor"] = ivalues
 
                 elif isinstance(obj, ListEntry):
                     values = [obj.tk_value[0].get(), obj.tk_value[1].get(), obj.tk_value[2].get()]
                     values = [obj.type(values[0]), obj.type(values[1]), obj.type(values[2])]
-                    config[key] = values
+                    config[dict_key][key] = values
+        print("after", config[dict_key])
+        return config
 
     def show_options(self):
         self.config = self._show_options(self.config, self.module)
@@ -413,11 +141,12 @@ class PreprocessingFrame(ModuleFramePrototype):
                                                          column=0,
                                                          _type=str,
                                                          _font=font),
-                           "factor": ListEntry(self.preprocessing_frame,
-                                               text="Rescaling Factor: ",
-                                               row=2,
-                                               column=0,
-                                               font=font),
+                           "factor": RescaleEntry(self.preprocessing_frame,
+                                                  self.config,
+                                                  text="Rescaling: ",
+                                                  row=2,
+                                                  column=0,
+                                                  font=font),
                            "order": MenuEntry(self.preprocessing_frame,
                                               text="Interpolation: ",
                                               row=3,
@@ -477,6 +206,7 @@ class UnetPredictionFrame(ModuleFramePrototype):
                                                    column=0,
                                                    menu=list_models(),
                                                    default=config[self.module]["model_name"],
+                                                   is_model=True,
                                                    font=font),
                            "patch": ListEntry(self.prediction_frame,
                                               text="Patch Size: ",
@@ -485,7 +215,7 @@ class UnetPredictionFrame(ModuleFramePrototype):
                                               type=int,
                                               font=font),
                            "stride": ListEntry(self.prediction_frame,
-                                               text="Stride:    ",
+                                               text="Stride: ",
                                                row=3,
                                                column=0,
                                                type=int,
@@ -540,7 +270,7 @@ class SegmentationFrame(ModuleFramePrototype):
 
         self.obj_collection = []
         self.custom_key = {"name": MenuEntry(self.segmentation_frame,
-                                              text="Algorithm",
+                                              text="Algorithm: ",
                                               row=1,
                                               column=0,
                                               menu={"MultiCut", "GASP", "MutexWS", "DtWatershed"},
@@ -647,11 +377,6 @@ class PostSegmentationFrame(ModuleFramePrototype):
                                              menu=["True", "False"],
                                              default=self.config[self.module]["tiff"],
                                              font=font),
-                           "factor": ListEntry(self.post_frame,
-                                               text="Rescaling Factor: ",
-                                               row=2,
-                                               column=0,
-                                               font=font),
                            }
 
         self.show_options()
@@ -703,23 +428,11 @@ class PostPredictionsFrame(ModuleFramePrototype):
                                              menu=["True", "False"],
                                              default=self.config[self.module]["tiff"],
                                              font=font),
-                           "factor": ListEntry(self.post_frame,
-                                               text="Rescaling Factor: ",
-                                               row=2,
-                                               column=0,
-                                               font=font),
-                           "order": SimpleEntry(self.post_frame,
-                                                text="Interpolation: ",
-                                                row=3,
-                                                column=0,
-                                                _type=int,
-                                                _font=font),
-
                            "output_type": MenuEntry(self.post_frame,
                                                     text="Cast Predictions: ",
                                                     row=4,
                                                     column=0,
-                                                    menu=["data_uint8", "data_uint32"],
+                                                    menu=["data_uint8", "data_float32"],
                                                     default=config[self.module]["output_type"],
                                                     font=font)
                            }

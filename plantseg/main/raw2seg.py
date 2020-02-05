@@ -35,6 +35,7 @@ def import_segmentation_postprocessing_pipeline(input_paths, _config):
 
 class SetupProcess:
     def __init__(self, paths, config, pipeline_name, import_function):
+        print(f"Loading: {pipeline_name} with parameters: {config[pipeline_name]}")
         if pipeline_name in config.keys() and config[pipeline_name]['state']:
             # Import pipeline and assign paths
             self.pipeline = import_function(paths, config[pipeline_name])

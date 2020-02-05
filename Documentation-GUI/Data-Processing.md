@@ -18,10 +18,10 @@ reference at train. In the example the rescaling factor = 1 x 2 x 2.
 ```
 This operation can be done automatically by clicking in the gui on **auto re-scaling**. \
 Be careful to use this function only in case of data considerably different from 
-the reference resolution. \
+the reference resolution.
 
 The **interpolation** field control the interpolation type (0 for nearest neighbors, 1 for linear spline, 
-2 for quadratic). \
+2 for quadratic).
 
 The last field defines a **filters** operation. Implemented there are:
 * **Gaussian** Filtering: The parameters is float and define the sigma value for the gaussian smoothing. 

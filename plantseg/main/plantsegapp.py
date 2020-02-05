@@ -5,7 +5,8 @@ import os
 import sys
 import webbrowser
 from tkinter import font
-from ..gui.gui_tools import Files2Process, report_error, StdoutRedirect, convert_rgb
+from plantseg.gui.gui_tools import Files2Process, report_error, StdoutRedirect
+from plantseg.gui import convert_rgb
 import traceback
 from plantseg import plantseg_global_path
 
@@ -178,11 +179,6 @@ class PlantSegApp:
                         sticky=self.stick_all)
         run_frame2["highlightthickness"] = run_config["highlightthickness"]
         run_frame2["bg"] = run_config["bg"]
-
-        x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
-                           text="Auto re-scale", font=self.font_bold)
-        x.grid(column=2, row=0, padx=10, pady=10, sticky=self.stick_all)
-        x["command"] = self.auto_rescale
 
         x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
                            text="Docs", font=self.font_bold)
@@ -360,21 +356,6 @@ class PlantSegApp:
 
         self.update_config()
         self.build_all()
-
-    def auto_rescale(self):
-        """ This method open a popup windows that automatically set the scaling
-         factor from the resolution given by the user"""
-
-        model_key = self.predictions_obj.custom_key["model_name"].tk_value.get()
-        path_model_config = self.get_model_path()
-
-        model_config = yaml.load(open(path_model_config, 'r'),
-                                 Loader=yaml.FullLoader)
-
-        net_resolution = model_config[model_key]["resolution"]
-
-        from plantseg.gui.gui_tools import AutoResPopup
-        AutoResPopup(net_resolution, self.plantseg_config, self.pre_proc_obj, self.post_obj, self.font)
 
     @staticmethod
     def restart_program():
