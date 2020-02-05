@@ -1,4 +1,4 @@
-from plantseg.main import load_paths, dummy
+from plantseg.main.utils import load_paths, dummy
 
 
 def import_preprocessing_pipeline(input_paths, _config):
@@ -8,7 +8,7 @@ def import_preprocessing_pipeline(input_paths, _config):
 
 
 def import_cnn_pipeline(input_paths, _config):
-    from plantseg.predictions import create_predict_config
+    from plantseg.predictions.utils import create_predict_config
     from ..predictions.predict import ModelPredictions
     cnn_config = create_predict_config(input_paths, _config)
     model_predictions = ModelPredictions(cnn_config)
@@ -22,7 +22,7 @@ def import_cnn_postprocessing_pipeline(input_paths, _config):
 
 
 def import_segmentation_pipeline(input_paths, _config):
-    from plantseg.segmentation import configure_segmentation
+    from plantseg.segmentation.utils import configure_segmentation
     segmentation = configure_segmentation(input_paths, _config)
     return segmentation
 

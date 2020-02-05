@@ -18,7 +18,6 @@ def load_config(args):
 
 
 def main():
-    # Load general configuration files
     args = parser()
 
     if args.gui:

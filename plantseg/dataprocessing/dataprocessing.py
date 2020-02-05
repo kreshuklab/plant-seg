@@ -5,7 +5,7 @@ from skimage.filters import median
 from skimage.morphology import ball
 from vigra.filters import gaussianSmoothing
 
-from plantseg import GenericProcessing
+from plantseg.pipeline.steps import GenericPipelineStep
 
 
 def _dummy(image, param):
@@ -28,7 +28,7 @@ def _gaussian(image, sigma):
     return gaussianSmoothing(image, sigma)
 
 
-class DataPostProcessing3D(GenericProcessing):
+class DataPostProcessing3D(GenericPipelineStep):
     def __init__(self,
                  paths,
                  config,
@@ -74,7 +74,7 @@ class DataPostProcessing3D(GenericProcessing):
         return self.paths
 
 
-class DataPreProcessing3D(GenericProcessing):
+class DataPreProcessing3D(GenericPipelineStep):
     def __init__(self,
                  paths,
                  config,
