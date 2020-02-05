@@ -92,7 +92,6 @@ class ModuleFramePrototype:
                     values = [obj.tk_value[0].get(), obj.tk_value[1].get(), obj.tk_value[2].get()]
                     values = [obj.type(values[0]), obj.type(values[1]), obj.type(values[2])]
                     config[dict_key][key] = values
-        print("after", config[dict_key])
         return config
 
     def show_options(self):
