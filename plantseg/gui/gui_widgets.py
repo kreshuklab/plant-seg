@@ -2,7 +2,7 @@ import tkinter
 
 from plantseg.gui import convert_rgb, list_models
 from plantseg.gui import stick_all, stick_new
-from plantseg.gui.gui_tools import ListEntry, SimpleEntry, FilterEntry, RescaleEntry, MenuEntry
+from plantseg.gui.gui_tools import ListEntry, SimpleEntry, FilterEntry, RescaleEntry, MenuEntry, SliderEntry
 
 
 class ModuleFramePrototype:
@@ -56,8 +56,6 @@ class ModuleFramePrototype:
         return config
 
     def update_config(self, config, dict_key):
-        print(dict_key)
-        print(config[dict_key])
         for key, obj in self.custom_key.items():
             if key in config[dict_key]:
                 if isinstance(obj, MenuEntry):
@@ -69,6 +67,9 @@ class ModuleFramePrototype:
                 elif isinstance(obj, SimpleEntry):
                     str_value = obj.tk_value.get()
                     config[dict_key][key] = obj.type(str_value)
+
+                elif isinstance(obj, SliderEntry):
+                    config[dict_key][key] = obj.type(obj.tk_value.get())
 
                 elif isinstance(obj, FilterEntry):
                     if obj.tk_value[0].get():
@@ -274,6 +275,7 @@ class SegmentationFrame(ModuleFramePrototype):
                                               row=1,
                                               column=0,
                                               menu={"MultiCut", "GASP", "MutexWS", "DtWatershed"},
+                                              is_segmentation=True,
                                               default=config[self.module]["name"],
                                               font=font),
                             "save_directory": SimpleEntry(self.segmentation_frame,
@@ -282,12 +284,13 @@ class SegmentationFrame(ModuleFramePrototype):
                                                          column=0,
                                                          _type=str,
                                                          _font=font),
-                           "beta": SimpleEntry(self.segmentation_frame,
-                                                        text="Beta: ",
-                                                        row=3,
-                                                        column=0,
-                                                        _type=float,
-                                                        _font=font),
+                           "beta": SliderEntry(self.segmentation_frame,
+                                               text="Beta: ",
+                                               row=3,
+                                               column=0,
+                                               is_not_in_dtws=True,
+                                                _type=float,
+                                                _font=font),
                            "ws_2D": MenuEntry(self.segmentation_frame,
                                               text="Run WS in 2D: ",
                                               row=4,
@@ -296,37 +299,42 @@ class SegmentationFrame(ModuleFramePrototype):
                                               default=config[self.module]["ws_2D"],
                                               font=font),
 
-                           "ws_threshold": SimpleEntry(self.segmentation_frame,
+                           "ws_threshold": SliderEntry(self.segmentation_frame,
                                                    text="WS Threshold ",
                                                    row=5,
                                                    column=0,
                                                    _type=float,
                                                    _font=font),
 
-                           "ws_sigma": SimpleEntry(self.segmentation_frame,
+                           "ws_sigma": SliderEntry(self.segmentation_frame,
                                                    text="WS Seeds Sigma: ",
                                                    row=6,
                                                    column=0,
+                                                   data_range=(0, 5, 0.2),
                                                    _type=float,
                                                    _font=font),
-                           "ws_w_sigma": SimpleEntry(self.segmentation_frame,
+                           "ws_w_sigma": SliderEntry(self.segmentation_frame,
                                                      text="WS Boundary Sigma: ",
                                                      row=7,
                                                      column=0,
+                                                     data_range=(0, 5, 0.2),
                                                      _type=float,
                                                      _font=font),
-                           "ws_minsize": SimpleEntry(self.segmentation_frame,
+                           "ws_minsize": SliderEntry(self.segmentation_frame,
                                                      text="WS Minimum Size: (voxels) ",
                                                      row=8,
                                                      column=0,
+                                                     data_range=(0, 1000, 10),
                                                      _type=int,
                                                      _font=font),
-                           "post_minsize": SimpleEntry(self.segmentation_frame,
+                           "post_minsize": SliderEntry(self.segmentation_frame,
                                                      text="Minimum Size: (voxels) ",
-                                                       row=9,
-                                                       column=0,
-                                                       _type=int,
-                                                       _font=font),
+                                                     row=9,
+                                                     column=0,
+                                                     data_range=(0, 1000, 10),
+                                                     _type=int,
+                                                     is_not_in_dtws=True,
+                                                     _font=font),
                            }
 
         self.show_options()

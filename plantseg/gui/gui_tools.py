@@ -5,82 +5,17 @@ from tkinter import filedialog
 import yaml
 
 from plantseg import plantseg_global_path
+from plantseg.__version__ import __version__
 from plantseg.gui import stick_all, stick_ew, var_to_tkinter, convert_rgb
 
 current_model = None
+current_segmentation = None
 
 ######################################################################################################################
 #
 # Menu entries Prototypes
 #
 ######################################################################################################################
-
-
-class MenuEntry:
-    """ Standard menu widget """
-    def __init__(self, frame, text="Text", row=0, column=0, menu=(), is_model=False, default=None, font=None):
-        self.frame = tkinter.Frame(frame)
-
-        self.text = f"{text}"
-
-        self.menu = menu
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [1, 1],
-                      "height": 4,
-                      }
-
-        self.frame["bg"] = self.style["bg"]
-        self.font = font
-
-        [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
-        self.frame.grid(row=row, column=column, sticky=stick_ew)
-
-        self.tk_value = tkinter.StringVar()
-        if default is None:
-            self.tk_value.set(sorted(list(self.menu))[0])
-        else:
-            if type(default) == bool:
-                default = "True" if default else "False"
-            self.tk_value.set(default)
-
-        self.is_model = is_model
-        if self.is_model:
-            self.update_model_name(default)
-
-    def __call__(self, value, obj_collection):
-
-        label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
-
-        if self.is_model:
-            entry1 = tkinter.OptionMenu(self.frame, self.tk_value, *self.menu, command=self.update_model_name)
-        else:
-            entry1 = tkinter.OptionMenu(self.frame, self.tk_value, *self.menu)
-
-        entry1.config(font=self.font)
-        entry1["menu"].config(bg="white")
-        entry1.config(bg="white")
-        entry1.grid(column=1,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
-
-        obj_collection.append(label1)
-        obj_collection.append(entry1)
-        return obj_collection
-
-    def update_model_name(self, value):
-        global current_model
-        current_model = value
 
 
 class SimpleEntry:
@@ -129,6 +64,142 @@ class SimpleEntry:
         obj_collection.append(entry1)
         return obj_collection
 
+
+class SliderEntry:
+    """ Standard open entry widget """
+    def __init__(self,
+                 frame, text="Text", row=0, column=0, data_range=(0, 1, 0.1),
+                 is_not_in_dtws=False, _type=float, _font=None):
+        self.frame = tkinter.Frame(frame)
+
+        self.text = f"{text}"
+        self.min, self.max, self.interval = data_range
+
+        self.type = _type
+        self.style = {"bg": "white",
+                      "padx": 10,
+                      "pady": 10,
+                      "row_weights": [1],
+                      "columns_weights": [1, 1],
+                      "height": 4,
+                      }
+
+        self.frame["bg"] = self.style["bg"]
+        self.font = _font
+
+        [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
+        [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
+        self.frame.grid(row=row, column=column, sticky=stick_ew)
+
+        self.tk_value = None
+
+    def __call__(self, value, obj_collection):
+        global current_segmentation
+        label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
+        label1.grid(column=0,
+                    row=0,
+                    padx=self.style["padx"],
+                    pady=self.style["pady"],
+                    sticky=tkinter.W)
+
+        entry1 = tkinter.Scale(self.frame, from_=self.min, to=self.max, resolution=self.interval,
+                               orient=tkinter.HORIZONTAL, font=self.font)
+        entry1.configure(bg="white")
+        entry1.configure(troughcolor=convert_rgb((208, 240, 192)))
+        entry1.configure(length=200)
+        entry1.set(self.type(value))
+
+        entry1.grid(column=1,
+                    row=0,
+                    padx=self.style["padx"],
+                    pady=self.style["pady"],
+                    sticky=tkinter.E)
+
+        self.tk_value = entry1
+
+        obj_collection.append(label1)
+        obj_collection.append(entry1)
+        return obj_collection
+
+
+class MenuEntry:
+    """ Standard menu widget """
+    def __init__(self, frame, text="Text", row=0, column=0, menu=(),
+                 is_model=False, is_segmentation=False, default=None, font=None):
+        self.frame = tkinter.Frame(frame)
+
+        self.text = f"{text}"
+
+        self.menu = menu
+        self.style = {"bg": "white",
+                      "padx": 10,
+                      "pady": 10,
+                      "row_weights": [1],
+                      "columns_weights": [1, 1],
+                      "height": 4,
+                      }
+
+        self.frame["bg"] = self.style["bg"]
+        self.font = font
+
+        [tkinter.Grid.rowconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["row_weights"])]
+        [tkinter.Grid.columnconfigure(self.frame, i, weight=w) for i, w in enumerate(self.style["columns_weights"])]
+        self.frame.grid(row=row, column=column, sticky=stick_ew)
+
+        self.tk_value = tkinter.StringVar()
+        if default is None:
+            self.tk_value.set(sorted(list(self.menu))[0])
+        else:
+            if type(default) == bool:
+                default = "True" if default else "False"
+            self.tk_value.set(default)
+
+        self.is_model = is_model
+        if self.is_model:
+            self.update_model_name(default)
+
+        self.is_segmentation = is_segmentation
+        if self.is_segmentation:
+            self.update_segmentation_name(default)
+
+    def __call__(self, value, obj_collection):
+
+        label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
+        label1.grid(column=0,
+                    row=0,
+                    padx=self.style["padx"],
+                    pady=self.style["pady"],
+                    sticky=stick_all)
+
+        if self.is_model:
+            entry1 = tkinter.OptionMenu(self.frame, self.tk_value, *self.menu, command=self.update_model_name)
+
+        elif self.is_segmentation:
+            entry1 = tkinter.OptionMenu(self.frame, self.tk_value, *self.menu, command=self.update_segmentation_name)
+
+        else:
+            entry1 = tkinter.OptionMenu(self.frame, self.tk_value, *self.menu)
+
+        entry1.config(font=self.font)
+        entry1["menu"].config(bg="white")
+        entry1.config(bg="white")
+        entry1.grid(column=1,
+                    row=0,
+                    padx=self.style["padx"],
+                    pady=self.style["pady"],
+                    sticky=stick_all)
+
+        obj_collection.append(label1)
+        obj_collection.append(entry1)
+        return obj_collection
+
+    def update_model_name(self, value):
+        global current_model
+        current_model = value
+
+    def update_segmentation_name(self, value):
+        global current_segmentation
+        current_segmentation = value
 
 class BoolEntry:
     """ Standard boolean widget """
@@ -642,3 +713,29 @@ class AutoResPopup:
         self.scale_factor = [self.user_input[i] / self.net_resolution[i] for i in range(3)]
         [self.tk_value[i].set(float(self.scale_factor[i])) for i in range(3)]
         self.popup.destroy()
+
+
+def version_popup():
+    popup = tkinter.Toplevel()
+    popup.title("Plantseg Version")
+    tkinter.Grid.rowconfigure(popup, 0, weight=1)
+    tkinter.Grid.columnconfigure(popup, 0, weight=1)
+    popup.configure(bg="white")
+
+
+    popup_frame = tkinter.Frame(popup)
+    tkinter.Grid.rowconfigure(popup_frame, 0, weight=1)
+    tkinter.Grid.columnconfigure(popup_frame, 0, weight=1)
+    popup_frame.configure(bg="white")
+    popup_frame.grid(row=0, column=0, sticky=stick_all)
+
+    text = f"PlantSeg version: {__version__}\n \n" \
+           f"Visit our sorce page for more info \n \n" \
+           f"https://github.com/hci-unihd/plant-seg"
+
+    label = tkinter.Label(popup_frame, bg="white", text=text)
+    label.grid(column=0,
+                row=0,
+                padx=10,
+                pady=10,
+                sticky=stick_all)

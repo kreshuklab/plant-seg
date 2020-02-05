@@ -5,7 +5,7 @@ import os
 import sys
 import webbrowser
 from tkinter import font
-from plantseg.gui.gui_tools import Files2Process, report_error, StdoutRedirect
+from plantseg.gui.gui_tools import Files2Process, report_error, StdoutRedirect, version_popup
 from plantseg.gui import convert_rgb
 import traceback
 from plantseg import plantseg_global_path
@@ -102,13 +102,26 @@ class PlantSegApp:
         preferencesmenu = tkinter.Menu(menubar, tearoff=0)
         preferencesmenu["bg"] = "white"
 
-        preferencesmenu.add_command(label="Size +", command=self.size_up, font=self.font)
-        preferencesmenu.add_command(label="Size -", command=self.size_down, font=self.font)
+        preferencesmenu.add_command(label="Font Size +", command=self.size_up, font=self.font)
+        preferencesmenu.add_command(label="Font Size -", command=self.size_down, font=self.font)
         menubar.add_cascade(label="Preferences", menu=preferencesmenu, font=self.font)
 
         helpmenu = tkinter.Menu(menubar, tearoff=0)
-        helpmenu.add_command(label="Help Index", command=self.open_documentation, font=self.font)
-        helpmenu.add_command(label="About...", font=self.font)
+        helpmenu.add_command(label="Help Index",
+                             command=self.open_documentation_index, font=self.font)
+        helpmenu.add_command(label="PlantSeg Overview",
+                             command=self.open_documentation_general, font=self.font)
+        helpmenu.add_command(label="Data Pre-Processing",
+                             command=self.open_documentation_preprocessing, font=self.font)
+        helpmenu.add_command(label="3D-Unet",
+                             command=self.open_documentation_3dunet, font=self.font)
+        helpmenu.add_command(label="Segmentation",
+                             command=self.open_documentation_segmentation, font=self.font)
+        helpmenu.add_command(label="Data Post-Processing",
+                             command=self.open_documentation_preprocessing, font=self.font)
+        helpmenu.add_separator()
+        helpmenu.add_command(label="About...", command=version_popup, font=self.font)
+
         helpmenu["bg"] = "white"
         menubar.add_cascade(label="Help", menu=helpmenu, font=self.font)
 
@@ -181,12 +194,12 @@ class PlantSegApp:
         run_frame2["bg"] = run_config["bg"]
 
         x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
-                           text="Docs", font=self.font_bold)
+                           text="PlantSeg Introduction", font=self.font_bold)
         x.grid(column=3, row=0, padx=10, pady=10, sticky=self.stick_all)
-        x["command"] = self.open_documentation
+        x["command"] = self.open_documentation_index
 
         x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
-                           text="Reset", font=self.font_bold)
+                           text="Reset Parameters", font=self.font_bold)
         x.grid(column=4, row=0, padx=10, pady=10, sticky=self.stick_all)
         x["command"] = self.reset_config
 
@@ -335,9 +348,34 @@ class PlantSegApp:
              for key, value in config["columns_weights"].items()]
 
     @staticmethod
-    def open_documentation():
+    def open_documentation_index():
         """Open git page on the default browser"""
         webbrowser.open("https://github.com/hci-unihd/plant-seg/tree/master/Documentation-GUI")
+
+    @staticmethod
+    def open_documentation_general():
+        """Open git page on the default browser"""
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/blob/master/Documentation-GUI/General_gui.md")
+
+    @staticmethod
+    def open_documentation_preprocessing():
+        """Open git page on the default browser"""
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/blob/master/Documentation-GUI/Data-Processing.md")
+
+    @staticmethod
+    def open_documentation_3dunet():
+        """Open git page on the default browser"""
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/blob/master/Documentation-GUI/Predictions.md")
+
+    @staticmethod
+    def open_documentation_segmentation():
+        """Open git page on the default browser"""
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/blob/master/Documentation-GUI/Segmentation.md")
+
+    @staticmethod
+    def open_postprocessing():
+        """Open git page on the default browser"""
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/blob/master/Documentation-GUI/Data-Processing.md")
 
     def size_up(self):
         """ adjust font size in the main widget"""
