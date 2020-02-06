@@ -28,15 +28,3 @@ def load_paths(config):
             return [config["path"]]
         else:
             raise RuntimeError(f"Unsupported file type: '{ext}'")
-
-
-class dummy:
-    def __init__(self, paths, phase):
-        self.phase = phase
-        self.paths = paths
-
-    def __call__(self, ):
-        print(f"Skipping {self.phase}: Nothing to do")
-        return self.paths
-
-

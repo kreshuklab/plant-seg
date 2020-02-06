@@ -3,7 +3,7 @@ import os
 import yaml
 
 from plantseg import plantseg_global_path
-from plantseg.models.checkmodels import check_models
+from ..models.checkmodels import check_models
 
 stride_menu = [("Accurate (slower)", 0.5), ("Balanced", 0.75), ("Draft (faster)", 0.9)]
 
@@ -31,8 +31,7 @@ def create_predict_config(paths, _config):
                     _stride = [int(p * stride_factor) for p in patch]
             config["loaders"]["test"]["slice_builder"]["stride_shape"] = _stride
         else:
-            NotImplementedError
-
+            raise RuntimeError(f"Unsupported stride type: {type(stride)}")
 
     # Add paths to raw data
     config["loaders"]["test"]["file_paths"] = paths
@@ -43,7 +42,7 @@ def create_predict_config(paths, _config):
     elif _config["device"] == 'cpu':
         config["device"] = torch.device("cpu")
     else:
-        raise NotImplementedError
+        raise RuntimeError(f"Unsupported device type: {_config['device']}")
 
     # check if all files are in the data directory (~/.plantseg_models/)
     check_models(_config['model_name'], update_files=_config['model_update'])
@@ -57,9 +56,9 @@ def create_predict_config(paths, _config):
 
     # Load train config and add missing info
     config_train = yaml.load(open(os.path.join(home,
-                                        ".plantseg_models",
-                                        _config['model_name'],
-                                        "config_train.yml"), 'r'),
+                                               ".plantseg_models",
+                                               _config['model_name'],
+                                               "config_train.yml"), 'r'),
                              Loader=yaml.FullLoader)
     #
     for key, value in config_train["model"].items():

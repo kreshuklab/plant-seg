@@ -1,4 +1,5 @@
-from plantseg.main.utils import load_paths, dummy
+from plantseg.main.utils import load_paths
+from plantseg.pipeline.steps import PlaceholderPipelineStep
 from plantseg.predictions.utils import create_predict_config
 from plantseg.segmentation.utils import configure_segmentation
 from ..dataprocessing.dataprocessing import DataPostProcessing3D
@@ -7,8 +8,19 @@ from ..predictions.predict import ModelPredictions
 
 
 def import_preprocessing_pipeline(input_paths, _config):
-    processing = DataPreProcessing3D(input_paths, _config)
-    return processing
+    output_type = _config.get('output_type', "data_uint8")
+    save_directory = _config.get('save_directory', 'PreProcessing')
+    factor = _config.get('factor', [1, 1, 1])
+
+    filter_type = None
+    filter_param = None
+    if _config["filter"]["state"]:
+        filter_type = _config["filter"]["type"]
+        filter_param = _config["filter"]["param"]
+
+    return DataPreProcessing3D(input_paths, input_type="data_float32", output_type=output_type,
+                               save_directory=save_directory, factor=factor, filter_type=filter_type,
+                               filter_param=filter_param)
 
 
 def import_cnn_pipeline(input_paths, _config):
@@ -20,6 +32,7 @@ def import_cnn_pipeline(input_paths, _config):
 def import_cnn_postprocessing_pipeline(input_paths, _config):
     return _create_postprocessing_step(input_paths, input_type="data_float32", config=_config)
 
+
 def import_segmentation_pipeline(input_paths, _config):
     segmentation = configure_segmentation(input_paths, _config)
     return segmentation
@@ -30,7 +43,7 @@ def import_segmentation_postprocessing_pipeline(input_paths, _config):
 
 
 def _create_postprocessing_step(input_paths, input_type, config):
-    output_type = config.get('output_type', None)
+    output_type = config.get('output_type', input_type)
     save_directory = config.get('save_directory', 'PostProcessing')
     factor = config.get('factor', [1, 1, 1])
     out_ext = ".tiff" if config["tiff"] else ".h5"
@@ -45,8 +58,8 @@ class SetupProcess:
             # Import pipeline and assign paths
             self.pipeline = import_function(paths, config[pipeline_name])
         else:
-            # If pipeline is not configured or state=False use dummy
-            self.pipeline = dummy(paths, pipeline_name)
+            # If pipeline is not configured or state=False use PlaceholderStep
+            self.pipeline = PlaceholderPipelineStep(paths, pipeline_name)
 
     def __call__(self):
         return self.pipeline()

@@ -200,3 +200,18 @@ class AbstractSegmentationStep(GenericPipelineStep):
                          file_suffix=file_suffix,
                          out_ext=".h5",
                          num_threads=num_threads)
+
+
+class PlaceholderPipelineStep:
+    """
+    Used as a placeholder for a non-active pipeline step
+    """
+
+    def __init__(self, input_paths, phase):
+        self.phase = phase
+        self.paths = input_paths
+
+    def __call__(self):
+        # just log pipeline step name and return the paths
+        print(f"Skipping {self.phase}: Nothing to do")
+        return self.paths
