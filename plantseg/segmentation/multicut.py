@@ -22,7 +22,8 @@ class MulticutFromPmaps(AbstractSegmentationStep):
                  ws_sigma=2.0,
                  ws_w_sigma=0,
                  post_minsize=50,
-                 n_threads=6):
+                 n_threads=6,
+                 **kwargs):
 
         super().__init__(input_paths=predictions_paths,
                          save_directory=save_directory,

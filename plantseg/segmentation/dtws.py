@@ -13,7 +13,8 @@ class DistanceTransformWatershed(AbstractSegmentationStep):
                  ws_threshold=0.4,
                  ws_minsize=50,
                  ws_sigma=0.3,
-                 n_threads=8):
+                 n_threads=8,
+                 **kwargs):
         super().__init__(input_paths=predictions_paths,
                          save_directory=save_directory,
                          file_suffix='_dtws',

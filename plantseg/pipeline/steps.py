@@ -27,6 +27,7 @@ class GenericPipelineStep:
         num_threads (int): thread pool size
     """
 
+    # TODO: consider passing input_paths to the __call__ instead of the constructor
     def __init__(self, input_paths, h5_input_key, h5_output_key, input_type, output_type, save_directory,
                  file_suffix="", out_ext=".h5", num_threads=1):
         assert isinstance(input_paths, list)
@@ -41,7 +42,6 @@ class GenericPipelineStep:
         self.h5_output_key = h5_output_key
         self.output_type = output_type
         self.input_type = input_type
-        self.save_directory = save_directory
         self.file_suffix = file_suffix
         self.out_ext = out_ext
         self.num_threads = num_threads
@@ -55,7 +55,9 @@ class GenericPipelineStep:
         with futures.ThreadPoolExecutor(self.num_threads) as tpe:
             tasks = [tpe.submit(self.read_process_write, input_path) for input_path in self.input_paths]
             # return output paths
-            return [t.result() for t in tasks]
+            results = [t.result() for t in tasks]
+
+        return results
 
     def process(self, input_data):
         """
@@ -75,8 +77,8 @@ class GenericPipelineStep:
 
         output_data = self.process(input_data)
 
-        print(f'Saving results in {output_path}')
         output_path = self._create_output_path(input_path)
+        print(f'Saving results in {output_path}')
         self.save_output(output_data, output_path)
 
         # return output_path
@@ -153,7 +155,7 @@ class GenericPipelineStep:
     def _create_output_path(self, input_path):
         output_path = os.path.join(self.save_directory, os.path.basename(input_path))
         output_path = os.path.splitext(output_path)[0] + self.file_suffix + self.out_ext
-        return output_path, os.path.isfile(output_path)
+        return output_path
 
     def save_output(self, data, output_path):
         data = self._adjust_output_type(data)

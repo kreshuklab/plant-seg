@@ -1,3 +1,4 @@
+from plantseg.main import gui_logger
 from plantseg.main.utils import load_paths
 from plantseg.pipeline.steps import PlaceholderPipelineStep
 from plantseg.predictions.utils import create_predict_config
@@ -53,7 +54,7 @@ def _create_postprocessing_step(input_paths, input_type, config):
 
 class SetupProcess:
     def __init__(self, paths, config, pipeline_name, import_function):
-        print(f"Loading: {pipeline_name} with parameters: {config[pipeline_name]}")
+        gui_logger.info(f"Loading: {pipeline_name} with parameters: {config[pipeline_name]}")
         if pipeline_name in config.keys() and config[pipeline_name]['state']:
             # Import pipeline and assign paths
             self.pipeline = import_function(paths, config[pipeline_name])
@@ -67,10 +68,10 @@ class SetupProcess:
 
 def raw2seg(config):
     # read files
-    print("File paths loading...")
+    gui_logger.info("File paths loading...")
     paths = load_paths(config)
 
-    print("\nStart processing... see terminal for verbose logs")
+    gui_logger.info("\nStart processing... see terminal for verbose logs")
     all_pipelines = [('preprocessing', import_preprocessing_pipeline),
                      ('cnn_prediction', import_cnn_pipeline),
                      ('cnn_postprocessing', import_cnn_postprocessing_pipeline),
@@ -82,5 +83,6 @@ def raw2seg(config):
         pipeline = SetupProcess(paths, config, pipeline_name, import_pipeline)
         # run pipeline and update paths
         paths = pipeline()
+        gui_logger.info(f'Step: {pipeline_name}, paths: {paths}')
 
-    print("All done! \n")
+    gui_logger.info("All done! \n")

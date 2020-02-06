@@ -1,5 +1,4 @@
 import os
-import sys
 import wget
 import yaml
 from plantseg import plantseg_global_path
@@ -34,14 +33,8 @@ def check_models(model_name, update_files=False):
         config = yaml.load(open(model_file, 'r'), Loader=yaml.FullLoader)
         url = config[model_name]["path"]
 
-        # wget models and training config
-        temp_stdout = sys.stdout  # Hack! stdout has to go back to sys stdout because of progress bar
-        sys.stdout = sys.__stdout__
-
         wget.download(url + config_train, out=model_dir)
         wget.download(url + best_model, out=model_dir)
         wget.download(url + last_model, out=model_dir)
-
-        sys.stdout = temp_stdout  # return stdout to gui
 
     return 0

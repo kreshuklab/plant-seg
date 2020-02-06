@@ -1,4 +1,5 @@
 import glob
+import logging
 import os
 import warnings
 
@@ -28,3 +29,17 @@ def load_paths(config):
             return [config["path"]]
         else:
             raise RuntimeError(f"Unsupported file type: '{ext}'")
+
+
+# Copied from https://github.com/beenje/tkinter-logging-text-widget/blob/master/main.py
+class QueueHandler(logging.Handler):
+    """Class to send logging records to a queue
+    It can be used from different threads
+    The ConsoleUi class polls this queue to display records in a ScrolledText widget
+    """
+    def __init__(self, log_queue):
+        super().__init__()
+        self.log_queue = log_queue
+
+    def emit(self, record):
+        self.log_queue.put(record)

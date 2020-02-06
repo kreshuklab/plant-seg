@@ -20,7 +20,8 @@ class GaspFromPmaps(AbstractSegmentationStep):
                  ws_minsize=50,
                  ws_sigma=0.3,
                  post_minsize=100,
-                 n_threads=6):
+                 n_threads=6,
+                 **kwargs):
 
         super().__init__(input_paths=predictions_paths,
                          save_directory=save_directory,

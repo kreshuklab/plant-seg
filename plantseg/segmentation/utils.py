@@ -1,31 +1,35 @@
 import numpy as np
 
+SUPPORTED_ALGORITMS = ["GASP", "MutexWS", "DtWatershed", "MultiCut"]
+
 
 def configure_segmentation(predictions_paths, config):
-    name = config["name"]
+    algorithm_name = config["name"]
+    assert algorithm_name in SUPPORTED_ALGORITMS, f"Unsupported algorithm name {algorithm_name}"
 
-    if name == "GASP" or name == "MutexWS" or name == "DtWatershed":
-        from .gasp import GaspFromPmaps as Segmentation
+    # create a copy of the config to prevent changing the original
+    config = config.copy()
 
-    elif name == "MultiCut":
-        from .multicut import MulticutFromPmaps as Segmentation
+    config['predictions_paths'] = predictions_paths
 
-    else:
-        raise NotImplementedError
+    if algorithm_name == "GASP":
+        from .gasp import GaspFromPmaps
+        # user 'average' linkage by default
+        config['gasp_linkage_criteria'] = 'average'
+        return GaspFromPmaps(**config)
 
-    segmentation = Segmentation(predictions_paths)
+    if algorithm_name == "MutexWS":
+        from .gasp import GaspFromPmaps
+        config['gasp_linkage_criteria'] = 'mutex_watershed'
+        return GaspFromPmaps(**config)
 
-    if name == "MutexWS":
-        segmentation.__dict__["gasp_linkage_criteria"] = 'mutex_watershed'
+    if algorithm_name == "DtWatershed":
+        from .dtws import DistanceTransformWatershed
+        return DistanceTransformWatershed(**config)
 
-    if name == "DtWatershed":
-        segmentation.__dict__["gasp_linkage_criteria"] = 'DtWatershed'
-
-    for name in segmentation.__dict__.keys():
-        if name in config:
-            segmentation.__dict__[name] = config[name]
-
-    return segmentation
+    if algorithm_name == "MultiCut":
+        from .multicut import MulticutFromPmaps
+        return MulticutFromPmaps(**config)
 
 
 def shift_affinities(affinities, offsets):

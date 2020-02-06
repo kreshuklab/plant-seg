@@ -1,5 +1,10 @@
+import logging
+import queue
 import tkinter
 import yaml
+
+from plantseg.main import gui_logger
+from plantseg.main.utils import QueueHandler
 from .raw2seg import raw2seg
 import os
 import sys
@@ -9,7 +14,6 @@ from plantseg.gui.gui_tools import Files2Process, report_error, StdoutRedirect, 
 from plantseg.gui import convert_rgb
 import traceback
 from plantseg import plantseg_global_path
-
 
 class PlantSegApp:
     def __init__(self, debug=False):
@@ -69,8 +73,6 @@ class PlantSegApp:
 
         self.plant_segapp.protocol("WM_DELETE_WINDOW", self.close)
         self.debug = debug
-        if not self.debug:
-            sys.stdout = StdoutRedirect(self.out_text)
         self.plant_segapp.mainloop()
 
     def update_font(self, size=10, family="helvetica"):
@@ -234,7 +236,38 @@ class PlantSegApp:
         scroll_bar.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
 
         out_text.configure(state='disabled')
+
+        # TODO: refactor
+        # Create a logging handler using a queue
+        self.out_frame3 = out_frame3
+        self.log_queue = queue.Queue()
+        self.queue_handler = QueueHandler(self.log_queue)
+        formatter = logging.Formatter('%(asctime)s [%(threadName)s] %(levelname)s %(name)s - %(message)s')
+        self.queue_handler.setFormatter(formatter)
+        gui_logger.addHandler(self.queue_handler)
+        # Start polling messages from the queue
+        self.out_frame3.after(100, self.poll_log_queue)
+
         self.out_text = out_text
+
+    def poll_log_queue(self):
+        # Check every 100ms if there is a new message in the queue to display
+        while True:
+            try:
+                record = self.log_queue.get(block=False)
+            except queue.Empty:
+                break
+            else:
+                self.display(record)
+        self.out_frame3.after(100, self.poll_log_queue)
+
+    def display(self, record):
+        msg = self.queue_handler.format(record)
+        self.out_text.configure(state='normal')
+        self.out_text.insert(tkinter.END, msg + '\n', record.levelname)
+        self.out_text.configure(state='disabled')
+        # Autoscroll to the bottom
+        self.out_text.yview(tkinter.END)
 
     # End init modules ========= Begin Config Read/Write
     @staticmethod
@@ -487,9 +520,6 @@ class PlantSegApp:
             # NB. stderror is still the sys default. Errors outside the pipeline will be reported in the terminal.
             traceback.print_exc()
             report_error(e)
-
-            if not self.debug:
-                sys.stdout = StdoutRedirect(self.out_text)
 
         # Enable the run button
         self.run_button["state"] = "normal"
