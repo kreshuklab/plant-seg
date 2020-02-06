@@ -1,36 +1,41 @@
 from plantseg.main.utils import load_paths, dummy
+from plantseg.predictions.utils import create_predict_config
+from plantseg.segmentation.utils import configure_segmentation
+from ..dataprocessing.dataprocessing import DataPostProcessing3D
+from ..dataprocessing.dataprocessing import DataPreProcessing3D
+from ..predictions.predict import ModelPredictions
 
 
 def import_preprocessing_pipeline(input_paths, _config):
-    from ..dataprocessing.dataprocessing import DataPreProcessing3D
     processing = DataPreProcessing3D(input_paths, _config)
     return processing
 
 
 def import_cnn_pipeline(input_paths, _config):
-    from plantseg.predictions.utils import create_predict_config
-    from ..predictions.predict import ModelPredictions
     cnn_config = create_predict_config(input_paths, _config)
     model_predictions = ModelPredictions(cnn_config)
     return model_predictions
 
 
 def import_cnn_postprocessing_pipeline(input_paths, _config):
-    from ..dataprocessing.dataprocessing import DataPostProcessing3D
-    processing = DataPostProcessing3D(input_paths, _config, data_type="data_float32")
-    return processing
-
+    return _create_postprocessing_step(input_paths, input_type="data_float32", config=_config)
 
 def import_segmentation_pipeline(input_paths, _config):
-    from plantseg.segmentation.utils import configure_segmentation
     segmentation = configure_segmentation(input_paths, _config)
     return segmentation
 
 
 def import_segmentation_postprocessing_pipeline(input_paths, _config):
-    from ..dataprocessing.dataprocessing import DataPostProcessing3D
-    processing = DataPostProcessing3D(input_paths, _config, data_type="labels")
-    return processing
+    return _create_postprocessing_step(input_paths, input_type="labels", config=_config)
+
+
+def _create_postprocessing_step(input_paths, input_type, config):
+    output_type = config.get('output_type', None)
+    save_directory = config.get('save_directory', 'PostProcessing')
+    factor = config.get('factor', [1, 1, 1])
+    out_ext = ".tiff" if config["tiff"] else ".h5"
+    return DataPostProcessing3D(input_paths, input_type=input_type, output_type=output_type,
+                                save_directory=save_directory, factor=factor, out_ext=out_ext)
 
 
 class SetupProcess:

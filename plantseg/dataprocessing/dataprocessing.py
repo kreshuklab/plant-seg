@@ -13,8 +13,7 @@ def _dummy(image, param):
 
 
 def _rescale(image, factor, order):
-    order = int(order)
-    if np.prod(factor) == 1:
+    if np.array_equal(factor, [1, 1, 1]):
         return image
     else:
         return zoom(image, zoom=factor, order=order)
@@ -29,49 +28,33 @@ def _gaussian(image, sigma):
 
 
 class DataPostProcessing3D(GenericPipelineStep):
-    def __init__(self,
-                 paths,
-                 config,
-                 data_type="labels"):
+    def __init__(self, input_paths, input_type="labels", output_type="labels", save_directory="PostProcessing",
+                 factor=None, out_ext=".h5"):
+        if factor is None:
+            factor = [1, 1, 1]
 
-        save_directory = config["save_directory"] if "save_directory" in config else "PostProcessing"
-        output_type = config["output_type"] if "output_type" in config else data_type
+        h5_input_key = "segmentation" if input_type == "labels" else "predictions"
+        h5_output_key = h5_input_key
 
-        super().__init__(paths,
-                         input_type=data_type,
+        super().__init__(input_paths,
+                         h5_input_key=h5_input_key,
+                         h5_output_key=h5_output_key,
+                         input_type=input_type,
                          output_type=output_type,
-                         save_directory=save_directory)
-        self.paths = paths
-
-        # convert from tiff
-        self.out_ext = ".tiff" if config["tiff"] else ".h5"
+                         save_directory=save_directory,
+                         out_ext=out_ext)
 
         # rescaling
-        self.factor = config["factor"]
-        self.order = config["order"]
+        self.factor = factor
+        # spline order, use 2 for 'segmentation' and 0 for 'predictions'
+        self.order = 0 if input_type == "labels" else 2
 
-        self.data_type = data_type
-        self.dataset = "segmentation" if data_type == "labels" else "predictions"
-
-    def __call__(self, ):
-        for path in self.paths:
-            runtime = time.time()
-            print(f"Postprocessing {path}")
-            # Load h5 from predictions or segmentation
-            output_path, exist = self.create_output_path(path,
-                                                         prefix="",
-                                                         out_ext=self.out_ext)
-
-            image = self.load_stack(path)
-            image = _rescale(image, self.factor, self.order)
-            self.save_output(image, output_path, dataset=self.dataset)
-            self.outputs_paths.append(output_path)
-
-            runtime = time.time() - runtime
-            print(f" - PostProcessing took {runtime:.2f} s")
-
-        # returns input paths for postprocessing are not updated.
-        return self.paths
+    def process(self, image):
+        runtime = time.time()
+        image = _rescale(image, self.factor, self.order)
+        runtime = time.time() - runtime
+        print(f" - PostProcessing took {runtime:.2f} s")
+        return image
 
 
 class DataPreProcessing3D(GenericPipelineStep):
