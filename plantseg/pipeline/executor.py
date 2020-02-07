@@ -1,8 +1,8 @@
 import queue
 from concurrent import futures
 
-from plantseg.main import gui_logger
-from plantseg.main.raw2seg import raw2seg
+from plantseg.pipeline import gui_logger
+from plantseg.pipeline.raw2seg import raw2seg
 from plantseg.pipeline.utils import get_logger
 
 logger = get_logger('PipelineExecutor')

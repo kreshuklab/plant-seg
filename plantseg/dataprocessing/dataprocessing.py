@@ -5,7 +5,7 @@ from skimage.filters import median
 from skimage.morphology import ball
 from vigra.filters import gaussianSmoothing
 
-from plantseg.main import gui_logger
+from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep
 
 

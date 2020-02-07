@@ -4,7 +4,7 @@ import numpy as np
 from GASP.segmentation import GaspFromAffinities, WatershedOnDistanceTransformFromAffinities
 from GASP.segmentation.watershed import SizeThreshAndGrowWithWS
 
-from plantseg.main import gui_logger
+from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
 from plantseg.segmentation.utils import shift_affinities
 

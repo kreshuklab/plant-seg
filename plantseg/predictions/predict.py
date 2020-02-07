@@ -6,7 +6,7 @@ from pytorch3dunet.datasets.hdf5 import get_test_loaders
 from pytorch3dunet.unet3d import utils
 from pytorch3dunet.unet3d.model import get_model
 
-from plantseg.main import gui_logger
+from plantseg.pipeline import gui_logger
 
 
 def _get_output_file(dataset, model_name, suffix='_predictions'):

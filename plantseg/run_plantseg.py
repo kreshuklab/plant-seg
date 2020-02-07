@@ -1,7 +1,7 @@
 import argparse
 import yaml
-from plantseg.main.raw2seg import raw2seg
-from plantseg.main.plantsegapp import PlantSegApp
+from plantseg.pipeline.raw2seg import raw2seg
+from plantseg.gui.plantsegapp import PlantSegApp
 
 
 def parser():

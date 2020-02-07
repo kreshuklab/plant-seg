@@ -3,7 +3,6 @@ import os
 import queue
 import sys
 import tkinter
-import traceback
 import webbrowser
 from tkinter import font
 
@@ -12,9 +11,9 @@ import yaml
 from plantseg import plantseg_global_path
 from plantseg.gui import convert_rgb
 from plantseg.gui.gui_tools import Files2Process, report_error, version_popup
-from plantseg.main import gui_logger
-from plantseg.main.utils import QueueHandler
+from plantseg.pipeline import gui_logger
 from plantseg.pipeline.executor import PipelineExecutor
+from plantseg.pipeline.utils import QueueHandler
 
 
 class PlantSegApp:
@@ -260,6 +259,7 @@ class PlantSegApp:
 
         self.out_text = out_text
 
+    # Copied from https://github.com/beenje/tkinter-logging-text-widget/blob/master/main.py
     def poll_log_queue(self):
         # Check every 100ms if there is a new message in the queue to display
         while True:
@@ -450,6 +450,7 @@ class PlantSegApp:
 
     def close(self):
         """Thi function let the user decide if saving  the current config"""
+
         def close_action():
             """simply close the app"""
             # shutdown pipeline executor without waiting for the current task to finish

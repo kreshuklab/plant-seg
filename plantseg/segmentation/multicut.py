@@ -7,7 +7,7 @@ from elf.segmentation.features import compute_rag
 from elf.segmentation.multicut import multicut_kernighan_lin, transform_probabilities_to_costs
 from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
 
-from plantseg.main import gui_logger
+from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
 
 

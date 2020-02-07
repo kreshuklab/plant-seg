@@ -5,7 +5,7 @@ import numpy as np
 import tifffile
 import yaml
 
-from plantseg.main import gui_logger
+from plantseg.pipeline import gui_logger
 
 SUPPORTED_TYPES = ["labels", "data_float32", "data_uint8"]
 TIFF_EXTENSIONS = [".tiff", ".tif"]

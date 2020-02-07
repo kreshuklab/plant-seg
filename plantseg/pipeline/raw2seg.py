@@ -1,11 +1,11 @@
-from plantseg.main import gui_logger
-from plantseg.main.utils import load_paths
+from plantseg.pipeline import gui_logger
+from plantseg.pipeline.utils import load_paths
 from plantseg.pipeline.steps import PlaceholderPipelineStep
 from plantseg.predictions.utils import create_predict_config
 from plantseg.segmentation.utils import configure_segmentation
-from ..dataprocessing.dataprocessing import DataPostProcessing3D
-from ..dataprocessing.dataprocessing import DataPreProcessing3D
-from ..predictions.predict import ModelPredictions
+from plantseg.dataprocessing.dataprocessing import DataPostProcessing3D
+from plantseg.dataprocessing.dataprocessing import DataPreProcessing3D
+from plantseg.predictions.predict import ModelPredictions
 
 
 def import_preprocessing_pipeline(input_paths, _config):
