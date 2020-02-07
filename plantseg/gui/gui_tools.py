@@ -462,7 +462,6 @@ class RescaleEntry:
         """ This method open a popup windows that automatically set the scaling
          factor from the resolution given by the user"""
         global current_model
-        print(current_model)
         path_model_config = self.get_model_path()
 
         model_config = yaml.load(open(path_model_config, 'r'),
@@ -586,34 +585,12 @@ class Files2Process:
 #
 ######################################################################################################################
 
-class StdoutRedirect:
-    """
-    A class for redirecting stdout to this Text widget.
-    """
-
-    def __init__(self, widget):
-        self.widget = widget
-
-    def write(self, data):
-        self.widget.configure(state='normal')
-        self.widget.insert(tkinter.END, f"{data}")
-        self.widget.configure(state='disabled')
-        self.widget.yview_moveto(1)
-        self.widget.update()
-
-    def flush(self):
-        pass
-
-    def fileno(self):
-        return 0
-
-
 def report_error(data, font=None):
     """ creates pop up and show error messages """
     data = data if type(data) is str else f"Unknown Error. Error type: {type(data)} \n {data}"
 
     default = "The complete error message is reported in the terminal." \
-              " Please, if the error persist let us know by opening an issue on https://github.com/hci-unihd/plant-seg."
+              " If the error persists, please let us know by opening an issue on https://github.com/hci-unihd/plant-seg."
 
     popup = tkinter.Tk()
     popup.title("Error")

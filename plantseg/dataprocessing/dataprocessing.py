@@ -1,20 +1,15 @@
-import time
 import numpy as np
 from scipy.ndimage import zoom
 from skimage.filters import median
 from skimage.morphology import ball
 from vigra.filters import gaussianSmoothing
 
-from plantseg import GenericProcessing
-
-
-def _dummy(image, param):
-    return image
+from plantseg.pipeline import gui_logger
+from plantseg.pipeline.steps import GenericPipelineStep
 
 
 def _rescale(image, factor, order):
-    order = int(order)
-    if np.prod(factor) == 1:
+    if np.array_equal(factor, [1, 1, 1]):
         return image
     else:
         return zoom(image, zoom=factor, order=order)
@@ -28,110 +23,95 @@ def _gaussian(image, sigma):
     return gaussianSmoothing(image, sigma)
 
 
-class DataPostProcessing3D(GenericProcessing):
+def _no_filter(image, param):
+    return image
+
+
+class DataPostProcessing3D(GenericPipelineStep):
     def __init__(self,
-                 paths,
-                 config,
-                 data_type="labels"):
+                 input_paths,
+                 input_type="labels",
+                 output_type="labels",
+                 save_directory="PostProcessing",
+                 factor=None,
+                 out_ext=".h5",
+                 state=True):
+        if factor is None:
+            factor = [1, 1, 1]
 
-        save_directory = config["save_directory"] if "save_directory" in config else "PostProcessing"
-        output_type = config["output_type"] if "output_type" in config else data_type
+        h5_input_key = "segmentation" if input_type == "labels" else "predictions"
+        h5_output_key = h5_input_key
 
-        super().__init__(paths,
-                         input_type=data_type,
+        super().__init__(input_paths,
+                         h5_input_key=h5_input_key,
+                         h5_output_key=h5_output_key,
+                         input_type=input_type,
                          output_type=output_type,
-                         save_directory=save_directory)
-        self.paths = paths
-
-        # convert from tiff
-        self.out_ext = ".tiff" if config["tiff"] else ".h5"
+                         save_directory=save_directory,
+                         out_ext=out_ext,
+                         state=state)
 
         # rescaling
-        self.factor = config["factor"]
-        self.order = config["order"]
+        self.factor = factor
+        # spline order, use 2 for 'segmentation' and 0 for 'predictions'
+        self.order = 0 if input_type == "labels" else 2
 
-        self.data_type = data_type
-        self.dataset = "segmentation" if data_type == "labels" else "predictions"
+    def process(self, image):
+        gui_logger.info("Postprocessing files...")
 
-    def __call__(self, ):
-        for path in self.paths:
-            runtime = time.time()
-            print(f"Postprocessing {path}")
-            # Load h5 from predictions or segmentation
-            output_path, exist = self.create_output_path(path,
-                                                         prefix="",
-                                                         out_ext=self.out_ext)
+        image = _rescale(image, self.factor, self.order)
 
-            image = self.load_stack(path)
-            image = _rescale(image, self.factor, self.order)
-            self.save_output(image, output_path, dataset=self.dataset)
-            self.outputs_paths.append(output_path)
-
-            runtime = time.time() - runtime
-            print(f" - PostProcessing took {runtime:.2f} s")
-
-        # returns input paths for postprocessing are not updated.
-        return self.paths
+        return image
 
 
-class DataPreProcessing3D(GenericProcessing):
+class DataPreProcessing3D(GenericPipelineStep):
     def __init__(self,
-                 paths,
-                 config,
-                 data_type="data_float32"):
+                 input_paths,
+                 input_type="data_float32",
+                 output_type="data_uint8",
+                 save_directory="PreProcessing",
+                 factor=None,
+                 filter_type=None,
+                 filter_param=None,
+                 state=True):
 
-        save_directory = config["save_directory"] if "save_directory" in config else "PreProcessing"
-        output_type = config["output_type"] if "output_type" in config else "data_uint8"
-
-        super().__init__(paths,
-                         input_type=data_type,
+        super().__init__(input_paths,
+                         h5_input_key="raw",
+                         h5_output_key="raw",
+                         input_type=input_type,
                          output_type=output_type,
-                         save_directory=save_directory)
-        self.paths = paths
+                         save_directory=save_directory,
+                         out_ext=".h5",
+                         state=state)
 
-        # convert from tiff
-        self.out_ext = ".h5"
+        if factor is None:
+            factor = [1, 1, 1]
 
+        # TODO: remove below code duplication
         # rescaling
-        self.factor = config["factor"]
-        self.order = config["order"]
+        self.factor = factor
+        # spline order, use 2 for 'segmentation' and 0 for 'predictions'
+        self.order = 0 if input_type == "labels" else 2
 
-        # filter
-        if config["filter"]["state"]:
-            # filters
-            if "median" == config["filter"]["type"]:
-                self.param = config["filter"]["param"]
+        # configure filter
+        if filter_type is not None:
+            assert filter_type in ["median", "gaussian"]
+            assert filter_param is not None
+
+            if filter_type == "median":
                 self.filter = _median
-
-            elif "gaussian" == config["filter"]["type"]:
-                self.param = config["filter"]["param"]
-                self.filter = _gaussian
             else:
-                raise NotImplementedError
+                self.filter = _gaussian
+
+            self.filter_param = filter_param
         else:
-            self.param = 0
-            self.filter = _dummy
+            self.filter = _no_filter
+            self.filter_param = 0
 
-        self.data_type = data_type
-        self.dataset = "raw"
+    def process(self, image):
+        gui_logger.info(f"Preprocessing files...")
 
-    def __call__(self, ):
-        for path in self.paths:
-            runtime = time.time()
-            print(f"PreProcessing {path}")
-            # Load h5 from predictions or segmentation
-            output_path, exist = self.create_output_path(path,
-                                                         prefix="",
-                                                         out_ext=self.out_ext)
+        image = self.filter(image, self.filter_param)
+        image = _rescale(image, self.factor, self.order)
 
-            image = self.load_stack(path)
-            image = self.filter(image, self.param)
-            image = _rescale(image, self.factor, self.order)
-
-            self.save_output(image, output_path, dataset=self.dataset)
-            self.outputs_paths.append(output_path)
-
-            runtime = time.time() - runtime
-            print(f" - PreProcessing took {runtime:.2f} s")
-
-        return self.outputs_paths
+        return image

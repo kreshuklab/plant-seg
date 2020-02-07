@@ -10,7 +10,7 @@ build:
   number: 1
 
   entry_points:
-    - plantseg = plantseg.main.plantseg:main
+    - plantseg = plantseg.run_plantseg:main
 
 requirements:
   build:

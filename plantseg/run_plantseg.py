@@ -1,7 +1,7 @@
 import argparse
 import yaml
-from .raw2seg import raw2seg
-from .plantsegapp import PlantSegApp
+from plantseg.pipeline.raw2seg import raw2seg
+from plantseg.gui.plantsegapp import PlantSegApp
 
 
 def parser():
@@ -18,7 +18,6 @@ def load_config(args):
 
 
 def main():
-    # Load general configuration files
     args = parser()
 
     if args.gui:

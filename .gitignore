@@ -1,1 +1,5 @@
 __pycache__/
+
+# Conda build
+plantseg.egg-info/
+dist/

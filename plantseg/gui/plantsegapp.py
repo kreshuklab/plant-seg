@@ -1,18 +1,23 @@
-import tkinter
-import yaml
-from .raw2seg import raw2seg
+import logging
 import os
+import queue
 import sys
+import tkinter
 import webbrowser
 from tkinter import font
-from plantseg.gui.gui_tools import Files2Process, report_error, StdoutRedirect, version_popup
-from plantseg.gui import convert_rgb
-import traceback
+
+import yaml
+
 from plantseg import plantseg_global_path
+from plantseg.gui import convert_rgb
+from plantseg.gui.gui_tools import Files2Process, report_error, version_popup
+from plantseg.pipeline import gui_logger
+from plantseg.pipeline.executor import PipelineExecutor
+from plantseg.pipeline.utils import QueueHandler
 
 
 class PlantSegApp:
-    def __init__(self, debug=False):
+    def __init__(self):
         # Init main app
         # App Setup ===================================================================================================
         # *--------------------------------------------------------------------------------------*
@@ -30,7 +35,7 @@ class PlantSegApp:
         # |                                                                                      |
         # *--------------------------------------------------------------------------------------*
 
-        # Load config all config
+        # Load app config
         self.app_config = self.load_app_config()
         self.plant_config_path, self.plantseg_config = self.load_config()
 
@@ -63,14 +68,13 @@ class PlantSegApp:
         self.font_size = None
         self.font_bold, self.font = None, None
 
+        # create pipeline executor; hardcode max_workers and max_size for now
+        self.pipeline_executor = PipelineExecutor(max_workers=1, max_size=1)
         # init blocks
         self.update_font(size=self.app_config["fontsize"])
         self.build_all()
 
         self.plant_segapp.protocol("WM_DELETE_WINDOW", self.close)
-        self.debug = debug
-        if not self.debug:
-            sys.stdout = StdoutRedirect(self.out_text)
         self.plant_segapp.mainloop()
 
     def update_font(self, size=10, family="helvetica"):
@@ -233,8 +237,51 @@ class PlantSegApp:
         out_text.configure(font=self.font)
         scroll_bar.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
 
+        # configure log level display
+        out_text.tag_config('INFO', foreground='black')
+        out_text.tag_config('DEBUG', foreground='gray')
+        out_text.tag_config('WARNING', foreground='orange')
+        out_text.tag_config('ERROR', foreground='red')
+        out_text.tag_config('CRITICAL', foreground='red', underline=1)
+
         out_text.configure(state='disabled')
+
+        # TODO: refactor
+        # Create a logging handler using a queue
+        self.out_frame3 = out_frame3
+        self.log_queue = queue.Queue()
+        self.queue_handler = QueueHandler(self.log_queue)
+        formatter = logging.Formatter('%(asctime)s - %(message)s')
+        self.queue_handler.setFormatter(formatter)
+        gui_logger.addHandler(self.queue_handler)
+        # Start polling messages from the queue
+        self.out_frame3.after(100, self.poll_log_queue)
+
         self.out_text = out_text
+
+    # Copied from https://github.com/beenje/tkinter-logging-text-widget/blob/master/main.py
+    def poll_log_queue(self):
+        # Check every 100ms if there is a new message in the queue to display
+        while True:
+            try:
+                record = self.log_queue.get(block=False)
+            except queue.Empty:
+                break
+            else:
+                self.display(record)
+        self.out_frame3.after(100, self.poll_log_queue)
+
+    def display(self, record):
+        msg = self.queue_handler.format(record)
+        if record.levelname in ['ERROR', 'CRITICAL']:
+            # show pop-up in case of error
+            report_error(msg)
+        else:
+            self.out_text.configure(state='normal')
+            self.out_text.insert(tkinter.END, msg + '\n', record.levelname)
+            self.out_text.configure(state='disabled')
+            # Autoscroll to the bottom
+            self.out_text.yview(tkinter.END)
 
     # End init modules ========= Begin Config Read/Write
     @staticmethod
@@ -407,8 +454,12 @@ class PlantSegApp:
 
     def close(self):
         """Thi function let the user decide if saving  the current config"""
+
         def close_action():
             """simply close the app"""
+            # shutdown pipeline executor without waiting for the current task to finish
+            self.pipeline_executor.shutdown(wait=False)
+
             self.plant_segapp.destroy()
             popup.destroy()
 
@@ -481,15 +532,14 @@ class PlantSegApp:
 
         # Run the pipeline
         try:
-            raw2seg(self.plantseg_config)
+            if not self.pipeline_executor.full():
+                # execute the pipeline
+                self.pipeline_executor.submit(self.plantseg_config)
+            else:
+                report_error("Cannot execute another task. Wait for the current segmentation pipeline to finish.")
         except Exception as e:
-            # If an error occur generate a popup.
-            # NB. stderror is still the sys default. Errors outside the pipeline will be reported in the terminal.
-            traceback.print_exc()
+            # If an error occur generate a popup
             report_error(e)
-
-            if not self.debug:
-                sys.stdout = StdoutRedirect(self.out_text)
 
         # Enable the run button
         self.run_button["state"] = "normal"
