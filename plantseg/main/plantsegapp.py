@@ -1,22 +1,24 @@
 import logging
-import queue
-import tkinter
-import yaml
-
-from plantseg.main import gui_logger
-from plantseg.main.utils import QueueHandler
-from .raw2seg import raw2seg
 import os
+import queue
 import sys
+import tkinter
+import traceback
 import webbrowser
 from tkinter import font
-from plantseg.gui.gui_tools import Files2Process, report_error, StdoutRedirect, version_popup
-from plantseg.gui import convert_rgb
-import traceback
+
+import yaml
+
 from plantseg import plantseg_global_path
+from plantseg.gui import convert_rgb
+from plantseg.gui.gui_tools import Files2Process, report_error, version_popup
+from plantseg.main import gui_logger
+from plantseg.main.utils import QueueHandler
+from plantseg.pipeline.executor import PipelineExecutor
+
 
 class PlantSegApp:
-    def __init__(self, debug=False):
+    def __init__(self):
         # Init main app
         # App Setup ===================================================================================================
         # *--------------------------------------------------------------------------------------*
@@ -34,7 +36,7 @@ class PlantSegApp:
         # |                                                                                      |
         # *--------------------------------------------------------------------------------------*
 
-        # Load config all config
+        # Load app config
         self.app_config = self.load_app_config()
         self.plant_config_path, self.plantseg_config = self.load_config()
 
@@ -67,12 +69,13 @@ class PlantSegApp:
         self.font_size = None
         self.font_bold, self.font = None, None
 
+        # create pipeline executor; hardcode max_workers and max_size for now
+        self.pipeline_executor = PipelineExecutor(max_workers=1, max_size=1)
         # init blocks
         self.update_font(size=self.app_config["fontsize"])
         self.build_all()
 
         self.plant_segapp.protocol("WM_DELETE_WINDOW", self.close)
-        self.debug = debug
         self.plant_segapp.mainloop()
 
     def update_font(self, size=10, family="helvetica"):
@@ -234,6 +237,13 @@ class PlantSegApp:
         out_text.grid(column=0, row=0, padx=10, pady=10, sticky=self.stick_all)
         out_text.configure(font=self.font)
         scroll_bar.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
+
+        # configure log level display
+        out_text.tag_config('INFO', foreground='black')
+        out_text.tag_config('DEBUG', foreground='gray')
+        out_text.tag_config('WARNING', foreground='orange')
+        out_text.tag_config('ERROR', foreground='red')
+        out_text.tag_config('CRITICAL', foreground='red', underline=1)
 
         out_text.configure(state='disabled')
 
@@ -442,6 +452,9 @@ class PlantSegApp:
         """Thi function let the user decide if saving  the current config"""
         def close_action():
             """simply close the app"""
+            # shutdown pipeline executor without waiting for the current task to finish
+            self.pipeline_executor.shutdown(wait=False)
+
             self.plant_segapp.destroy()
             popup.destroy()
 
@@ -514,11 +527,13 @@ class PlantSegApp:
 
         # Run the pipeline
         try:
-            raw2seg(self.plantseg_config)
+            if not self.pipeline_executor.full():
+                # execute the pipeline
+                self.pipeline_executor.submit(self.plantseg_config)
+            else:
+                report_error("Cannot execute another task. Wait for the current segmentation pipeline to finish.")
         except Exception as e:
-            # If an error occur generate a popup.
-            # NB. stderror is still the sys default. Errors outside the pipeline will be reported in the terminal.
-            traceback.print_exc()
+            # If an error occur generate a popup
             report_error(e)
 
         # Enable the run button

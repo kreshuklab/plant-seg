@@ -54,11 +54,13 @@ def _create_postprocessing_step(input_paths, input_type, config):
 
 class SetupProcess:
     def __init__(self, paths, config, pipeline_name, import_function):
-        gui_logger.info(f"Loading: {pipeline_name} with parameters: {config[pipeline_name]}")
         if pipeline_name in config.keys() and config[pipeline_name]['state']:
+            gui_logger.info(
+                f"Executing pipeline step: '{pipeline_name}' with parameters: '{config[pipeline_name]}' for the following files: '{paths}")
             # Import pipeline and assign paths
             self.pipeline = import_function(paths, config[pipeline_name])
         else:
+            gui_logger.info(f"Skipping pipeline step: '{pipeline_name}'. Nothing do to here.")
             # If pipeline is not configured or state=False use PlaceholderStep
             self.pipeline = PlaceholderPipelineStep(paths, pipeline_name)
 
@@ -67,11 +69,10 @@ class SetupProcess:
 
 
 def raw2seg(config):
-    # read files
-    gui_logger.info("File paths loading...")
     paths = load_paths(config)
+    gui_logger.info(f"Running the pipeline on: {paths}")
 
-    gui_logger.info("\nStart processing... see terminal for verbose logs")
+    gui_logger.info("Executing pipeline, see terminal for verbose logs.")
     all_pipelines = [('preprocessing', import_preprocessing_pipeline),
                      ('cnn_prediction', import_cnn_pipeline),
                      ('cnn_postprocessing', import_cnn_postprocessing_pipeline),
@@ -83,6 +84,5 @@ def raw2seg(config):
         pipeline = SetupProcess(paths, config, pipeline_name, import_pipeline)
         # run pipeline and update paths
         paths = pipeline()
-        gui_logger.info(f'Step: {pipeline_name}, paths: {paths}')
 
-    gui_logger.info("All done! \n")
+    gui_logger.info(f"Pipeline execution finished! See the results in {paths}")

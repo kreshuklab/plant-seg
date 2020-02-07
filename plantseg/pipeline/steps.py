@@ -1,10 +1,9 @@
 import os
-from concurrent import futures
 
 import h5py
 import numpy as np
-import yaml
 import tifffile
+import yaml
 
 SUPPORTED_TYPES = ["labels", "data_float32", "data_uint8"]
 TIFF_EXTENSIONS = [".tiff", ".tif"]
@@ -51,13 +50,7 @@ class GenericPipelineStep:
         os.makedirs(self.save_directory, exist_ok=True)
 
     def __call__(self):
-        # process files, each one in a separate worker thread
-        with futures.ThreadPoolExecutor(self.num_threads) as tpe:
-            tasks = [tpe.submit(self.read_process_write, input_path) for input_path in self.input_paths]
-            # return output paths
-            results = [t.result() for t in tasks]
-
-        return results
+        return [self.read_process_write(input_path) for input_path in self.input_paths]
 
     def process(self, input_data):
         """
@@ -214,6 +207,4 @@ class PlaceholderPipelineStep:
         self.paths = input_paths
 
     def __call__(self):
-        # just log pipeline step name and return the paths
-        print(f"Skipping {self.phase}: Nothing to do")
         return self.paths

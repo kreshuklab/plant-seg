@@ -586,28 +586,6 @@ class Files2Process:
 #
 ######################################################################################################################
 
-class StdoutRedirect:
-    """
-    A class for redirecting stdout to this Text widget.
-    """
-
-    def __init__(self, widget):
-        self.widget = widget
-
-    def write(self, data):
-        self.widget.configure(state='normal')
-        self.widget.insert(tkinter.END, f"{data}")
-        self.widget.configure(state='disabled')
-        self.widget.yview_moveto(1)
-        self.widget.update()
-
-    def flush(self):
-        pass
-
-    def fileno(self):
-        return 0
-
-
 def report_error(data, font=None):
     """ creates pop up and show error messages """
     data = data if type(data) is str else f"Unknown Error. Error type: {type(data)} \n {data}"
