@@ -24,12 +24,13 @@ class MulticutFromPmaps(AbstractSegmentationStep):
                  ws_w_sigma=0,
                  post_minsize=50,
                  n_threads=6,
+                 state=True,
                  **kwargs):
 
         super().__init__(input_paths=predictions_paths,
                          save_directory=save_directory,
                          file_suffix='_multicut',
-                         num_threads=n_threads)
+                         state=state)
 
         self.beta = beta
 

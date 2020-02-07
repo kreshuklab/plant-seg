@@ -3,7 +3,7 @@ import numpy as np
 SUPPORTED_ALGORITMS = ["GASP", "MutexWS", "DtWatershed", "MultiCut"]
 
 
-def configure_segmentation(predictions_paths, config):
+def configure_segmentation_step(predictions_paths, config):
     algorithm_name = config["name"]
     assert algorithm_name in SUPPORTED_ALGORITMS, f"Unsupported algorithm name {algorithm_name}"
 

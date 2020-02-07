@@ -14,11 +14,12 @@ class DistanceTransformWatershed(AbstractSegmentationStep):
                  ws_minsize=50,
                  ws_sigma=0.3,
                  n_threads=8,
+                 state=True,
                  **kwargs):
         super().__init__(input_paths=predictions_paths,
                          save_directory=save_directory,
                          file_suffix='_dtws',
-                         num_threads=n_threads)
+                         state=state)
 
         self.offsets = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
         # TODO: should we use this DTWS or the one from elf

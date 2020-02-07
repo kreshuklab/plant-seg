@@ -1,4 +1,3 @@
-import time
 import numpy as np
 from scipy.ndimage import zoom
 from skimage.filters import median
@@ -34,7 +33,9 @@ class DataPostProcessing3D(GenericPipelineStep):
                  input_type="labels",
                  output_type="labels",
                  save_directory="PostProcessing",
-                 factor=None, out_ext=".h5"):
+                 factor=None,
+                 out_ext=".h5",
+                 state=True):
         if factor is None:
             factor = [1, 1, 1]
 
@@ -47,7 +48,8 @@ class DataPostProcessing3D(GenericPipelineStep):
                          input_type=input_type,
                          output_type=output_type,
                          save_directory=save_directory,
-                         out_ext=out_ext)
+                         out_ext=out_ext,
+                         state=state)
 
         # rescaling
         self.factor = factor
@@ -55,13 +57,10 @@ class DataPostProcessing3D(GenericPipelineStep):
         self.order = 0 if input_type == "labels" else 2
 
     def process(self, image):
-        runtime = time.time()
-        gui_logger.info("Post-processing...")
+        gui_logger.info("Postprocessing files...")
 
         image = _rescale(image, self.factor, self.order)
 
-        runtime = time.time() - runtime
-        gui_logger.info(f"PostProcessing took {runtime:.2f} s")
         return image
 
 
@@ -73,7 +72,8 @@ class DataPreProcessing3D(GenericPipelineStep):
                  save_directory="PreProcessing",
                  factor=None,
                  filter_type=None,
-                 filter_param=None):
+                 filter_param=None,
+                 state=True):
 
         super().__init__(input_paths,
                          h5_input_key="raw",
@@ -81,7 +81,8 @@ class DataPreProcessing3D(GenericPipelineStep):
                          input_type=input_type,
                          output_type=output_type,
                          save_directory=save_directory,
-                         out_ext=".h5")
+                         out_ext=".h5",
+                         state=state)
 
         if factor is None:
             factor = [1, 1, 1]
@@ -108,12 +109,9 @@ class DataPreProcessing3D(GenericPipelineStep):
             self.filter_param = 0
 
     def process(self, image):
-        gui_logger.info(f"Pre-processing...")
-        runtime = time.time()
+        gui_logger.info(f"Preprocessing files...")
 
         image = self.filter(image, self.filter_param)
         image = _rescale(image, self.factor, self.order)
 
-        runtime = time.time() - runtime
-        gui_logger.info(f"PreProcessing took {runtime:.2f} s")
         return image

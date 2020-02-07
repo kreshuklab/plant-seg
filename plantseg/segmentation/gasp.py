@@ -22,12 +22,13 @@ class GaspFromPmaps(AbstractSegmentationStep):
                  ws_sigma=0.3,
                  post_minsize=100,
                  n_threads=6,
+                 state=True,
                  **kwargs):
 
         super().__init__(input_paths=predictions_paths,
                          save_directory=save_directory,
                          file_suffix='_gasp_' + gasp_linkage_criteria,
-                         num_threads=n_threads)
+                         state=state)
 
         assert gasp_linkage_criteria in ['average',
                                          'mutex_watershed'], f"Unsupported linkage criteria '{gasp_linkage_criteria}'"

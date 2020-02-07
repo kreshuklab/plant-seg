@@ -3,6 +3,7 @@ import tkinter
 from plantseg.gui import convert_rgb, list_models
 from plantseg.gui import stick_all, stick_new
 from plantseg.gui.gui_tools import ListEntry, SimpleEntry, FilterEntry, RescaleEntry, MenuEntry, SliderEntry
+from plantseg.predictions.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
 
 
 class ModuleFramePrototype:
@@ -217,7 +218,7 @@ class UnetPredictionFrame(ModuleFramePrototype):
                                                text="Stride: ",
                                                row=3,
                                                column=0,
-                                               menu=["Accurate (slowest)", "Balanced", "Draft (fastest)"],
+                                               menu=[STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_DRAFT],
                                                default=config[self.module]["stride"],
                                                font=font),
                            "device": MenuEntry(self.prediction_frame,

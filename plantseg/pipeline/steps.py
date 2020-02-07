@@ -25,12 +25,11 @@ class GenericPipelineStep:
         save_directory (str): relative dir where the output files will be saved
         file_suffix (str): suffix added to the output files
         out_ext (str): output file extension
-        num_threads (int): thread pool size
+        state (bool): if True the step is enabled
     """
 
-    # TODO: consider passing input_paths to the __call__ instead of the constructor
     def __init__(self, input_paths, h5_input_key, h5_output_key, input_type, output_type, save_directory,
-                 file_suffix="", out_ext=".h5", num_threads=1):
+                 file_suffix="", out_ext=".h5", state=True):
         assert isinstance(input_paths, list)
         assert len(input_paths) > 0, "Input file paths cannot be empty"
         assert h5_input_key in H5_KEYS, f"Unsupported input key '{h5_input_key}'. Supported keys: {H5_KEYS}"
@@ -45,14 +44,18 @@ class GenericPipelineStep:
         self.input_type = input_type
         self.file_suffix = file_suffix
         self.out_ext = out_ext
-        self.num_threads = num_threads
+        self.state = state
 
         # create save_directory if doesn't exist
         self.save_directory = os.path.join(os.path.dirname(input_paths[0]), save_directory)
         os.makedirs(self.save_directory, exist_ok=True)
 
     def __call__(self):
-        return [self.read_process_write(input_path) for input_path in self.input_paths]
+        if not self.state:
+            gui_logger.info(f"Skipping '{self.__class__.__name__}'. Disabled by the user.")
+            return self.input_paths
+        else:
+            return [self.read_process_write(input_path) for input_path in self.input_paths]
 
     def process(self, input_data):
         """
@@ -187,7 +190,7 @@ class GenericPipelineStep:
 
 
 class AbstractSegmentationStep(GenericPipelineStep):
-    def __init__(self, input_paths, save_directory, file_suffix, num_threads):
+    def __init__(self, input_paths, save_directory, file_suffix, state):
         super().__init__(input_paths=input_paths,
                          h5_input_key='predictions',
                          h5_output_key='segmentation',
@@ -196,17 +199,4 @@ class AbstractSegmentationStep(GenericPipelineStep):
                          save_directory=save_directory,
                          file_suffix=file_suffix,
                          out_ext=".h5",
-                         num_threads=num_threads)
-
-
-class PlaceholderPipelineStep:
-    """
-    Used as a placeholder for a non-active pipeline step
-    """
-
-    def __init__(self, input_paths, phase):
-        self.phase = phase
-        self.paths = input_paths
-
-    def __call__(self):
-        return self.paths
+                         state=state)

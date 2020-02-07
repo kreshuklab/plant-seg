@@ -590,7 +590,7 @@ def report_error(data, font=None):
     data = data if type(data) is str else f"Unknown Error. Error type: {type(data)} \n {data}"
 
     default = "The complete error message is reported in the terminal." \
-              " Please, if the error persist let us know by opening an issue on https://github.com/hci-unihd/plant-seg."
+              " If the error persists, please let us know by opening an issue on https://github.com/hci-unihd/plant-seg."
 
     popup = tkinter.Tk()
     popup.title("Error")

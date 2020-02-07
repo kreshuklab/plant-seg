@@ -1,46 +1,40 @@
-from plantseg.pipeline import gui_logger
-from plantseg.pipeline.utils import load_paths
-from plantseg.pipeline.steps import PlaceholderPipelineStep
-from plantseg.predictions.utils import create_predict_config
-from plantseg.segmentation.utils import configure_segmentation
 from plantseg.dataprocessing.dataprocessing import DataPostProcessing3D
 from plantseg.dataprocessing.dataprocessing import DataPreProcessing3D
-from plantseg.predictions.predict import ModelPredictions
+from plantseg.pipeline import gui_logger
+from plantseg.pipeline.utils import load_paths
+from plantseg.predictions.predict import UnetPredictions
+from plantseg.predictions.utils import create_predict_config
+from plantseg.segmentation.utils import configure_segmentation_step
 
 
-def import_preprocessing_pipeline(input_paths, _config):
-    output_type = _config.get('output_type', "data_uint8")
-    save_directory = _config.get('save_directory', 'PreProcessing')
-    factor = _config.get('factor', [1, 1, 1])
+def configure_preprocessing_step(input_paths, config):
+    output_type = config.get('output_type', "data_uint8")
+    save_directory = config.get('save_directory', 'PreProcessing')
+    factor = config.get('factor', [1, 1, 1])
 
     filter_type = None
     filter_param = None
-    if _config["filter"]["state"]:
-        filter_type = _config["filter"]["type"]
-        filter_param = _config["filter"]["param"]
+    if config["filter"]["state"]:
+        filter_type = config["filter"]["type"]
+        filter_param = config["filter"]["param"]
 
+    state = config.get('state', True)
     return DataPreProcessing3D(input_paths, input_type="data_float32", output_type=output_type,
                                save_directory=save_directory, factor=factor, filter_type=filter_type,
-                               filter_param=filter_param)
+                               filter_param=filter_param, state=state)
 
 
-def import_cnn_pipeline(input_paths, _config):
-    cnn_config = create_predict_config(input_paths, _config)
-    model_predictions = ModelPredictions(cnn_config)
-    return model_predictions
+def configure_cnn_step(input_paths, config):
+    cnn_config = create_predict_config(input_paths, config)
+    return UnetPredictions(cnn_config)
 
 
-def import_cnn_postprocessing_pipeline(input_paths, _config):
-    return _create_postprocessing_step(input_paths, input_type="data_float32", config=_config)
+def configure_cnn_postprocessing_step(input_paths, config):
+    return _create_postprocessing_step(input_paths, input_type="data_float32", config=config)
 
 
-def import_segmentation_pipeline(input_paths, _config):
-    segmentation = configure_segmentation(input_paths, _config)
-    return segmentation
-
-
-def import_segmentation_postprocessing_pipeline(input_paths, _config):
-    return _create_postprocessing_step(input_paths, input_type="labels", config=_config)
+def configure_segmentation_postprocessing_step(input_paths, config):
+    return _create_postprocessing_step(input_paths, input_type="labels", config=config)
 
 
 def _create_postprocessing_step(input_paths, input_type, config):
@@ -48,41 +42,32 @@ def _create_postprocessing_step(input_paths, input_type, config):
     save_directory = config.get('save_directory', 'PostProcessing')
     factor = config.get('factor', [1, 1, 1])
     out_ext = ".tiff" if config["tiff"] else ".h5"
+    state = config.get('state', True)
     return DataPostProcessing3D(input_paths, input_type=input_type, output_type=output_type,
-                                save_directory=save_directory, factor=factor, out_ext=out_ext)
-
-
-class SetupProcess:
-    def __init__(self, paths, config, pipeline_name, import_function):
-        if pipeline_name in config.keys() and config[pipeline_name]['state']:
-            gui_logger.info(
-                f"Executing pipeline step: '{pipeline_name}' with parameters: '{config[pipeline_name]}' for the following files: '{paths}")
-            # Import pipeline and assign paths
-            self.pipeline = import_function(paths, config[pipeline_name])
-        else:
-            gui_logger.info(f"Skipping pipeline step: '{pipeline_name}'. Nothing do to here.")
-            # If pipeline is not configured or state=False use PlaceholderStep
-            self.pipeline = PlaceholderPipelineStep(paths, pipeline_name)
-
-    def __call__(self):
-        return self.pipeline()
+                                save_directory=save_directory, factor=factor, out_ext=out_ext, state=state)
 
 
 def raw2seg(config):
-    paths = load_paths(config)
-    gui_logger.info(f"Running the pipeline on: {paths}")
+    input_paths = load_paths(config)
+    gui_logger.info(f"Running the pipeline on: {input_paths}")
 
     gui_logger.info("Executing pipeline, see terminal for verbose logs.")
-    all_pipelines = [('preprocessing', import_preprocessing_pipeline),
-                     ('cnn_prediction', import_cnn_pipeline),
-                     ('cnn_postprocessing', import_cnn_postprocessing_pipeline),
-                     ('segmentation', import_segmentation_pipeline),
-                     ('segmentation_postprocessing', import_segmentation_postprocessing_pipeline)]
+    all_pipeline_steps = [
+        ('preprocessing', configure_preprocessing_step),
+        ('cnn_prediction', configure_cnn_step),
+        ('cnn_postprocessing', configure_cnn_postprocessing_step),
+        ('segmentation', configure_segmentation_step),
+        ('segmentation_postprocessing', configure_segmentation_postprocessing_step)
+    ]
 
-    for pipeline_name, import_pipeline in all_pipelines:
-        # setup generic pipeline
-        pipeline = SetupProcess(paths, config, pipeline_name, import_pipeline)
-        # run pipeline and update paths
-        paths = pipeline()
+    for pipeline_step_name, pipeline_step_setup in all_pipeline_steps:
+        gui_logger.info(
+            f"Executing pipeline step: '{pipeline_step_name}'. Parameters: '{config[pipeline_step_name]}'. Files {input_paths}.")
+        pipeline_step = pipeline_step_setup(input_paths, config[pipeline_step_name])
+        output_paths = pipeline_step()
 
-    gui_logger.info(f"Pipeline execution finished! See the results in {paths}")
+        # replace input_paths for all pipeline steps except DataPostProcessing3D
+        if not isinstance(pipeline_step, DataPostProcessing3D):
+            input_paths = output_paths
+
+    gui_logger.info(f"Pipeline execution finished! See the results in {input_paths}")

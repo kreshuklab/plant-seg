@@ -251,7 +251,7 @@ class PlantSegApp:
         self.out_frame3 = out_frame3
         self.log_queue = queue.Queue()
         self.queue_handler = QueueHandler(self.log_queue)
-        formatter = logging.Formatter('%(asctime)s [%(threadName)s] %(levelname)s %(name)s - %(message)s')
+        formatter = logging.Formatter('%(asctime)s - %(message)s')
         self.queue_handler.setFormatter(formatter)
         gui_logger.addHandler(self.queue_handler)
         # Start polling messages from the queue
@@ -273,11 +273,15 @@ class PlantSegApp:
 
     def display(self, record):
         msg = self.queue_handler.format(record)
-        self.out_text.configure(state='normal')
-        self.out_text.insert(tkinter.END, msg + '\n', record.levelname)
-        self.out_text.configure(state='disabled')
-        # Autoscroll to the bottom
-        self.out_text.yview(tkinter.END)
+        if record.levelname in ['ERROR', 'CRITICAL']:
+            # show pop-up in case of error
+            report_error(msg)
+        else:
+            self.out_text.configure(state='normal')
+            self.out_text.insert(tkinter.END, msg + '\n', record.levelname)
+            self.out_text.configure(state='disabled')
+            # Autoscroll to the bottom
+            self.out_text.yview(tkinter.END)
 
     # End init modules ========= Begin Config Read/Write
     @staticmethod

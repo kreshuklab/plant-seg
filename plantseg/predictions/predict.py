@@ -26,7 +26,7 @@ def _get_predictor(model, loader, output_file, config):
     return predictor_class(model, loader, output_file, config, **predictor_config)
 
 
-class ModelPredictions:
+class UnetPredictions:
     def __init__(self, config):
         self.logger = utils.get_logger('UNet3DPredictor')
 
@@ -34,7 +34,6 @@ class ModelPredictions:
 
         # Create the model
         model = get_model(config)
-        self.path_out = []
 
         # Load model state
         model_path = config['model_path']
@@ -48,6 +47,8 @@ class ModelPredictions:
         self.logger.info('Loading HDF5 datasets...')
 
     def __call__(self):
+        output_paths = []
+
         for test_loader in get_test_loaders(self.config):
             gui_logger.info(f"Running network prediction on {test_loader.dataset.file_path}...")
             runtime = time.time()
@@ -55,11 +56,14 @@ class ModelPredictions:
             self.logger.info(f"Processing '{test_loader.dataset.file_path}'...")
             output_file = _get_output_file(test_loader.dataset, self.model_name)
             predictor = _get_predictor(self.model, test_loader, output_file, self.config)
+
             # run the model prediction on the entire dataset and save to the 'output_file' H5
             predictor.predict()
-            self.path_out.append(output_file)
+
+            # save resulting output path
+            output_paths.append(output_file)
 
             runtime = time.time() - runtime
-            gui_logger.info(f"Prediction took {runtime:.2f} s")
+            gui_logger.info(f"Network prediction took {runtime:.2f} s")
 
-        return self.path_out
+        return output_paths
