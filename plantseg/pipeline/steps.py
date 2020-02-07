@@ -5,6 +5,8 @@ import numpy as np
 import tifffile
 import yaml
 
+from plantseg.main import gui_logger
+
 SUPPORTED_TYPES = ["labels", "data_float32", "data_uint8"]
 TIFF_EXTENSIONS = [".tiff", ".tif"]
 H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]
@@ -65,13 +67,13 @@ class GenericPipelineStep:
         raise NotImplementedError
 
     def read_process_write(self, input_path):
-        print(f'Loading stack from {input_path}')
+        gui_logger.info(f'Loading stack from {input_path}')
         input_data = self.load_stack(input_path)
 
         output_data = self.process(input_data)
 
         output_path = self._create_output_path(input_path)
-        print(f'Saving results in {output_path}')
+        gui_logger.info(f'Saving results in {output_path}')
         self.save_output(output_data, output_path)
 
         # return output_path

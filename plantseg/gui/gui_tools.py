@@ -462,7 +462,6 @@ class RescaleEntry:
         """ This method open a popup windows that automatically set the scaling
          factor from the resolution given by the user"""
         global current_model
-        print(current_model)
         path_model_config = self.get_model_path()
 
         model_config = yaml.load(open(path_model_config, 'r'),

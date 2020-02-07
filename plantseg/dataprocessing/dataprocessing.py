@@ -5,6 +5,7 @@ from skimage.filters import median
 from skimage.morphology import ball
 from vigra.filters import gaussianSmoothing
 
+from plantseg.main import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep
 
 
@@ -55,12 +56,12 @@ class DataPostProcessing3D(GenericPipelineStep):
 
     def process(self, image):
         runtime = time.time()
-        print("Post-processing")
+        gui_logger.info("Post-processing...")
 
         image = _rescale(image, self.factor, self.order)
 
         runtime = time.time() - runtime
-        print(f" - PostProcessing took {runtime:.2f} s")
+        gui_logger.info(f"PostProcessing took {runtime:.2f} s")
         return image
 
 
@@ -107,12 +108,12 @@ class DataPreProcessing3D(GenericPipelineStep):
             self.filter_param = 0
 
     def process(self, image):
+        gui_logger.info(f"Pre-processing...")
         runtime = time.time()
-        print(f"Pre-processing")
 
         image = self.filter(image, self.filter_param)
         image = _rescale(image, self.factor, self.order)
 
         runtime = time.time() - runtime
-        print(f" - PreProcessing took {runtime:.2f} s")
+        gui_logger.info(f"PreProcessing took {runtime:.2f} s")
         return image

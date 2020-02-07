@@ -4,6 +4,7 @@ import numpy as np
 from GASP.segmentation import GaspFromAffinities, WatershedOnDistanceTransformFromAffinities
 from GASP.segmentation.watershed import SizeThreshAndGrowWithWS
 
+from plantseg.main import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
 from plantseg.segmentation.utils import shift_affinities
 
@@ -48,7 +49,7 @@ class GaspFromPmaps(AbstractSegmentationStep):
         self.n_threads = n_threads
 
     def process(self, pmaps):
-        print(f'Segmenting with GASP')
+        gui_logger.info('Clustering with GASP...')
 
         # Pmaps are interpreted as affinities
         affinities = np.stack([pmaps, pmaps, pmaps], axis=0)
@@ -100,6 +101,6 @@ class GaspFromPmaps(AbstractSegmentationStep):
 
         # stop real world clock timer
         runtime = time.time() - runtime
-        print(f" - Clustering took {runtime:.2f} s")
+        gui_logger.info(f"Clustering took {runtime:.2f} s")
 
         return segmentation

@@ -6,6 +6,9 @@ from pytorch3dunet.datasets.hdf5 import get_test_loaders
 from pytorch3dunet.unet3d import utils
 from pytorch3dunet.unet3d.model import get_model
 
+from plantseg.main import gui_logger
+
+
 def _get_output_file(dataset, model_name, suffix='_predictions'):
     basepath, basename = os.path.split(dataset.file_path)
     basename = f"{os.path.splitext(basename)[0]}{suffix}.h5"
@@ -46,7 +49,7 @@ class ModelPredictions:
 
     def __call__(self):
         for test_loader in get_test_loaders(self.config):
-            print(f"Predicting {test_loader.dataset.file_path}")
+            gui_logger.info(f"Running network prediction on {test_loader.dataset.file_path}...")
             runtime = time.time()
 
             self.logger.info(f"Processing '{test_loader.dataset.file_path}'...")
@@ -57,6 +60,6 @@ class ModelPredictions:
             self.path_out.append(output_file)
 
             runtime = time.time() - runtime
-            print(f" - Predicting took {runtime:.2f} s")
+            gui_logger.info(f"Prediction took {runtime:.2f} s")
 
         return self.path_out

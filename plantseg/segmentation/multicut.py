@@ -7,6 +7,7 @@ from elf.segmentation.features import compute_rag
 from elf.segmentation.multicut import multicut_kernighan_lin, transform_probabilities_to_costs
 from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
 
+from plantseg.main import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
 
 
@@ -47,6 +48,7 @@ class MulticutFromPmaps(AbstractSegmentationStep):
         self.n_threads = n_threads
 
     def process(self, pmaps):
+        gui_logger.info('Clustering with MultiCut...')
         runtime = time.time()
         segmentation = self.segment_volume(pmaps)
 
@@ -55,7 +57,7 @@ class MulticutFromPmaps(AbstractSegmentationStep):
 
         # stop real world clock timer
         runtime = time.time() - runtime
-        print(f" - Clustering took {runtime:.2f} s")
+        gui_logger.info(f"Clustering took {runtime:.2f} s")
 
         return segmentation
 
