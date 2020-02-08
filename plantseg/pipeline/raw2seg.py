@@ -70,4 +70,4 @@ def raw2seg(config):
         if not isinstance(pipeline_step, DataPostProcessing3D):
             input_paths = output_paths
 
-    gui_logger.info(f"Pipeline execution finished! See the results in {input_paths}")
+    gui_logger.info(f"Pipeline execution finished!")

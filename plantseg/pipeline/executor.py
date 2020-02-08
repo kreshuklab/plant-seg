@@ -3,9 +3,6 @@ from concurrent import futures
 
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.raw2seg import raw2seg
-from plantseg.pipeline.utils import get_logger
-
-logger = get_logger('PipelineExecutor')
 
 
 class PipelineExecutor:
@@ -29,7 +26,7 @@ class PipelineExecutor:
         It is up to the user to check if the work_queue is full.
         """
 
-        logger.info(f"Executing segmentation pipeline for config: {config}")
+        gui_logger.info(f"Executing segmentation pipeline for config: {config}")
         # add config to the queue
         self.work_queue.put_nowait(config)
         # execute segmentation pipeline
@@ -43,8 +40,6 @@ class PipelineExecutor:
         try:
             f.result()
         except Exception as e:
-            # log exceptions from the pipeline in the console and in the GUI
-            logger.exception(e)
             gui_logger.exception(e)
 
     def full(self):
@@ -54,5 +49,5 @@ class PipelineExecutor:
         return self.work_queue.full()
 
     def shutdown(self, wait=False):
-        logger.info("Shutting down")
+        gui_logger.info("Shutting down")
         self.executor.shutdown(wait=wait)
