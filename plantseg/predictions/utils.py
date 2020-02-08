@@ -1,10 +1,17 @@
 import os
 
 import torch
+import wget
 import yaml
 
-from plantseg import plantseg_global_path
-from plantseg.models.checkmodels import check_models
+from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR
+
+# define constant values
+from plantseg.pipeline import gui_logger
+
+config_train = "config_train.yml"
+best_model = "best_checkpoint.pytorch"
+last_model = "last_checkpoint.pytorch"
 
 STRIDE_ACCURATE = "Accurate (slowest)"
 STRIDE_BALANCED = "Balanced"
@@ -17,7 +24,7 @@ STRIDE_MENU = {
 }
 
 
-def create_predict_config(paths, plantseg_config):
+def create_predict_config(paths, cnn_config):
     """ Creates the configuration file needed for running the neural network inference"""
 
     def _stride_shape(patch_shape, stride_key):
@@ -28,10 +35,14 @@ def create_predict_config(paths, plantseg_config):
         open(os.path.join(plantseg_global_path, "resources", "config_predict_template.yaml"), 'r'),
         Loader=yaml.FullLoader)
 
+    # update loaders
+    prediction_config["loaders"]["num_workers"] = cnn_config.get("num_workers", 8)
+    prediction_config["loaders"]["mirror_padding"] = cnn_config.get("mirror_padding", True)
+
     # Add patch and stride to the config
-    patch_shape = plantseg_config["patch"]
+    patch_shape = cnn_config["patch"]
     prediction_config["loaders"]["test"]["slice_builder"]["patch_shape"] = patch_shape
-    stride_key, stride_shape = plantseg_config["stride"], _stride_shape(patch_shape, "Balanced")
+    stride_key, stride_shape = cnn_config["stride"], _stride_shape(patch_shape, "Balanced")
 
     if type(stride_key) is list:
         prediction_config["loaders"]["test"]["slice_builder"]["stride_shape"] = stride_key
@@ -45,32 +56,69 @@ def create_predict_config(paths, plantseg_config):
     prediction_config["loaders"]["test"]["file_paths"] = paths
 
     # Add correct device for inference
-    if plantseg_config["device"] == 'cuda':
+    if cnn_config["device"] == 'cuda':
         prediction_config["device"] = torch.device("cuda:0")
-    elif plantseg_config["device"] == 'cpu':
+    elif cnn_config["device"] == 'cpu':
         prediction_config["device"] = torch.device("cpu")
     else:
-        raise RuntimeError(f"Unsupported device type: {plantseg_config['device']}")
+        raise RuntimeError(f"Unsupported device type: {cnn_config['device']}")
 
-    # check if all files are in the data directory (~/.plantseg_models/)
-    check_models(plantseg_config['model_name'], update_files=plantseg_config['model_update'])
+    # check if all files are in the data directory (~/.plantseg_models/) and download if needed
+    check_models(cnn_config['model_name'], update_files=cnn_config['model_update'])
 
     # Add model path
     home = os.path.expanduser("~")
     prediction_config["model_path"] = os.path.join(home,
-                                                   ".plantseg_models",
-                                                   plantseg_config['model_name'],
-                                                   f"{plantseg_config['version']}_checkpoint.pytorch")
+                                                   PLANTSEG_MODELS_DIR,
+                                                   cnn_config['model_name'],
+                                                   f"{cnn_config['version']}_checkpoint.pytorch")
 
     # Load train config and add missing info
-    config_train = yaml.load(open(os.path.join(home,
-                                               ".plantseg_models",
-                                               plantseg_config['model_name'],
-                                               "config_train.yml"), 'r'),
-                             Loader=yaml.FullLoader)
-    #
+    config_train = yaml.full_load(
+        open(os.path.join(home,
+                          PLANTSEG_MODELS_DIR,
+                          cnn_config['model_name'],
+                          "config_train.yml"),
+             'r'))
+
+    # Load model configuration
     for key, value in config_train["model"].items():
         prediction_config["model"][key] = value
 
-    prediction_config["model_name"] = plantseg_config["model_name"]
+    # Additional attributes
+    prediction_config["model_name"] = cnn_config["model_name"]
+    prediction_config["model_update"] = cnn_config['model_update']
+    prediction_config["state"] = cnn_config["state"]
+
     return prediction_config
+
+
+def check_models(model_name, update_files=False):
+    """
+    Simple script to check and download trained modules
+    """
+    model_dir = os.path.join(os.path.expanduser("~"), PLANTSEG_MODELS_DIR, model_name)
+
+    # Check if model directory exist if not create it
+    if ~os.path.exists(model_dir):
+        os.makedirs(model_dir, exist_ok=True)
+
+    model_config_path = os.path.exists(os.path.join(model_dir, config_train))
+    model_best_path = os.path.exists(os.path.join(model_dir, best_model))
+    model_last_path = os.path.exists(os.path.join(model_dir, last_model))
+    model_last_path = True
+
+    # Check if files are there, if not download them
+    if (not model_config_path or
+            not model_best_path or
+            not model_last_path or
+            update_files):
+        # Read config
+        model_file = os.path.join(plantseg_global_path, "resources", "models_zoo.yaml")
+        config = yaml.load(open(model_file, 'r'), Loader=yaml.FullLoader)
+        url = config[model_name]["path"]
+
+        gui_logger.info(f"Downloading model files from: '{url}' ...")
+        wget.download(url + config_train, out=model_dir)
+        wget.download(url + best_model, out=model_dir)
+        wget.download(url + last_model, out=model_dir)

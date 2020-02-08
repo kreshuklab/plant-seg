@@ -8,7 +8,7 @@ from tkinter import font
 
 import yaml
 
-from plantseg import plantseg_global_path
+from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR
 from plantseg.gui import convert_rgb
 from plantseg.gui.gui_tools import Files2Process, report_error, version_popup
 from plantseg.pipeline import gui_logger
@@ -293,7 +293,7 @@ class PlantSegApp:
     @staticmethod
     def get_last_config_path(name="config_gui_last.yaml"):
         # Working directory path + relative dir structure to yaml file
-        config_path = os.path.join(os.path.expanduser("~"), ".plantseg_models", "configs", name)
+        config_path = os.path.join(os.path.expanduser("~"), PLANTSEG_MODELS_DIR, "configs", name)
         return config_path
 
     @staticmethod
@@ -343,7 +343,7 @@ class PlantSegApp:
 
     def open_config(self):
         """ open new config"""
-        default_start = os.path.join(os.path.expanduser("~"), ".plantseg_models", "configs")
+        default_start = os.path.join(os.path.expanduser("~"), PLANTSEG_MODELS_DIR, "configs")
         os.makedirs(default_start, exist_ok=True)
         plant_config_path = tkinter.filedialog.askopenfilename(initialdir=default_start,
                                                                title="Select file",
@@ -359,7 +359,7 @@ class PlantSegApp:
     def save_config(self):
         """ save yaml from current entries in the gui"""
         self.update_config()
-        default_start = os.path.join(os.path.expanduser("~"), ".plantseg_models", "configs")
+        default_start = os.path.join(os.path.expanduser("~"), PLANTSEG_MODELS_DIR, "configs")
         os.makedirs(default_start, exist_ok=True)
 
         save_path = tkinter.filedialog.asksaveasfilename(initialdir=default_start,

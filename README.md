@@ -65,8 +65,8 @@ Some key design choices:
 * `path` attribute: is used to define either the file to process or the directory containing the data.
 * `preprocessing` attribute: contains a simple set of possible operations one would need to run on their own data before calling the neural network. 
 If data is ready for neural network processing either delete the entire section or set `state: False` in order to skip this step.
-* `prediction` attribute: contains all parameters relevant for predicting the neural network. 
-In the [models](plantseg/models/README.md) directory we list details of all pre-trained models we provide.
+* `cnn_prediction` attribute: contains all parameters relevant for predicting with neural network. 
+Description of all pre-trained models provided with the package are described below.
 * `segmentation` attribute: contains all parameters needed to run the partitioning algorithm (i.e. final segmentation). 
 Detailed instructions can be found in [segmentation](plantseg/segmentation/README.md) directory.
 
@@ -76,6 +76,8 @@ The PlantSeg related files (models, configs) will be placed inside your home dir
 
 Our pipeline uses the PyTorch library for the CNN predictions. PlantSeg can be run on systems without GPU, however 
 for maximum performance we recommend that the application is run on a machine with a high performance GPU for deep learning.
+If `CUDA_VISIBLE_DEVICES` environment variable is not specified the prediction task will be distributed on all available GPUs.
+E.g. run: `CUDA_VISIBLE_DEVICES=0 plantseg --config CONFIG_PATH` to restrict prediction to a given GPU.
 
 ## Docker image
 We also provide a docker image with plantseg package installed.
@@ -158,6 +160,11 @@ Alternatively one can create the `plant-seg` environment from scratch and ensuri
 conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge cudatoolkit=<YOU_CUDA_VERSION> plantseg
 
 ```
+
+* PlantSeg is under active development so it may happen that the models/configuration files saved in `~/.plantseg_modes`
+are outdated. In case of errors related to loading the configuration file, please close the PlantSeg app, 
+remove `~/.plantseg_models` directory and try again.
+
 
 ## Citation
 ```

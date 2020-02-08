@@ -27,13 +27,17 @@ cnn_prediction:
   model_name: "generic_confocal_3d_unet"
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
   device: "cpu"
+  # If True raw data will be mirror padded with 20 voxels in each axis
+  mirror_padding: True
+  # how many subprocesses to use for data loading
+  num_workers: 8
   # patch size given to the network (adapt to fit in your GPU mem)
   patch: [32, 128, 128]
   # stride between patches (make sure the the patches overlap in order to get smoother prediction maps)
   stride: [20, 100, 100]
   # "best" refers to best performing on the val set (recommended), alternatively "last" refers to the last version before interruption
   version: best
-  # If "True" forces downloading networks for the online repos
+  # If "True" forces downloading networks from the online repos
   model_update: False
 
 cnn_postprocessing:
