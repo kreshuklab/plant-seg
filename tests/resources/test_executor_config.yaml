@@ -1,0 +1,87 @@
+# Contains the path to the directory or file to process; to be replaced in test class
+path: '/tmp/plantseg'
+
+preprocessing:
+  # enable/disable preprocessing
+  state: False
+  # create a new sub folder where all results will be stored
+  save_directory: "PreProcessing"
+  # rescaling the volume is essential for the generalization of the networks. The rescaling factor can be computed as the resolution
+  # of the volume at hand divided by the resolution of the dataset used in training. Be careful, if the difference is too large check for a different model.
+  factor: [1, 1, 1]
+  # the order of the spline interpolation
+  order: 2
+  # optional: perform Gaussian smoothing or median filtering on the input.
+  filter:
+    # enable/disable filtering
+    state: False
+    # Accepted values: 'gaussian'/'median'
+    type: gaussian
+    # sigma (gaussian) or disc radius (median)
+    param: 1.0
+
+cnn_prediction:
+  # enable/disable UNet prediction
+  state: False
+  # Trained model name, more info on available models and custom models in the README
+  model_name: "generic_confocal_3d_unet"
+  # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
+  device: "cpu"
+  # If True raw data will be mirror padded with 20 voxels in each axis
+  mirror_padding: False
+  # how many subprocesses to use for data loading
+  num_workers: 1
+  # patch size given to the network (adapt to fit in your GPU mem)
+  patch: [32, 128, 128]
+  # stride between patches (make sure the the patches overlap in order to get smoother prediction maps)
+  stride: "Balanced"
+  # "best" refers to best performing on the val set (recommended), alternatively "last" refers to the last version before interruption
+  version: best
+  # If "True" forces downloading networks from the online repos
+  model_update: False
+
+cnn_postprocessing:
+  # enable/disable cnn post processing
+  state: False
+  # if True convert to result to tiff
+  tiff: False
+  # rescaling factor
+  factor: [1, 1, 1]
+  # spline order for rescaling
+  order: 2
+
+
+segmentation:
+  # enable/disable segmentation
+  state: False
+  # Name of the algorithm to use for inferences
+  name: "MultiCut"
+  # Segmentation specific parameters here
+  # balance under-/over-segmentation; 0 - aim for undersegmentation, 1 - aim for oversegmentation
+  beta: 0.5
+  # directory where to save the results
+  save_directory: "MultiCut"
+  # enable/disable watershed
+  run_ws: True
+  # use 2D instead of 3D watershed
+  ws_2D: True
+  # probability maps threshold
+  ws_threshold: 0.5
+  # set the minimum superpixels size
+  ws_minsize: 50
+  # sigma for the gaussian smoothing of the distance transform
+  ws_sigma: 2.0
+  # sigma for the gaussian smoothing of boundary
+  ws_w_sigma: 0
+  # set the minimum segment size in the final segmentation
+  post_minsize: 50
+
+segmentation_postprocessing:
+  # enable/disable segmentation post processing
+  state: False
+  # if True convert to result to tiff
+  tiff: False
+  # rescaling factor
+  factor: [1, 1, 1]
+  # spline order for rescaling (keep 0 for segmentation post processing
+  order: 0

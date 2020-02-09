@@ -5,13 +5,12 @@ import wget
 import yaml
 
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR
-
-# define constant values
 from plantseg.pipeline import gui_logger
 
-config_train = "config_train.yml"
-best_model = "best_checkpoint.pytorch"
-last_model = "last_checkpoint.pytorch"
+# define constant values
+CONFIG_TRAIN_YAML = "config_train.yml"
+BEST_MODEL_PYTORCH = "best_checkpoint.pytorch"
+LAST_MODEL_PYTORCH = "last_checkpoint.pytorch"
 
 STRIDE_ACCURATE = "Accurate (slowest)"
 STRIDE_BALANCED = "Balanced"
@@ -78,7 +77,7 @@ def create_predict_config(paths, cnn_config):
         open(os.path.join(home,
                           PLANTSEG_MODELS_DIR,
                           cnn_config['model_name'],
-                          "config_train.yml"),
+                          CONFIG_TRAIN_YAML),
              'r'))
 
     # Load model configuration
@@ -103,9 +102,9 @@ def check_models(model_name, update_files=False):
     if ~os.path.exists(model_dir):
         os.makedirs(model_dir, exist_ok=True)
 
-    model_config_path = os.path.exists(os.path.join(model_dir, config_train))
-    model_best_path = os.path.exists(os.path.join(model_dir, best_model))
-    model_last_path = os.path.exists(os.path.join(model_dir, last_model))
+    model_config_path = os.path.exists(os.path.join(model_dir, CONFIG_TRAIN_YAML))
+    model_best_path = os.path.exists(os.path.join(model_dir, BEST_MODEL_PYTORCH))
+    model_last_path = os.path.exists(os.path.join(model_dir, LAST_MODEL_PYTORCH))
 
     # Check if files are there, if not download them
     if (not model_config_path or
@@ -118,6 +117,6 @@ def check_models(model_name, update_files=False):
         url = config[model_name]["path"]
 
         gui_logger.info(f"Downloading model files from: '{url}' ...")
-        wget.download(url + config_train, out=model_dir)
-        wget.download(url + best_model, out=model_dir)
-        wget.download(url + last_model, out=model_dir)
+        wget.download(url + CONFIG_TRAIN_YAML, out=model_dir)
+        wget.download(url + BEST_MODEL_PYTORCH, out=model_dir)
+        wget.download(url + LAST_MODEL_PYTORCH, out=model_dir)
