@@ -11,13 +11,17 @@ TEST_FILES = os.path.join(
     'resources',
 )
 
+VOXEL_SIZE = (0.235, 0.15, 0.15)
+
 
 @pytest.fixture
 def input_path(tmpdir):
     path = os.path.join(tmpdir, 'test.h5')
     with h5py.File(path, 'w') as f:
         f.create_dataset('raw', data=np.random.rand(32, 128, 128))
+        f['raw'].attrs['element_size_um'] = VOXEL_SIZE
         f.create_dataset('segmentation', data=np.random.randint(low=0, high=256, size=(32, 128, 128)))
+        f['segmentation'].attrs['element_size_um'] = VOXEL_SIZE
     return path
 
 

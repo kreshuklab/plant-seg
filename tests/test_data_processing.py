@@ -63,3 +63,18 @@ class TestDataProcessing:
         # assert that output paths are equal to input paths
         assert pre() == [input_path]
         assert post() == [input_path]
+
+    def test_postprocessing_voxel_size(self, input_path):
+        with h5py.File(input_path, 'r') as f:
+            expected_voxel_size = f['raw'].attrs['element_size_um']
+
+        pre = DataPreProcessing3D([input_path], input_type="data_uint8", output_type="data_uint8",
+                                  save_directory="PreProcessing", filter_type="gaussian", filter_param=1.0)
+        # run preprocessing
+        output_paths = pre()
+
+        # check output voxel_size
+        with h5py.File(output_paths[0], 'r') as f:
+            voxel_size = f['raw'].attrs['element_size_um']
+
+        assert np.array_equal(np.array(expected_voxel_size), np.array(voxel_size))

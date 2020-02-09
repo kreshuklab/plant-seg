@@ -71,13 +71,13 @@ class GenericPipelineStep:
 
     def read_process_write(self, input_path):
         gui_logger.info(f'Loading stack from {input_path}')
-        input_data = self.load_stack(input_path)
+        input_data, voxel_size = self.load_stack(input_path)
 
         output_data = self.process(input_data)
 
         output_path = self._create_output_path(input_path)
         gui_logger.info(f'Saving results in {output_path}')
-        self.save_output(output_data, output_path)
+        self.save_output(output_data, output_path, voxel_size)
 
         # return output_path
         return output_path
@@ -90,17 +90,24 @@ class GenericPipelineStep:
             file_path (str): path to the file containing the stack
 
         Returns:
-            (nd.array) numpy array containing stack's data
+            tuple(nd.array, tuple(float)): (numpy array containing stack's data, stack's data voxel size)
         """
         _, ext = os.path.splitext(file_path)
+        voxel_size = (1., 1., 1.)
+
         if ext in TIFF_EXTENSIONS:
             # load tiff file
             data = tifffile.imread(file_path)
+            voxel_size = self.read_tiff_voxel_size(file_path)
         elif ext in H5_EXTENSIONS:
             # load data from H5 file
             with h5py.File(file_path, "r") as f:
                 assert self.h5_input_key in f, f"Cannot find {self.h5_input_key} dataset inside {file_path}"
-                data = f[self.h5_input_key][...]
+                ds = f[self.h5_input_key]
+                data = ds[...]
+                # read voxel_size
+                if 'element_size_um' in ds.attrs:
+                    voxel_size = ds.attrs['element_size_um']
         else:
             raise RuntimeError("Unsupported file extension")
 
@@ -109,9 +116,8 @@ class GenericPipelineStep:
         data = self._fix_input_shape(data)
 
         # normalize data according to processing type
-        # TODO: do we really need that
         data = self._adjust_input_type(data)
-        return data
+        return data, voxel_size
 
     @staticmethod
     def _fix_input_shape(data):
@@ -155,23 +161,30 @@ class GenericPipelineStep:
         output_path = os.path.splitext(output_path)[0] + self.file_suffix + self.out_ext
         return output_path
 
-    def save_output(self, data, output_path):
+    def save_output(self, data, output_path, voxel_size):
+        assert voxel_size is not None and len(voxel_size) == 3
         data = self._adjust_output_type(data)
         _, ext = os.path.splitext(output_path)
+        assert ext in [".h5", ".tiff"], f"Unsupported file extension {ext}"
 
         if ext == ".h5":
             # Save output results as h5
-            with h5py.File(output_path, "w") as file:
-                file.create_dataset(self.h5_output_key, data=data, compression='gzip')
-
+            with h5py.File(output_path, "w") as f:
+                f.create_dataset(self.h5_output_key, data=data, compression='gzip')
+                # save voxel_size
+                f[self.h5_output_key].attrs['element_size_um'] = voxel_size
         elif ext == ".tiff":
+            spacing = voxel_size[0]
+            y = voxel_size[1]
+            x = voxel_size[0]
+            resolution = (1. / x, 1. / y)
             # Save output results as tiff
             tifffile.imsave(output_path,
                             data=data,
                             dtype=data.dtype,
-                            bigtiff=True,
-                            resolution=(1, 1),
-                            metadata={'spacing': 1, 'unit': 'um'})
+                            imagej=True,
+                            resolution=resolution,
+                            metadata={'axes': 'ZYX', 'spacing': spacing, 'unit': 'um'})
 
         self._log_params(output_path)
 
@@ -187,6 +200,14 @@ class GenericPipelineStep:
             data = self._normalize_01(data)
             data = (data * np.iinfo(np.uint8).max)
             return data.astype(np.uint8)
+
+    @staticmethod
+    def read_tiff_voxel_size(file_path):
+        voxel_size = (1., 1., 1.)
+        with tifffile.TiffFile(file_path) as tiff:
+            image_metadata = tiff.imagej_metadata
+            # TODO: parse voxel_size
+        return voxel_size
 
 
 class AbstractSegmentationStep(GenericPipelineStep):

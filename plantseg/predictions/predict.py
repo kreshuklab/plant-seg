@@ -2,6 +2,7 @@ import importlib
 import os
 import time
 
+import h5py
 from pytorch3dunet.datasets.hdf5 import get_test_loaders
 from pytorch3dunet.unet3d import utils
 from pytorch3dunet.unet3d.model import get_model
@@ -80,4 +81,17 @@ class UnetPredictions:
                 runtime = time.time() - runtime
                 gui_logger.info(f"Network prediction took {runtime:.2f} s")
 
+            self._update_voxel_size(self.paths, output_paths)
+
             return output_paths
+
+    @staticmethod
+    def _update_voxel_size(input_paths, output_paths):
+        for in_path, out_path in zip(input_paths, output_paths):
+            voxel_size = (1., 1., 1.)
+            with h5py.File(in_path, 'r') as f:
+                if 'element_size_um' in f['raw'].attrs:
+                    voxel_size = f['raw'].attrs['element_size_um']
+
+            with h5py.File(out_path, 'r+') as f:
+                f['predictions'].attrs['element_size_um'] = voxel_size
