@@ -103,7 +103,20 @@ Please refer to [our publication](https://www.biorxiv.org/content/10.1101/2020.0
 - _Arabidopsis thaliana_ lateral root (raw light sheet images + ground truth labels) can be downloaded from [here](https://oc.embl.de/index.php/s/gNXDHhOS4GwBlZT)
 
 ## Pre-trained networks
+The following pre-trained networks are provided with PlantSeg package out-of-the box and can be specified in the config file or chosen in the GUI.
 
+* `generic_confocal_3d_unet` - alias for `confocal_unet_bce_dice_ds2x` see below
+* `generic_light_sheet_3d_unet` - alias for `lightsheet_unet_bce_dice_ds1x` see below
+* `confocal_unet_bce_dice_ds1x` - a variant of 3D U-Net trained on confocal images of _Arabidopsis_ ovules on original resolution (0.235x0.075x0.075 µm^3) (ZYX) with BCEDiceLoss
+* `confocal_unet_bce_dice_ds2x` - a variant of 3D U-Net trained on confocal images of _Arabidopsis_ ovules on 1/2 resolution (0.235x0.150x0.150 µm^3) (ZYX) with BCEDiceLoss
+* `confocal_unet_bce_dice_ds3x` - a variant of 3D U-Net trained on confocal images of _Arabidopsis_ ovules on 1/3 resolution (0.235x0.225x0.225 µm^3) (ZYX) with BCEDiceLoss
+* `lightsheet_unet_bce_dice_ds1x` - a variant of 3D U-Net trained on light-sheet images of _Arabidopsis_ lateral root on original resolution (0.25x0.1625x0.1625 µm^3) (ZYX) with BCEDiceLoss
+* `lightsheet_unet_bce_dice_ds2x` - a variant of 3D U-Net trained on light-sheet images of _Arabidopsis_ lateral root on 1/2 resolution (0.25x0.325x0.325 µm^3) (ZYX) with BCEDiceLoss
+* `lightsheet_unet_bce_dice_ds3x` - a variant of 3D U-Net trained on light-sheet images of _Arabidopsis_ lateral root on 1/3 resolution (0.25x0.4875x0.4875 µm^3) (ZYX) with BCEDiceLoss
+
+Selecting a given network name (either in the config file or GUI) will download the network into the `~/.plantseg_models`
+directory.
+Detailed description of network training can be found in our [paper](#citation).
 
 ## Training on New Data
 For training new models we rely on the [pytorch-3dunet](https://github.com/wolny/pytorch-3dunet). 
