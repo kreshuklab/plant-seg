@@ -29,6 +29,7 @@ def _get_predictor(model, loader, output_file, config):
 
 class UnetPredictions:
     def __init__(self, paths, cnn_config):
+        assert isinstance(paths, list)
         self.paths = paths
         self.cnn_config = cnn_config
         self.state = cnn_config.get("state", True)

@@ -38,7 +38,7 @@ cnn_prediction:
   # "best" refers to best performing on the val set (recommended), alternatively "last" refers to the last version before interruption
   version: best
   # If "True" forces downloading networks from the online repos
-  model_update: False
+  model_update: True
 
 cnn_postprocessing:
   # enable/disable cnn post processing
