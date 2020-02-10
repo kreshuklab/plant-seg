@@ -64,7 +64,7 @@ class TestDataProcessing:
         assert pre() == [input_path]
         assert post() == [input_path]
 
-    def test_postprocessing_voxel_size(self, input_path):
+    def test_preprocessing_voxel_size(self, input_path):
         with h5py.File(input_path, 'r') as f:
             expected_voxel_size = f['raw'].attrs['element_size_um']
 
@@ -78,3 +78,23 @@ class TestDataProcessing:
             voxel_size = f['raw'].attrs['element_size_um']
 
         assert np.array_equal(np.array(expected_voxel_size), np.array(voxel_size))
+
+    def test_tiff_voxel_size(self, input_path):
+        """
+        Take input h5, convert to tiff, convert to h5, check if the voxel size matches the original
+        """
+        # convert to h5 to tiff
+        post = DataPostProcessing3D([input_path], input_type="labels", output_type="labels", out_ext='.tiff')
+        output_paths = post()
+        # convert tiff to h5
+        pre = DataPreProcessing3D(output_paths, input_type="labels", output_type="labels")
+        output_paths = pre()
+
+        # check output voxel_size
+        with h5py.File(input_path, 'r') as f:
+            expected_voxel_size = f['raw'].attrs['element_size_um']
+
+        with h5py.File(output_paths[0], 'r') as f:
+            voxel_size = f['raw'].attrs['element_size_um']
+
+        assert np.array_equal(expected_voxel_size, voxel_size)
