@@ -25,8 +25,7 @@ def configure_preprocessing_step(input_paths, config):
 
 
 def configure_cnn_step(input_paths, config):
-    cnn_config = create_predict_config(input_paths, config)
-    return UnetPredictions(cnn_config)
+    return UnetPredictions(input_paths, config)
 
 
 def configure_cnn_postprocessing_step(input_paths, config):
@@ -70,4 +69,4 @@ def raw2seg(config):
         if not isinstance(pipeline_step, DataPostProcessing3D):
             input_paths = output_paths
 
-    gui_logger.info(f"Pipeline execution finished! See the results in {input_paths}")
+    gui_logger.info(f"Pipeline execution finished!")

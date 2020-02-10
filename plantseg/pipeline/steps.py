@@ -19,26 +19,23 @@ class GenericPipelineStep:
     
     Args:
         input_paths (iterable): paths to the files to be processed
-        h5_input_key (str): internal H5 dataset expected by the pipeline, e.g. net predictions expect 'raw', segmentation expects 'predictions'
-        h5_output_key (str): output H5 dataset
-        output_type (str): numpy dtype or the output 
+        output_type (str): numpy dtype or the output
         save_directory (str): relative dir where the output files will be saved
         file_suffix (str): suffix added to the output files
         out_ext (str): output file extension
         state (bool): if True the step is enabled
+        h5_output_key (str): output H5 dataset, if None the input key will be used
     """
 
-    def __init__(self, input_paths, h5_input_key, h5_output_key, input_type, output_type, save_directory,
-                 file_suffix="", out_ext=".h5", state=True):
+    def __init__(self, input_paths, input_type, output_type, save_directory,
+                 file_suffix="", out_ext=".h5", state=True, h5_output_key=None):
         assert isinstance(input_paths, list)
         assert len(input_paths) > 0, "Input file paths cannot be empty"
-        assert h5_input_key in H5_KEYS, f"Unsupported input key '{h5_input_key}'. Supported keys: {H5_KEYS}"
         assert input_type in SUPPORTED_TYPES
         assert output_type in SUPPORTED_TYPES
         assert save_directory is not None
 
         self.input_paths = input_paths
-        self.h5_input_key = h5_input_key
         self.h5_output_key = h5_output_key
         self.output_type = output_type
         self.input_type = input_type
@@ -71,13 +68,14 @@ class GenericPipelineStep:
 
     def read_process_write(self, input_path):
         gui_logger.info(f'Loading stack from {input_path}')
-        input_data = self.load_stack(input_path)
+        input_data, voxel_size = self.load_stack(input_path)
 
         output_data = self.process(input_data)
+        # TODO: voxel_size may change after pre-/post-processing (i.e. when scaling is used); adapt accordingly
 
         output_path = self._create_output_path(input_path)
         gui_logger.info(f'Saving results in {output_path}')
-        self.save_output(output_data, output_path)
+        self.save_output(output_data, output_path, voxel_size)
 
         # return output_path
         return output_path
@@ -90,17 +88,33 @@ class GenericPipelineStep:
             file_path (str): path to the file containing the stack
 
         Returns:
-            (nd.array) numpy array containing stack's data
+            tuple(nd.array, tuple(float)): (numpy array containing stack's data, stack's data voxel size)
         """
         _, ext = os.path.splitext(file_path)
+        voxel_size = (1., 1., 1.)
+
         if ext in TIFF_EXTENSIONS:
             # load tiff file
             data = tifffile.imread(file_path)
+            # parse voxel_size
+            voxel_size = self.read_tiff_voxel_size(file_path)
         elif ext in H5_EXTENSIONS:
             # load data from H5 file
             with h5py.File(file_path, "r") as f:
-                assert self.h5_input_key in f, f"Cannot find {self.h5_input_key} dataset inside {file_path}"
-                data = f[self.h5_input_key][...]
+                h5_input_key = self._find_input_key(f)
+                gui_logger.info(f"Found '{h5_input_key}' dataset inside {file_path}")
+                # set h5_output_key to be the same as h5_input_key if h5_output_key not defined
+                if self.h5_output_key is None:
+                    self.h5_output_key = h5_input_key
+
+                ds = f[h5_input_key]
+                data = ds[...]
+                # parse voxel_size
+                if 'element_size_um' in ds.attrs:
+                    voxel_size = ds.attrs['element_size_um']
+                else:
+                    gui_logger.warn(f"Cannot find 'element_size_um' attribute for dataset '{self.h5_input_key}'. "
+                                    f"Using default voxel_size: {voxel_size}")
         else:
             raise RuntimeError("Unsupported file extension")
 
@@ -109,9 +123,8 @@ class GenericPipelineStep:
         data = self._fix_input_shape(data)
 
         # normalize data according to processing type
-        # TODO: do we really need that
         data = self._adjust_input_type(data)
-        return data
+        return data, voxel_size
 
     @staticmethod
     def _fix_input_shape(data):
@@ -155,23 +168,35 @@ class GenericPipelineStep:
         output_path = os.path.splitext(output_path)[0] + self.file_suffix + self.out_ext
         return output_path
 
-    def save_output(self, data, output_path):
+    def save_output(self, data, output_path, voxel_size):
+        assert voxel_size is not None and len(voxel_size) == 3
         data = self._adjust_output_type(data)
         _, ext = os.path.splitext(output_path)
+        assert ext in [".h5", ".tiff"], f"Unsupported file extension {ext}"
 
         if ext == ".h5":
             # Save output results as h5
-            with h5py.File(output_path, "w") as file:
-                file.create_dataset(self.h5_output_key, data=data, compression='gzip')
+            with h5py.File(output_path, "w") as f:
+                if self.h5_output_key is None:
+                    # this can happen if input file is tiff and h5_output_key was not specified
+                    self.h5_output_key = 'raw'
 
+                f.create_dataset(self.h5_output_key, data=data, compression='gzip')
+                # save voxel_size
+                f[self.h5_output_key].attrs['element_size_um'] = voxel_size
         elif ext == ".tiff":
+            # taken from: https://pypi.org/project/tifffile docs
+            z, y, x = data.shape
+            data.shape = 1, z, 1, y, x, 1  # dimensions in TZCYXS order
+            spacing, y, x = voxel_size
+            resolution = (1. / x, 1. / y)
             # Save output results as tiff
             tifffile.imsave(output_path,
                             data=data,
                             dtype=data.dtype,
-                            bigtiff=True,
-                            resolution=(1, 1),
-                            metadata={'spacing': 1, 'unit': 'um'})
+                            imagej=True,
+                            resolution=resolution,
+                            metadata={'axes': 'TZCYXS', 'spacing': spacing, 'unit': 'um'})
 
         self._log_params(output_path)
 
@@ -188,15 +213,59 @@ class GenericPipelineStep:
             data = (data * np.iinfo(np.uint8).max)
             return data.astype(np.uint8)
 
+    @staticmethod
+    def read_tiff_voxel_size(file_path):
+        """
+        Implemented based on information found in https://pypi.org/project/tifffile
+        """
+
+        def _xy_voxel_size(tags, key):
+            assert key in ['XResolution', 'YResolution']
+            if key in tags:
+                num_pixels, units = tags[key].value
+                return units / num_pixels
+            # return default
+            return 1.
+
+        with tifffile.TiffFile(file_path) as tiff:
+            image_metadata = tiff.imagej_metadata
+            if image_metadata is not None:
+                z = image_metadata.get('spacing', 1.)
+            else:
+                # default voxel size
+                z = 1.
+
+            tags = tiff.pages[0].tags
+            # parse X, Y resolution
+            y = _xy_voxel_size(tags, 'YResolution')
+            x = _xy_voxel_size(tags, 'XResolution')
+            # return voxel size
+            return [z, y, x]
+
+    @staticmethod
+    def _find_input_key(h5_file):
+        # if only one dataset in h5_file return it, otherwise return first from H5_KEYS
+        found_keys = list(h5_file.keys())
+        if not found_keys:
+            raise RuntimeError(f"No datasets found in '{h5_file.filename}'")
+
+        if len(found_keys) == 1:
+            return found_keys[0]
+        else:
+            for h5_key in H5_KEYS:
+                if h5_key in found_keys:
+                    return h5_key
+
+            raise RuntimeError(f"Ambiguous datasets '{found_keys}' in {h5_file.filename}")
+
 
 class AbstractSegmentationStep(GenericPipelineStep):
     def __init__(self, input_paths, save_directory, file_suffix, state):
         super().__init__(input_paths=input_paths,
-                         h5_input_key='predictions',
-                         h5_output_key='segmentation',
                          input_type="data_float32",
                          output_type="labels",
                          save_directory=save_directory,
                          file_suffix=file_suffix,
                          out_ext=".h5",
-                         state=state)
+                         state=state,
+                         h5_output_key='segmentation')

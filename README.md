@@ -65,8 +65,8 @@ Some key design choices:
 * `path` attribute: is used to define either the file to process or the directory containing the data.
 * `preprocessing` attribute: contains a simple set of possible operations one would need to run on their own data before calling the neural network. 
 If data is ready for neural network processing either delete the entire section or set `state: False` in order to skip this step.
-* `prediction` attribute: contains all parameters relevant for predicting the neural network. 
-In the [models](plantseg/models/README.md) directory we list details of all pre-trained models we provide.
+* `cnn_prediction` attribute: contains all parameters relevant for predicting with neural network. 
+Description of all pre-trained models provided with the package are described below.
 * `segmentation` attribute: contains all parameters needed to run the partitioning algorithm (i.e. final segmentation). 
 Detailed instructions can be found in [segmentation](plantseg/segmentation/README.md) directory.
 
@@ -76,6 +76,8 @@ The PlantSeg related files (models, configs) will be placed inside your home dir
 
 Our pipeline uses the PyTorch library for the CNN predictions. PlantSeg can be run on systems without GPU, however 
 for maximum performance we recommend that the application is run on a machine with a high performance GPU for deep learning.
+If `CUDA_VISIBLE_DEVICES` environment variable is not specified the prediction task will be distributed on all available GPUs.
+E.g. run: `CUDA_VISIBLE_DEVICES=0 plantseg --config CONFIG_PATH` to restrict prediction to a given GPU.
 
 ## Docker image
 We also provide a docker image with plantseg package installed.
@@ -101,20 +103,33 @@ Please refer to [our publication](https://www.biorxiv.org/content/10.1101/2020.0
 - _Arabidopsis thaliana_ lateral root (raw light sheet images + ground truth labels) can be downloaded from [here](https://oc.embl.de/index.php/s/gNXDHhOS4GwBlZT)
 
 ## Pre-trained networks
+The following pre-trained networks are provided with PlantSeg package out-of-the box and can be specified in the config file or chosen in the GUI.
 
+* `generic_confocal_3d_unet` - alias for `confocal_unet_bce_dice_ds2x` see below
+* `generic_light_sheet_3d_unet` - alias for `lightsheet_unet_bce_dice_ds1x` see below
+* `confocal_unet_bce_dice_ds1x` - a variant of 3D U-Net trained on confocal images of _Arabidopsis_ ovules on original resolution, voxel size: (0.235x0.075x0.075 µm^3) (ZYX) with BCEDiceLoss
+* `confocal_unet_bce_dice_ds2x` - a variant of 3D U-Net trained on confocal images of _Arabidopsis_ ovules on 1/2 resolution, voxel size: (0.235x0.150x0.150 µm^3) (ZYX) with BCEDiceLoss
+* `confocal_unet_bce_dice_ds3x` - a variant of 3D U-Net trained on confocal images of _Arabidopsis_ ovules on 1/3 resolution, voxel size: (0.235x0.225x0.225 µm^3) (ZYX) with BCEDiceLoss
+* `lightsheet_unet_bce_dice_ds1x` - a variant of 3D U-Net trained on light-sheet images of _Arabidopsis_ lateral root on original resolution, voxel size: (0.25x0.1625x0.1625 µm^3) (ZYX) with BCEDiceLoss
+* `lightsheet_unet_bce_dice_ds2x` - a variant of 3D U-Net trained on light-sheet images of _Arabidopsis_ lateral root on 1/2 resolution, voxel size: (0.25x0.325x0.325 µm^3) (ZYX) with BCEDiceLoss
+* `lightsheet_unet_bce_dice_ds3x` - a variant of 3D U-Net trained on light-sheet images of _Arabidopsis_ lateral root on 1/3 resolution, voxel size: (0.25x0.4875x0.4875 µm^3) (ZYX) with BCEDiceLoss
+
+Selecting a given network name (either in the config file or GUI) will download the network into the `~/.plantseg_models`
+directory.
+Detailed description of network training can be found in our [paper](#citation).
 
 ## Training on New Data
-For training new models we rely on the [pytorch-3dunet](https://github.com/hci-unihd/pytorch-3dunet). 
+For training new models we rely on the [pytorch-3dunet](https://github.com/wolny/pytorch-3dunet). 
 A similar configuration file can be used for training on new data and all the instructions can be found in the repo.
-When the network is trained it is enough to copy the following files into the `~/.plantseg_models/` directory:
+When the network is trained it is enough to create `~/.plantseg_models/MY_MODEL_NAME` directory 
+and copy the following files into it:
 * configuration file used for training: `config_train.yml`
 * snapshot of the best model across training: `best_checkpoint.pytorch`
 * snapshot of the last model saved during training: `last_checkpoint.pytorch`
 
 The later two files are automatically generated during training and contain all neural networks parameters.
 
-Now you can simply use your model for prediction by editing the [model_name:](examples/config.yaml)
- key in the prediction config file.\
+Now you can simply use your model for prediction by setting the [model_name](examples/config.yaml) key to `MY_MODEL_NAME`.
  
 If you want your model to be part of the open-source model zoo provided with this package, please contact us.
 
@@ -158,6 +173,16 @@ Alternatively one can create the `plant-seg` environment from scratch and ensuri
 conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge cudatoolkit=<YOU_CUDA_VERSION> plantseg
 
 ```
+
+* PlantSeg is under active development so it may happen that the models/configuration files saved in `~/.plantseg_modes`
+are outdated. In case of errors related to loading the configuration file, please close the PlantSeg app, 
+remove `~/.plantseg_models` directory and try again.
+
+
+## Tests
+In order to run tests make sure that `pytest` is installed in your conda environment. You can run your tests 
+simply with `python -m pytest` or `pytest`. For the latter to work you need to install `plantseg` locally in "develop mode"
+with `pip install -e .`. 
 
 ## Citation
 ```
