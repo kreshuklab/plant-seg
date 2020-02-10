@@ -13,6 +13,7 @@ TEST_FILES = os.path.join(
 
 VOXEL_SIZE = (0.235, 0.15, 0.15)
 
+# common fixtures aimed to reduce the boilerplate in tests
 
 @pytest.fixture
 def input_path(tmpdir):

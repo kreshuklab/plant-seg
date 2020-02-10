@@ -1,6 +1,7 @@
 import os
 
 import h5py
+import numpy as np
 
 from plantseg.predictions.predict import UnetPredictions
 
@@ -31,6 +32,10 @@ class TestUnetPredictions:
         ]
         assert expected_paths == output_paths
 
-        # assert predictions dataset exist in the output h5
+        # assert predictions dataset exist in the output h5 and has correct voxel size
+        with h5py.File(paths[0], 'r') as f:
+            expected_voxel_size = f['raw'].attrs['element_size_um']
+
         with h5py.File(output_paths[0], 'r') as f:
             assert 'predictions' in f
+            assert np.array_equal(expected_voxel_size, f['predictions'].attrs['element_size_um'])

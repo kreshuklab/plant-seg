@@ -74,6 +74,7 @@ class GenericPipelineStep:
         input_data, voxel_size = self.load_stack(input_path)
 
         output_data = self.process(input_data)
+        # TODO: voxel_size may change after pre-/post-processing (i.e. when scaling is used); adapt accordingly
 
         output_path = self._create_output_path(input_path)
         gui_logger.info(f'Saving results in {output_path}')
@@ -174,9 +175,10 @@ class GenericPipelineStep:
                 # save voxel_size
                 f[self.h5_output_key].attrs['element_size_um'] = voxel_size
         elif ext == ".tiff":
-            spacing = voxel_size[0]
-            y = voxel_size[1]
-            x = voxel_size[0]
+            # taken from: https://pypi.org/project/tifffile docs
+            z, y, x = data.shape
+            data.shape = 1, z, 1, y, x, 1  # dimensions in TZCYXS order
+            spacing, y, x = voxel_size
             resolution = (1. / x, 1. / y)
             # Save output results as tiff
             tifffile.imsave(output_path,
@@ -184,7 +186,7 @@ class GenericPipelineStep:
                             dtype=data.dtype,
                             imagej=True,
                             resolution=resolution,
-                            metadata={'axes': 'ZYX', 'spacing': spacing, 'unit': 'um'})
+                            metadata={'axes': 'TZCYXS', 'spacing': spacing, 'unit': 'um'})
 
         self._log_params(output_path)
 
