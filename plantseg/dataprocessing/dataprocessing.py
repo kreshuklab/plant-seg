@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.ndimage import zoom
 from skimage.filters import median
-from skimage.morphology import ball
+from skimage.morphology import ball, disk
 from vigra.filters import gaussianSmoothing
 
 from plantseg.pipeline import gui_logger
@@ -16,10 +16,17 @@ def _rescale(image, factor, order):
 
 
 def _median(image, radius):
-    return median(image, ball(radius))
+    if image.shape[0] == 1:
+        shape = image.shape
+        median_image = median(image[0], disk(radius))
+        return median_image.reshape(shape)
+    else:
+        return median(image, ball(radius))
 
 
 def _gaussian(image, sigma):
+    max_sigma = (np.array(image.shape) - 1) / 3
+    sigma = np.minimum(max_sigma, np.ones(max_sigma.ndim) * sigma)
     return gaussianSmoothing(image, sigma)
 
 
