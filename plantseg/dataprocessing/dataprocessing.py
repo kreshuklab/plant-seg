@@ -39,17 +39,15 @@ class DataPostProcessing3D(GenericPipelineStep):
         if factor is None:
             factor = [1, 1, 1]
 
-        h5_input_key = "segmentation" if input_type == "labels" else "predictions"
-        h5_output_key = h5_input_key
+        h5_output_key = "segmentation" if input_type == "labels" else "predictions"
 
         super().__init__(input_paths,
-                         h5_input_key=h5_input_key,
-                         h5_output_key=h5_output_key,
                          input_type=input_type,
                          output_type=output_type,
                          save_directory=save_directory,
                          out_ext=out_ext,
-                         state=state)
+                         state=state,
+                         h5_output_key=h5_output_key)
 
         # rescaling
         self.factor = factor
@@ -76,8 +74,6 @@ class DataPreProcessing3D(GenericPipelineStep):
                  state=True):
 
         super().__init__(input_paths,
-                         h5_input_key="raw",
-                         h5_output_key="raw",
                          input_type=input_type,
                          output_type=output_type,
                          save_directory=save_directory,

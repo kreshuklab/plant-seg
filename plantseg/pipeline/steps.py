@@ -19,26 +19,23 @@ class GenericPipelineStep:
     
     Args:
         input_paths (iterable): paths to the files to be processed
-        h5_input_key (str): internal H5 dataset expected by the pipeline, e.g. net predictions expect 'raw', segmentation expects 'predictions'
-        h5_output_key (str): output H5 dataset
-        output_type (str): numpy dtype or the output 
+        output_type (str): numpy dtype or the output
         save_directory (str): relative dir where the output files will be saved
         file_suffix (str): suffix added to the output files
         out_ext (str): output file extension
         state (bool): if True the step is enabled
+        h5_output_key (str): output H5 dataset, if None the input key will be used
     """
 
-    def __init__(self, input_paths, h5_input_key, h5_output_key, input_type, output_type, save_directory,
-                 file_suffix="", out_ext=".h5", state=True):
+    def __init__(self, input_paths, input_type, output_type, save_directory,
+                 file_suffix="", out_ext=".h5", state=True, h5_output_key=None):
         assert isinstance(input_paths, list)
         assert len(input_paths) > 0, "Input file paths cannot be empty"
-        assert h5_input_key in H5_KEYS, f"Unsupported input key '{h5_input_key}'. Supported keys: {H5_KEYS}"
         assert input_type in SUPPORTED_TYPES
         assert output_type in SUPPORTED_TYPES
         assert save_directory is not None
 
         self.input_paths = input_paths
-        self.h5_input_key = h5_input_key
         self.h5_output_key = h5_output_key
         self.output_type = output_type
         self.input_type = input_type
@@ -104,8 +101,13 @@ class GenericPipelineStep:
         elif ext in H5_EXTENSIONS:
             # load data from H5 file
             with h5py.File(file_path, "r") as f:
-                assert self.h5_input_key in f, f"Cannot find {self.h5_input_key} dataset inside {file_path}"
-                ds = f[self.h5_input_key]
+                h5_input_key = self._find_input_key(f)
+                gui_logger.info(f"Found '{h5_input_key}' dataset inside {file_path}")
+                # set h5_output_key to be the same as h5_input_key if h5_output_key not defined
+                if self.h5_output_key is None:
+                    self.h5_output_key = h5_input_key
+
+                ds = f[h5_input_key]
                 data = ds[...]
                 # parse voxel_size
                 if 'element_size_um' in ds.attrs:
@@ -175,6 +177,10 @@ class GenericPipelineStep:
         if ext == ".h5":
             # Save output results as h5
             with h5py.File(output_path, "w") as f:
+                if self.h5_output_key is None:
+                    # this can happen if input file is tiff and h5_output_key was not specified
+                    self.h5_output_key = 'raw'
+
                 f.create_dataset(self.h5_output_key, data=data, compression='gzip')
                 # save voxel_size
                 f[self.h5_output_key].attrs['element_size_um'] = voxel_size
@@ -212,6 +218,7 @@ class GenericPipelineStep:
         """
         Implemented based on information found in https://pypi.org/project/tifffile
         """
+
         def _xy_voxel_size(tags, key):
             assert key in ['XResolution', 'YResolution']
             if key in tags:
@@ -235,15 +242,30 @@ class GenericPipelineStep:
             # return voxel size
             return [z, y, x]
 
+    @staticmethod
+    def _find_input_key(h5_file):
+        # if only one dataset in h5_file return it, otherwise return first from H5_KEYS
+        found_keys = list(h5_file.keys())
+        if not found_keys:
+            raise RuntimeError(f"No datasets found in '{h5_file.filename}'")
+
+        if len(found_keys) == 1:
+            return found_keys[0]
+        else:
+            for h5_key in H5_KEYS:
+                if h5_key in found_keys:
+                    return h5_key
+
+            raise RuntimeError(f"Ambiguous datasets '{found_keys}' in {h5_file.filename}")
+
 
 class AbstractSegmentationStep(GenericPipelineStep):
     def __init__(self, input_paths, save_directory, file_suffix, state):
         super().__init__(input_paths=input_paths,
-                         h5_input_key='predictions',
-                         h5_output_key='segmentation',
                          input_type="data_float32",
                          output_type="labels",
                          save_directory=save_directory,
                          file_suffix=file_suffix,
                          out_ext=".h5",
-                         state=state)
+                         state=state,
+                         h5_output_key='segmentation')
