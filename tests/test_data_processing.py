@@ -64,12 +64,27 @@ class TestDataProcessing:
         assert pre() == [input_path]
         assert post() == [input_path]
 
+    def test_preprocessing_default_voxel_size(self, tmpdir):
+        path = os.path.join(tmpdir, 'test.h5')
+        # create a new file without element_size_um
+        with h5py.File(path, 'w') as f:
+            f.create_dataset('raw', data=np.random.rand(32, 128, 128))
+
+        pre = DataPreProcessing3D([path], input_type="data_uint8", output_type="data_uint8")
+        # run preprocessing
+        output_paths = pre()
+
+        # check output voxel_size
+        with h5py.File(output_paths[0], 'r') as f:
+            voxel_size = f['raw'].attrs['element_size_um']
+
+        assert np.array_equal((1, 1, 1), voxel_size)
+
     def test_preprocessing_voxel_size(self, input_path):
         with h5py.File(input_path, 'r') as f:
             expected_voxel_size = f['raw'].attrs['element_size_um']
 
-        pre = DataPreProcessing3D([input_path], input_type="data_uint8", output_type="data_uint8",
-                                  save_directory="PreProcessing", filter_type="gaussian", filter_param=1.0)
+        pre = DataPreProcessing3D([input_path], input_type="data_uint8", output_type="data_uint8")
         # run preprocessing
         output_paths = pre()
 

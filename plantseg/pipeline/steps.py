@@ -113,7 +113,7 @@ class GenericPipelineStep:
                 if 'element_size_um' in ds.attrs:
                     voxel_size = ds.attrs['element_size_um']
                 else:
-                    gui_logger.warn(f"Cannot find 'element_size_um' attribute for dataset '{self.h5_input_key}'. "
+                    gui_logger.warn(f"Cannot find 'element_size_um' attribute for dataset '{h5_input_key}'. "
                                     f"Using default voxel_size: {voxel_size}")
         else:
             raise RuntimeError("Unsupported file extension")
