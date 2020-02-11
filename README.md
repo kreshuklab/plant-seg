@@ -26,7 +26,7 @@ Follow the instructions to complete the anaconda installation.
 ### Install PlantSeg using conda
 The tool can be installed directly by executing in the terminal:
 ```bash
-conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge plantseg=1.0.4
+conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge plantseg=1.0.5
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
