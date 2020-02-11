@@ -16,6 +16,6 @@ sudo docker tag plantseg wolny/plantseg:latest
 Push the image to Docker Hub:
 ```
 sudo docker push wolny/plantseg:<version>
-sudo docker tag plantseg wolny/plantseg:latest
+sudo docker push wolny/plantseg:latest
 ```
 
