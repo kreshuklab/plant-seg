@@ -30,7 +30,7 @@ def main():
     else:
         raise ValueError("Not enough arguments. Please use: \n"
                          " --gui for launching the graphical pipeline configurator or \n"
-                         " -- config 'path_to_config.yaml' for launching the pipeline from command line")
+                         " --config 'path_to_config.yaml' for launching the pipeline from command line")
 
 
 if __name__ == "__main__":
