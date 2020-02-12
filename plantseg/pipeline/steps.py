@@ -6,6 +6,7 @@ import tifffile
 import yaml
 
 from plantseg.pipeline import gui_logger
+from plantseg.pipeline.utils import read_tiff_voxel_size
 
 SUPPORTED_TYPES = ["labels", "data_float32", "data_uint8"]
 TIFF_EXTENSIONS = [".tiff", ".tif"]
@@ -97,7 +98,7 @@ class GenericPipelineStep:
             # load tiff file
             data = tifffile.imread(file_path)
             # parse voxel_size
-            voxel_size = self.read_tiff_voxel_size(file_path)
+            voxel_size = read_tiff_voxel_size(file_path)
         elif ext in H5_EXTENSIONS:
             # load data from H5 file
             with h5py.File(file_path, "r") as f:
@@ -213,34 +214,6 @@ class GenericPipelineStep:
             data = (data * np.iinfo(np.uint8).max)
             return data.astype(np.uint8)
 
-    @staticmethod
-    def read_tiff_voxel_size(file_path):
-        """
-        Implemented based on information found in https://pypi.org/project/tifffile
-        """
-
-        def _xy_voxel_size(tags, key):
-            assert key in ['XResolution', 'YResolution']
-            if key in tags:
-                num_pixels, units = tags[key].value
-                return units / num_pixels
-            # return default
-            return 1.
-
-        with tifffile.TiffFile(file_path) as tiff:
-            image_metadata = tiff.imagej_metadata
-            if image_metadata is not None:
-                z = image_metadata.get('spacing', 1.)
-            else:
-                # default voxel size
-                z = 1.
-
-            tags = tiff.pages[0].tags
-            # parse X, Y resolution
-            y = _xy_voxel_size(tags, 'YResolution')
-            x = _xy_voxel_size(tags, 'XResolution')
-            # return voxel size
-            return [z, y, x]
 
     @staticmethod
     def _find_input_key(h5_file):
