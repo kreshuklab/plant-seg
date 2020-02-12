@@ -7,6 +7,8 @@ import yaml
 from plantseg import plantseg_global_path
 from plantseg.__version__ import __version__
 from plantseg.gui import stick_all, stick_ew, var_to_tkinter, convert_rgb
+from plantseg.pipeline.utils import read_tiff_voxel_size, read_h5_voxel_size
+from plantseg.pipeline.steps import H5_EXTENSIONS, TIFF_EXTENSIONS
 
 current_model = None
 current_segmentation = None
@@ -584,13 +586,13 @@ class Files2Process:
 # Generic GUI tools
 #
 ######################################################################################################################
-
 def report_error(data, font=None):
     """ creates pop up and show error messages """
     data = data if type(data) is str else f"Unknown Error. Error type: {type(data)} \n {data}"
 
     default = "The complete error message is reported in the terminal." \
-              " If the error persists, please let us know by opening an issue on https://github.com/hci-unihd/plant-seg."
+              " If the error persists, please let us know by opening an issue on" \
+              " https://github.com/hci-unihd/plant-seg."
 
     popup = tkinter.Tk()
     popup.title("Error")
@@ -613,83 +615,111 @@ class AutoResPopup:
         popup = tkinter.Toplevel()
         popup.title("Auto Re-Scale")
         popup.configure(bg="white")
+
         self.popup = popup
+        self.font = font
+        self.tk_value = tk_value
+        self.user_input = None
+        self.scale_factor = None
+        self.list_entry = None
+        self.net_name = net_name
 
         # Place popup
-        tkinter.Grid.rowconfigure(popup, 0, weight=2)
-        tkinter.Grid.rowconfigure(popup, 1, weight=1)
-        tkinter.Grid.rowconfigure(popup, 2, weight=1)
+        tkinter.Grid.rowconfigure(self.popup, 0, weight=2)
+        tkinter.Grid.rowconfigure(self.popup, 1, weight=1)
+        tkinter.Grid.rowconfigure(self.popup, 2, weight=1)
 
-        tkinter.Grid.columnconfigure(popup, 0, weight=1)
-        self.stick_all = tkinter.N + tkinter.S + tkinter.W + tkinter.E
+        tkinter.Grid.columnconfigure(self.popup, 0, weight=1)
 
-        popup_instructions = tkinter.Frame(popup)
+        self.instructions()
+        self.rescale_button_widget()
+
+    def instructions(self):
+        popup_instructions = tkinter.Frame(self.popup)
         tkinter.Grid.rowconfigure(popup_instructions, 0, weight=1)
         tkinter.Grid.columnconfigure(popup_instructions, 0, weight=1)
-        popup_instructions.grid(row=0, column=0, sticky=self.stick_all)
+        popup_instructions.grid(row=0, column=0, sticky=stick_all)
         popup_instructions.configure(bg="white")
 
-        text0 = f"The model you currently selected is {net_name}"
-        text1 = f"The model was trained with data at voxel resolution of {self.net_resolution} (zxy \u03BCm)"
-        text2 = f"It is generally useful to rescale your input data to match the resolution of the original data"
+        all_text = [f"The model you currently selected is {self.net_name}",
+                    f"The model was trained with data at voxel resolution of {self.net_resolution} (zxy \u03BCm)",
+                    f"It is generally useful to rescale your input data to match the resolution of the original data"]
 
-        label0 = tkinter.Label(popup_instructions, bg="white", text=text0,
-                               font=font)
-        label0.grid(column=0,
-                    row=0,
+        labels = [tkinter.Label(popup_instructions, bg="white", text=text, font=self.font) for text in all_text]
+        [label.grid(column=0,
+                    row=i,
                     padx=10,
                     pady=10,
-                    sticky=self.stick_all)
-
-        label1 = tkinter.Label(popup_instructions, bg="white", text=text1,
-                               font=font)
-        label1.grid(column=0,
-                    row=1,
-                    padx=10,
-                    pady=10,
-                    sticky=self.stick_all)
-        label2 = tkinter.Label(popup_instructions, bg="white", text=text2,
-                               font=font)
-        label2.grid(column=0,
-                    row=2,
-                    padx=10,
-                    pady=10,
-                    sticky=self.stick_all)
-
-        self.list_entry = ListEntry(popup, "Input your data resolution (zxy \u03BCm): ", row=1, column=0, type=float,
-                                    font=font)
-        self.list_entry(net_resolution, [])
-        self.scale_factor = []
-        self.tk_value = tk_value
-
-        popup_button = tkinter.Frame(popup)
-        popup_button.configure(bg="white")
-        tkinter.Grid.rowconfigure(popup_button, 0, weight=1)
-        tkinter.Grid.columnconfigure(popup_button, 0, weight=1)
-        popup_button.grid(row=2, column=0, sticky=self.stick_all)
-        button = tkinter.Button(popup_button, bg="white", text="Apply Rescaling Factor",
-                                command=self.update_input_resolution,
-                                font=font)
-        button.grid(column=0,
-                    row=0,
-                    padx=10,
-                    pady=10,
-                    sticky=self.stick_all)
-        text = "N.B. Rescaling input data to the training data resolution has shown to be very helpful in some cases" \
-               " and detrimental in others."
-        label = tkinter.Label(popup_button, bg="white", text=text,
-                               font=font)
-        label.grid(column=0,
-                    row=1,
-                    padx=10,
-                    pady=10,
-                    sticky=self.stick_all)
+                    sticky=stick_all) for i, label in enumerate(labels)]
 
     def update_input_resolution(self):
         self.user_input = [self.list_entry.tk_value[i].get() for i in range(3)]
         self.scale_factor = [self.user_input[i] / self.net_resolution[i] for i in range(3)]
         [self.tk_value[i].set(float(self.scale_factor[i])) for i in range(3)]
         self.popup.destroy()
+
+    def rescale_button_widget(self):
+        self.list_entry = ListEntry(self.popup, "Input your data resolution (zxy \u03BCm): ",
+                                    row=1, column=0, type=float,
+                                    font=self.font)
+        self.list_entry(self.net_resolution, [])
+        self.scale_factor = []
+        self.tk_value = self.tk_value
+
+        popup_button = tkinter.Frame(self.popup)
+        popup_button.configure(bg="white")
+        tkinter.Grid.rowconfigure(popup_button, 0, weight=1)
+        tkinter.Grid.columnconfigure(popup_button, 0, weight=1)
+        popup_button.grid(row=2, column=0, sticky=stick_all)
+        button = tkinter.Button(popup_button, bg="white", text="Compute Rescaling Factor",
+                                command=self.update_input_resolution,
+                                font=self.font)
+
+        button.grid(column=0,
+                    row=0,
+                    padx=10,
+                    pady=10,
+                    sticky=stick_all)
+
+        search_button_frame = tkinter.Frame(self.popup)
+        search_button_frame.configure(bg="white")
+        tkinter.Grid.rowconfigure(search_button_frame, 0, weight=1)
+        tkinter.Grid.columnconfigure(search_button_frame, 0, weight=1)
+        search_button_frame.grid(row=3, column=0, sticky=stick_all)
+
+        text = "or import resolution from file"
+        label0 = tkinter.Label(search_button_frame, bg="white", text=text, font=self.font)
+        label0.grid(column=0, row=0, padx=10, pady=10, sticky=stick_all)
+
+        search_button = tkinter.Button(search_button_frame, bg="white", text="Compute Rescaling Factor From File",
+                                       command=self.read_from_file,
+                                       font=self.font)
+
+        search_button.grid(column=0,
+                           row=1,
+                           padx=10,
+                           pady=10,
+                           sticky=stick_all)
+
+        text = "N.B. Rescaling input data to the training data resolution has shown to be very helpful in some cases" \
+               " and detrimental in others."
+        label1 = tkinter.Label(search_button_frame, bg="white", text=text, font=self.font)
+        label1.grid(column=0, row=2, padx=10, pady=10, sticky=stick_all)
+
+    def read_from_file(self):
+        file_dialog = Files2Process({"path": None})
+        file_dialog.browse_for_file()
+        path = file_dialog.config["path"]
+        _, ext = os.path.splitext(path)
+        if ext in H5_EXTENSIONS:
+            file_resolution = read_h5_voxel_size(file_dialog.config["path"])
+        elif ext in TIFF_EXTENSIONS:
+            file_resolution = read_tiff_voxel_size(file_dialog.config["path"])
+        else:
+            raise NotImplementedError
+
+        self.list_entry(file_resolution, [])
+        self.update_input_resolution()
 
 
 def version_popup():
@@ -698,7 +728,6 @@ def version_popup():
     tkinter.Grid.rowconfigure(popup, 0, weight=1)
     tkinter.Grid.columnconfigure(popup, 0, weight=1)
     popup.configure(bg="white")
-
 
     popup_frame = tkinter.Frame(popup)
     tkinter.Grid.rowconfigure(popup_frame, 0, weight=1)
@@ -712,7 +741,7 @@ def version_popup():
 
     label = tkinter.Label(popup_frame, bg="white", text=text)
     label.grid(column=0,
-                row=0,
-                padx=10,
-                pady=10,
-                sticky=stick_all)
+               row=0,
+               padx=10,
+               pady=10,
+               sticky=stick_all)
