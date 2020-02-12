@@ -5,13 +5,12 @@ import numpy as np
 import tifffile
 import yaml
 
-from plantseg.pipeline import gui_logger
-from plantseg.pipeline.utils import read_tiff_voxel_size
+from plantseg.pipeline import gui_logger, H5_KEYS
+from plantseg.pipeline.utils import read_tiff_voxel_size, find_input_key
 
 SUPPORTED_TYPES = ["labels", "data_float32", "data_uint8"]
 TIFF_EXTENSIONS = [".tiff", ".tif"]
 H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]
-H5_KEYS = ["raw", "predictions", "segmentation"]
 
 
 class GenericPipelineStep:
@@ -102,7 +101,7 @@ class GenericPipelineStep:
         elif ext in H5_EXTENSIONS:
             # load data from H5 file
             with h5py.File(file_path, "r") as f:
-                h5_input_key = self._find_input_key(f)
+                h5_input_key = find_input_key(f)
                 gui_logger.info(f"Found '{h5_input_key}' dataset inside {file_path}")
                 # set h5_output_key to be the same as h5_input_key if h5_output_key not defined
                 if self.h5_output_key is None:
@@ -213,23 +212,6 @@ class GenericPipelineStep:
             data = self._normalize_01(data)
             data = (data * np.iinfo(np.uint8).max)
             return data.astype(np.uint8)
-
-
-    @staticmethod
-    def _find_input_key(h5_file):
-        # if only one dataset in h5_file return it, otherwise return first from H5_KEYS
-        found_keys = list(h5_file.keys())
-        if not found_keys:
-            raise RuntimeError(f"No datasets found in '{h5_file.filename}'")
-
-        if len(found_keys) == 1:
-            return found_keys[0]
-        else:
-            for h5_key in H5_KEYS:
-                if h5_key in found_keys:
-                    return h5_key
-
-            raise RuntimeError(f"Ambiguous datasets '{found_keys}' in {h5_file.filename}")
 
 
 class AbstractSegmentationStep(GenericPipelineStep):

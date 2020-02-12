@@ -4,6 +4,8 @@ import os
 import warnings
 
 import tifffile
+import h5py
+from plantseg.pipeline import gui_logger, H5_KEYS
 
 warnings.simplefilter('once', UserWarning)
 
@@ -50,6 +52,22 @@ class QueueHandler(logging.Handler):
         self.log_queue.put(record)
 
 
+def find_input_key(h5_file):
+    # if only one dataset in h5_file return it, otherwise return first from H5_KEYS
+    found_keys = list(h5_file.keys())
+    if not found_keys:
+        raise RuntimeError(f"No datasets found in '{h5_file.filename}'")
+
+    if len(found_keys) == 1:
+        return found_keys[0]
+    else:
+        for h5_key in H5_KEYS:
+            if h5_key in found_keys:
+                return h5_key
+
+        raise RuntimeError(f"Ambiguous datasets '{found_keys}' in {h5_file.filename}")
+
+
 def read_tiff_voxel_size(file_path):
     """
     Implemented based on information found in https://pypi.org/project/tifffile
@@ -77,3 +95,17 @@ def read_tiff_voxel_size(file_path):
         x = _xy_voxel_size(tags, 'XResolution')
         # return voxel size
         return [z, y, x]
+
+
+def read_h5_voxel_size(file_path):
+    with h5py.File(file_path, "r") as f:
+        h5key = find_input_key(f)
+        ds = f[h5key]
+
+        # parse voxel_size
+        if 'element_size_um' in ds.attrs:
+            return ds.attrs['element_size_um']
+        else:
+            gui_logger.warn(f"Cannot find 'element_size_um' attribute for dataset '{h5key}'. "
+                            f"Using default voxel_size: {[1., 1., 1.]}")
+            return [1., 1., 1.]
