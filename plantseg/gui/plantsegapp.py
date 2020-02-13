@@ -10,7 +10,7 @@ import yaml
 
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR
 from plantseg.gui import convert_rgb
-from plantseg.gui.gui_tools import Files2Process, report_error, version_popup
+from plantseg.gui.gui_tools import Files2Process, report_error, version_popup, LoadModelPopup, RemovePopup
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.executor import PipelineExecutor
 from plantseg.pipeline.utils import QueueHandler
@@ -110,6 +110,13 @@ class PlantSegApp:
         preferencesmenu.add_command(label="Font Size -", command=self.size_down, font=self.font)
         menubar.add_cascade(label="Preferences", menu=preferencesmenu, font=self.font)
 
+        editmenu = tkinter.Menu(menubar, tearoff=0)
+        editmenu["bg"] = "white"
+        editmenu.add_command(label="Add Model", command=self.load_custom_model, font=self.font)
+        editmenu.add_command(label="Remove Model", command=self.remove_model, font=self.font)
+        menubar.add_cascade(label="Edit", menu=editmenu, font=self.font)
+
+
         helpmenu = tkinter.Menu(menubar, tearoff=0)
         helpmenu.add_command(label="Help Index",
                              command=self.open_documentation_index, font=self.font)
@@ -198,18 +205,23 @@ class PlantSegApp:
         run_frame2["bg"] = run_config["bg"]
 
         x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
-                           text="PlantSeg Introduction", font=self.font_bold)
+                           text="Add Custom Model", font=self.font_bold)
         x.grid(column=3, row=0, padx=10, pady=10, sticky=self.stick_all)
+        x["command"] = self.load_custom_model
+
+        x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
+                           text="PlantSeg Introduction", font=self.font_bold)
+        x.grid(column=4, row=0, padx=10, pady=10, sticky=self.stick_all)
         x["command"] = self.open_documentation_index
 
         x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
                            text="Reset Parameters", font=self.font_bold)
-        x.grid(column=4, row=0, padx=10, pady=10, sticky=self.stick_all)
+        x.grid(column=5, row=0, padx=10, pady=10, sticky=self.stick_all)
         x["command"] = self.reset_config
 
         self.run_button = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
                                          text="Run", command=self._run, font=self.font_bold)
-        self.run_button.grid(column=5, row=0, padx=10, pady=10, sticky=self.stick_all)
+        self.run_button.grid(column=6, row=0, padx=10, pady=10, sticky=self.stick_all)
 
         self.run_frame2 = run_frame2
 
@@ -451,6 +463,12 @@ class PlantSegApp:
         """
         python = sys.executable
         os.execl(python, python, *sys.argv)
+
+    def load_custom_model(self):
+        LoadModelPopup(self.restart_program, self.font)
+
+    def remove_model(self):
+        RemovePopup(self.restart_program, self.font)
 
     def close(self):
         """Thi function let the user decide if saving  the current config"""

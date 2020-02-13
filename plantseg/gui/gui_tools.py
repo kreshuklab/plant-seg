@@ -6,12 +6,18 @@ import yaml
 
 from plantseg import plantseg_global_path
 from plantseg.__version__ import __version__
-from plantseg.gui import stick_all, stick_ew, var_to_tkinter, convert_rgb
+from plantseg.gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
 from plantseg.pipeline.utils import read_tiff_voxel_size, read_h5_voxel_size
 from plantseg.pipeline.steps import H5_EXTENSIONS, TIFF_EXTENSIONS
 
+from shutil import copy2, rmtree
+from plantseg.pipeline import gui_logger
+from plantseg import custom_zoo
+import glob
+
 current_model = None
 current_segmentation = None
+
 
 ######################################################################################################################
 #
@@ -22,7 +28,8 @@ current_segmentation = None
 
 class SimpleEntry:
     """ Standard open entry widget """
-    def __init__(self, frame, text="Text", row=0, column=0, _type=str, _font=None):
+
+    def __init__(self, frame, text="Text", large_bar=False, row=0, column=0, _type=str, _font=None):
         self.frame = tkinter.Frame(frame)
 
         self.text = f"{text}"
@@ -45,6 +52,11 @@ class SimpleEntry:
 
         self.tk_value = None
 
+        if large_bar:
+            self.stick = stick_ew
+        else:
+            self.stick = tkinter.E
+
     def __call__(self, value, obj_collection):
         self.tk_value = var_to_tkinter(self.type(value))
 
@@ -60,7 +72,7 @@ class SimpleEntry:
                     row=0,
                     padx=self.style["padx"],
                     pady=self.style["pady"],
-                    sticky=tkinter.E)
+                    sticky=self.stick)
 
         obj_collection.append(label1)
         obj_collection.append(entry1)
@@ -69,6 +81,7 @@ class SimpleEntry:
 
 class SliderEntry:
     """ Standard open entry widget """
+
     def __init__(self,
                  frame, text="Text", row=0, column=0, data_range=(0, 1, 0.1),
                  is_not_in_dtws=False, _type=float, _font=None):
@@ -107,7 +120,7 @@ class SliderEntry:
         entry1 = tkinter.Scale(self.frame, from_=self.min, to=self.max, resolution=self.interval,
                                orient=tkinter.HORIZONTAL, font=self.font)
         entry1.configure(bg="white")
-        entry1.configure(troughcolor=convert_rgb((208, 240, 192)))
+        entry1.configure(troughcolor=convert_rgb(PLANTSEG_GREEN))
         entry1.configure(length=200)
         entry1.set(self.type(value))
 
@@ -126,6 +139,7 @@ class SliderEntry:
 
 class MenuEntry:
     """ Standard menu widget """
+
     def __init__(self, frame, text="Text", row=0, column=0, menu=(),
                  is_model=False, is_segmentation=False, default=None, font=None):
         self.frame = tkinter.Frame(frame)
@@ -203,8 +217,10 @@ class MenuEntry:
         global current_segmentation
         current_segmentation = value
 
+
 class BoolEntry:
     """ Standard boolean widget """
+
     def __init__(self, frame, text="Text", row=0, column=0, font=None):
         self.frame = tkinter.Frame(frame)
 
@@ -251,6 +267,7 @@ class BoolEntry:
 
 class FilterEntry:
     """ Special widget for filter """
+
     def __init__(self, frame, text="Text", row=0, column=0, font=None):
         self.frame = tkinter.Frame(frame)
 
@@ -317,8 +334,10 @@ class FilterEntry:
         obj_collection.append(entry3)
         return obj_collection
 
+
 class MenuEntryStride:
     """ Standard menu widget """
+
     def __init__(self, frame, text="Text", row=0, column=0, menu=(), is_model=False, default=None, font=None):
         self.frame = tkinter.Frame(frame)
 
@@ -386,6 +405,7 @@ class MenuEntryStride:
 
 class RescaleEntry:
     """ Special widget for rescale """
+
     def __init__(self, frame, text="Text", row=0, column=0, type=float, font=None):
         self.frame = tkinter.Frame(frame)
 
@@ -481,6 +501,7 @@ class RescaleEntry:
 
 class ListEntry:
     """ Standard triplet list widget """
+
     def __init__(self, frame, text="Text", row=0, column=0, type=float, font=None):
         self.frame = tkinter.Frame(frame)
 
@@ -581,6 +602,7 @@ class Files2Process:
         self.files.set(dire_name)
         self.config["path"] = dire_name
 
+
 ######################################################################################################################
 #
 # Generic GUI tools
@@ -610,13 +632,15 @@ def report_error(data, font=None):
 
 class AutoResPopup:
     """ Pop up wizard for rescaling input data"""
+
     def __init__(self, net_resolution, net_name, tk_value, font=None):
-        self.net_resolution = net_resolution
+
         popup = tkinter.Toplevel()
-        popup.title("Auto Re-Scale")
+        popup.title("Guided Re-Scale")
         popup.configure(bg="white")
 
         self.popup = popup
+        self.net_resolution = net_resolution
         self.font = font
         self.tk_value = tk_value
         self.user_input = None
@@ -664,14 +688,13 @@ class AutoResPopup:
                                     font=self.font)
         self.list_entry(self.net_resolution, [])
         self.scale_factor = []
-        self.tk_value = self.tk_value
 
         popup_button = tkinter.Frame(self.popup)
         popup_button.configure(bg="white")
         tkinter.Grid.rowconfigure(popup_button, 0, weight=1)
         tkinter.Grid.columnconfigure(popup_button, 0, weight=1)
         popup_button.grid(row=2, column=0, sticky=stick_all)
-        button = tkinter.Button(popup_button, bg="white", text="Compute Rescaling Factor",
+        button = tkinter.Button(popup_button, bg=convert_rgb(PLANTSEG_GREEN), text="Compute Rescaling Factor",
                                 command=self.update_input_resolution,
                                 font=self.font)
 
@@ -691,7 +714,8 @@ class AutoResPopup:
         label0 = tkinter.Label(search_button_frame, bg="white", text=text, font=self.font)
         label0.grid(column=0, row=0, padx=10, pady=10, sticky=stick_all)
 
-        search_button = tkinter.Button(search_button_frame, bg="white", text="Compute Rescaling Factor From File",
+        search_button = tkinter.Button(search_button_frame, bg=convert_rgb(PLANTSEG_GREEN),
+                                       text="Compute Rescaling Factor From File",
                                        command=self.read_from_file,
                                        font=self.font)
 
@@ -720,6 +744,240 @@ class AutoResPopup:
 
         self.list_entry(file_resolution, [])
         self.update_input_resolution()
+
+
+class LoadModelPopup:
+    """ Pop up wizard for loading a neural network model"""
+
+    def __init__(self, restart, font):
+        popup = tkinter.Toplevel()
+        popup.title("Load Custom Model")
+        popup.configure(bg="white")
+
+        self.popup = popup
+        self.restart = restart
+        self.font = font
+        self.simple_entry1, self.simple_entry2, self.list_entry = None, None, None
+
+        # Place popup
+        tkinter.Grid.rowconfigure(self.popup, 0, weight=1)
+        tkinter.Grid.rowconfigure(self.popup, 1, weight=2)
+        tkinter.Grid.columnconfigure(self.popup, 0, weight=1)
+
+        self.instructions()
+        self.load_model_button()
+
+    def instructions(self):
+        popup_instructions = tkinter.Frame(self.popup)
+        tkinter.Grid.rowconfigure(popup_instructions, 0, weight=1)
+        tkinter.Grid.columnconfigure(popup_instructions, 0, weight=1)
+        popup_instructions.grid(row=0, column=0, sticky=stick_all)
+        popup_instructions.configure(bg="white")
+
+        all_text = [f"In order to load a custom model you need to create a directory with the following three files: ",
+                    "- Configuration file used for training (name must be config.yaml)",
+                    "- Best networks parameters (name must be best_checkpoint.pytorch)",
+                    "- Last networks parameters (name must be last_checkpoint.pytorch)",
+                    "All mentioned files are created when training using https://github.com/wolny/pytorch-3dunet,",
+                    "Please check our repository pytorch-3dunet for training your own data.",
+                    120*" "]
+
+        labels = [tkinter.Label(popup_instructions, bg="white", text=text, font=self.font) for text in all_text]
+        [label.grid(column=0,
+                    row=i,
+                    padx=10,
+                    pady=10,
+                    sticky=stick_all) for i, label in enumerate(labels)]
+
+    def load_model_button(self):
+        popup_load = tkinter.Frame(self.popup)
+
+        tkinter.Grid.rowconfigure(popup_load, 0, weight=1)
+        tkinter.Grid.rowconfigure(popup_load, 1, weight=3)
+        tkinter.Grid.rowconfigure(popup_load, 2, weight=1)
+
+        tkinter.Grid.columnconfigure(popup_load, 0, weight=1)
+        popup_load.grid(row=1, column=0, sticky=stick_all)
+        popup_load.configure(bg="white")
+
+        self.model_path = self.file_dialog_frame(popup_load, row=0, column=0)
+
+        self.simple_entry1 = SimpleEntry(popup_load, "Model Name: ",
+                                        large_bar=True,
+                                        row=1, column=0, _type=str, _font=self.font)
+        self.simple_entry1("custom_net", [])
+
+        self.list_entry = ListEntry(popup_load, "Input your training data resolution (zxy \u03BCm): ",
+                                    row=2, column=0, type=float,
+                                    font=self.font)
+        self.list_entry([1., 1., 1.], [])
+
+        self.simple_entry2 = SimpleEntry(popup_load, "Description: ",
+                                        large_bar=True,
+                                        row=3, column=0, _type=str, _font=self.font)
+        self.simple_entry2("", [])
+
+        button = tkinter.Button(popup_load, bg=convert_rgb(PLANTSEG_GREEN),
+                                text="Add Model Directory (This will restart PlantSeg,"
+                                     " all changes not saved will be deleted)",
+                                command=self.load_model,
+                                font=self.font)
+
+        button.grid(column=0,
+                    row=4,
+                    padx=10,
+                    pady=10,
+                    sticky=stick_all)
+
+    def file_dialog_frame(self, popup, row=0, column=0):
+        popup_file = tkinter.Frame(popup)
+        tkinter.Grid.rowconfigure(popup_file, 0, weight=1)
+        tkinter.Grid.columnconfigure(popup_file, 0, weight=1)
+        tkinter.Grid.columnconfigure(popup_file, 1, weight=150)
+        tkinter.Grid.columnconfigure(popup_file, 2, weight=1)
+
+        popup_file.grid(row=row, column=column, sticky=stick_all)
+        popup_file.configure(bg="white")
+
+        self.file_dialog = Files2Process({"path": None})
+
+        x = tkinter.Label(popup_file, bg="white", text="Custom Model Path: ", anchor="w", font=self.font)
+        x.grid(column=0, row=0, padx=10, pady=10, sticky=stick_ew)
+
+        x = tkinter.Entry(popup_file, textvar=self.file_dialog.files, font=self.font)
+        x.grid(column=1, row=0, padx=0, pady=0, sticky=stick_ew)
+
+        x = tkinter.Button(popup_file, bg="white", text="Directory",
+                           command=self.file_dialog.browse_for_directory, font=self.font)
+        x.grid(column=2, row=0, padx=10, pady=0, sticky=stick_ew)
+
+    def load_model(self):
+        # Model path
+        path = self.file_dialog.files.get()
+        # Get name
+        model_name = str(self.simple_entry1.tk_value.get())
+        # Get resolution
+        resolution = [float(value.get()) for value in self.list_entry.tk_value]
+        # Get description
+        desctiption = str(self.simple_entry2.tk_value.get())
+
+        dest_dir = os.path.join(os.path.expanduser("~"), ".plantseg_models", model_name)
+        os.makedirs(dest_dir, exist_ok=True)
+        all_files = glob.glob(os.path.join(path, "*"))
+        all_expected_files = ['config_train.yml',
+                              'last_checkpoint.pytorch',
+                              'best_checkpoint.pytorch']
+        for file in all_files:
+            if os.path.basename(file) in all_expected_files:
+                copy2(file, dest_dir)
+                all_expected_files.remove(os.path.basename(file))
+
+        if len(all_expected_files) != 0:
+            msg = f'It was not possible to find in the directory specified {all_expected_files}, ' \
+                  f'the model can not be loaded.'
+            gui_logger.error(msg)
+            self.popup.destroy()
+            raise RuntimeError(msg)
+
+        custom_zoo_dict = yaml.load(open(custom_zoo, 'r'), Loader=yaml.FullLoader)
+        if custom_zoo_dict is None:
+            custom_zoo_dict = {}
+
+        custom_zoo_dict[model_name] = {}
+        custom_zoo_dict[model_name]["path"] = path
+        custom_zoo_dict[model_name]["resolution"] = resolution
+        custom_zoo_dict[model_name]["description"] = desctiption
+
+        with open(custom_zoo, 'w') as f:
+            yaml.dump(custom_zoo_dict, f)
+
+        gui_logger.info("Model successfully added!")
+        self.restart()
+
+
+class RemovePopup:
+    """ Pop up wizard for removing a neural network model"""
+
+    def __init__(self, restart, font):
+        popup = tkinter.Toplevel()
+        popup.title("Remove Custom Model")
+        popup.configure(bg="white")
+
+        self.popup = popup
+        self.restart = restart
+        self.font = font
+        self.simple_entry1, self.simple_entry2, self.list_entry = None, None, None
+        self.file_to_remove = tkinter.StringVar("")
+
+        # Place popup
+        tkinter.Grid.rowconfigure(self.popup, 0, weight=1)
+        tkinter.Grid.columnconfigure(self.popup, 0, weight=1)
+
+        popup_file = tkinter.Frame(self.popup)
+
+        tkinter.Grid.rowconfigure(popup_file, 0, weight=1)
+        tkinter.Grid.columnconfigure(popup_file, 0, weight=1)
+
+        popup_file.grid(row=0, column=0, sticky=stick_all)
+
+        popup_file.configure(bg="white")
+        self.remove_model()
+
+    def remove_model(self, row=0, column=0):
+        popup_file = tkinter.Frame(self.popup)
+
+        tkinter.Grid.rowconfigure(popup_file, 0, weight=1)
+        tkinter.Grid.rowconfigure(popup_file, 1, weight=1)
+        tkinter.Grid.columnconfigure(popup_file, 0, weight=1)
+        tkinter.Grid.columnconfigure(popup_file, 1, weight=1)
+
+        popup_file.grid(row=row, column=column, sticky=stick_all)
+        popup_file.configure(bg="white")
+
+        x = tkinter.Label(popup_file, bg="white", text="Type the custom model name you want to delete: ",
+                          anchor="w", font=self.font)
+        x.grid(column=0, row=0, padx=10, pady=10, sticky=stick_ew)
+
+        x = tkinter.Entry(popup_file, textvar=self.file_to_remove, font=self.font)
+        x.grid(column=1, row=0, padx=10, pady=10, sticky=stick_ew)
+
+        x = tkinter.Button(popup_file, bg="white", text="Remove", command=self.delete_model, font=self.font)
+        x.grid(column=1, row=1, padx=10, pady=10, sticky=stick_ew)
+
+    def delete_model(self):
+        # Delete entry in zoo custom
+        self.file_to_remove = self.file_to_remove.get()
+        custom_zoo_dict = yaml.load(open(custom_zoo, 'r'), Loader=yaml.FullLoader)
+        if custom_zoo_dict is None:
+            custom_zoo_dict = {}
+
+        if self.file_to_remove in custom_zoo_dict:
+            del custom_zoo_dict[self.file_to_remove]
+        else:
+            msg = f"Model {self.file_to_remove} not found." \
+                  f" Please check if the name you typed is a custom model. Pre-loaded models can not be deleted."
+            gui_logger.error(msg)
+            self.popup.destroy()
+            raise RuntimeError(msg)
+
+        with open(custom_zoo, 'w') as f:
+            yaml.dump(custom_zoo_dict, f)
+
+        file_directory = os.path.join(os.path.expanduser("~"),
+                                      ".plantseg_models",
+                                      self.file_to_remove)
+
+        if os.path.exists(file_directory):
+            rmtree(file_directory)
+        else:
+            msg = f"Model {self.file_to_remove} not found." \
+                  f" Please check if the name you typed is a custom model. Pre-loaded models can not be deleted."
+            gui_logger.error(msg)
+            self.popup.destroy()
+            raise RuntimeError(msg)
+
+        gui_logger.info("Model successfully removed! The effect will be visible after restarting PlantSeg")
+        self.popup.destroy()
 
 
 def version_popup():

@@ -111,12 +111,17 @@ def check_models(model_name, update_files=False):
             not model_best_path or
             not model_last_path or
             update_files):
+
         # Read config
         model_file = os.path.join(plantseg_global_path, "resources", "models_zoo.yaml")
         config = yaml.load(open(model_file, 'r'), Loader=yaml.FullLoader)
-        url = config[model_name]["path"]
 
-        gui_logger.info(f"Downloading model files from: '{url}' ...")
-        wget.download(url + CONFIG_TRAIN_YAML, out=model_dir)
-        wget.download(url + BEST_MODEL_PYTORCH, out=model_dir)
-        wget.download(url + LAST_MODEL_PYTORCH, out=model_dir)
+        if model_name in config:
+            url = config[model_name]["path"]
+
+            gui_logger.info(f"Downloading model files from: '{url}' ...")
+            wget.download(url + CONFIG_TRAIN_YAML, out=model_dir)
+            wget.download(url + BEST_MODEL_PYTORCH, out=model_dir)
+            wget.download(url + LAST_MODEL_PYTORCH, out=model_dir)
+        else:
+            raise RuntimeError(f"Custom model {model_name} corrupted. Required files not found.")
