@@ -36,7 +36,6 @@ def create_predict_config(paths, cnn_config):
 
     # update loaders
     prediction_config["loaders"]["num_workers"] = cnn_config.get("num_workers", 8)
-    prediction_config["loaders"]["mirror_padding"] = cnn_config.get("mirror_padding", True)
 
     # Add patch and stride to the config
     patch_shape = cnn_config["patch"]
@@ -83,6 +82,21 @@ def create_predict_config(paths, cnn_config):
     # Load model configuration
     for key, value in config_train["model"].items():
         prediction_config["model"][key] = value
+
+    # configure mirror padding
+    mirror_padding = cnn_config.get("mirror_padding", True)
+    if isinstance(mirror_padding, bool):
+        if mirror_padding:
+            # use default mirror_padding
+            mirror_padding = [16, 32, 32]
+        else:
+            mirror_padding = [0, 0, 0]
+
+    if prediction_config["model"]["name"] == "UNet2D":
+        # make sure that z-pad is 0 for 2d UNet
+        mirror_padding = [0, 32, 32]
+
+    prediction_config["loaders"]["mirror_padding"] = mirror_padding
 
     # Additional attributes
     prediction_config["model_name"] = cnn_config["model_name"]
