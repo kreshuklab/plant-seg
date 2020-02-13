@@ -91,7 +91,6 @@ class GenericPipelineStep:
             tuple(nd.array, tuple(float)): (numpy array containing stack's data, stack's data voxel size)
         """
         _, ext = os.path.splitext(file_path)
-        voxel_size = (1., 1., 1.)
 
         if ext in TIFF_EXTENSIONS:
             # load tiff file
