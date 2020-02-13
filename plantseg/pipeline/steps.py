@@ -6,7 +6,7 @@ import tifffile
 import yaml
 
 from plantseg.pipeline import gui_logger
-from plantseg.pipeline.utils import read_tiff_voxel_size, find_input_key
+from plantseg.pipeline.utils import read_tiff_voxel_size, read_h5_voxel_size, find_input_key
 
 SUPPORTED_TYPES = ["labels", "data_float32", "data_uint8"]
 TIFF_EXTENSIONS = [".tiff", ".tif"]
@@ -109,12 +109,10 @@ class GenericPipelineStep:
 
                 ds = f[h5_input_key]
                 data = ds[...]
-                # parse voxel_size
-                if 'element_size_um' in ds.attrs:
-                    voxel_size = ds.attrs['element_size_um']
-                else:
-                    gui_logger.warn(f"Cannot find 'element_size_um' attribute for dataset '{h5_input_key}'. "
-                                    f"Using default voxel_size: {voxel_size}")
+
+            # Parse voxel size
+            voxel_size = read_h5_voxel_size(file_path)
+
         else:
             raise RuntimeError("Unsupported file extension")
 
