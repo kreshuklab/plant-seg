@@ -3,7 +3,7 @@ import tkinter
 
 import yaml
 
-from plantseg import plantseg_global_path, custom_zoo
+from plantseg import plantseg_global_path, custom_zoo, model_zoo_path
 
 stick_all = tkinter.N + tkinter.S + tkinter.E + tkinter.W
 stick_ew = tkinter.E + tkinter.W
@@ -40,7 +40,7 @@ def convert_rgb(rgb=(0, 0, 0)):
 
 def list_models():
     """ list model zoo """
-    zoo_config = os.path.join(plantseg_global_path, 'resources', 'models_zoo.yaml')
+    zoo_config = os.path.join(model_zoo_path)
     zoo_config = yaml.load(open(zoo_config, 'r'),
                              Loader=yaml.FullLoader)
 

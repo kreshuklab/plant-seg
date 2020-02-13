@@ -6,7 +6,7 @@ from tkinter import filedialog
 
 import yaml
 
-from plantseg import custom_zoo
+from plantseg import custom_zoo, home_path, PLANTSEG_MODELS_DIR, model_zoo_path
 from plantseg import plantseg_global_path
 from plantseg.__version__ import __version__
 from plantseg.gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
@@ -483,19 +483,12 @@ class RescaleEntry:
         """ This method open a popup windows that automatically set the scaling
          factor from the resolution given by the user"""
         global current_model
-        path_model_config = self.get_model_path()
 
-        model_config = yaml.load(open(path_model_config, 'r'),
+        model_config = yaml.load(open(model_zoo_path, 'r'),
                                  Loader=yaml.FullLoader)
 
         net_resolution = model_config[current_model]["resolution"]
         AutoResPopup(net_resolution, current_model, self.tk_value, self.font)
-
-    @staticmethod
-    def get_model_path():
-        # Working directory path + relative dir structure to yaml file
-        config_path = os.path.join(plantseg_global_path, "resources", "models_zoo.yaml")
-        return config_path
 
 
 class ListEntry:
@@ -571,7 +564,7 @@ class Files2Process:
         """ Browse for file and directory """
         self.files = tkinter.StringVar()
         if config["path"] is None:
-            self.files.set(os.path.expanduser("~"))
+            self.files.set(home_path)
         else:
             self.files.set(config["path"])
         self.config = config
@@ -579,7 +572,7 @@ class Files2Process:
     def browse_for_file(self):
         """ browse for file """
         current_file_dir, _ = os.path.split(self.files.get())
-        current_file_dir = (os.path.expanduser("~") if len(os.path.expanduser("~")) > len(current_file_dir)
+        current_file_dir = (home_path if len(home_path) > len(current_file_dir)
                             else current_file_dir)
 
         file_name = filedialog.askopenfilename(initialdir=current_file_dir,
@@ -594,7 +587,7 @@ class Files2Process:
     def browse_for_directory(self):
         """ browse for directory """
         current_file_dir, _ = os.path.split(self.files.get())
-        current_file_dir = (os.path.expanduser("~") if len(os.path.expanduser("~")) > len(current_file_dir)
+        current_file_dir = (home_path if len(home_path) > len(current_file_dir)
                             else current_file_dir)
         dire_name = filedialog.askdirectory(initialdir=current_file_dir,
                                             title="Select directory")
@@ -774,7 +767,7 @@ class LoadModelPopup:
         popup_instructions.configure(bg="white")
 
         all_text = [f"In order to load a custom model you need to create a directory with the following three files: ",
-                    "- Configuration file used for training (name must be config.yaml)",
+                    "- Configuration file used for training (name must be config_train.yaml)",
                     "- Best networks parameters (name must be best_checkpoint.pytorch)",
                     "- Last networks parameters (name must be last_checkpoint.pytorch)",
                     "All mentioned files are created when training using https://github.com/wolny/pytorch-3dunet,",
@@ -860,7 +853,7 @@ class LoadModelPopup:
         # Get description
         desctiption = str(self.simple_entry2.tk_value.get())
 
-        dest_dir = os.path.join(os.path.expanduser("~"), ".plantseg_models", model_name)
+        dest_dir = os.path.join(home_path, PLANTSEG_MODELS_DIR, model_name)
         os.makedirs(dest_dir, exist_ok=True)
         all_files = glob.glob(os.path.join(path, "*"))
         all_expected_files = ['config_train.yml',
@@ -962,8 +955,8 @@ class RemovePopup:
         with open(custom_zoo, 'w') as f:
             yaml.dump(custom_zoo_dict, f)
 
-        file_directory = os.path.join(os.path.expanduser("~"),
-                                      ".plantseg_models",
+        file_directory = os.path.join(home_path,
+                                      PLANTSEG_MODELS_DIR,
                                       self.file_to_remove)
 
         if os.path.exists(file_directory):
