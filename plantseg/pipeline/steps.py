@@ -5,7 +5,7 @@ import numpy as np
 import tifffile
 import yaml
 
-from plantseg.pipeline import gui_logger, H5_KEYS
+from plantseg.pipeline import gui_logger
 from plantseg.pipeline.utils import read_tiff_voxel_size, find_input_key
 
 SUPPORTED_TYPES = ["labels", "data_float32", "data_uint8"]
