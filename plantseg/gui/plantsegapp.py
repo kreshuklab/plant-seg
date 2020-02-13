@@ -8,7 +8,7 @@ from tkinter import font
 
 import yaml
 
-from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR, model_zoo_path, home_path, configs_path, RESOURCES_DIR, standard_config_template
+from plantseg import plantseg_global_path, configs_path, RESOURCES_DIR, standard_config_template
 from plantseg.gui import convert_rgb
 from plantseg.gui.gui_tools import Files2Process, report_error, version_popup, LoadModelPopup, RemovePopup
 from plantseg.pipeline import gui_logger

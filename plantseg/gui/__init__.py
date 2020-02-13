@@ -3,7 +3,7 @@ import tkinter
 
 import yaml
 
-from plantseg import plantseg_global_path, custom_zoo, model_zoo_path
+from plantseg import custom_zoo, model_zoo_path
 
 stick_all = tkinter.N + tkinter.S + tkinter.E + tkinter.W
 stick_ew = tkinter.E + tkinter.W
@@ -42,10 +42,10 @@ def list_models():
     """ list model zoo """
     zoo_config = os.path.join(model_zoo_path)
     zoo_config = yaml.load(open(zoo_config, 'r'),
-                             Loader=yaml.FullLoader)
+                           Loader=yaml.FullLoader)
 
     custom_zoo_config = yaml.load(open(custom_zoo, 'r'),
-                             Loader=yaml.FullLoader)
+                                  Loader=yaml.FullLoader)
 
     if custom_zoo_config is None:
         custom_zoo_config = {}

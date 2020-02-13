@@ -7,7 +7,6 @@ from tkinter import filedialog
 import yaml
 
 from plantseg import custom_zoo, home_path, PLANTSEG_MODELS_DIR, model_zoo_path
-from plantseg import plantseg_global_path
 from plantseg.__version__ import __version__
 from plantseg.gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
 from plantseg.pipeline import gui_logger
