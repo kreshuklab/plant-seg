@@ -144,7 +144,7 @@ class PreprocessingFrame(ModuleFramePrototype):
                                                          _type=str,
                                                          _font=font),
                            "factor": RescaleEntry(self.preprocessing_frame,
-                                                  text="Rescaling (x,y,z):",
+                                                  text="Rescaling (z,x,y):",
                                                   row=2,
                                                   column=0,
                                                   font=font),
