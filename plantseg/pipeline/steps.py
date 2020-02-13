@@ -6,11 +6,11 @@ import tifffile
 import yaml
 
 from plantseg.pipeline import gui_logger
+from plantseg.pipeline.utils import read_tiff_voxel_size, read_h5_voxel_size, find_input_key
 
 SUPPORTED_TYPES = ["labels", "data_float32", "data_uint8"]
 TIFF_EXTENSIONS = [".tiff", ".tif"]
 H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]
-H5_KEYS = ["raw", "predictions", "segmentation"]
 
 
 class GenericPipelineStep:
@@ -91,17 +91,16 @@ class GenericPipelineStep:
             tuple(nd.array, tuple(float)): (numpy array containing stack's data, stack's data voxel size)
         """
         _, ext = os.path.splitext(file_path)
-        voxel_size = (1., 1., 1.)
 
         if ext in TIFF_EXTENSIONS:
             # load tiff file
             data = tifffile.imread(file_path)
             # parse voxel_size
-            voxel_size = self.read_tiff_voxel_size(file_path)
+            voxel_size = read_tiff_voxel_size(file_path)
         elif ext in H5_EXTENSIONS:
             # load data from H5 file
             with h5py.File(file_path, "r") as f:
-                h5_input_key = self._find_input_key(f)
+                h5_input_key = find_input_key(f)
                 gui_logger.info(f"Found '{h5_input_key}' dataset inside {file_path}")
                 # set h5_output_key to be the same as h5_input_key if h5_output_key not defined
                 if self.h5_output_key is None:
@@ -109,12 +108,10 @@ class GenericPipelineStep:
 
                 ds = f[h5_input_key]
                 data = ds[...]
-                # parse voxel_size
-                if 'element_size_um' in ds.attrs:
-                    voxel_size = ds.attrs['element_size_um']
-                else:
-                    gui_logger.warn(f"Cannot find 'element_size_um' attribute for dataset '{h5_input_key}'. "
-                                    f"Using default voxel_size: {voxel_size}")
+
+            # Parse voxel size
+            voxel_size = read_h5_voxel_size(file_path)
+
         else:
             raise RuntimeError("Unsupported file extension")
 
@@ -212,51 +209,6 @@ class GenericPipelineStep:
             data = self._normalize_01(data)
             data = (data * np.iinfo(np.uint8).max)
             return data.astype(np.uint8)
-
-    @staticmethod
-    def read_tiff_voxel_size(file_path):
-        """
-        Implemented based on information found in https://pypi.org/project/tifffile
-        """
-
-        def _xy_voxel_size(tags, key):
-            assert key in ['XResolution', 'YResolution']
-            if key in tags:
-                num_pixels, units = tags[key].value
-                return units / num_pixels
-            # return default
-            return 1.
-
-        with tifffile.TiffFile(file_path) as tiff:
-            image_metadata = tiff.imagej_metadata
-            if image_metadata is not None:
-                z = image_metadata.get('spacing', 1.)
-            else:
-                # default voxel size
-                z = 1.
-
-            tags = tiff.pages[0].tags
-            # parse X, Y resolution
-            y = _xy_voxel_size(tags, 'YResolution')
-            x = _xy_voxel_size(tags, 'XResolution')
-            # return voxel size
-            return [z, y, x]
-
-    @staticmethod
-    def _find_input_key(h5_file):
-        # if only one dataset in h5_file return it, otherwise return first from H5_KEYS
-        found_keys = list(h5_file.keys())
-        if not found_keys:
-            raise RuntimeError(f"No datasets found in '{h5_file.filename}'")
-
-        if len(found_keys) == 1:
-            return found_keys[0]
-        else:
-            for h5_key in H5_KEYS:
-                if h5_key in found_keys:
-                    return h5_key
-
-            raise RuntimeError(f"Ambiguous datasets '{found_keys}' in {h5_file.filename}")
 
 
 class AbstractSegmentationStep(GenericPipelineStep):

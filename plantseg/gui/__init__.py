@@ -3,11 +3,12 @@ import tkinter
 
 import yaml
 
-from plantseg import plantseg_global_path
+from plantseg import custom_zoo, model_zoo_path
 
 stick_all = tkinter.N + tkinter.S + tkinter.E + tkinter.W
 stick_ew = tkinter.E + tkinter.W
 stick_new = tkinter.N + tkinter.E + tkinter.W
+PLANTSEG_GREEN = (208, 240, 192)
 
 
 def var_to_tkinter(var):
@@ -39,8 +40,16 @@ def convert_rgb(rgb=(0, 0, 0)):
 
 def list_models():
     """ list model zoo """
-    model_config = os.path.join(plantseg_global_path, 'resources', 'models_zoo.yaml')
-    model_config = yaml.load(open(model_config, 'r'),
-                             Loader=yaml.FullLoader)
-    models = list(model_config.keys())
+    zoo_config = os.path.join(model_zoo_path)
+    zoo_config = yaml.load(open(zoo_config, 'r'),
+                           Loader=yaml.FullLoader)
+
+    custom_zoo_config = yaml.load(open(custom_zoo, 'r'),
+                                  Loader=yaml.FullLoader)
+
+    if custom_zoo_config is None:
+        custom_zoo_config = {}
+
+    zoo_config.update(custom_zoo_config)
+    models = list(zoo_config.keys())
     return models

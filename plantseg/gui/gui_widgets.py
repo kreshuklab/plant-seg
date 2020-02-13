@@ -11,6 +11,7 @@ class ModuleFramePrototype:
     Prototype for the main keys field.
      Every process is in the pipeline is represented by a single instance of it.
      """
+
     def __init__(self, frame, module_name="processing", font=None):
         self.frame = frame
         self.checkbox = None
@@ -103,12 +104,12 @@ class PreprocessingFrame(ModuleFramePrototype):
     def __init__(self, frame, config, col=0, module_name="preprocessing", font=None, show_all=True):
         self.preprocessing_frame = tkinter.Frame(frame)
         self.preprocessing_style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [2, 1, 1, 1, 1],
-                      "columns_weights": [1],
-                      "height": 4,
-                      }
+                                    "padx": 10,
+                                    "pady": 10,
+                                    "row_weights": [2, 1, 1, 1, 1],
+                                    "columns_weights": [1],
+                                    "height": 4,
+                                    }
 
         self.preprocessing_frame["bg"] = self.preprocessing_style["bg"]
         self.preprocessing_frame.grid(column=col,
@@ -143,7 +144,7 @@ class PreprocessingFrame(ModuleFramePrototype):
                                                          _type=str,
                                                          _font=font),
                            "factor": RescaleEntry(self.preprocessing_frame,
-                                                  text="Rescaling: ",
+                                                  text="Rescaling (z,x,y):",
                                                   row=2,
                                                   column=0,
                                                   font=font),
@@ -167,12 +168,12 @@ class UnetPredictionFrame(ModuleFramePrototype):
     def __init__(self, frame, config, col=0, module_name="preprocessing", font=None, show_all=True):
         self.prediction_frame = tkinter.Frame(frame)
         self.prediction_style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [2, 1, 1, 1, 1],
-                      "columns_weights": [1],
-                      "height": 4,
-                      }
+                                 "padx": 10,
+                                 "pady": 10,
+                                 "row_weights": [2, 1, 1, 1, 1],
+                                 "columns_weights": [1],
+                                 "height": 4,
+                                 }
 
         self.prediction_frame["bg"] = self.prediction_style["bg"]
         self.prediction_frame.grid(column=col,
@@ -237,12 +238,12 @@ class SegmentationFrame(ModuleFramePrototype):
     def __init__(self, frame, config, col=0, module_name="segmentation", font=None, show_all=True):
         self.segmentation_frame = tkinter.Frame(frame)
         self.segmentation_style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [2, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                      "columns_weights": [1],
-                      "height": 4,
-                      }
+                                   "padx": 10,
+                                   "pady": 10,
+                                   "row_weights": [2, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                                   "columns_weights": [1],
+                                   "height": 4,
+                                   }
 
         self.segmentation_frame["bg"] = self.segmentation_style["bg"]
         self.segmentation_frame.grid(column=col,
@@ -271,14 +272,14 @@ class SegmentationFrame(ModuleFramePrototype):
 
         self.obj_collection = []
         self.custom_key = {"name": MenuEntry(self.segmentation_frame,
-                                              text="Algorithm: ",
-                                              row=1,
-                                              column=0,
-                                              menu={"MultiCut", "GASP", "MutexWS", "DtWatershed"},
-                                              is_segmentation=True,
-                                              default=config[self.module]["name"],
-                                              font=font),
-                            "save_directory": SimpleEntry(self.segmentation_frame,
+                                             text="Algorithm: ",
+                                             row=1,
+                                             column=0,
+                                             menu={"MultiCut", "GASP", "MutexWS", "DtWatershed"},
+                                             is_segmentation=True,
+                                             default=config[self.module]["name"],
+                                             font=font),
+                           "save_directory": SimpleEntry(self.segmentation_frame,
                                                          text="Save Directory: ",
                                                          row=2,
                                                          column=0,
@@ -289,8 +290,8 @@ class SegmentationFrame(ModuleFramePrototype):
                                                row=3,
                                                column=0,
                                                is_not_in_dtws=True,
-                                                _type=float,
-                                                _font=font),
+                                               _type=float,
+                                               _font=font),
                            "ws_2D": MenuEntry(self.segmentation_frame,
                                               text="Run WS in 2D: ",
                                               row=4,
@@ -300,11 +301,11 @@ class SegmentationFrame(ModuleFramePrototype):
                                               font=font),
 
                            "ws_threshold": SliderEntry(self.segmentation_frame,
-                                                   text="WS Threshold ",
-                                                   row=5,
-                                                   column=0,
-                                                   _type=float,
-                                                   _font=font),
+                                                       text="WS Threshold ",
+                                                       row=5,
+                                                       column=0,
+                                                       _type=float,
+                                                       _font=font),
 
                            "ws_sigma": SliderEntry(self.segmentation_frame,
                                                    text="WS Seeds Sigma: ",
@@ -328,13 +329,13 @@ class SegmentationFrame(ModuleFramePrototype):
                                                      _type=int,
                                                      _font=font),
                            "post_minsize": SliderEntry(self.segmentation_frame,
-                                                     text="Minimum Size: (voxels) ",
-                                                     row=9,
-                                                     column=0,
-                                                     data_range=(0, 1000, 10),
-                                                     _type=int,
-                                                     is_not_in_dtws=True,
-                                                     _font=font),
+                                                       text="Minimum Size: (voxels) ",
+                                                       row=9,
+                                                       column=0,
+                                                       data_range=(0, 1000, 10),
+                                                       _type=int,
+                                                       is_not_in_dtws=True,
+                                                       _font=font),
                            }
 
         self.show_options()
@@ -344,12 +345,12 @@ class PostSegmentationFrame(ModuleFramePrototype):
     def __init__(self, frame, config, row=0, module_name="Segmentation Post Processing", font=None, show_all=True):
         self.post_frame = tkinter.Frame(frame)
         self.post_style = {"bg": "white",
-                      "padx": 0,
-                      "pady": 0,
-                      "row_weights": [1, 1, 1, 1],
-                      "columns_weights": [1],
-                      "height": 4,
-                      }
+                           "padx": 0,
+                           "pady": 0,
+                           "row_weights": [1, 1, 1, 1],
+                           "columns_weights": [1],
+                           "height": 4,
+                           }
 
         self.post_frame["bg"] = self.post_style["bg"]
         self.font = font
@@ -394,12 +395,12 @@ class PostPredictionsFrame(ModuleFramePrototype):
     def __init__(self, frame, config, row=0, module_name="Prediction Post Processing", font=None, show_all=True):
         self.post_frame = tkinter.Frame(frame)
         self.post_style = {"bg": "white",
-                      "padx": 0,
-                      "pady": 0,
-                      "row_weights": [1, 1, 1, 1],
-                      "columns_weights": [1],
-                      "height": 4,
-                      }
+                           "padx": 0,
+                           "pady": 0,
+                           "row_weights": [1, 1, 1, 1],
+                           "columns_weights": [1],
+                           "height": 4,
+                           }
 
         self.post_frame["bg"] = self.post_style["bg"]
         self.font = font
@@ -452,12 +453,12 @@ class PostFrame:
     def __init__(self, frame, config, col=0, font=None, show_all=True):
         self.post_frame = tkinter.Frame(frame)
         self.post_style = {"bg": "white",
-                                   "padx": 10,
-                                   "pady": 10,
-                                   "row_weights": [1, 1],
-                                   "columns_weights": [1],
-                                   "height": 4,
-                                   }
+                           "padx": 10,
+                           "pady": 10,
+                           "row_weights": [1, 1],
+                           "columns_weights": [1],
+                           "height": 4,
+                           }
 
         self.post_frame["bg"] = self.post_style["bg"]
         self.font = font

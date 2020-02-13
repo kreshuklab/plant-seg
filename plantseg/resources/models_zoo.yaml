@@ -8,7 +8,7 @@ generic_confocal_3d_unet:
   description: Unet trained on confocal images on 1/2-resolution in XY with BCEDiceLoss.
 generic_light_sheet_3d_unet:
   path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_dice_ds1x&files=
-  resulution: [0.25, 0.1625, 0.1625]
+  resolution: [0.25, 0.1625, 0.1625]
   description: Unet trained on light-sheet images on original resolution with BCEDiceLoss.
 
 ## Ovules
@@ -28,13 +28,13 @@ confocal_unet_bce_dice_ds3x:
 ## Root
 lightsheet_unet_bce_dice_ds1x:
   path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_dice_ds1x&files=
-  resulution: [0.25, 0.1625, 0.1625]
+  resolution: [0.25, 0.1625, 0.1625]
   description: Unet trained on light-sheet images on original resolution with BCEDiceLoss.
 lightsheet_unet_bce_dice_ds2x:
   path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_dice_ds2x&files=
-  resulution: [0.25, 0.325, 0.325]
+  resolution: [0.25, 0.325, 0.325]
   description: Unet trained on light-sheet images on 1/2-resolution in XY with BCEDiceLoss.
 lightsheet_unet_bce_dice_ds3x:
   path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_dice_ds3x&files=
-  resulution: [0.25, 0.4875, 0.4875]
+  resolution: [0.25, 0.4875, 0.4875]
   description: Unet trained on light-sheet images on 1/3-resolution in XY with BCEDiceLoss.

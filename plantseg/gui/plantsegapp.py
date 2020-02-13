@@ -8,9 +8,9 @@ from tkinter import font
 
 import yaml
 
-from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR
+from plantseg import plantseg_global_path, configs_path, RESOURCES_DIR, standard_config_template
 from plantseg.gui import convert_rgb
-from plantseg.gui.gui_tools import Files2Process, report_error, version_popup
+from plantseg.gui.gui_tools import Files2Process, report_error, version_popup, LoadModelPopup, RemovePopup
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.executor import PipelineExecutor
 from plantseg.pipeline.utils import QueueHandler
@@ -110,6 +110,12 @@ class PlantSegApp:
         preferencesmenu.add_command(label="Font Size -", command=self.size_down, font=self.font)
         menubar.add_cascade(label="Preferences", menu=preferencesmenu, font=self.font)
 
+        editmenu = tkinter.Menu(menubar, tearoff=0)
+        editmenu["bg"] = "white"
+        editmenu.add_command(label="Add Model", command=self.load_custom_model, font=self.font)
+        editmenu.add_command(label="Remove Model", command=self.remove_model, font=self.font)
+        menubar.add_cascade(label="Edit", menu=editmenu, font=self.font)
+
         helpmenu = tkinter.Menu(menubar, tearoff=0)
         helpmenu.add_command(label="Help Index",
                              command=self.open_documentation_index, font=self.font)
@@ -198,18 +204,23 @@ class PlantSegApp:
         run_frame2["bg"] = run_config["bg"]
 
         x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
-                           text="PlantSeg Introduction", font=self.font_bold)
+                           text="Add Custom Model", font=self.font_bold)
         x.grid(column=3, row=0, padx=10, pady=10, sticky=self.stick_all)
+        x["command"] = self.load_custom_model
+
+        x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
+                           text="PlantSeg Introduction", font=self.font_bold)
+        x.grid(column=4, row=0, padx=10, pady=10, sticky=self.stick_all)
         x["command"] = self.open_documentation_index
 
         x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
                            text="Reset Parameters", font=self.font_bold)
-        x.grid(column=4, row=0, padx=10, pady=10, sticky=self.stick_all)
+        x.grid(column=5, row=0, padx=10, pady=10, sticky=self.stick_all)
         x["command"] = self.reset_config
 
         self.run_button = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
                                          text="Run", command=self._run, font=self.font_bold)
-        self.run_button.grid(column=5, row=0, padx=10, pady=10, sticky=self.stick_all)
+        self.run_button.grid(column=6, row=0, padx=10, pady=10, sticky=self.stick_all)
 
         self.run_frame2 = run_frame2
 
@@ -285,27 +296,21 @@ class PlantSegApp:
 
     # End init modules ========= Begin Config Read/Write
     @staticmethod
-    def get_model_path():
-        # Working directory path + relative dir structure to yaml file
-        config_path = os.path.join(plantseg_global_path, "resources", "models_zoo.yaml")
-        return config_path
-
-    @staticmethod
     def get_last_config_path(name="config_gui_last.yaml"):
         # Working directory path + relative dir structure to yaml file
-        config_path = os.path.join(os.path.expanduser("~"), PLANTSEG_MODELS_DIR, "configs", name)
+        config_path = os.path.join(configs_path, name)
         return config_path
 
     @staticmethod
     def get_app_config_path(name="gui_configuration.yaml"):
         # Working directory path + relative dir structure to yaml file
-        config_path = os.path.join(plantseg_global_path, "resources", name)
+        config_path = os.path.join(plantseg_global_path, RESOURCES_DIR, name)
         return config_path
 
     @staticmethod
     def get_icon_path(name="FOR2581_Logo_FINAL_no_text.png"):
         # Working directory path + relative dir structure to yaml file
-        icon_path = os.path.join(plantseg_global_path, "resources", name)
+        icon_path = os.path.join(plantseg_global_path, RESOURCES_DIR, name)
         return icon_path
 
     def load_config(self, name="config_gui_last.yaml"):
@@ -316,9 +321,7 @@ class PlantSegApp:
             plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
         else:
             # Do not modify this location
-            plant_config_path = os.path.join(plantseg_global_path,
-                                             "resources",
-                                             "config_gui_template.yaml")
+            plant_config_path = os.path.join(standard_config_template)
             plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
 
         return plant_config_path, plantseg_config
@@ -331,9 +334,7 @@ class PlantSegApp:
 
     def reset_config(self):
         """ reset to default config, do not change path"""
-        plant_config_path = os.path.join(plantseg_global_path,
-                                         "resources",
-                                         "config_gui_template.yaml")
+        plant_config_path = os.path.join(standard_config_template)
         self.plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
 
         (self.pre_proc_obj,
@@ -343,7 +344,7 @@ class PlantSegApp:
 
     def open_config(self):
         """ open new config"""
-        default_start = os.path.join(os.path.expanduser("~"), PLANTSEG_MODELS_DIR, "configs")
+        default_start = os.path.join(configs_path)
         os.makedirs(default_start, exist_ok=True)
         plant_config_path = tkinter.filedialog.askopenfilename(initialdir=default_start,
                                                                title="Select file",
@@ -359,7 +360,7 @@ class PlantSegApp:
     def save_config(self):
         """ save yaml from current entries in the gui"""
         self.update_config()
-        default_start = os.path.join(os.path.expanduser("~"), PLANTSEG_MODELS_DIR, "configs")
+        default_start = os.path.join(configs_path)
         os.makedirs(default_start, exist_ok=True)
 
         save_path = tkinter.filedialog.asksaveasfilename(initialdir=default_start,
@@ -451,6 +452,12 @@ class PlantSegApp:
         """
         python = sys.executable
         os.execl(python, python, *sys.argv)
+
+    def load_custom_model(self):
+        LoadModelPopup(self.restart_program, self.font)
+
+    def remove_model(self):
+        RemovePopup(self.restart_program, self.font)
 
     def close(self):
         """Thi function let the user decide if saving  the current config"""

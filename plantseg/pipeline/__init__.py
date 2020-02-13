@@ -12,3 +12,6 @@ formatter = logging.Formatter(
     '%(asctime)s [%(threadName)s] %(levelname)s %(name)s - %(message)s')
 stream_handler.setFormatter(formatter)
 gui_logger.addHandler(stream_handler)
+
+# allowed h5 keys
+H5_KEYS = ["raw", "predictions", "segmentation"]
