@@ -116,7 +116,6 @@ class PlantSegApp:
         editmenu.add_command(label="Remove Model", command=self.remove_model, font=self.font)
         menubar.add_cascade(label="Edit", menu=editmenu, font=self.font)
 
-
         helpmenu = tkinter.Menu(menubar, tearoff=0)
         helpmenu.add_command(label="Help Index",
                              command=self.open_documentation_index, font=self.font)

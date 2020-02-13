@@ -1,19 +1,18 @@
+import glob
 import os
 import tkinter
+from shutil import copy2, rmtree
 from tkinter import filedialog
 
 import yaml
 
+from plantseg import custom_zoo
 from plantseg import plantseg_global_path
 from plantseg.__version__ import __version__
 from plantseg.gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
-from plantseg.pipeline.utils import read_tiff_voxel_size, read_h5_voxel_size
-from plantseg.pipeline.steps import H5_EXTENSIONS, TIFF_EXTENSIONS
-
-from shutil import copy2, rmtree
 from plantseg.pipeline import gui_logger
-from plantseg import custom_zoo
-import glob
+from plantseg.pipeline.steps import H5_EXTENSIONS, TIFF_EXTENSIONS
+from plantseg.pipeline.utils import read_tiff_voxel_size, read_h5_voxel_size
 
 current_model = None
 current_segmentation = None
@@ -780,7 +779,7 @@ class LoadModelPopup:
                     "- Last networks parameters (name must be last_checkpoint.pytorch)",
                     "All mentioned files are created when training using https://github.com/wolny/pytorch-3dunet,",
                     "Please check our repository pytorch-3dunet for training your own data.",
-                    120*" "]
+                    120 * " "]
 
         labels = [tkinter.Label(popup_instructions, bg="white", text=text, font=self.font) for text in all_text]
         [label.grid(column=0,
@@ -803,8 +802,8 @@ class LoadModelPopup:
         self.model_path = self.file_dialog_frame(popup_load, row=0, column=0)
 
         self.simple_entry1 = SimpleEntry(popup_load, "Model Name: ",
-                                        large_bar=True,
-                                        row=1, column=0, _type=str, _font=self.font)
+                                         large_bar=True,
+                                         row=1, column=0, _type=str, _font=self.font)
         self.simple_entry1("custom_net", [])
 
         self.list_entry = ListEntry(popup_load, "Input your training data resolution (zxy \u03BCm): ",
@@ -813,8 +812,8 @@ class LoadModelPopup:
         self.list_entry([1., 1., 1.], [])
 
         self.simple_entry2 = SimpleEntry(popup_load, "Description: ",
-                                        large_bar=True,
-                                        row=3, column=0, _type=str, _font=self.font)
+                                         large_bar=True,
+                                         row=3, column=0, _type=str, _font=self.font)
         self.simple_entry2("", [])
 
         button = tkinter.Button(popup_load, bg=convert_rgb(PLANTSEG_GREEN),
