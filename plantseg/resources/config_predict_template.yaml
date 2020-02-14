@@ -27,9 +27,8 @@ loaders:
   num_workers: 8
   # path to the raw data within the H5
   raw_internal_path: raw
-  # Define padding mode (Best to keep it True)
-  mirror_padding: true
-  pad_width: 20
+  # (int or tuple) mirror pad the raw image in each axis for best prediction berformance
+  mirror_padding: [16, 32, 32]
   # Define test datasets
   test:
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
