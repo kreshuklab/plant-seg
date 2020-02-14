@@ -81,7 +81,7 @@ class SliderEntry:
     """ Standard open entry widget """
 
     def __init__(self,
-                 frame, text="Text", row=0, column=0, data_range=(0, 1, 0.1),
+                 frame, text="Text", row=0, column=0, data_range=(0, 1, 0.01),
                  is_not_in_dtws=False, _type=float, _font=None):
         self.frame = tkinter.Frame(frame)
 
