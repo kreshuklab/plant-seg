@@ -27,7 +27,8 @@ def create_predict_config(paths, cnn_config):
     """ Creates the configuration file needed for running the neural network inference"""
 
     def _stride_shape(patch_shape, stride_key):
-        return [int(p * STRIDE_MENU[stride_key]) for p in patch_shape]
+        # striding MUST be >=1
+        return [max(int(p * STRIDE_MENU[stride_key]), 1) for p in patch_shape]
 
     # Load template config
     prediction_config = yaml.load(
@@ -92,9 +93,22 @@ def create_predict_config(paths, cnn_config):
         else:
             mirror_padding = [0, 0, 0]
 
+    # adapt for UNet2D
     if prediction_config["model"]["name"] == "UNet2D":
         # make sure that z-pad is 0 for 2d UNet
         mirror_padding = [0, 32, 32]
+        # make sure to skip the patch size validation for 2d unet
+        prediction_config["loaders"]["test"]["slice_builder"]["skip_shape_check"] = True
+        # set the right patch_halo
+        prediction_config["predictor"]["patch_halo"] = [0, 8, 8]
+
+        # z-dim of patch and stride has to be one
+        patch_shape = prediction_config["loaders"]["test"]["slice_builder"]["patch_shape"]
+        stride_shape = prediction_config["loaders"]["test"]["slice_builder"]["stride_shape"]
+        assert patch_shape[0] == 1, \
+            f"Incorrect z-dimension in the patch_shape for the 2D UNet prediction. {patch_shape[0]} was given, but has to be 1"
+        assert stride_shape[0] == 1, \
+            f"Incorrect z-dimension in the stride_shape for the 2D UNet prediction. {stride_shape[0]} was given, but has to be 1"
 
     prediction_config["loaders"]["mirror_padding"] = mirror_padding
 
