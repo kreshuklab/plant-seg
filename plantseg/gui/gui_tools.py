@@ -766,7 +766,7 @@ class LoadModelPopup:
         popup_instructions.configure(bg="white")
 
         all_text = [f"In order to load a custom model you need to create a directory with the following three files: ",
-                    "- Configuration file used for training (name must be config_train.yaml)",
+                    "- Configuration file used for training (name must be config_train.yml)",
                     "- Best networks parameters (name must be best_checkpoint.pytorch)",
                     "- Last networks parameters (name must be last_checkpoint.pytorch)",
                     "All mentioned files are created when training using https://github.com/wolny/pytorch-3dunet,",
