@@ -102,6 +102,14 @@ def create_predict_config(paths, cnn_config):
         # set the right patch_halo
         prediction_config["predictor"]["patch_halo"] = [0, 8, 8]
 
+        # z-dim of patch and stride has to be one
+        patch_shape = prediction_config["loaders"]["test"]["slice_builder"]["patch_shape"]
+        stride_shape = prediction_config["loaders"]["test"]["slice_builder"]["stride_shape"]
+        assert patch_shape[0] == 1, \
+            f"Incorrect z-dimension in the patch_shape for the 2D UNet prediction. {patch_shape[0]} given, but has to be 1"
+        assert stride_shape[0] == 1, \
+            f"Incorrect z-dimension in the stride_shape for the 2D UNet prediction. {stride_shape[0]} given, but has to be 1"
+
     prediction_config["loaders"]["mirror_padding"] = mirror_padding
 
     # Additional attributes
