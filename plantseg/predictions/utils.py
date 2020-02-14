@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import torch
 import wget
 import yaml
@@ -27,7 +28,7 @@ def create_predict_config(paths, cnn_config):
     """ Creates the configuration file needed for running the neural network inference"""
 
     def _stride_shape(patch_shape, stride_key):
-        return [int(p * STRIDE_MENU[stride_key]) for p in patch_shape]
+        return [int(np.ceil(p * STRIDE_MENU[stride_key])) for p in patch_shape]
 
     # Load template config
     prediction_config = yaml.load(
