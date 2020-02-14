@@ -27,7 +27,8 @@ def create_predict_config(paths, cnn_config):
     """ Creates the configuration file needed for running the neural network inference"""
 
     def _stride_shape(patch_shape, stride_key):
-        return [int(p * STRIDE_MENU[stride_key]) for p in patch_shape]
+        # striding MUST be >=1
+        return [max(int(p * STRIDE_MENU[stride_key]), 1) for p in patch_shape]
 
     # Load template config
     prediction_config = yaml.load(
@@ -92,9 +93,14 @@ def create_predict_config(paths, cnn_config):
         else:
             mirror_padding = [0, 0, 0]
 
+    # adapt for UNet2D
     if prediction_config["model"]["name"] == "UNet2D":
         # make sure that z-pad is 0 for 2d UNet
         mirror_padding = [0, 32, 32]
+        # make sure to skip the patch size validation for 2d unet
+        prediction_config["loaders"]["test"]["slice_builder"]["skip_shape_check"] = True
+        # set the right patch_halo
+        prediction_config["predictor"]["patch_halo"] = [0, 8, 8]
 
     prediction_config["loaders"]["mirror_padding"] = mirror_padding
 
