@@ -81,7 +81,7 @@ class SliderEntry:
     """ Standard open entry widget """
 
     def __init__(self,
-                 frame, text="Text", row=0, column=0, data_range=(0, 1, 0.1),
+                 frame, text="Text", row=0, column=0, data_range=(0, 1, 0.01),
                  is_not_in_dtws=False, _type=float, _font=None):
         self.frame = tkinter.Frame(frame)
 
@@ -748,7 +748,7 @@ class LoadModelPopup:
         self.popup = popup
         self.restart = restart
         self.font = font
-        self.simple_entry1, self.simple_entry2, self.list_entry = None, None, None
+        self.simple_entry1, self.simple_entry2, self.list_entry, self.file_dialog = None, None, None, None
 
         # Place popup
         tkinter.Grid.rowconfigure(self.popup, 0, weight=1)
@@ -766,7 +766,7 @@ class LoadModelPopup:
         popup_instructions.configure(bg="white")
 
         all_text = [f"In order to load a custom model you need to create a directory with the following three files: ",
-                    "- Configuration file used for training (name must be config_train.yaml)",
+                    "- Configuration file used for training (name must be config_train.yml)",
                     "- Best networks parameters (name must be best_checkpoint.pytorch)",
                     "- Last networks parameters (name must be last_checkpoint.pytorch)",
                     "All mentioned files are created when training using https://github.com/wolny/pytorch-3dunet,",
@@ -791,7 +791,7 @@ class LoadModelPopup:
         popup_load.grid(row=1, column=0, sticky=stick_all)
         popup_load.configure(bg="white")
 
-        self.model_path = self.file_dialog_frame(popup_load, row=0, column=0)
+        self.file_dialog_frame(popup_load, row=0, column=0)
 
         self.simple_entry1 = SimpleEntry(popup_load, "Model Name: ",
                                          large_bar=True,
@@ -850,7 +850,7 @@ class LoadModelPopup:
         # Get resolution
         resolution = [float(value.get()) for value in self.list_entry.tk_value]
         # Get description
-        desctiption = str(self.simple_entry2.tk_value.get())
+        description = str(self.simple_entry2.tk_value.get())
 
         dest_dir = os.path.join(home_path, PLANTSEG_MODELS_DIR, model_name)
         os.makedirs(dest_dir, exist_ok=True)
@@ -877,7 +877,7 @@ class LoadModelPopup:
         custom_zoo_dict[model_name] = {}
         custom_zoo_dict[model_name]["path"] = path
         custom_zoo_dict[model_name]["resolution"] = resolution
-        custom_zoo_dict[model_name]["description"] = desctiption
+        custom_zoo_dict[model_name]["description"] = description
 
         with open(custom_zoo, 'w') as f:
             yaml.dump(custom_zoo_dict, f)

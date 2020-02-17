@@ -45,7 +45,8 @@ class GenericPipelineStep:
 
         # create save_directory if doesn't exist
         self.save_directory = os.path.join(os.path.dirname(input_paths[0]), save_directory)
-        os.makedirs(self.save_directory, exist_ok=True)
+        if self.state:
+            os.makedirs(self.save_directory, exist_ok=True)
 
     def __call__(self):
         if not self.state:

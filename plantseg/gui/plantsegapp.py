@@ -123,7 +123,7 @@ class PlantSegApp:
                              command=self.open_documentation_general, font=self.font)
         helpmenu.add_command(label="Data Pre-Processing",
                              command=self.open_documentation_preprocessing, font=self.font)
-        helpmenu.add_command(label="3D-Unet",
+        helpmenu.add_command(label="CNN Predictions",
                              command=self.open_documentation_3dunet, font=self.font)
         helpmenu.add_command(label="Segmentation",
                              command=self.open_documentation_segmentation, font=self.font)
