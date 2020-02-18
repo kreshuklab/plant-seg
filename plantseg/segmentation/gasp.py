@@ -14,7 +14,7 @@ class GaspFromPmaps(AbstractSegmentationStep):
                  predictions_paths,
                  save_directory="GASP",
                  gasp_linkage_criteria='average',
-                 bias=0.5,
+                 beta=0.5,
                  run_ws=True,
                  ws_2D=True,
                  ws_threshold=0.4,
@@ -35,7 +35,7 @@ class GaspFromPmaps(AbstractSegmentationStep):
 
         # GASP parameters
         self.gasp_linkage_criteria = gasp_linkage_criteria
-        self.bias = bias
+        self.beta = beta
 
         # Watershed parameters
         self.run_ws = run_ws
@@ -61,6 +61,8 @@ class GaspFromPmaps(AbstractSegmentationStep):
 
         # invert affinities
         affinities = 1 - affinities
+        print(self.beta)
+        exit()
 
         # Run GASP:
         if self.run_ws:
@@ -92,7 +94,7 @@ class GaspFromPmaps(AbstractSegmentationStep):
                                            superpixel_generator=superpixel_gen,
                                            run_GASP_kwargs=run_GASP_kwargs,
                                            n_threads=self.n_threads,
-                                           beta_bias=self.bias)
+                                           beta_bias=self.beta)
         # running gasp
         segmentation, _ = gasp_instance(affinities)
 
