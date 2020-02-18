@@ -61,8 +61,6 @@ class GaspFromPmaps(AbstractSegmentationStep):
 
         # invert affinities
         affinities = 1 - affinities
-        print(self.beta)
-        exit()
 
         # Run GASP:
         if self.run_ws:
