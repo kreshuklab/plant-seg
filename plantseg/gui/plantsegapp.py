@@ -378,7 +378,7 @@ class PlantSegApp:
                                           col=0, module_name="Data Pre-Processing",
                                           font=self.font, show_all=show_all)
         predictions_obj = UnetPredictionFrame(self.configuration_frame1, self.plantseg_config,
-                                              col=1, module_name="3D-Unet",
+                                              col=1, module_name="CNN Predictions",
                                               font=self.font, show_all=show_all)
         segmentation_obj = SegmentationFrame(self.configuration_frame1, self.plantseg_config,
                                              col=2, module_name="Segmentation",
