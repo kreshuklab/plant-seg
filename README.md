@@ -33,6 +33,14 @@ The tool can be installed directly by executing in the terminal:
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
+### Update PlantSeg
+The tool is actively developed and improvement and small bugs fix are continuosly coming. 
+To update PlantSeg type in the terminal: 
+```bash
+ conda activate plant-seg
+ conda update -c lcerrone plantseg
+```
+
 ### Pipeline Usage (command line)
 Our pipeline is completely configuration file based and does not require any coding.
 
@@ -68,10 +76,12 @@ Some key design choices:
 * `path` attribute: is used to define either the file to process or the directory containing the data.
 * `preprocessing` attribute: contains a simple set of possible operations one would need to run on their own data before calling the neural network. 
 If data is ready for neural network processing either delete the entire section or set `state: False` in order to skip this step.
+Detailed instructions can be found at [Data Processing](Documentation-GUI/Data-Processing.md).
 * `cnn_prediction` attribute: contains all parameters relevant for predicting with neural network. 
 Description of all pre-trained models provided with the package are described below.
+Detailed instructions can be found at [Predictions](Documentation-GUI/Predictions.md).
 * `segmentation` attribute: contains all parameters needed to run the partitioning algorithm (i.e. final segmentation). 
-Detailed instructions can be found in [segmentation](plantseg/segmentation/README.md) directory.
+Detailed instructions can be found at [Segmentation](Documentation-GUI/Segmentation.md).
 
 ### Additional information
 
@@ -151,7 +161,6 @@ or:
 ```
     raise AssertionError("Torch not compiled with CUDA enabled")
 AssertionError: Torch not compiled with CUDA enabled
-
 ```
 It means that your cuda installation does not match the default in plantseg. 
 You can check your current cuda version by typing in the terminal
@@ -174,7 +183,6 @@ conda install -c pytorch torchvision cudatoolkit=9.2 pytorch
 Alternatively one can create the `plant-seg` environment from scratch and ensuring the correct version of cuda/pytorch, by:
 ```
 conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge cudatoolkit=<YOU_CUDA_VERSION> plantseg
-
 ```
 
 * PlantSeg is under active development so it may happen that the models/configuration files saved in `~/.plantseg_modes`
