@@ -3,7 +3,7 @@ import os
 import time
 
 import h5py
-from pytorch3dunet.datasets.hdf5 import get_test_loaders
+from pytorch3dunet.datasets.utils import get_test_loaders
 from pytorch3dunet.unet3d import utils
 from pytorch3dunet.unet3d.model import get_model
 
