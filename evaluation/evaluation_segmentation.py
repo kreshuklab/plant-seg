@@ -178,7 +178,7 @@ if __name__ == "__main__":
                            else True)
 
     # Make sure that GT and segmentation directories are present in the FS
-    assert os.path.isdir(eval_config["gt_dir"]) and os.path.isdir(eval_config["seg_dir"])
+    # assert os.path.isdir(eval_config["gt_dir"]) and os.path.isdir(eval_config["seg_dir"])
 
     # Parse the files paths and return an iterable of tuples (gt_path, seg_path)
     if 'files_pairs' in eval_config:
