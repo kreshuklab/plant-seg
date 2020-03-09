@@ -3,7 +3,7 @@
 Running `flywing_eval.py` requires Python 2.7, so create new env before executing the script.
 
 ```bash
-conda create -n fly-wing -c conda-forge h5py pillow futures python=2.7
+conda create -n fly-wing -c conda-forge python=2.7 h5py pillow futures
 conda activate flywing
 pip install wget
 ```
