@@ -37,7 +37,7 @@ segmentation:
   name: MultiCut
   post_minsize: 50
   run_ws: true
-  save_directory: GASP1
+  save_directory: MultiCut1
   state: true
   ws_2D: true
   ws_minsize: 3
