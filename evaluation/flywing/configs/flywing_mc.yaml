@@ -10,7 +10,7 @@ cnn_postprocessing:
 cnn_prediction:
   device: cuda
   mirror_padding: [16, 32, 32]
-  model_name: confocal_unet_bce_dice_ds2x
+  model_name: confocal_2d_unet_bce_dice_ds3x
   model_update: false
   patch:
   - 80
@@ -33,16 +33,16 @@ preprocessing:
   save_directory: PreProcessing
   state: false
 segmentation:
-  beta: 0.6
-  name: GASP
+  beta: 0.9
+  name: MultiCut
   post_minsize: 50
   run_ws: true
-  save_directory: GASP2
+  save_directory: MultiCut
   state: true
   ws_2D: true
   ws_minsize: 3
   ws_sigma: 2.0
-  ws_threshold: 0.5
+  ws_threshold: 0.4
   ws_w_sigma: 0.0
 segmentation_postprocessing:
   factor: *id001

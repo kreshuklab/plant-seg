@@ -10,7 +10,7 @@ cnn_postprocessing:
 cnn_prediction:
   device: cuda
   mirror_padding: [16, 32, 32]
-  model_name: confocal_unet_bce_dice_ds3x
+  model_name: confocal_unet_bce_dice_ds3x #confocal_2d_unet_bce_dice_ds3x
   model_update: false
   patch:
   - 80
@@ -37,7 +37,7 @@ segmentation:
   name: GASP
   post_minsize: 50
   run_ws: true
-  save_directory: GASP1
+  save_directory: GASP
   state: true
   ws_2D: true
   ws_minsize: 3
