@@ -47,10 +47,7 @@ deploy:
       && echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       && sudo docker push wolny/plantseg:latest
     on:
-      # TODO: change to true
-      tags: false
-      # TODO: remove the line below
-      all_branches: true
+      tags: true
     skip_cleanup: true
 
 env:
