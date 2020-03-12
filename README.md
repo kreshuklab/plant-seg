@@ -84,7 +84,7 @@ E.g. run: `CUDA_VISIBLE_DEVICES=0 plantseg --config CONFIG_PATH` to restrict pre
 
 ## Docker image
 We also provide a docker image with plantseg package installed.
-Make sure that [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) is installed on the docker host.
+Make sure that [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) is installed on the docker host otherwise you won't be able to utilize the GPUs.
 
 **Linux only**: In oder to execute the docker image in the GUI mode, fist we need to allow everyone to access X server
 on the docker host. This can be done by invoking the following command in the terminal:
@@ -92,11 +92,15 @@ on the docker host. This can be done by invoking the following command in the te
 xhost +
 
 ```
-The just run:
+For GPU support run:
+```
+docker run --runtime=nvidia -it --rm -v PATH_TO_DATASET:/root/datasets -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY wolny/plantseg
+```
+If your docker host does not have modern GPU and/or nvidia-docker is not installed, run:
 ```
 docker run -it --rm -v PATH_TO_DATASET:/root/datasets -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY wolny/plantseg
-
 ```
+
 this will start the _PlantSeg_ GUI application. `PATH_TO_DATASET` is the directory on the docker host where the data to be processed are stored.
 
 ## Datasets
