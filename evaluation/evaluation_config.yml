@@ -7,9 +7,12 @@ gt_dir: TO BE FILL # Path to ground truth  directory files at full resolution or
 seg_dir: TO BE FILL # (Optional) Path to predicted segmentation files at any resolution. Files must be h5 or tiff
 
 # train_config_file: # (Optional) Path to config file used for experiments
-# (Optional) Segmentation Algorithm config file. Empty if it does not exists
+# segmentation_config_file: # (Optional) Segmentation Algorithm config file. Empty if it does not exists
 
-seg_background_zero: True # If true the background (default label 0) is not modified in the evaluation script. If False, the larger object in the segmentation gets the label 0 and the pixels belonging to the ground truth gets masked out.
+# remove_background from evaluation:
+# If True the groundtruth background pixels (default label 0) are removed from groundthruth and segmentation, used for all evaluation in the PlantSeg manuscript.
+# If False the evaluation is performed on the data as they are (default label 0 is still ignored).
+remove_background: True
 
 # Output
 output_csv: "./test_config" # Path to output CSV file
