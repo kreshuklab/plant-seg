@@ -106,8 +106,10 @@ this will start the _PlantSeg_ GUI application. `PATH_TO_DATASET` is the directo
 ## Datasets
 We publicly release the datasets used for training the networks which available as part of the _PlantSeg_ package.
 Please refer to [our publication](https://www.biorxiv.org/content/10.1101/2020.01.17.910562v1) for more details about the datasets:
-- _Arabidopsis thaliana_ ovules dataset (raw confocal images + ground truth labels) can be downloaded from [here](https://oc.embl.de/index.php/s/yUl0GGCYDfxxVVm)
-- _Arabidopsis thaliana_ lateral root (raw light sheet images + ground truth labels) can be downloaded from [here](https://oc.embl.de/index.php/s/gNXDHhOS4GwBlZT)
+- _Arabidopsis thaliana_ ovules dataset (raw confocal images + ground truth labels)
+- _Arabidopsis thaliana_ lateral root (raw light sheet images + ground truth labels) 
+
+Both datasets can be downloaded from [our OSF project](https://osf.io/uzq3w/)
 
 ## Pre-trained networks
 The following pre-trained networks are provided with PlantSeg package out-of-the box and can be specified in the config file or chosen in the GUI.
