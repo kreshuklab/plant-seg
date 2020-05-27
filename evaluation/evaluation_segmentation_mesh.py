@@ -58,7 +58,7 @@ def clean_gt(gt):
 
 if __name__ == "__main__":
     results = []
-    data_path = "/home/lcerrone/leaf_evaluation/"
+    data_path = "PATHTOFOLDER"
     datasets = ["C07", "C03", "Ox"]
     time_points = ["*T0*", "*T1*", "*T2*"]
     gt_id = "GT.ply"
