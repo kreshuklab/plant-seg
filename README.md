@@ -93,8 +93,8 @@ with a docker container running plantseg. Below we provide a detailed instructio
 image on Linux, Windows 10 and Mac OS.
 
 As a side note: running plantseg via Docker on Windows and Mac OS works only with CPU mode, which is significantly slower
-then when running on the GPU, e.g. for a 3D stack of size `200x400x400` it took ~40mins to segment with plantseg Docker image
-on Windows (as compared to 1.5 mins when segmenting the same stack using plantseg with GPU).
+than when running on the GPU, e.g. for a 3D stack of size `200x400x400` it took ~40mins to segment with plantseg Docker image
+on Windows (as compared to 1.5 mins when segmenting the same stack using plantseg with GPU) on a modern laptop.
 
 Also bear in mind that plantseg is quite memory hungry, so when running with Docker on a laptop, please make sure to process
 smaller volumes (up to 1GB) and use smaller patch sizes for neural network predictions, otherwise your Docker container
