@@ -9,7 +9,11 @@ The pipeline is tuned for plant cell tissue acquired with confocal and light she
 Pre-trained models are provided.  
 
 ## Getting Started
-### Prerequisites
+The recommended way of installing plantseg is via the conda package, which is only supported on Linux.
+Running plantseg on other operating systems (Windows 10, Mac OS) is currently possible only via a Docker image
+that we provide  ([see below](#docker-image)).
+
+### Prerequisites for conda package
 * Linux
 * Nvidia GPU + CUDA (Optional)
 
@@ -83,10 +87,23 @@ If `CUDA_VISIBLE_DEVICES` environment variable is not specified the prediction t
 E.g. run: `CUDA_VISIBLE_DEVICES=0 plantseg --config CONFIG_PATH` to restrict prediction to a given GPU.
 
 ## Docker image
-We also provide a docker image with plantseg package installed.
+We also provide a Docker image with plantseg package, which can be run on any operating system with Docker
+installed. Since plantseg is normally used in a GUI mode, one has to share a display on the host operating system
+with a docker container running plantseg. Below we provide a detailed instruction of how to run a plantseg Docker
+image on Linux, Windows 10 and Mac OS.
+
+As a side note: running plantseg via Docker on Windows and Mac OS works only with CPU mode, which is significantly slower
+then when running on the GPU, e.g. for a 3D stack of size `200x400x400` it took ~40mins to segment with plantseg Docker image
+on Windows (as compared to 1.5 mins when segmenting the same stack using plantseg with GPU).
+
+Also bear in mind that plantseg is quite memory hungry, so when running with Docker on a laptop, please make sure to process
+smaller volumes (up to 1GB) and use smaller patch sizes for neural network predictions, otherwise your Docker container
+may be terminated abruptly due to the out of memory issue.
+
+### Linux
 Make sure that [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) is installed on the docker host otherwise you won't be able to utilize the GPUs.
 
-**Linux only**: In oder to execute the docker image in the GUI mode, fist we need to allow everyone to access X server
+In oder to execute the docker image in the GUI mode, fist we need to allow everyone to access X server
 on the docker host. This can be done by invoking the following command in the terminal:
 ```bash
 xhost +
@@ -101,7 +118,33 @@ If your docker host does not have modern GPU and/or nvidia-docker is not install
 docker run -it --rm -v PATH_TO_DATASET:/root/datasets -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY wolny/plantseg
 ```
 
-this will start the _PlantSeg_ GUI application. `PATH_TO_DATASET` is the directory on the docker host where the data to be processed are stored.
+this will start the plantseg GUI application. `PATH_TO_DATASET` is the path to the directory on the docker host where the data to be processed are stored.
+
+### Windows 10
+- [Install Docker Desktop on Windows](https://docs.docker.com/docker-for-windows/install/). 
+Make sure to have the latest Windows 10 version installed, if not you might need to sign up for the Windows Insider Program in order to install the version required by Docker.
+- [Install Windows X Server](https://dev.to/darksmile92/run-gui-app-in-linux-docker-container-on-windows-host-4kde).
+- After you install, configure and run the VcXsrv Windows X Server, open the Windows PowerShell and run:
+```bash
+set-variable -name DISPLAY -value YOUR-IP:0.0
+```
+replace `YOUR-IP` with your actual host IP address (you can find it by running `ipconfig` in the PowerShell)
+- Run plantseg via:
+```bash
+docker run -it --rm -v PATH_TO_DATASET:/root/datasets -e DISPLAY=$DISPLAY wolny/plantseg
+```
+where `PATH_TO_DATASET` is the path to the directory on Windows where the data to be processed are stored.
+
+### Mac OS
+- [Install Docker Desktop on Mac](https://docs.docker.com/docker-for-mac/install/)
+- [Install X Window System on Mac](https://gist.github.com/rizkyario/dbf69c21f2e8e3251d3aa7848ee69990)
+- after you install and run XQuartz 2.7.10 on your Mac according to the instructions above, run:
+```bash
+docker run -it --rm -v PATH_TO_DATASET:/root/datasets -e DISPLAY=$DISPLAY_MAC wolny/plantseg
+```
+where `PATH_TO_DATASET` is the path to the directory on Mac OS where the data to be processed are stored.
+
+
 
 ## Datasets
 We publicly release the datasets used for training the networks which available as part of the _PlantSeg_ package.
