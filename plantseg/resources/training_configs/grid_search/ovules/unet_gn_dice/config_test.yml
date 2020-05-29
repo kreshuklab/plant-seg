@@ -1,0 +1,39 @@
+loaders:
+  batch_size: 1
+  mirror_padding:
+  - 16
+  - 32
+  - 32
+  num_workers: 8
+  raw_internal_path: raw
+  test:
+    file_paths:
+    - /g/kreshuk/wolny/Datasets/Ovules/test/Lorenzo/ds2
+    slice_builder:
+      name: SliceBuilder
+      patch_shape:
+      - 80
+      - 170
+      - 170
+      stride_shape:
+      - 40
+      - 90
+      - 90
+    transformer:
+      raw:
+      - name: Standardize
+      - expand_dims: true
+        name: ToTensor
+manual_seed: 0
+model:
+  f_maps: 32
+  final_sigmoid: true
+  in_channels: 1
+  is_segmentation: true
+  layer_order: gcr
+  name: UNet3D
+  num_groups: 8
+  out_channels: 1
+model_path: /g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/./grid_search/ovules/unet_gn_dice/best_checkpoint.pytorch
+predictor:
+  name: StandardPredictor

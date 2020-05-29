@@ -1,0 +1,139 @@
+eval_metric:
+  name: BoundaryAdaptedRandError
+  threshold: 0.4
+  use_first_input: true
+  use_last_target: true
+loaders:
+  label_internal_path: /label
+  num_workers: 8
+  raw_internal_path: /raw
+  train:
+    file_paths:
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00000_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00002_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00003_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00008_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00009_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00010_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00012_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00014_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00016_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00018_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00020_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00025_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00035_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00040_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie1_t00049_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie2_T00000_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie2_T00002_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie2_T00004_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie2_T00006_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie2_T00008_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie2_T00012_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie2_T00014_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie2_T00016_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie2_T00018_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie3_T00000_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie3_T00002_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Train/Movie3_T00004_crop_gt.h5
+    slice_builder:
+      name: FilterSliceBuilder
+      patch_shape:
+      - 80
+      - 170
+      - 170
+      slack_acceptance: 0.01
+      stride_shape:
+      - 20
+      - 40
+      - 40
+      threshold: 0.6
+    transformer:
+      label:
+      - name: RandomFlip
+      - name: RandomRotate90
+      - angle_spectrum: 20
+        axes:
+        - - 2
+          - 1
+        mode: reflect
+        name: RandomRotate
+      - name: ElasticDeformation
+        spline_order: 0
+      - append_label: true
+        blur: true
+        name: StandardLabelToBoundary
+        sigma: 1.0
+      - expand_dims: false
+        name: ToTensor
+      raw:
+      - name: Standardize
+      - name: RandomFlip
+      - name: RandomRotate90
+      - angle_spectrum: 15
+        axes:
+        - - 2
+          - 1
+        mode: reflect
+        name: RandomRotate
+      - name: ElasticDeformation
+        spline_order: 3
+      - expand_dims: true
+        name: ToTensor
+  val:
+    file_paths:
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Val/Movie1_t00004_crop_gt.h5
+    - /g/kreshuk/wolny/Datasets/LateralRoot/Val/Movie1_t00030_crop_gt.h5
+    slice_builder:
+      name: FilterSliceBuilder
+      patch_shape:
+      - 80
+      - 170
+      - 170
+      slack_acceptance: 0.01
+      stride_shape:
+      - 20
+      - 40
+      - 40
+      threshold: 0.6
+    transformer:
+      label:
+      - append_label: true
+        blur: true
+        name: StandardLabelToBoundary
+        sigma: 1.0
+      - expand_dims: false
+        name: ToTensor
+      raw:
+      - name: Standardize
+      - expand_dims: true
+        name: ToTensor
+loss:
+  ignore_index: null
+  name: BCEWithLogitsLoss
+  skip_last_target: true
+lr_scheduler:
+  factor: 0.5
+  mode: min
+  name: ReduceLROnPlateau
+  patience: 15
+manual_seed: 0
+model:
+  f_maps: 32
+  final_sigmoid: true
+  in_channels: 1
+  layer_order: gcr
+  name: UNet3D
+  num_groups: 8
+  out_channels: 1
+optimizer:
+  learning_rate: 0.0002
+  weight_decay: 1.0e-05
+trainer:
+  checkpoint_dir: /g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/./grid_search/root/unet_gn_bce
+  epochs: 1000
+  eval_score_higher_is_better: false
+  iters: 150000
+  log_after_iters: 100
+  resume: null
+  validate_after_iters: 1000
