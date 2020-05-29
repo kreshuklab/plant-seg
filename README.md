@@ -11,7 +11,11 @@ Pre-trained models are provided.
 ## Getting Started
 ### Prerequisites
 * Linux
-* Nvidia GPU + CUDA (Optional)
+* (Optional) Nvidia GPU + CUDA
+
+or
+
+* Windows 10 / MacOS via Docker
 
 ### Install Anaconda python
 - First step required to use the pipeline is installing anaconda python.
