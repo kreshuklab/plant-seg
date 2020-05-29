@@ -54,10 +54,10 @@ cnn_postprocessing:
 segmentation:
   # enable/disable segmentation
   state: True
-  # Name of the algorithm to use for inferences
+  # Name of the algorithm to use for inferences. Options: MultiCut, MutexWS, GASP, DtWatershed
   name: "MultiCut"
   # Segmentation specific parameters here
-  # balance under-/over-segmentation; 0 - aim for undersegmentation, 1 - aim for oversegmentation
+  # balance under-/over-segmentation; 0 - aim for undersegmentation, 1 - aim for oversegmentation. (Not active for DtWatershed)
   beta: 0.5
   # directory where to save the results
   save_directory: "MultiCut"
@@ -73,7 +73,7 @@ segmentation:
   ws_sigma: 2.0
   # sigma for the gaussian smoothing of boundary
   ws_w_sigma: 0
-  # set the minimum segment size in the final segmentation
+  # set the minimum segment size in the final segmentation. (Not active for DtWatershed)
   post_minsize: 50
 
 segmentation_postprocessing:
