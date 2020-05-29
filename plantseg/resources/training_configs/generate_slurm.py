@@ -15,7 +15,7 @@ def generate_script(checkpoint_dir):
 #SBATCH --mail-type=FAIL,BEGIN,END		    
 #SBATCH --mail-user=adrian.wolny@embl.de
 #SBATCH -p gpu				            
-#SBATCH -C gpu=1080Ti			        
+#SBATCH -C "gpu=2080Ti|gpu=1080Ti"		        
 #SBATCH --gres=gpu:1	
 
 module load cuDNN
