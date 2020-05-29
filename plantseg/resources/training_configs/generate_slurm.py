@@ -22,7 +22,7 @@ module load cuDNN
 
 export PYTHONPATH="/g/kreshuk/wolny/workspace/pytorch-3dunet:$PYTHONPATH"
 
-/g/kreshuk/wolny/workspace/pytorch-3dunet/train.py --config {checkpoint_dir}/config_train.yml
+/g/kreshuk/wolny/workspace/pytorch-3dunet/pytorch3dunet/train.py --config {checkpoint_dir}/config_train.yml
 """
 
 

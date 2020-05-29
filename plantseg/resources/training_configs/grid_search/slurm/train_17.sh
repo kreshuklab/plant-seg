@@ -17,4 +17,4 @@ module load cuDNN
 
 export PYTHONPATH="/g/kreshuk/wolny/workspace/pytorch-3dunet:$PYTHONPATH"
 
-/g/kreshuk/wolny/workspace/pytorch-3dunet/train.py --config /g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/./grid_search/root/resunet_gn_dice/config_train.yml
+/g/kreshuk/wolny/workspace/pytorch-3dunet/pytorch3dunet/train.py --config /g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/./grid_search/root/resunet_gn_dice/config_train.yml
