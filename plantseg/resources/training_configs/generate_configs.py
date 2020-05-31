@@ -13,12 +13,14 @@ arch_config_values = {
         'model/name': 'UNet3D',
         'loaders/train/slice_builder/patch_shape': [80, 170, 170],
         'loaders/val/slice_builder/patch_shape': [80, 170, 170],
+        'loaders/val/slice_builder/stride_shape': [80, 170, 170],
         'loaders/test/slice_builder/patch_shape': [80, 170, 170]
     },
     'resunet': {
         'model/name': 'ResidualUNet3D',
         'loaders/train/slice_builder/patch_shape': [80, 144, 144],
         'loaders/val/slice_builder/patch_shape': [80, 144, 144],
+        'loaders/val/slice_builder/stride_shape': [80, 144, 144],
         'loaders/test/slice_builder/patch_shape': [80, 144, 144]
     }
 }
@@ -31,6 +33,7 @@ norm_config_values = {
         # this will work for both unet and resunet
         'loaders/train/slice_builder/patch_shape': [48, 80, 80],
         'loaders/val/slice_builder/patch_shape': [48, 80, 80],
+        'loaders/val/slice_builder/stride_shape': [48, 80, 80],
         'loaders/test/slice_builder/patch_shape': [48, 80, 80]
     },
     'gn': {

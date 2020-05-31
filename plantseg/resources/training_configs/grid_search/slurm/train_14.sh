@@ -4,7 +4,7 @@
 #SBATCH -N 1				            
 #SBATCH -n 2				            
 #SBATCH --mem 32G			            
-#SBATCH -t 48:00:00                     
+#SBATCH -t 72:00:00                     
 #SBATCH -o /g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/./grid_search/root/resunet_bn_dice/train.log			        
 #SBATCH -e /g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/./grid_search/root/resunet_bn_dice/error.log
 #SBATCH --mail-type=FAIL,BEGIN,END		    

@@ -9,7 +9,7 @@ def generate_script(checkpoint_dir):
 #SBATCH -N 1				            
 #SBATCH -n 2				            
 #SBATCH --mem 32G			            
-#SBATCH -t 48:00:00                     
+#SBATCH -t 72:00:00                     
 #SBATCH -o {checkpoint_dir}/train.log			        
 #SBATCH -e {checkpoint_dir}/error.log
 #SBATCH --mail-type=FAIL,BEGIN,END		    

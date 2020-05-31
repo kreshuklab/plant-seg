@@ -93,10 +93,10 @@ loaders:
       - 80
       slack_acceptance: 0.01
       stride_shape:
-      - 20
-      - 40
-      - 40
-      threshold: 0.6
+      - 48
+      - 80
+      - 80
+      threshold: 0.4
     transformer:
       label:
       - append_label: true
@@ -114,7 +114,7 @@ loss:
   name: BCEWithLogitsLoss
   skip_last_target: true
 lr_scheduler:
-  factor: 0.5
+  factor: 0.2
   mode: min
   name: ReduceLROnPlateau
   patience: 15
@@ -135,6 +135,6 @@ trainer:
   epochs: 1000
   eval_score_higher_is_better: false
   iters: 150000
-  log_after_iters: 100
+  log_after_iters: 250
   resume: null
   validate_after_iters: 1000
