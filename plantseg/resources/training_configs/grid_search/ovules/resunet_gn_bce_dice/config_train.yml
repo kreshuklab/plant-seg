@@ -64,7 +64,7 @@ loaders:
       label:
       - name: RandomFlip
       - name: RandomRotate90
-      - angle_spectrum: 15
+      - angle_spectrum: 20
         axes:
         - - 2
           - 1

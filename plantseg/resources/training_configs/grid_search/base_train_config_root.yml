@@ -119,7 +119,7 @@ loaders:
         - name: RandomRotate
           # rotate only in ZY plane due to anisotropy
           axes: [[2, 1]]
-          angle_spectrum: 15
+          angle_spectrum: 20
           mode: reflect
         - name: ElasticDeformation
           spline_order: 3
