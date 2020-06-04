@@ -1,6 +1,6 @@
 import numpy as np
 
-SUPPORTED_ALGORITMS = ["GASP", "MutexWS", "DtWatershed", "MultiCut"]
+SUPPORTED_ALGORITMS = ["GASP", "MutexWS", "DtWatershed", "MultiCut", "SimpleITK"]
 
 
 def configure_segmentation_step(predictions_paths, config):
@@ -30,6 +30,10 @@ def configure_segmentation_step(predictions_paths, config):
     if algorithm_name == "MultiCut":
         from .multicut import MulticutFromPmaps
         return MulticutFromPmaps(**config)
+
+    if algorithm_name == "SimpleITK":
+        from .simpleitkws import SimpleITKWatershed
+        return SimpleITKWatershed(**config)
 
 
 def shift_affinities(affinities, offsets):
