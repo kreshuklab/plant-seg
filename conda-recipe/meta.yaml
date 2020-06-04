@@ -19,8 +19,7 @@ requirements:
 
   run:
     - python 3.7
-    # TODO: remove pillow dep after new torchvision release
-    - pillow<7
+    - pillow
     - h5py
     - pywget
     - pyyaml
@@ -32,8 +31,10 @@ requirements:
     - torchvision
     - pytorch
     - elf =0.1.0
-    - gasp
-    - pytorch-3dunet
+    - nifty =vplantseg1.0.8
+    - gasp =1.0.3
+    - pytorch-3dunet =1.2.5
+    - simpleitk =1.2.4
 
 test:
   imports:
