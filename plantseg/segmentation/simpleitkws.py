@@ -18,7 +18,7 @@ class SimpleITKWatershed(AbstractSegmentationStep):
 
         super().__init__(input_paths=predictions_paths,
                          save_directory=save_directory,
-                         file_suffix='_dtws',
+                         file_suffix='_itkws',
                          state=state)
 
         self.ws_threshold = ws_threshold
@@ -29,9 +29,13 @@ class SimpleITKWatershed(AbstractSegmentationStep):
         # Itk gaussian smoothing
         itk_pmaps = sitk.GetImageFromArray(pmaps)
         if self.ws_sigma > 0:
-            itk_pmaps = sitk.GradientMagnitudeRecursiveGaussian(itk_pmaps, sigma=self.ws_sigma)
+            itk_pmaps = sitk.SmoothingRecursiveGaussian(itk_pmaps, self.ws_sigma)
 
         # Itk watershed + size filtering
-        itk_segmentation = sitk.MorphologicalWatershed(itk_pmaps, self.ws_threshold, 0, 0)
+        itk_segmentation = sitk.MorphologicalWatershed(itk_pmaps,
+                                                       self.ws_threshold,
+                                                       markWatershedLine=False,
+                                                       fullyConnected=False)
         itk_segmentation = sitk.RelabelComponent(itk_segmentation, self.ws_minsize)
-        return np.uint16(sitk.GetArrayFromImage(itk_segmentation))
+
+        return sitk.GetArrayFromImage(itk_segmentation).astype(np.uint16)
