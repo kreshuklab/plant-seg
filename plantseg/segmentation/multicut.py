@@ -68,7 +68,10 @@ class MulticutFromPmaps(AbstractSegmentationStep):
             ws = self.ws_dt_2D(pmaps)
         else:
             # WS in 3D
-            ws, _ = distance_transform_watershed(pmaps, self.ws_threshold, self.ws_sigma, min_size=self.ws_minsize)
+            ws, _ = distance_transform_watershed(pmaps, self.ws_threshold,
+                                                 self.ws_sigma,
+                                                 sigma_weights=self.ws_w_sigma,
+                                                 min_size=self.ws_minsize)
 
         rag = compute_rag(ws, 1)
         # Computing edge features

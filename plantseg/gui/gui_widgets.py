@@ -276,7 +276,7 @@ class SegmentationFrame(ModuleFramePrototype):
                                              text="Algorithm: ",
                                              row=1,
                                              column=0,
-                                             menu={"MultiCut", "GASP", "MutexWS", "DtWatershed"},
+                                             menu={"MultiCut", "GASP", "MutexWS", "DtWatershed", "SimpleITK"},
                                              is_segmentation=True,
                                              default=config[self.module]["name"],
                                              font=font),
