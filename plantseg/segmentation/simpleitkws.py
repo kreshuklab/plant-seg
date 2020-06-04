@@ -7,7 +7,7 @@ from plantseg.pipeline.steps import AbstractSegmentationStep
 class SimpleITKWatershed(AbstractSegmentationStep):
     def __init__(self,
                  predictions_paths,
-                 save_directory="DTWatershed",
+                 save_directory="ITKWatershed",
                  ws_2D=True,
                  ws_threshold=0.4,
                  ws_minsize=50,
