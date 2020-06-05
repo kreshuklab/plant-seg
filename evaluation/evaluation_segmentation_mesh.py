@@ -62,7 +62,7 @@ if __name__ == "__main__":
     datasets = ["C07", "C03", "Ox"]
     time_points = ["*T0*", "*T1*", "*T2*"]
     gt_id = "GT.ply"
-    seg_ids = ["pred*.ply", "proj*.ply", "autoSegm.ply"]
+    seg_ids = ["pred_*.ply", "_predRaw.ply", "proj*.ply", "autoSegm.ply"]
 
     for dataset in datasets:
         for tp in time_points:
@@ -102,7 +102,9 @@ if __name__ == "__main__":
                               "segmentation_path": seg_path,
                               "groundtruth_path": gt_path,
                               "adapted_rand": _rand,
-                              "voi": _voi}
+                              "voi": _voi,
+                              "voi_split": _voi[0],
+                              "voi_merge": _voi[1]}
 
                     results.append(result)
 
