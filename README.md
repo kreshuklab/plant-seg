@@ -97,6 +97,16 @@ for maximum performance we recommend that the application is run on a machine wi
 If `CUDA_VISIBLE_DEVICES` environment variable is not specified the prediction task will be distributed on all available GPUs.
 E.g. run: `CUDA_VISIBLE_DEVICES=0 plantseg --config CONFIG_PATH` to restrict prediction to a given GPU.
 
+## Repository index
+The PlantSeg repository is organised as follows:
+* **plantseg**: Contains the source code of PlantSeg.
+* **conda-reicpe**: Contains all necessary code and configuration to create the anaconda package.
+* **Documentation-GUI**: Contains an more in-depth documentation of PlantSeg functionality.
+* **evaluation**: Contains all script required to reproduce the quantitative evaluation in 
+[Wolny et al.](https://www.biorxiv.org/content/10.1101/2020.01.17.910562v1).
+* **examples**: Contains the files required to test PlantSeg.
+* **tests**: Contains automated tests that ensures the PlantSeg functionality are not compromised during an update.
+
 ## Docker image
 We also provide a docker image with plantseg package installed.
 Make sure that [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) is installed on the docker host.
