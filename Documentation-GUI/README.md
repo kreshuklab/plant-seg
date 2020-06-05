@@ -1,17 +1,20 @@
 
 # PlantSeg introduction
 
-PlantSeg is a tool for 3D and 2D segmentation. The tools is fundamentally composed of two main steps. 
+PlantSeg is a tool for 3D and 2D segmentation. The methods used are very generic and can be used 
+for any type of instance segmentation workflow, but they are tuned towards cell segmentation in plant tissue.
+ The tools is fundamentally composed of two main steps. 
 
 * ***Cell boundary predictions***: Where a convolutional neural network is used to extract a 
 voxel wise boundary classification. The neural network is capable of filtering out very different types/intensity of 
-noise, homogenising the signal strength and fixing imaging defect (such as missing cell boundary detection).
+noise, homogenising the signal strength and fixing imaging defect (such as missing/blurred cell boundaries).
 
-* ***Segmentation as partitioning***: The output of the fist step can be used directly for automated segmentation. 
-We implemented 4 different algorithm for segmentation, each with peculiar features. This type of approach is expecially 
-well suited for segmentation of densely packed cell.
+* ***Cell Segmentation as graph partitioning***: The output of the fist step can be used directly for automated 
+segmentation. We implemented 4 different algorithms for segmentation, each with peculiar features.
+ This type of approach is especially well suited for segmentation of densely packed cell.
 
-For a complete description of the methods used please check out our [manuscript](https://www.biorxiv.org/content/10.1101/2020.01.17.910562v1). 
+For a complete description of the methods used please check out our 
+[manuscript](https://www.biorxiv.org/content/10.1101/2020.01.17.910562v1). 
 
 # PlantSeg from GUI
 The graphical user interface is the easiest way to configure and run PlantSeg. 
@@ -19,12 +22,12 @@ Currently the GUI does not allow to visualize or interact with the data.
 We recommend using [MorphographX](https://www.mpipz.mpg.de/MorphoGraphX) or 
 [Fiji](https://fiji.sc/) in order to assert the success and quality of the pipeline results.
 
-### File Browser 
+### File Browser Widget
 The file browser can be used to select the input files for the pipeline. 
 PlantSeg can run on a single file (button A) or in batch mode for all files inside a directory (button B). 
 If a directory is selected PlantSeg will run on all compatible files inside the directory.
 
-### Pipeline 
+### Main Pipeline Configurator 
 The central panel of PlantSeg (C) is the core of the pipeline configuration.
 It can be used for customizing and tuning the pipeline accordingly to the data at hand. 
 Detailed information for each stage can be found at:
@@ -32,11 +35,11 @@ Detailed information for each stage can be found at:
 * [CNN-Predictions](Predictions.md)
 * [Segmentation](Segmentation.md)
 
-Any of the above widgets can be run singularly or in sequence (left to right). The order of execution can not be modified.
-
+Any of the above widgets can be run singularly or in sequence (left to right). The order of execution can not be 
+modified.
 
 ### Run 
-The last panel has to main functions.
+The last panel has two main functions.
 Running the pipeline (D), once the run button is pressed the
 pipeline starts. The button is inactive until the process is finished.   
 Adding a custom model (E). Custom trained model can be done by using the dedicated popup. Training a new model can be 
@@ -77,7 +80,7 @@ For sake of reproducibility, every file is associated with a configuration file 
 to produce the result.
 
 ### Start PlantSeg GUI
-In Order to start the PlantSeg app in GUI mode:  
+In order to start the PlantSeg app in GUI mode:  
 First, activate the newly created conda environment with:
 ```bash
 conda activate plant-seg
@@ -91,8 +94,8 @@ $ plantseg --gui
 # PlantSeg from configuration file
 This modality of using PlantSeg is particularly suited for high throughput processing and for running
 PlantSeg on a remote server. 
-In order to use it one must create a configuration file using a normal text editor or using the save option of the
-PlantSeg gui.
+In order to use PlantSeg from command line mode, you will need to create a configuration file using a normal text editor
+ or using the save option of the PlantSeg gui.
 
 Here an example configuration:
 
@@ -183,11 +186,10 @@ segmentation_postprocessing:
   # spline order for rescaling (keep 0 for segmentation post processing
   order: 0
 ```
-This configuration can be found here [config.yaml](examples/config.yaml).
+This configuration can be found at [config.yaml](examples/config.yaml).
 
 ### Pipeline Usage (command line)
-Our pipeline is completely configuration file based and does not require any coding.
-
+In order to start PlantSeg from command line:   
 First, activate the newly created conda environment with:
 ```bash
 conda activate plant-seg
