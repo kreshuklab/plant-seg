@@ -17,10 +17,10 @@ The input image can be a raw stack "tiff"/"h5" or the output of the PreProcessin
  therefore the **Patch size** can be used to optimize the performance of the pipeline. 
  Usually a bigger patches cost more memory but can give a slight improvement in performance.
  
-* To minimize the boundary effect due to the sliding windows patching we use different **strides**:
+* To minimize the boundary effect due to the sliding windows patching we can use different **strides**:
     1. Accurate: corresponding to a stride 50% of the patch size (yield best predictions/segmentation accuracy)
     2. Balanced: corresponding to a stride 75% of the patch size
     3. Draft: corresponding to a stride 95% of the patch size (yield fastest runtime)
     
 * The **Device type** menu can be used to enable or not gpu acceleration. The networks predictions are 
-greatly accelerated by CUDA on Nvidia GPUs, at the moment we don't support other GPU manufacturers.
+greatly accelerated by CUDA on Nvidia GPUs, at the moment we don't support other GPUs manufacturers.

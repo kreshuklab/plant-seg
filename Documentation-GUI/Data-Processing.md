@@ -5,8 +5,10 @@
 ![alt text](./images/preprocessing.png)
 
 The input for this widget can be either a "raw" image or "prediction" image. 
-Input format allowed are tiff and h5 while output is always h5.  
+Input format allowed are tiff and h5 while output is always h5.
+  
 * The **Save Directory** entry can be used to define output directory.  
+
 * The most important setting is the **Rescaling**. It is very important to rescale the image to 
  match the resolution of the data used for training the Neural Network.
 This operation can be done automatically by clicking in the gui on **Guided**.  
