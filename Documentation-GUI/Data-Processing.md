@@ -1,8 +1,8 @@
-# Data Processing 
+# Data Processing
+![alt text](./images/preprocessing.png) 
 **PlantSeg** includes basic utilities for data pre-processing and post-processing. 
 
 ## Pre-Processing
-![alt text](./images/preprocessing.png)
 
 The input for this widget can be either a "raw" image or "prediction" image. 
 Input format allowed are tiff and h5 while output is always h5.
@@ -33,7 +33,6 @@ The higher the wider is filtering kernel.
  The kernel is a sphere of size defined in the parameter field.
 
 ## Post-Processing
-![alt text](./images/postprocessing.png)
 
 A post processing widget can be applied after the **CNN-Predictions** and the **Segmentation**.
 Two type of operations can be performed:

@@ -1,5 +1,5 @@
 # CNN Predictions
-![alt text](./images/predictions.png)
+![alt text](./images/cnn-predictions.png)
 
 The CNN predictions widget process the stacks at hand with a Convolutional Neural Network. The output is 
 a boundary classification image, where every voxel gets a value between 0 (not a cell boundary) and 1 (cell boundary).
