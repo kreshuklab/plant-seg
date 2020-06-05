@@ -5,6 +5,8 @@ PlantSeg is a tool for 3D and 2D segmentation. The methods used are very generic
 for any type of instance segmentation workflow, but they are tuned towards cell segmentation in plant tissue.
  The tools is fundamentally composed of two main steps. 
 
+![alt text](./images/main_figure.png)
+
 * ***Cell boundary predictions***: Where a convolutional neural network is used to extract a 
 voxel wise boundary classification. The neural network is capable of filtering out very different types/intensity of 
 noise, homogenising the signal strength and fixing imaging defect (such as missing/blurred cell boundaries).
@@ -21,6 +23,8 @@ The graphical user interface is the easiest way to configure and run PlantSeg.
 Currently the GUI does not allow to visualize or interact with the data. 
 We recommend using [MorphographX](https://www.mpipz.mpg.de/MorphoGraphX) or 
 [Fiji](https://fiji.sc/) in order to assert the success and quality of the pipeline results.
+
+![alt text](./images/plantseg_overview.png)
 
 ### File Browser Widget
 The file browser can be used to select the input files for the pipeline. 
