@@ -1,5 +1,6 @@
 import argparse
 import os
+import glob
 import h5py
 from skimage.filters import gaussian
 from skimage.segmentation import find_boundaries

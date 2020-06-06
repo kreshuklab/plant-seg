@@ -73,7 +73,7 @@ def automatic_file_matching(all_gt, all_seg):
     return zip(all_gt, all_seg)
 
 
-def run_evaluation(gtarray, segarray, seg_background_zero=False):
+def run_evaluation(gtarray, segarray, remove_background=True):
     timer = - time.time()
     # Check for problems in data types
     # double check for type and sign to allow a bit of slack in using _
@@ -106,17 +106,8 @@ def run_evaluation(gtarray, segarray, seg_background_zero=False):
         factor = tuple([g_shape / seg_shape for g_shape, seg_shape in zip(gtarray.shape, segarray.shape)])
         segarray = zoom(segarray, factor, order=0).astype(np.uint32)
 
-    print("- Relabeling data and Masking")
-    if not seg_background_zero:
-        # Relabel data and add 1 to avoid masking artifact
-        # Since the background in the ground truth is not always connected we opted for ignoring the
-        # biggest segment in the volume. This is always the external region of the volume.
-        segarray = vigra.analysis.relabelConsecutive(segarray)[0] + 1
-        print("- Masking prediction background in the prediction")
-        value, counts = np.unique(segarray, return_counts=True)
-        segarray[segarray == value[counts.argmax()]] = 0
-
-        print("- Remove background")
+    if remove_background:
+        print("- Removing background")
         mask = gtarray != 0
         gtarray = gtarray[mask].ravel()
         segarray = segarray[mask].ravel()
@@ -174,11 +165,11 @@ if __name__ == "__main__":
     result_placeholder = create_result_placeholder(eval_config, metrics=metrics)
     results = []
 
-    seg_background_zero = (eval_config["seg_background_zero"] if "seg_background_zero" in eval_config
-                           else True)
+    remove_background = (eval_config["remove_background"] if "remove_background" in eval_config
+                         else True)
 
     # Make sure that GT and segmentation directories are present in the FS
-    assert os.path.isdir(eval_config["gt_dir"]) and os.path.isdir(eval_config["seg_dir"])
+    # assert os.path.isdir(eval_config["gt_dir"]) and os.path.isdir(eval_config["seg_dir"])
 
     # Parse the files paths and return an iterable of tuples (gt_path, seg_path)
     if 'files_pairs' in eval_config:
@@ -199,7 +190,7 @@ if __name__ == "__main__":
                 _segarray = seg[eval_config["seg_name"]][...]
                 _gtarray = gt[eval_config["gt_name"]][...]
 
-        _scores = run_evaluation(_gtarray, _segarray, seg_background_zero)
+        _scores = run_evaluation(_gtarray, _segarray, remove_background)
         results.append(collect_results(result_placeholder, _scores, _gt, _seg))
 
     # Save CSV

@@ -31,7 +31,7 @@ class DistanceTransformWatershed(AbstractSegmentationStep):
                                                                          min_segment_size=ws_minsize,
                                                                          preserve_membrane=True,
                                                                          sigma_seeds=ws_sigma,
-                                                                         stacked_2d=not ws_2D,
+                                                                         stacked_2d=ws_2D,
                                                                          used_offsets=[0, 1, 2],
                                                                          offset_weights=[1, 1, 1],
                                                                          n_threads=n_threads)

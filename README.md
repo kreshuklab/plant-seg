@@ -10,7 +10,11 @@ The pipeline is tuned for plant cell tissue acquired with confocal and light she
 Pre-trained models are provided.  
 
 ## Getting Started
-### Prerequisites
+The recommended way of installing plantseg is via the conda package, which is only supported on Linux.
+Running plantseg on other operating systems (Windows 10, Mac OS) is currently possible only via a Docker image
+that we provide  ([see below](#docker-image)).
+
+### Prerequisites for conda package
 * Linux
 * (Optional) Nvidia GPU + CUDA
 
@@ -34,7 +38,7 @@ Follow the instructions to complete the anaconda installation.
 ### Install PlantSeg using conda
 The tool can be installed directly by executing in the terminal:
 ```bash
- conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge nifty=vplantseg1.0.8 plantseg
+conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge nifty=vplantseg1.0.8 pytorch-3dunet=1.2.5 plantseg
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
@@ -108,27 +112,72 @@ The PlantSeg repository is organised as follows:
 * **tests**: Contains automated tests that ensures the PlantSeg functionality are not compromised during an update.
 
 ## Docker image
-We also provide a docker image with plantseg package installed.
-Make sure that [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) is installed on the docker host.
+We also provide a Docker image with plantseg package, which can be run on any operating system with Docker
+installed. Since plantseg is normally used in a GUI mode, one has to share a display on the host operating system
+with a docker container running plantseg. Below we provide a detailed instruction of how to run a plantseg Docker
+image on Linux, Windows 10 and Mac OS.
 
-**Linux only**: In oder to execute the docker image in the GUI mode, fist we need to allow everyone to access X server
+As a side note: running plantseg via Docker on Windows and Mac OS works only with CPU mode, which is significantly slower
+than when running on the GPU, e.g. for a 3D stack of size `200x400x400` it took ~40mins to segment with plantseg Docker image
+on Windows (as compared to 1.5 mins when segmenting the same stack using plantseg with GPU) on a modern laptop.
+
+Also bear in mind that plantseg is quite memory hungry, so when running with Docker on a laptop, please make sure to process
+smaller volumes (up to 1GB) and use smaller patch sizes for neural network predictions, otherwise your Docker container
+may be terminated abruptly due to the out of memory issue.
+
+### Linux
+Make sure that [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) is installed on the docker host otherwise you won't be able to utilize the GPUs.
+
+In oder to execute the docker image in the GUI mode, fist we need to allow everyone to access X server
 on the docker host. This can be done by invoking the following command in the terminal:
 ```bash
 xhost +
 
 ```
-The just run:
+For GPU support run:
+```
+docker run --runtime=nvidia -it --rm -v PATH_TO_DATASET:/root/datasets -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY wolny/plantseg
+```
+If your docker host does not have modern GPU and/or nvidia-docker is not installed, run:
 ```
 docker run -it --rm -v PATH_TO_DATASET:/root/datasets -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY wolny/plantseg
-
 ```
-this will start the _PlantSeg_ GUI application. `PATH_TO_DATASET` is the directory on the docker host where the data to be processed are stored.
+
+this will start the plantseg GUI application. `PATH_TO_DATASET` is the path to the directory on the docker host where the data to be processed are stored.
+
+### Windows 10
+- [Install Docker Desktop on Windows](https://docs.docker.com/docker-for-windows/install/). 
+Make sure to have the latest Windows 10 version installed, if not you might need to sign up for the Windows Insider Program in order to install the version required by Docker.
+- [Install Windows X Server](https://dev.to/darksmile92/run-gui-app-in-linux-docker-container-on-windows-host-4kde).
+- After you install, configure and run the VcXsrv Windows X Server, open the Windows PowerShell and run:
+```bash
+set-variable -name DISPLAY -value YOUR-IP:0.0
+```
+replace `YOUR-IP` with your actual host IP address (you can find it by running `ipconfig` in the PowerShell)
+- Run plantseg via:
+```bash
+docker run -it --rm -v PATH_TO_DATASET:/root/datasets -e DISPLAY=$DISPLAY wolny/plantseg
+```
+where `PATH_TO_DATASET` is the path to the directory on Windows where the data to be processed are stored.
+
+### Mac OS
+- [Install Docker Desktop on Mac](https://docs.docker.com/docker-for-mac/install/)
+- [Install X Window System on Mac](https://gist.github.com/rizkyario/dbf69c21f2e8e3251d3aa7848ee69990)
+- after you install and run XQuartz 2.7.10 on your Mac according to the instructions above, run:
+```bash
+docker run -it --rm -v PATH_TO_DATASET:/root/datasets -e DISPLAY=$DISPLAY_MAC wolny/plantseg
+```
+where `PATH_TO_DATASET` is the path to the directory on Mac OS where the data to be processed are stored.
+
+
 
 ## Datasets
 We publicly release the datasets used for training the networks which available as part of the _PlantSeg_ package.
 Please refer to [our publication](https://www.biorxiv.org/content/10.1101/2020.01.17.910562v1) for more details about the datasets:
-- _Arabidopsis thaliana_ ovules dataset (raw confocal images + ground truth labels) can be downloaded from [here](https://oc.embl.de/index.php/s/yUl0GGCYDfxxVVm)
-- _Arabidopsis thaliana_ lateral root (raw light sheet images + ground truth labels) can be downloaded from [here](https://oc.embl.de/index.php/s/gNXDHhOS4GwBlZT)
+- _Arabidopsis thaliana_ ovules dataset (raw confocal images + ground truth labels)
+- _Arabidopsis thaliana_ lateral root (raw light sheet images + ground truth labels) 
+
+Both datasets can be downloaded from [our OSF project](https://osf.io/uzq3w/)
 
 ## Pre-trained networks
 The following pre-trained networks are provided with PlantSeg package out-of-the box and can be specified in the config file or chosen in the GUI.
@@ -141,6 +190,8 @@ The following pre-trained networks are provided with PlantSeg package out-of-the
 * `lightsheet_unet_bce_dice_ds1x` - a variant of 3D U-Net trained on light-sheet images of _Arabidopsis_ lateral root on original resolution, voxel size: (0.25x0.1625x0.1625 µm^3) (ZYX) with BCEDiceLoss
 * `lightsheet_unet_bce_dice_ds2x` - a variant of 3D U-Net trained on light-sheet images of _Arabidopsis_ lateral root on 1/2 resolution, voxel size: (0.25x0.325x0.325 µm^3) (ZYX) with BCEDiceLoss
 * `lightsheet_unet_bce_dice_ds3x` - a variant of 3D U-Net trained on light-sheet images of _Arabidopsis_ lateral root on 1/3 resolution, voxel size: (0.25x0.4875x0.4875 µm^3) (ZYX) with BCEDiceLoss
+* `confocal_2D_unet_bce_dice_ds2x` - a variant of 2D U-Net trained on confocal images of _Arabidopsis_ ovules. Training the 2D U-Net is done on the Z-slices (1/2 resolution, pixel size: 0.150x0.150 µm^3) with BCEDiceLoss
+* `confocal_2D_unet_bce_dice_ds3x` - a variant of 2D U-Net trained on confocal images of _Arabidopsis_ ovules. Training the 2D U-Net is done on the Z-slices (1/3 resolution, pixel size: 0.225x0.225 µm^3) with BCEDiceLoss
 
 Selecting a given network name (either in the config file or GUI) will download the network into the `~/.plantseg_models`
 directory.

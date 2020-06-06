@@ -72,7 +72,7 @@ class GaspFromPmaps(AbstractSegmentationStep):
                                                                         min_segment_size=self.ws_minsize,
                                                                         preserve_membrane=True,
                                                                         sigma_seeds=self.ws_sigma,
-                                                                        stacked_2d=not self.ws_2d,
+                                                                        stacked_2d=self.ws_2d,
                                                                         used_offsets=[0, 1, 2],
                                                                         offset_weights=[1, 1, 1],
                                                                         n_threads=self.n_threads)
