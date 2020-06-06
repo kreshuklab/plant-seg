@@ -9,9 +9,14 @@ The input image can be a raw stack "tiff"/"h5" or the output of the PreProcessin
 * The **Model Name** menu shows all available models. There are two main basic models available  
     1. **Generic confocal**, this a generic model for all confocal dataset.  
     Some examples:
+    ![alt text](./images/tum_ovules_mc_raw.png)
+    ![alt text](./images/meristem.png)
+    ![alt text](./images/3datlas_root_raw.png)
+    ![alt text](./images/3datlas_leaf_raw.png)
     
     2. **Generic lightsheet** this a generic model for all lightsheet dataset.  
      Some examples:
+     ![alt text](./images/cos_root_mc_raw.png)
     
 * Due to memory constrains, usually a complete stacks does not fit the GPUs memory, 
  therefore the **Patch size** can be used to optimize the performance of the pipeline. 
