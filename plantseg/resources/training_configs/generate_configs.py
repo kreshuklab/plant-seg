@@ -34,7 +34,8 @@ norm_config_values = {
         'loaders/train/slice_builder/patch_shape': [48, 80, 80],
         'loaders/val/slice_builder/patch_shape': [48, 80, 80],
         'loaders/val/slice_builder/stride_shape': [48, 80, 80],
-        'loaders/test/slice_builder/patch_shape': [48, 80, 80]
+        'loaders/test/slice_builder/patch_shape': [48, 80, 80],
+        'loaders/test/slice_builder/stride_shape': [24, 40, 40]
     },
     'gn': {
         'model/layer_order': 'gcr',
