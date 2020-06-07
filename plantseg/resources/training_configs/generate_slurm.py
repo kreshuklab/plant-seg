@@ -2,7 +2,14 @@ import yaml
 import os
 
 
-def generate_script(checkpoint_dir):
+def generate_script(checkpoint_dir, phase):
+    assert phase in ['train', 'test']
+
+    if phase == 'train':
+        script = 'train.py'
+    else:
+        script = 'predict.py'
+
     return f"""#!/bin/bash
 
 #SBATCH -A kreshuk                              
@@ -10,7 +17,7 @@ def generate_script(checkpoint_dir):
 #SBATCH -n 2				            
 #SBATCH --mem 32G			            
 #SBATCH -t 72:00:00                     
-#SBATCH -o {checkpoint_dir}/train.log			        
+#SBATCH -o {checkpoint_dir}/{phase}.log			        
 #SBATCH -e {checkpoint_dir}/error.log
 #SBATCH --mail-type=FAIL,BEGIN,END		    
 #SBATCH --mail-user=adrian.wolny@embl.de
@@ -22,7 +29,7 @@ module load cuDNN
 
 export PYTHONPATH="/g/kreshuk/wolny/workspace/pytorch-3dunet:$PYTHONPATH"
 
-/g/kreshuk/wolny/workspace/pytorch-3dunet/pytorch3dunet/train.py --config {checkpoint_dir}/config_train.yml
+/g/kreshuk/wolny/workspace/pytorch-3dunet/pytorch3dunet/{script} --config {checkpoint_dir}/config_{phase}.yml
 """
 
 
@@ -37,16 +44,20 @@ def _get_config_paths(root_dir):
 
 
 if __name__ == "__main__":
+    phase = 'test'
     i = 1
     base_dir = './grid_search'
     for config_file in _get_config_paths(base_dir):
         config_name = os.path.split(config_file)[1]
-        if not (config_name == 'config_train.yml'):
+        if not (config_name == f'config_{phase}.yml'):
             continue
         print('Processing', config_file)
         config = yaml.safe_load(open(config_file, 'r'))
-        checkpoint_dir = config['trainer']['checkpoint_dir']
-        slurm_script = generate_script(checkpoint_dir)
+        if phase == 'train':
+            checkpoint_dir = config['trainer']['checkpoint_dir']
+        else:
+            checkpoint_dir = os.path.split(config['model_path'])[0]
+        slurm_script = generate_script(checkpoint_dir, phase)
         slurm_dir = os.path.join(base_dir, 'slurm')
         os.makedirs(slurm_dir, exist_ok=True)
         with open(os.path.join(slurm_dir, f'train_{i}.sh'), 'w') as f:

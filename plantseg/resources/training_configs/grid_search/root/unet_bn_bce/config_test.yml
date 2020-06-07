@@ -5,6 +5,7 @@ loaders:
   - 32
   - 32
   num_workers: 8
+  output_dir: /g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/./grid_search/root/unet_bn_bce/predictions
   raw_internal_path: raw
   test:
     file_paths:

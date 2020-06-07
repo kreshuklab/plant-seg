@@ -69,7 +69,10 @@ def create_config(conf, output_file, a, n, l, phase):
         updates.extend([('trainer/checkpoint_dir', checkpoint_dir)])
     if phase == 'test':
         model_path = os.path.join(BASE_DIR, os.path.split(output_file)[0], 'best_checkpoint.pytorch')
+        output_dir = os.path.join(BASE_DIR, os.path.split(output_file)[0], 'predictions')
+
         updates.extend([('model_path', model_path)])
+        updates.extend([('loaders/output_dir', output_dir)])
 
     for key, value in updates:
         if phase == 'test' and ('train' in key or 'val' in key):
