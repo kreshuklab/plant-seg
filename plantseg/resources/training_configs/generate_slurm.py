@@ -60,6 +60,6 @@ if __name__ == "__main__":
         slurm_script = generate_script(checkpoint_dir, phase)
         slurm_dir = os.path.join(base_dir, 'slurm')
         os.makedirs(slurm_dir, exist_ok=True)
-        with open(os.path.join(slurm_dir, f'train_{i}.sh'), 'w') as f:
+        with open(os.path.join(slurm_dir, f'{phase}_{i}.sh'), 'w') as f:
             f.write(slurm_script)
         i += 1

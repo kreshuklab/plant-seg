@@ -1,14 +1,13 @@
 import argparse
-import os
-import glob
-import h5py
-from skimage.filters import gaussian
-from skimage.segmentation import find_boundaries
-from scipy.ndimage import zoom
-import numpy as np
-from sklearn.metrics import f1_score, precision_score, recall_score
-from datetime import datetime
 import csv
+from datetime import datetime
+
+import h5py
+import numpy as np
+from pytorch3dunet.augment.transforms import StandardLabelToBoundary
+from scipy.ndimage import zoom
+from skimage.filters import gaussian
+from sklearn.metrics import precision_score, recall_score
 
 
 def blur_boundary(boundary, sigma):
@@ -36,17 +35,17 @@ def parse():
                         help='Path to directory with the ground truth files', required=True)
     parser.add_argument('--predictions', type=str,
                         help='Path to directory with the predictions files', required=True)
-    parser.add_argument('--threshold', type=float,
-                        help='threshold at which the predictions will be binarized',
-                        required=False, default=0.5)
-    parser.add_argument('--out-file', type=float,
+    parser.add_argument('--threshold', type=float, nargs='+',
+                        help='thresholds at which the predictions will be binarized',
+                        required=True)
+    parser.add_argument('--out-file', type=str,
                         help='define name (and location) of output file (final name: out-file + timestamp + .csv)',
                         required=False, default="pmaps_evaluation")
     parser.add_argument('--p-key', type=str, default="predictions",
                         help='predictions dataset name inside h5', required=False)
     parser.add_argument('--gt-key', type=str, default="label",
                         help='ground truth dataset name inside h5', required=False)
-    parser.add_argument('--sigma', type=float, default=1.3,
+    parser.add_argument('--sigma', type=float, default=1.0,
                         help='must match the default smoothing used in training. Default ovules 1.3', required=False)
     args = parser.parse_args()
     return args
@@ -58,7 +57,7 @@ def pmaps_evaluation(gt_path,
                      out_name="pmaps_evaluation",
                      p_key="predictions",
                      gt_key="label",
-                     sigma=1.3):
+                     sigma=1.0):
     if type(thresholds) is float:
         assert thresholds < 1 or thresholds > 0, "threshold must be float between 0 and 1."
         thresholds = [thresholds]
@@ -98,8 +97,8 @@ def pmaps_evaluation(gt_path,
             pmap = zoom(pmap, factor)
 
         # generate gt boundaries
-        boundaries = find_boundaries(gt, connectivity=2)
-        boundaries = blur_boundary(boundaries, sigma)
+        ltb = StandardLabelToBoundary(blur=True, sigma=sigma)
+        boundaries = ltb(gt)
 
         for threshold in thresholds:
             _pmap = np.zeros_like(pmap)
