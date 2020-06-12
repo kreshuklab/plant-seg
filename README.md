@@ -251,6 +251,20 @@ Alternatively one can create the `plant-seg` environment from scratch and ensuri
 conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge cudatoolkit=<YOU_CUDA_VERSION> plantseg
 ```
 
+* If you receive an error similar to:
+```
+File "/home/usr/miniconda3/envs/plant-seg/lib/python3.7/site-packages/plantseg/gui/gui_widgets.py", line 210, in init
+default=config[self.module]["model_name"],
+KeyError: 'cnn_prediction'
+```
+It might be that the default configuration file got corrupted.
+You should be able to solve it by removing the corrupted file `config_gui_last.yaml`.
+
+If you have a standard installation of plantseg, you can remove it by executing on the terminal:
+```
+$ rm ~/.plantseg_models/configs/config_gui_last.yaml
+```
+
 * PlantSeg is under active development so it may happen that the models/configuration files saved in `~/.plantseg_modes`
 are outdated. In case of errors related to loading the configuration file, please close the PlantSeg app, 
 remove `~/.plantseg_models` directory and try again.
