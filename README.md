@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.com/hci-unihd/plant-seg.svg?branch=master)](https://travis-ci.com/hci-unihd/plant-seg)
 
 # PlantSeg
+![alt text](./Documentation-GUI/images/main_figure_nologo.png)
 [PlantSeg](plantseg) is a tool for cell instance aware segmentation in densely packed 3D volumetric images.
 The pipeline uses a two stages segmentation strategy (Neural Network + Segmentation).
 The pipeline is tuned for plant cell tissue acquired with confocal and light sheet microscopy.
@@ -15,7 +16,11 @@ that we provide  ([see below](#docker-image)).
 
 ### Prerequisites for conda package
 * Linux
-* Nvidia GPU + CUDA (Optional)
+* (Optional) Nvidia GPU + CUDA
+
+or
+
+* Windows 10 / MacOS via Docker
 
 ### Install Anaconda python
 - First step required to use the pipeline is installing anaconda python.
@@ -36,6 +41,14 @@ The tool can be installed directly by executing in the terminal:
 conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge nifty=vplantseg1.0.8 pytorch-3dunet=1.2.5 plantseg
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
+
+### Update PlantSeg
+The tool is actively developed and improvement and small bugs fix are continuosly coming. 
+To update PlantSeg type in the terminal: 
+```bash
+ conda activate plant-seg
+ conda update -c lcerrone plantseg
+```
 
 ### Pipeline Usage (command line)
 Our pipeline is completely configuration file based and does not require any coding.
@@ -72,10 +85,12 @@ Some key design choices:
 * `path` attribute: is used to define either the file to process or the directory containing the data.
 * `preprocessing` attribute: contains a simple set of possible operations one would need to run on their own data before calling the neural network. 
 If data is ready for neural network processing either delete the entire section or set `state: False` in order to skip this step.
+Detailed instructions can be found at [Data Processing](Documentation-GUI/Data-Processing.md).
 * `cnn_prediction` attribute: contains all parameters relevant for predicting with neural network. 
 Description of all pre-trained models provided with the package are described below.
+Detailed instructions can be found at [Predictions](Documentation-GUI/Predictions.md).
 * `segmentation` attribute: contains all parameters needed to run the partitioning algorithm (i.e. final segmentation). 
-Detailed instructions can be found in [segmentation](plantseg/segmentation/README.md) directory.
+Detailed instructions can be found at [Segmentation](Documentation-GUI/Segmentation.md).
 
 ### Additional information
 
@@ -85,6 +100,16 @@ Our pipeline uses the PyTorch library for the CNN predictions. PlantSeg can be r
 for maximum performance we recommend that the application is run on a machine with a high performance GPU for deep learning.
 If `CUDA_VISIBLE_DEVICES` environment variable is not specified the prediction task will be distributed on all available GPUs.
 E.g. run: `CUDA_VISIBLE_DEVICES=0 plantseg --config CONFIG_PATH` to restrict prediction to a given GPU.
+
+## Repository index
+The PlantSeg repository is organised as follows:
+* **plantseg**: Contains the source code of PlantSeg.
+* **conda-reicpe**: Contains all necessary code and configuration to create the anaconda package.
+* **Documentation-GUI**: Contains an more in-depth documentation of PlantSeg functionality.
+* **evaluation**: Contains all script required to reproduce the quantitative evaluation in 
+[Wolny et al.](https://www.biorxiv.org/content/10.1101/2020.01.17.910562v1).
+* **examples**: Contains the files required to test PlantSeg.
+* **tests**: Contains automated tests that ensures the PlantSeg functionality are not compromised during an update.
 
 ## Docker image
 We also provide a Docker image with plantseg package, which can be run on any operating system with Docker
@@ -202,7 +227,6 @@ or:
 ```
     raise AssertionError("Torch not compiled with CUDA enabled")
 AssertionError: Torch not compiled with CUDA enabled
-
 ```
 It means that your cuda installation does not match the default in plantseg. 
 You can check your current cuda version by typing in the terminal
@@ -225,7 +249,6 @@ conda install -c pytorch torchvision cudatoolkit=9.2 pytorch
 Alternatively one can create the `plant-seg` environment from scratch and ensuring the correct version of cuda/pytorch, by:
 ```
 conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge cudatoolkit=<YOU_CUDA_VERSION> plantseg
-
 ```
 
 * PlantSeg is under active development so it may happen that the models/configuration files saved in `~/.plantseg_modes`

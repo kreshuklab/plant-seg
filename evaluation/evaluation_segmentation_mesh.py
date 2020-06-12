@@ -92,6 +92,8 @@ if __name__ == "__main__":
                     if len(seg) != len(gt):
                         gt = fix_labels(plydata_gt, plydata_seg)
 
+                    seg = np.where(gt == 0, 0, seg)
+
                     _rand = adapted_rand(seg, gt)
                     _voi = voi(seg, gt)
                     print("  scores: ", _rand, _voi[0], _voi[1])

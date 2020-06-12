@@ -117,10 +117,8 @@ class PlantSegApp:
         menubar.add_cascade(label="Edit", menu=editmenu, font=self.font)
 
         helpmenu = tkinter.Menu(menubar, tearoff=0)
-        helpmenu.add_command(label="Help Index",
-                             command=self.open_documentation_index, font=self.font)
         helpmenu.add_command(label="PlantSeg Overview",
-                             command=self.open_documentation_general, font=self.font)
+                             command=self.open_documentation_index, font=self.font)
         helpmenu.add_command(label="Data Pre-Processing",
                              command=self.open_documentation_preprocessing, font=self.font)
         helpmenu.add_command(label="CNN Predictions",
@@ -399,11 +397,6 @@ class PlantSegApp:
     def open_documentation_index():
         """Open git page on the default browser"""
         webbrowser.open("https://github.com/hci-unihd/plant-seg/tree/master/Documentation-GUI")
-
-    @staticmethod
-    def open_documentation_general():
-        """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/blob/master/Documentation-GUI/General_gui.md")
 
     @staticmethod
     def open_documentation_preprocessing():
