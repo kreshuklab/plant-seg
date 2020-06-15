@@ -129,6 +129,8 @@ loaders:
     transformer:
       raw:
         - name: Standardize
+          mean: 19.434
+          std: 47.163
         - name: RandomFlip
         - name: RandomRotate90
         - name: RandomRotate
@@ -188,6 +190,8 @@ loaders:
     transformer:
       raw:
         - name: Standardize
+          mean: 8.719
+          std: 24.868
         - name: ToTensor
           expand_dims: true
       label:
