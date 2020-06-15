@@ -41,13 +41,13 @@ lr_scheduler:
   name: ReduceLROnPlateau
   # make sure to use the 'min' mode cause lower AdaptedRandError is better
   mode: min
-  factor: 0.5
+  factor: 0.2
   patience: 20
 trainer:
   # model with lower eval score is considered better
   eval_score_higher_is_better: False
   # path to the checkpoint directory
-  checkpoint_dir: '/g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/ovules/unet2d/bce_dice/ds3x'
+  checkpoint_dir: '/g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/ovules/unet2d/bce_dice/ds1x'
   # path to latest checkpoint; if provided the training will be resumed from that checkpoint
   resume: null
   # how many iterations between validations
@@ -71,45 +71,45 @@ loaders:
   train:
     # paths to the training datasets
     file_paths:
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_226_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_290_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_291_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_394_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_396_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_401_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_403_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_404_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_405_A_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_405_B_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_416_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_422_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_425_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_428_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_434_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_439_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_440_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_444_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_445_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_449_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_450_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_451_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_454_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_457_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_458_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_463_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_473_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_487_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_494_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_509_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_512_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_517_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_525_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_527_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_530_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_534_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_535_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_536_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_563_ds3x.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_226_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_290_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_291_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_394_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_396_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_401_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_403_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_404_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_405_A_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_405_B_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_416_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_422_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_425_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_428_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_434_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_439_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_440_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_444_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_445_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_449_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_450_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_451_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_454_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_457_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_458_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_463_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_473_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_487_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_494_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_509_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_512_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_517_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_525_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_527_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_530_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_534_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_535_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_536_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_563_gt.h5'
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
     slice_builder:
@@ -119,7 +119,7 @@ loaders:
       # train stride between patches
       stride_shape: [1, 64, 64]
       # minimum volume of the labels in the patch
-      threshold: 0.5
+      threshold: 0.7
       # probability of accepting patches which do not fulfil the threshold criterion
       slack_acceptance: 0.01
       skip_shape_check: true
@@ -132,7 +132,7 @@ loaders:
         - name: RandomRotate
           # rotate only in ZY plane due to anisotropy
           axes: [[2, 1]]
-          angle_spectrum: 15
+          angle_spectrum: 30
           mode: reflect
         - name: ElasticDeformation
           spline_order: 3
@@ -148,7 +148,7 @@ loaders:
         - name: RandomRotate
           # rotate only in ZY plane due to anisotropy
           axes: [[2, 1]]
-          angle_spectrum: 15
+          angle_spectrum: 30
           mode: reflect
         - name: ElasticDeformation
           spline_order: 0
@@ -166,8 +166,8 @@ loaders:
   val:
     # paths to the val datasets
     file_paths:
-      - '/g/kreshuk/wolny/Datasets/Ovules/val/N_420_ds3x.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/val/N_464_ds3x.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/val/N_420_gt.h5'
+      - '/g/kreshuk/wolny/Datasets/Ovules/val/N_464_gt.h5'
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
     slice_builder:
@@ -177,9 +177,9 @@ loaders:
       # train stride between patches
       stride_shape: [1, 256, 256]
       # minimum volume of the labels in the patch
-      threshold: 0.5
+      threshold: 0.7
       # probability of accepting patches which do not fulfil the threshold criterion
-      slack_acceptance: 0.0
+      slack_acceptance: 0.01
       skip_shape_check: true
 
     # data augmentation
