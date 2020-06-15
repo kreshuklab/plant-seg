@@ -61,8 +61,10 @@ trainer:
 # Configure training and validation loaders
 loaders:
   batch_size: 16
-  # how many subprocesses to use for data loading
-  num_workers: 8
+  # use lazy loader for ovules
+  dataset: LazyHDF5Dataset
+  # use only 1 worker due to lazy loader
+  num_workers: 1
   # path to the raw data within the H5
   raw_internal_path: /raw
   # path to the the label data withtin the H5
