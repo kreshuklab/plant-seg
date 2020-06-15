@@ -42,7 +42,7 @@ lr_scheduler:
   # make sure to use the 'min' mode cause lower AdaptedRandError is better
   mode: min
   factor: 0.2
-  patience: 20
+  patience: 10
 trainer:
   # model with lower eval score is considered better
   eval_score_higher_is_better: False
@@ -51,9 +51,9 @@ trainer:
   # path to latest checkpoint; if provided the training will be resumed from that checkpoint
   resume: null
   # how many iterations between validations
-  validate_after_iters: 500
+  validate_after_iters: 1000
   # how many iterations between tensorboard logging
-  log_after_iters: 100
+  log_after_iters: 200
   # max number of epochs
   epochs: 1000
   # max number of iterations
@@ -74,43 +74,43 @@ loaders:
     # paths to the training datasets
     file_paths:
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_226_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_290_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_290_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_291_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_394_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_394_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_396_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_401_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_401_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_403_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_404_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_404_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_405_A_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_405_B_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_405_B_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_416_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_422_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_422_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_425_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_428_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_428_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_434_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_439_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_439_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_440_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_444_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_444_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_445_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_449_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_449_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_450_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_451_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_451_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_454_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_457_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_457_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_458_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_463_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_463_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_473_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_487_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_487_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_494_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_509_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_509_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_512_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_517_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_517_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_525_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_527_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_527_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_530_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_534_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_534_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_535_gt.h5'
-      - '/g/kreshuk/wolny/Datasets/Ovules/train/N_536_gt.h5'
+      #- '/g/kreshuk/wolny/Datasets/Ovules/train/N_536_gt.h5'
       - '/g/kreshuk/wolny/Datasets/Ovules/train/N_563_gt.h5'
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
@@ -121,7 +121,7 @@ loaders:
       # train stride between patches
       stride_shape: [1, 64, 64]
       # minimum volume of the labels in the patch
-      threshold: 0.7
+      threshold: 0.9
       # probability of accepting patches which do not fulfil the threshold criterion
       slack_acceptance: 0.01
       skip_shape_check: true
@@ -181,7 +181,7 @@ loaders:
       # train stride between patches
       stride_shape: [1, 256, 256]
       # minimum volume of the labels in the patch
-      threshold: 0.7
+      threshold: 0.9
       # probability of accepting patches which do not fulfil the threshold criterion
       slack_acceptance: 0.01
       skip_shape_check: true
