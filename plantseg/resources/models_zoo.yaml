@@ -24,6 +24,10 @@ confocal_unet_bce_dice_ds3x:
   path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2Funet_bce_dice_ds3x&files=
   resolution: [0.235, 0.225, 0.225]
   description: Unet trained on confocal images on 1/3-resolution in XY with BCEDiceLoss.
+confocal_2D_unet_bce_dice_ds1x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2F2dunet_bce_dice_ds1x&files=
+  resolution: [0.075, 0.075]
+  description: 2D Unet trained on z-slices of confocal images on original resolution with BCEDiceLoss.
 confocal_2D_unet_bce_dice_ds2x:
   path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FArabidopsis-Ovules%2F2dunet_bce_dice_ds2x&files=
   resolution: [0.150, 0.150]
