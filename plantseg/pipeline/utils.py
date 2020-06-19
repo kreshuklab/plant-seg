@@ -2,6 +2,7 @@ import glob
 import logging
 import os
 import warnings
+import sys
 
 import tifffile
 import h5py
@@ -109,3 +110,21 @@ def read_h5_voxel_size(file_path):
             gui_logger.warn(f"Cannot find 'element_size_um' attribute for dataset '{h5key}'. "
                             f"Using default voxel_size: {[1., 1., 1.]}")
             return [1., 1., 1.]
+
+def get_logger(name, level=logging.INFO):
+    global loggers
+    if loggers.get(name) is not None:
+        return loggers[name]
+    else:
+        logger = logging.getLogger(name)
+        logger.setLevel(level)
+        # Logging to console
+        stream_handler = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter(
+            '%(asctime)s [%(threadName)s] %(levelname)s %(name)s - %(message)s')
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+
+        loggers[name] = logger
+
+        return logger
