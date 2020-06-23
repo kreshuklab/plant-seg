@@ -14,10 +14,8 @@ model:
   num_groups: 8
   # apply element-wise nn.Sigmoid after the final 1x1x1 convolution, otherwise apply nn.Softmax
   final_sigmoid: true
-# loss function to be used during training (ce - CrossEntropy)
 loss:
-  name: BCEWithLogitsLoss
-  # skip the last channel in the target (i.e. when last channel contains data not relevant for the loss)
+  name: BCEDiceLoss
   skip_last_target: true
 optimizer:
   # initial learning rate
@@ -33,7 +31,7 @@ lr_scheduler:
   name: ReduceLROnPlateau
   mode: max
   factor: 0.2
-  patience: 30
+  patience: 8
 trainer:
   eval_score_higher_is_better: True
   # path to the checkpoint directory
@@ -41,7 +39,7 @@ trainer:
   # path to latest checkpoint; if provided the training will be resumed from that checkpoint
   resume: null
   # how many iterations between validations
-  validate_after_iters: 200
+  validate_after_iters: 1000
   # how many iterations between tensorboard logging
   log_after_iters: 100
   # max number of epochs
