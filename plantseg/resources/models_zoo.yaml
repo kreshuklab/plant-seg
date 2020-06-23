@@ -43,6 +43,10 @@ lightsheet_unet_bce_dice_ds1x:
   path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_dice_ds1x&files=
   resolution: [0.25, 0.1625, 0.1625]
   description: Unet trained on light-sheet images on original resolution with BCEDiceLoss.
+lightsheet_unet_bce_dice_nuclei_ds1x:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_dice_nuclei_ds1x&files=
+  resolution: [0.25, 0.1625, 0.1625]
+  description: Unet trained on light-sheet images of nuclei on original resolution with BCEDiceLoss. The network predicts 2 channels: nuclei mask in the 1st channel, nuclei boundaries in the 2nd channel
 lightsheet_unet_bce_dice_ds2x:
   path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_dice_ds2x&files=
   resolution: [0.25, 0.325, 0.325]
