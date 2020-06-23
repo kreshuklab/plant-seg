@@ -63,11 +63,15 @@ loaders:
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
     slice_builder:
-      name: SliceBuilder
+      name: FliterSliceBuilder
       # train patch size given to the network (adapt to fit in your GPU mem, generally the bigger patch the better)
       patch_shape: [80, 170, 170]
       # train stride between patches
       stride_shape: [20, 40, 40]
+      # minimum volume of the labels in the patch
+      threshold: 0.01
+      # probability of accepting patches which do not fulfil the threshold criterion
+      slack_acceptance: 0.01
 
     transformer:
       raw:
@@ -107,11 +111,15 @@ loaders:
 
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
     slice_builder:
-      name: SliceBuilder
+      name: FilterSliceBuilder
       # train patch size given to the network (adapt to fit in your GPU mem, generally the bigger patch the better)
       patch_shape: [80, 170, 170]
       # train stride between patches
       stride_shape: [80, 170, 170]
+      # minimum volume of the labels in the patch
+      threshold: 0.01
+      # probability of accepting patches which do not fulfil the threshold criterion
+      slack_acceptance: 0.01
 
     # data augmentation
     transformer:
