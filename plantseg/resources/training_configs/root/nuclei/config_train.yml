@@ -49,6 +49,7 @@ trainer:
   # max number of iterations
   iters: 60000
 loaders:
+  batch_size: 1
   # how many subprocesses to use for data loading
   num_workers: 8
   # path to the raw data within the H5
@@ -66,7 +67,7 @@ loaders:
     slice_builder:
       name: SliceBuilder
       # train patch size given to the network (adapt to fit in your GPU mem, generally the bigger patch the better)
-      patch_shape: [90, 192, 192]
+      patch_shape: [80, 170, 170]
       # train stride between patches
       stride_shape: [20, 40, 40]
 
@@ -110,9 +111,9 @@ loaders:
     slice_builder:
       name: SliceBuilder
       # train patch size given to the network (adapt to fit in your GPU mem, generally the bigger patch the better)
-      patch_shape: [90, 192, 192]
+      patch_shape: [80, 170, 170]
       # train stride between patches
-      stride_shape: [20, 40, 40]
+      stride_shape: [80, 170, 170]
 
     # data augmentation
     transformer:
