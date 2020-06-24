@@ -190,8 +190,10 @@ The following pre-trained networks are provided with PlantSeg package out-of-the
 * `lightsheet_unet_bce_dice_ds1x` - a variant of 3D U-Net trained on light-sheet images of _Arabidopsis_ lateral root on original resolution, voxel size: (0.25x0.1625x0.1625 µm^3) (ZYX) with BCEDiceLoss
 * `lightsheet_unet_bce_dice_ds2x` - a variant of 3D U-Net trained on light-sheet images of _Arabidopsis_ lateral root on 1/2 resolution, voxel size: (0.25x0.325x0.325 µm^3) (ZYX) with BCEDiceLoss
 * `lightsheet_unet_bce_dice_ds3x` - a variant of 3D U-Net trained on light-sheet images of _Arabidopsis_ lateral root on 1/3 resolution, voxel size: (0.25x0.4875x0.4875 µm^3) (ZYX) with BCEDiceLoss
+* `confocal_2D_unet_bce_dice_ds1x` - a variant of 2D U-Net trained on confocal images of _Arabidopsis_ ovules. Training the 2D U-Net is done on the Z-slices (pixel size: 0.075x0.075 µm^3) with BCEDiceLoss
 * `confocal_2D_unet_bce_dice_ds2x` - a variant of 2D U-Net trained on confocal images of _Arabidopsis_ ovules. Training the 2D U-Net is done on the Z-slices (1/2 resolution, pixel size: 0.150x0.150 µm^3) with BCEDiceLoss
 * `confocal_2D_unet_bce_dice_ds3x` - a variant of 2D U-Net trained on confocal images of _Arabidopsis_ ovules. Training the 2D U-Net is done on the Z-slices (1/3 resolution, pixel size: 0.225x0.225 µm^3) with BCEDiceLoss
+* `lightsheet_unet_bce_dice_nuclei_ds1x` - a variant of 3D U-Net trained on light-sheet images _Arabidopsis_ lateral root nuclei on original resolution, voxel size: (0.25x0.1625x0.1625 µm^3) (ZYX) with BCEDiceLoss
 
 Selecting a given network name (either in the config file or GUI) will download the network into the `~/.plantseg_models`
 directory.
