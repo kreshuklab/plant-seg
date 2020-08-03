@@ -162,7 +162,7 @@ where `PATH_TO_DATASET` is the path to the directory on Windows where the data t
 
 ### Mac OS
 - [Install Docker Desktop on Mac](https://docs.docker.com/docker-for-mac/install/)
-- [Install X Window System on Mac](https://gist.github.com/rizkyario/dbf69c21f2e8e3251d3aa7848ee69990)
+- [Install X Window System on Mac](https://www.xquartz.org/releases/XQuartz-2.7.11.html)
 - after you install and run XQuartz 2.7.10 on your Mac according to the instructions above, run:
 ```bash
 docker run -it --rm -v PATH_TO_DATASET:/root/datasets -e DISPLAY=$DISPLAY_MAC wolny/plantseg
