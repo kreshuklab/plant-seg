@@ -46,6 +46,8 @@ cnn_postprocessing:
   factor: [1, 1, 1]
   # spline order for rescaling
   order: 2
+  # save raw input in the output prediction file h5 file
+  save_raw: False
 
 
 segmentation:
@@ -82,6 +84,8 @@ segmentation_postprocessing:
   factor: [1, 1, 1]
   # spline order for rescaling (keep 0 for segmentation post processing
   order: 0
+  # save raw input in the output segmentation file h5 file
+  save_raw: False
 
 
 

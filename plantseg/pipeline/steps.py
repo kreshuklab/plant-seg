@@ -25,10 +25,11 @@ class GenericPipelineStep:
         out_ext (str): output file extension
         state (bool): if True the step is enabled
         h5_output_key (str): output H5 dataset, if None the input key will be used
+        save_raw (bool): save raw input in the output H5
     """
 
     def __init__(self, input_paths, input_type, output_type, save_directory,
-                 file_suffix="", out_ext=".h5", state=True, h5_output_key=None):
+                 file_suffix="", out_ext=".h5", state=True, h5_output_key=None, save_raw=False):
         assert isinstance(input_paths, list)
         assert len(input_paths) > 0, "Input file paths cannot be empty"
         assert input_type in SUPPORTED_TYPES
@@ -42,6 +43,7 @@ class GenericPipelineStep:
         self.file_suffix = file_suffix
         self.out_ext = out_ext
         self.state = state
+        self.save_raw = save_raw
 
         # create save_directory if doesn't exist
         self.save_directory = os.path.join(os.path.dirname(input_paths[0]), save_directory)
@@ -77,6 +79,18 @@ class GenericPipelineStep:
         output_path = self._create_output_path(input_path)
         gui_logger.info(f'Saving results in {output_path}')
         self.save_output(output_data, output_path, voxel_size)
+
+        if self.save_raw:
+            raw_path = self._raw_path(input_path)
+            if os.path.exists(raw_path):
+                with h5py.File(raw_path, 'r') as f:
+                    raw = f['raw'][...]
+                with h5py.File(output_path, 'r+') as f:
+                    f.create_dataset('raw', data=raw, compression='gzip')
+                    # save voxel_size
+                    f['raw'].attrs['element_size_um'] = voxel_size
+            else:
+                gui_logger.warning(f'Cannot save raw input: {raw_path} not found')
 
         # return output_path
         return output_path
@@ -210,6 +224,19 @@ class GenericPipelineStep:
             data = self._normalize_01(data)
             data = (data * np.iinfo(np.uint8).max)
             return data.astype(np.uint8)
+
+    def _raw_path(self, input_path):
+        base, filename = os.path.split(input_path)
+        filename = filename.split('_predictions')[0] + '.h5'
+
+        up_levels = 2
+        if self.input_type != 'labels':
+            up_levels = 1
+
+        for _ in range(up_levels):
+            base = os.path.dirname(base)
+
+        return os.path.join(base, filename)
 
 
 class AbstractSegmentationStep(GenericPipelineStep):
