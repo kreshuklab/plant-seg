@@ -58,39 +58,27 @@ def clean_gt(gt):
 
 if __name__ == "__main__":
     results = []
-    data_path = "PATHTOFOLDER"
-    datasets = ["C07", "C03", "Ox"]
-    time_points = ["*T0*", "*T1*", "*T2*"]
-    gt_id = "GT.ply"
-    seg_ids = ["pred*.ply", "proj*.ply", "autoSegm.ply"]
+
+    data_path = "/home/lcerrone/leaf_evaluation/mesh_npy/"
+    datasets = ["Col07", "Col03", "Ox"]
+    time_points = ["_T0", "_T1", "_T2"]
+    gt_id = "_gt.npy"
+    seg_id = "_seg.npy"
+    seg_types = ["_pred", "_predRaw", "_3Dproj", "_autoSegm"]
 
     for dataset in datasets:
         for tp in time_points:
+            for st in seg_types:
 
-            gt_path = glob.glob(os.path.join(data_path, dataset, tp + gt_id))
-            if len(gt_path) > 0:
-                gt_path = gt_path[0]
-                print("gt found: ", gt_path)
+                seg_path = f"{data_path}{dataset}{tp}{st}{seg_id}"
+                gt_path = f"{data_path}{dataset}{tp}{st}{gt_id}"
 
-                with open(gt_path, 'rb') as f:
-                    plydata_gt = PlyData.read(f)
+                seg_path = glob.glob(seg_path)
+                gt_path = glob.glob(gt_path)
 
-                gt = np.array(plydata_gt.elements[0]["label"])
-
-                gt = clean_gt(gt)
-
-                for seg_id in seg_ids:
-                    seg_path = glob.glob(os.path.join(data_path, dataset, tp + seg_id))[0]
-                    print("  seg: ", seg_path)
-
-                    with open(seg_path, 'rb') as f:
-                        plydata_seg = PlyData.read(f)
-
-                    seg = np.array(plydata_seg.elements[0]["label"])
-                    seg = np.where(seg == -1, 0, seg)
-
-                    if len(seg) != len(gt):
-                        gt = fix_labels(plydata_gt, plydata_seg)
+                for _seg_path, _gt_path in zip(seg_path, gt_path):
+                    seg = np.load(_seg_path)
+                    gt = np.load(_gt_path)
 
                     seg = np.where(gt == 0, 0, seg)
 
@@ -104,10 +92,12 @@ if __name__ == "__main__":
                               "segmentation_path": seg_path,
                               "groundtruth_path": gt_path,
                               "adapted_rand": _rand,
-                              "voi": _voi}
+                              "voi": _voi,
+                              "voi_split": _voi[0],
+                              "voi_merge": _voi[1]}
 
                     results.append(result)
 
-                write_csv("segmentation_mesh_tmp", results)
+        write_csv("segmentation_mesh_tmp", results)
 
     write_csv("segmentation_mesh", results)
