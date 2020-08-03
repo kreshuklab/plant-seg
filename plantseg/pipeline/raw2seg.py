@@ -42,8 +42,10 @@ def _create_postprocessing_step(input_paths, input_type, config):
     factor = config.get('factor', [1, 1, 1])
     out_ext = ".tiff" if config["tiff"] else ".h5"
     state = config.get('state', True)
+    save_raw = config.get('save_raw', False)
     return DataPostProcessing3D(input_paths, input_type=input_type, output_type=output_type,
-                                save_directory=save_directory, factor=factor, out_ext=out_ext, state=state)
+                                save_directory=save_directory, factor=factor, out_ext=out_ext,
+                                state=state, save_raw=save_raw)
 
 
 def raw2seg(config):

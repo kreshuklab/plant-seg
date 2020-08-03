@@ -42,7 +42,8 @@ class DataPostProcessing3D(GenericPipelineStep):
                  save_directory="PostProcessing",
                  factor=None,
                  out_ext=".h5",
-                 state=True):
+                 state=True,
+                 save_raw=False):
         if factor is None:
             factor = [1, 1, 1]
 
@@ -54,7 +55,8 @@ class DataPostProcessing3D(GenericPipelineStep):
                          save_directory=save_directory,
                          out_ext=out_ext,
                          state=state,
-                         h5_output_key=h5_output_key)
+                         h5_output_key=h5_output_key,
+                         save_raw=save_raw)
 
         # rescaling
         self.factor = factor

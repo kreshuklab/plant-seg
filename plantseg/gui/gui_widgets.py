@@ -364,7 +364,7 @@ class PostSegmentationFrame(ModuleFramePrototype):
          for i, w in enumerate(self.post_style["columns_weights"])]
 
         super().__init__(self.post_frame, module_name, font=font)
-        self.module = "cnn_postprocessing"
+        self.module = "segmentation_postprocessing"
         self.config = config
 
         self.show = tkinter.BooleanVar()
@@ -383,6 +383,13 @@ class PostSegmentationFrame(ModuleFramePrototype):
                                              column=0,
                                              menu=["True", "False"],
                                              default=self.config[self.module]["tiff"],
+                                             font=font),
+                           "save_raw": MenuEntry(self.post_frame,
+                                             text="Save raw data: ",
+                                             row=4,
+                                             column=0,
+                                             menu=["True", "False"],
+                                             default=self.config[self.module].get("save_raw", "False"),
                                              font=font),
                            }
 
@@ -441,7 +448,14 @@ class PostPredictionsFrame(ModuleFramePrototype):
                                                     column=0,
                                                     menu=["data_uint8", "data_float32"],
                                                     default=config[self.module]["output_type"],
-                                                    font=font)
+                                                    font=font),
+                           "save_raw": MenuEntry(self.post_frame,
+                                                 text="Save raw data: ",
+                                                 row=7,
+                                                 column=0,
+                                                 menu=["True", "False"],
+                                                 default=self.config[self.module].get("save_raw", "False"),
+                                                 font=font),
                            }
 
         self.show_options()
