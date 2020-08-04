@@ -3,7 +3,7 @@ import json
 import os
 
 import yaml
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, jsonify
 
 from plantseg import model_zoo_path
 from plantseg.__version__ import __version__
@@ -85,7 +85,13 @@ def get_task_list():
     """
     Returns a list of task ids
     """
-    return tasks.keys()
+    load_tasks(DATA_DIR) # reload all tasks
+
+    output = {
+        'result': list(tasks.keys())
+    }
+
+    return jsonify(output)
 
 
 @app.route("/tasks/<int:task_id>", methods=["GET"])
