@@ -87,7 +87,8 @@ class DataPreProcessing3D(GenericPipelineStep):
                          output_type=output_type,
                          save_directory=save_directory,
                          out_ext=".h5",
-                         state=state)
+                         state=state,
+                         h5_output_key='raw')
 
         if factor is None:
             factor = [1, 1, 1]

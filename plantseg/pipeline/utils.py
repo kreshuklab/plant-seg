@@ -53,19 +53,26 @@ class QueueHandler(logging.Handler):
 
 
 def find_input_key(h5_file):
-    # if only one dataset in h5_file return it, otherwise return first from H5_KEYS
-    found_keys = list(h5_file.keys())
-    if not found_keys:
+    found_datasets = []
+
+    def visitor_func(name, node):
+        if isinstance(node, h5py.Dataset):
+            found_datasets.append(name)
+
+    h5_file.visititems(visitor_func)
+
+    if not found_datasets:
         raise RuntimeError(f"No datasets found in '{h5_file.filename}'")
 
-    if len(found_keys) == 1:
-        return found_keys[0]
+    if len(found_datasets) == 1:
+        return found_datasets[0]
     else:
         for h5_key in H5_KEYS:
-            if h5_key in found_keys:
+            if h5_key in found_datasets:
                 return h5_key
 
-        raise RuntimeError(f"Ambiguous datasets '{found_keys}' in {h5_file.filename}")
+        raise RuntimeError(f"Ambiguous datasets '{found_datasets}' in {h5_file.filename}. "
+                           f"plantseg expects only one dataset to be present in input H5.")
 
 
 def read_tiff_voxel_size(file_path):
