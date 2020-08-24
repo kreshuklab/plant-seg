@@ -19,7 +19,7 @@ class ConfigsList extends React.Component {
     }
 
     console.log("fetching starts...")
-    fetch("127.0.0.1:8070/tasks")
+    fetch("/tasks")
     .then(res => res.json())
     .then((res) => this.setState({isLoading: false, configFileNames: res}))
     .then(console.log("Fetching finished!"));
