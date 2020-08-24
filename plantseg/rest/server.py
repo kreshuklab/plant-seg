@@ -64,7 +64,9 @@ def load_tasks(datadir):
 
 def run_server(datadir, port=8070, debug=False):
     global DATA_DIR
+    global TASKS_DIR
     DATA_DIR = datadir
+    TASKS_DIR = os.path.join(datadir, 'tasks')
     assert datadir is not None
     # load a list of competed task from the DATA_DIR
     load_tasks(datadir)
@@ -85,7 +87,7 @@ def get_task_list():
     """
     Returns a list of task ids
     """
-    load_tasks(DATA_DIR) # reload all tasks
+    load_tasks(TASKS_DIR) # reload all tasks
 
     output = {
         'result': list(tasks.keys())
@@ -109,17 +111,16 @@ def create_task():
     Task instance is created via the Web UI wizard.
     Returns an id of newly created task.
     """
-    global DATA_DIR
     task = request.json
     # generate a new task_id
     task_id = _new_task_id()
     # save the task object
     tasks[task_id] = task
     # save task_id.status file
-    task_status_file = os.path.join(DATA_DIR, f'{task_id}.status')
+    task_status_file = os.path.join(TASKS_DIR, f'{task_id}.status')
     json.dump(task['attributes'], open(task_status_file, 'w'))
     # save task config to task_id.yaml
-    task_config_file = os.path.join(DATA_DIR, f'{task_id}.yaml')
+    task_config_file = os.path.join(TASKS_DIR, f'{task_id}.yaml')
     yaml.safe_dump(task['config'], open(task_config_file, 'w'))
 
     # initiate pipeline execution in a separate thread
@@ -139,7 +140,6 @@ def get_server_info():
     """
     Returns general info about the plantseg server.
     """
-    global DATA_DIR
     info = {
         'plantseg_version': __version__,
         'datadir': DATA_DIR
