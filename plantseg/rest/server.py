@@ -3,7 +3,7 @@ import json
 import os
 
 import yaml
-from flask import Flask, send_from_directory, jsonify
+from flask import Flask, send_from_directory, jsonify, request
 
 from plantseg import model_zoo_path
 from plantseg.__version__ import __version__
@@ -103,13 +103,14 @@ def get_task_object(task_id):
 
 
 @app.route("/tasks", methods=["POST"])
-def create_task(task):
+def create_task():
     """
     Save the task instance and start the plantseg computation.
     Task instance is created via the Web UI wizard.
     Returns an id of newly created task.
     """
     global DATA_DIR
+    task = request.json
     # generate a new task_id
     task_id = _new_task_id()
     # save the task object
@@ -122,9 +123,15 @@ def create_task(task):
     yaml.safe_dump(task['config'], open(task_config_file, 'w'))
 
     # initiate pipeline execution in a separate thread
-    pipeline_executor.submit(task['config'])
+    #TODO execution via a special button!
+    # pipeline_executor.submit(task['config'])
     # FIXME: how do we change the <TASK_ID>.status when the pipeline gets executed?
-    return task_id
+
+    response = {
+        'newTaskId': task_id
+    }
+
+    return jsonify(response)
 
 
 @app.route("/info", methods=["GET"])
