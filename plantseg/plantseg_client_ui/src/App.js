@@ -150,7 +150,7 @@ function TreeLayout(props) {
 
         if (Array.isArray( val )) {
           output.push( 
-            <ArrayLayout 
+            <ArrayFileSelector
               name={key} 
               valueArray={val} 
               currentPath={newPath} 
@@ -179,6 +179,170 @@ function TreeLayout(props) {
 
 }
 
+function SelectableText(props) {
+  /*
+  props:
+    :text: string, text to display
+    :isSelected: bool
+    :onClick: handler
+  */
+  let output;
+  if (props.isSelected) {
+    output = <p style='color:blue;'>{props.text}</p>
+  } else {
+    output = <p>{props.text}</p>
+  }
+  return(
+    <div>
+      {output}
+    </div>
+  )
+}
+
+class SelectorBox extends React.Component {
+
+  constructor(props) {
+
+    this.state = {
+      fileTree : {},
+      selectedPath : ""
+    }
+    
+    fetch("./datafiles")
+    .then(res => res.json())
+    .then(res => this.setState({selectedPath : "./", fileTree: res}))
+  }
+
+  moveInto() {
+    //TODO
+  }
+
+  render() {
+    return (
+      <div>          
+
+      </div>
+    )
+  }
+
+}
+
+class ArrayFileSelector extends React.Component {
+
+  constructor(props) {
+    /*
+    Props:
+      :name: Name of the box.
+      :valueArray: array of string filenames.
+      :currentPath: Used for updating selection
+      :changeHandler: Used to updating selection
+    */
+
+    super(props);
+
+    this.state = {
+      selectorMode : false,
+      collapsed : true,
+      collapsedSize : 3
+    }
+  }
+
+  switchCollapse() {
+    let newState = Object.assign({}, this.state);
+    newState.collapsed = !this.state.collapsed;
+    this.setState(newState);
+  }
+
+  render() {
+      let output;
+
+      if (this.state.selectorMode) {
+
+      } else {
+        if (this.props.valueArray.length <= this.state.collapsedSize) {
+          output = 
+          <div>
+            <ArrayLayout 
+            name={this.props.name}
+            valueArray={this.props.valueArray} 
+            currentPath={this.props.currentPath} 
+            changeHandler={this.props.changeHandler}/>
+          </div>
+        } else if (this.state.collapsed) {
+          output = 
+          <div>
+            <div>
+              <ArrayLayout 
+              name={this.props.name}
+              valueArray={this.props.valueArray.slice(0,this.state.collapsedSize)} 
+              currentPath={this.props.currentPath} 
+              changeHandler={this.props.changeHandler}/>
+            </div>
+            <div>
+              <button onClick={() => this.switchCollapse()}>
+                Expand ({this.props.valueArray.length - this.state.collapsedSize})
+              </button>
+            </div>
+          </div>
+        } else {
+          output = 
+          <div>
+            <div>
+              <ArrayLayout 
+              name={this.props.name}
+              valueArray={this.props.valueArray} 
+              currentPath={this.props.currentPath} 
+              changeHandler={this.props.changeHandler}/>
+            </div>
+            <div>
+              <button onClick={() => this.switchCollapse()}>
+                Contract
+              </button>
+            </div>
+          </div>
+        }
+      }
+
+      return (
+        <div>
+          {output}
+          <button>Select</button>
+        </div>
+        )
+  }
+
+}
+
+class CollapsibleTile extends React.Component {
+  constructor(props) {
+    /*
+    Props:
+      :content: content to display when tile is expanded
+      :title: 
+    */
+    super(props);
+
+    this.state = {
+      expanded: false
+    }
+  }
+
+  render() {
+    let output;
+    if (this.state.expanded) {        
+      output = (
+        <div>
+          <div><button onClick={() => this.setState({expanded: false})}>{this.props.title}</button></div>
+          <div>{this.props.content}</div>
+        </div>)
+    } else {        
+      output = <button onClick={() => this.setState({expanded: true})}>{this.props.title}</button>
+    }
+
+    return output;
+  }
+}
+
 class TaskCreationForm extends React.Component {
   
   constructor(props) {
@@ -187,8 +351,6 @@ class TaskCreationForm extends React.Component {
     this.state = {
       available_layouts : {},
       selectedLayout : null,
-      param1: 0.0,
-      param2: 0.0,
       isSaving: false
     }
 
@@ -262,13 +424,23 @@ class TaskCreationForm extends React.Component {
 
     var layoutBody;
     if (this.state.selectedLayout != null) {
+        
+      let tileArray = [];
+
+      for (let branchName in this.state.available_layouts[this.state.selectedLayout]) {          
+        tileArray.push(
+          <CollapsibleTile content={
+            <TreeLayout 
+              parameterDict={this.state.available_layouts[this.state.selectedLayout][branchName]} 
+              currentPath={[branchName]}
+              changeHandler={this.modifyLayoutStateByPath}/>}
+            title={branchName} />
+        )
+      }
+
       layoutBody = (
         <div>
-          <h3>Parameters</h3>
-          <TreeLayout 
-            parameterDict={this.state.available_layouts[this.state.selectedLayout]} 
-            currentPath={[]}
-            changeHandler={this.modifyLayoutStateByPath}/>
+          {tileArray}
         </div>
       )
     } else {
