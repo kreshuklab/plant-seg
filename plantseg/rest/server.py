@@ -95,6 +95,22 @@ def get_task_list():
 
     return jsonify(output)
 
+@app.route("/template_configs", methods=["GET"])
+def get_template_configs():
+    """
+    Returns an example configuration file for a model. This is 
+    used to initialize the app config creation layout.
+    """
+    template_configs_dir = os.path.join(DATA_DIR, "./template_configs")
+
+    #TODO Discuss this part - should we include a model config?
+    yaml_files = [fname for fname in os.listdir(template_configs_dir) if (fname[-5:] == '.yaml')]
+    templates = {}
+    for filename in yaml_files:
+        templates[filename[:-5]] = \
+            yaml.safe_load( open("{}/{}".format(template_configs_dir, filename)) )
+
+    return jsonify(templates)
 
 @app.route("/tasks/<int:task_id>", methods=["GET"])
 def get_task_object(task_id):
@@ -156,8 +172,23 @@ def get_data_files():
     the user wants to process the whole directory using plantseg.
     This endpoint should be used to populate the drop-down field where the user selects file/directory to process.
     """
-    # TODO: implement
-    return []
+    #FIXME ./data/ root is hardcoded at the moment..
+    outp_ = {'.' : {'isFile': False, 'children' : { 'data' : {'isFile': False, 'children' : {}} }}}
+
+    for root, dirs, files in os.walk(DATA_DIR):
+        current_level = {}
+        for dir_ in dirs:
+            current_level[dir_] = {'isFile': False, 'children': {}}
+        for f in files:
+            current_level[f] = {'isFile': True}
+
+        movingRef = outp_
+        for level in root.split("/")[:-1]:
+            movingRef = movingRef[level]['children']
+
+        movingRef[ root.split("/")[-1] ] = {'isFile': False, 'children': current_level}
+
+    return jsonify(outp_)
 
 
 @app.route("/models", methods=["GET"])
