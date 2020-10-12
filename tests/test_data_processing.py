@@ -26,6 +26,22 @@ class TestDataProcessing:
         # with h5py.File(output_paths[0], 'r') as f:
         #     raw_filtered = f['raw'][...]
 
+    def test_preprocessing_crop(self, input_path):
+        with h5py.File(input_path, 'r') as f:
+            raw = f['raw'][...]
+
+        target_shape = (raw.shape[0], 32, 32)
+        pre = DataPreProcessing3D([input_path], input_type="data_uint8", output_type="data_uint8",
+                                  save_directory="PreProcessing", filter_type=None, filter_param=None,
+                                  crop='[:, :32, :32]')
+
+        output_paths = pre()
+
+        with h5py.File(output_paths[0], 'r') as f:
+            raw = f['raw'][...]
+
+        assert raw.shape == target_shape
+
     def test_postprocessing_tiff(self, input_path):
         post = DataPostProcessing3D([input_path], save_directory="PostProcessing", out_ext=".tiff")
 

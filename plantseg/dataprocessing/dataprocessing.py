@@ -71,6 +71,13 @@ class DataPostProcessing3D(GenericPipelineStep):
         return image
 
 
+def _parse_crop(crop_str):
+    crop_str = crop_str.replace('[', '').replace(']', '')
+    return tuple(
+        (slice(*(int(i) if i else None for i in part.strip().split(':'))) if ':' in part else int(part.strip())) for
+        part in crop_str.split(','))
+
+
 class DataPreProcessing3D(GenericPipelineStep):
     def __init__(self,
                  input_paths,
@@ -80,7 +87,8 @@ class DataPreProcessing3D(GenericPipelineStep):
                  factor=None,
                  filter_type=None,
                  filter_param=None,
-                 state=True):
+                 state=True,
+                 crop=None):
 
         super().__init__(input_paths,
                          input_type=input_type,
@@ -93,7 +101,10 @@ class DataPreProcessing3D(GenericPipelineStep):
         if factor is None:
             factor = [1, 1, 1]
 
-        # TODO: remove below code duplication
+        if crop is not None:
+            crop = _parse_crop(crop)
+        self.crop = crop
+
         # rescaling
         self.factor = factor
         # spline order, use 2 for 'segmentation' and 0 for 'predictions'
@@ -116,6 +127,9 @@ class DataPreProcessing3D(GenericPipelineStep):
 
     def process(self, image):
         gui_logger.info(f"Preprocessing files...")
+        if self.crop is not None:
+            gui_logger.info(f"Cropping input image to: {self.crop}")
+            image = image[self.crop]
 
         image = self.filter(image, self.filter_param)
         image = _rescale(image, self.factor, self.order)

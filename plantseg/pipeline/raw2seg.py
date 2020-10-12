@@ -19,9 +19,10 @@ def configure_preprocessing_step(input_paths, config):
         filter_param = config["filter"]["param"]
 
     state = config.get('state', True)
+    crop = config.get('crop_volume', None)
     return DataPreProcessing3D(input_paths, input_type="data_float32", output_type=output_type,
                                save_directory=save_directory, factor=factor, filter_type=filter_type,
-                               filter_param=filter_param, state=state)
+                               filter_param=filter_param, state=state, crop=crop)
 
 
 def configure_cnn_step(input_paths, config):
