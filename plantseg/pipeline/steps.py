@@ -81,16 +81,7 @@ class GenericPipelineStep:
         self.save_output(output_data, output_path, voxel_size)
 
         if self.save_raw:
-            raw_path = self._raw_path(input_path)
-            if os.path.exists(raw_path):
-                with h5py.File(raw_path, 'r') as f:
-                    raw = f['raw'][...]
-                with h5py.File(output_path, 'r+') as f:
-                    f.create_dataset('raw', data=raw, compression='gzip')
-                    # save voxel_size
-                    f['raw'].attrs['element_size_um'] = voxel_size
-            else:
-                gui_logger.warning(f'Cannot save raw input: {raw_path} not found')
+            self.save_raw_dataset(input_path, output_path, voxel_size)
 
         # return output_path
         return output_path
@@ -137,6 +128,21 @@ class GenericPipelineStep:
         # normalize data according to processing type
         data = self._adjust_input_type(data)
         return data, voxel_size
+
+    def save_raw_dataset(self, input_path, output_path, voxel_size):
+        """
+        Looks for the raw input file given the `input_path` and if found saves the raw input into the `output_path` h5 file
+        """
+        raw_path = self._raw_path(input_path)
+        if os.path.exists(raw_path):
+            with h5py.File(raw_path, 'r') as f:
+                raw = f['raw'][...]
+            with h5py.File(output_path, 'r+') as f:
+                f.create_dataset('raw', data=raw, compression='gzip')
+                # save voxel_size
+                f['raw'].attrs['element_size_um'] = voxel_size
+        else:
+            gui_logger.warning(f'Cannot save raw input: {raw_path} not found')
 
     @staticmethod
     def _fix_input_shape(data):

@@ -31,6 +31,11 @@ def configure_segmentation_step(predictions_paths, config):
         from .multicut import MulticutFromPmaps
         return MulticutFromPmaps(**config)
 
+    if algorithm_name == "LiftedMulticut":
+        from .lmc import LiftedMulticut
+        assert 'nuclei_predictions_path' in config, "Missing 'nuclei_predictions_path' config attribute for 'LiftedMulticut'"
+        return LiftedMulticut(**config)
+
 
 def shift_affinities(affinities, offsets):
     rolled_affs = []

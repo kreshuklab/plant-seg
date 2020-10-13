@@ -214,6 +214,25 @@ Now you can simply use your model for prediction by setting the [model_name](exa
  
 If you want your model to be part of the open-source model zoo provided with this package, please contact us.
 
+## Using LiftedMulticut segmentation
+As reported in our [paper](https://elifesciences.org/articles/57613), if one has a nuclei signal imaged together with
+the boundary signal, we could leverage the fact that one cell contains only one nuclei and use the `LiftedMultict` 
+segmentation strategy and obtain improved segmentation.
+We're going to use the _Arabidopsis thaliana_ lateral root as an example. The `LiftedMulticut` strategy consist of running
+PlantSeg two times:
+1. Using PlantSeg to predict the nuclei probability maps using the `lightsheet_unet_bce_dice_nuclei_ds1x` network.
+In this case only the pre-processing and CNN prediction steps are enabled in the config, see [example config](plantseg/resources/nuclei_predictions_example.yaml).
+```bash
+plantseg --config nuclei_predictions_example.yaml 
+```
+2. Using PlantSeg to segment the input image with `LiftedMulticut` algorithm given the nuclei probability maps from the 1st step.
+See [example config](plantseg/resources/lifted_multicut_example.yaml). The notable difference is that in the `segmentation`
+part of the config we set `name: LiftedMulticut` and the `nuclei_predictions_path` as the path to the directory where the nuclei pmaps
+were saved in step 1.
+```bash
+plantseg --config lifted_multicut_example.yaml
+```
+
 ## Troubleshooting
 * If you stumble in the following error message:
 ```

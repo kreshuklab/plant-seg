@@ -14,25 +14,22 @@ loggers = {}
 ALLOWED_DATA_FORMAT = [".tiff", ".tif", ".hdf", ".hdf5", ".h5", ".hd5"]
 
 
-def load_paths(config):
-    if os.path.isdir(config["path"]):
-        path = os.path.join(config["path"], "*")
+def load_paths(base_path):
+    assert os.path.exists(base_path), f'File not found: {base_path}'
+
+    if os.path.isdir(base_path):
+        path = os.path.join(base_path, "*")
         paths = glob.glob(path)
         only_file = []
         for path in paths:
             _, ext = os.path.splitext(path)
             if os.path.isfile(path) and ext in ALLOWED_DATA_FORMAT:
-                print(f" - Valid input file found: {path}")
                 only_file.append(path)
-            else:
-                print(f" - Non-valid input file found: {path}, skipped!")
-                warnings.warn(f"Allowed file formats are: {ALLOWED_DATA_FORMAT}")
         return sorted(only_file)
-
     else:
-        path, ext = os.path.splitext(config["path"])
+        path, ext = os.path.splitext(base_path)
         if ext in ALLOWED_DATA_FORMAT:
-            return [config["path"]]
+            return [base_path]
         else:
             raise RuntimeError(f"Unsupported file type: '{ext}'")
 
