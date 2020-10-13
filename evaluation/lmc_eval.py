@@ -4,12 +4,11 @@ from concurrent import futures
 import h5py
 import nifty
 import nifty.graph.rag as nrag
-
-import elf.segmentation.lifted_multicut as lmc
-from elf.segmentation.features import compute_rag, compute_boundary_mean_and_length, lifted_problem_from_probabilities, \
-    project_node_labels_to_pixels, lifted_problem_from_segmentation
+from elf.segmentation.features import compute_rag
 from elf.segmentation.multicut import multicut_kernighan_lin, transform_probabilities_to_costs
 from elf.segmentation.watershed import distance_transform_watershed
+
+from plantseg.segmentation.lmc import segment_volume_lmc
 
 N_THREADS = 16
 
@@ -29,73 +28,6 @@ def segment_volume_mc(pmaps, threshold=0.4, sigma=2.0, beta=0.6, ws=None, sp_min
     node_labels = multicut_kernighan_lin(graph, costs)
 
     return nifty.tools.take(node_labels, ws)
-
-
-def segment_volume_lmc(boundary_pmaps, nuclei_pmaps, threshold=0.4, sigma=2.0, sp_min_size=100):
-    watershed = distance_transform_watershed(boundary_pmaps, threshold, sigma, min_size=sp_min_size)[0]
-
-    # compute the region adjacency graph
-    rag = compute_rag(watershed)
-
-    # compute the edge costs
-    features = compute_boundary_mean_and_length(rag, boundary_pmaps)
-    costs, sizes = features[:, 0], features[:, 1]
-
-    # transform the edge costs from [0, 1] to  [-inf, inf], which is
-    # necessary for the multicut. This is done by intepreting the values
-    # as probabilities for an edge being 'true' and then taking the negative log-likelihood.
-    # in addition, we weight the costs by the size of the corresponding edge
-
-    # we choose a boundary bias smaller than 0.5 in order to
-    # decrease the degree of over segmentation
-    boundary_bias = .6
-
-    costs = transform_probabilities_to_costs(costs, edge_sizes=sizes, beta=boundary_bias)
-    # compute lifted multicut features from vesicle and dendrite pmaps
-    input_maps = [nuclei_pmaps]
-    assignment_threshold = .9
-    lifted_uvs, lifted_costs = lifted_problem_from_probabilities(rag, watershed,
-                                                                 input_maps, assignment_threshold,
-                                                                 graph_depth=4)
-
-    # solve the full lifted problem using the kernighan lin approximation introduced in
-    # http://openaccess.thecvf.com/content_iccv_2015/html/Keuper_Efficient_Decomposition_of_ICCV_2015_paper.html
-    node_labels = lmc.lifted_multicut_kernighan_lin(rag, costs, lifted_uvs, lifted_costs)
-    lifted_segmentation = project_node_labels_to_pixels(rag, node_labels)
-    return lifted_segmentation
-
-
-def segment_volume_lmc_from_seg(boundary_pmaps, nuclei_seg, threshold=0.4, sigma=2.0, sp_min_size=100):
-    watershed = distance_transform_watershed(boundary_pmaps, threshold, sigma, min_size=sp_min_size)[0]
-
-    # compute the region adjacency graph
-    rag = compute_rag(watershed)
-
-    # compute the edge costs
-    features = compute_boundary_mean_and_length(rag, boundary_pmaps)
-    costs, sizes = features[:, 0], features[:, 1]
-
-    # transform the edge costs from [0, 1] to  [-inf, inf], which is
-    # necessary for the multicut. This is done by intepreting the values
-    # as probabilities for an edge being 'true' and then taking the negative log-likelihood.
-    # in addition, we weight the costs by the size of the corresponding edge
-
-    # we choose a boundary bias smaller than 0.5 in order to
-    # decrease the degree of over segmentation
-    boundary_bias = .6
-
-    costs = transform_probabilities_to_costs(costs, edge_sizes=sizes, beta=boundary_bias)
-    max_cost = np.abs(np.max(costs))
-    lifted_uvs, lifted_costs = lifted_problem_from_segmentation(rag, watershed, nuclei_seg, overlap_threshold=0.2,
-                                                                graph_depth=4,
-                                                                same_segment_cost=5 * max_cost,
-                                                                different_segment_cost=-5 * max_cost)
-
-    # solve the full lifted problem using the kernighan lin approximation introduced in
-    # http://openaccess.thecvf.com/content_iccv_2015/html/Keuper_Efficient_Decomposition_of_ICCV_2015_paper.html
-    node_labels = lmc.lifted_multicut_kernighan_lin(rag, costs, lifted_uvs, lifted_costs)
-    lifted_segmentation = project_node_labels_to_pixels(rag, node_labels)
-    return lifted_segmentation
 
 
 def read_segment_write(boundary_pmap_files, nuclei_pmap_files=None):
