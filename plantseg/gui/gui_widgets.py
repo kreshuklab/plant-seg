@@ -305,6 +305,7 @@ class SegmentationFrame(ModuleFramePrototype):
                                                        text="CNN Predictions Threshold: ",
                                                        row=5,
                                                        column=0,
+                                                       data_range=(0, 1, 0.001),
                                                        _type=float,
                                                        _font=font),
 
