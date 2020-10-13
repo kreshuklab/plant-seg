@@ -2,6 +2,10 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+import Button from 'react-bootstrap/Button'
+import Accordion from 'react-bootstrap/Accordion'
+import Card from 'react-bootstrap/Card'
+
 function WrittenInputBox(props) {
   /*
   Props: 
@@ -313,35 +317,35 @@ class ArrayFileSelector extends React.Component {
 
 }
 
-class CollapsibleTile extends React.Component {
-  constructor(props) {
-    /*
-    Props:
-      :content: content to display when tile is expanded
-      :title: 
-    */
-    super(props);
-
-    this.state = {
-      expanded: false
-    }
-  }
-
-  render() {
-    let output;
-    if (this.state.expanded) {        
-      output = (
-        <div>
-          <div><button onClick={() => this.setState({expanded: false})}>{this.props.title}</button></div>
-          <div>{this.props.content}</div>
-        </div>)
-    } else {        
-      output = <button onClick={() => this.setState({expanded: true})}>{this.props.title}</button>
-    }
-
-    return output;
-  }
-}
+//class CollapsibleTile extends React.Component {
+//  constructor(props) {
+//    /*
+//    Props:
+//      :content: content to display when tile is expanded
+//      :title: 
+//    */
+//    super(props);
+//
+//    this.state = {
+//      expanded: false
+//    }
+//  }
+//
+//  render() {
+//    let output;
+//    if (this.state.expanded) {        
+//      output = (
+//        <div>
+//          <div><button onClick={() => this.setState({expanded: false})}>{this.props.title}</button></div>
+//          <div>{this.props.content}</div>
+//        </div>)
+//    } else {        
+//      output = <button onClick={() => this.setState({expanded: true})}>{this.props.title}</button>
+//    }
+//
+//    return output;
+//  }
+//}
 
 class TaskCreationForm extends React.Component {
   
@@ -354,6 +358,9 @@ class TaskCreationForm extends React.Component {
       isSaving: false
     }
 
+    this.eventKeysDict = {};
+    this.eventKeysArray = [];
+
     this.initializeForm();
 
     this.modifyLayoutStateByPath = this.modifyLayoutStateByPath.bind(this);
@@ -362,10 +369,28 @@ class TaskCreationForm extends React.Component {
     // TODO How to load parameter layouts? (number of params, names, etc)
   }
 
+  getNewEventKey() {
+    let newKey = this.eventKeysArray.length.toString();
+    this.eventKeysArray.push(newKey);
+
+    return newKey;
+  }
+
+  initializeKeysDict() {
+    for (let branchName in this.state.available_layouts) {        
+      let currentKeys = [];
+      for (let subBranch in this.state.available_layouts[branchName]) {          
+        currentKeys.push(this.getNewEventKey())
+      }
+      this.eventKeysDict[branchName] = currentKeys; 
+    }
+  }
+
   initializeForm() {
     fetch("/template_configs")
       .then(res => res.json())
       .then(res => (this.modifyState('available_layouts', res)))
+      .then(() => this.initializeKeysDict())
   }
 
   modifyLayoutStateByPath(path, newVal) {
@@ -407,6 +432,35 @@ class TaskCreationForm extends React.Component {
     this.modifyState(paramName, newVal);
   }
 
+  renderAccordion() {
+      let outputArray = [];
+
+      for (const [idx, branchName] of Object.keys(this.state.available_layouts[this.state.selectedLayout]).entries()) {          
+
+        let currentEventKey = this.eventKeysDict[this.state.selectedLayout][idx];
+
+        outputArray.push(
+          <Accordion>
+            <Card>
+              <Accordion.Toggle as={Card.Header} eventKey={currentEventKey}>
+                {branchName}
+              </Accordion.Toggle>
+              <Accordion.Collapse eventKey={currentEventKey}>
+                <Card.Body>
+                  <TreeLayout 
+                    parameterDict={this.state.available_layouts[this.state.selectedLayout][branchName]} 
+                    currentPath={[branchName]}
+                    changeHandler={this.modifyLayoutStateByPath}/>
+                </Card.Body>
+              </Accordion.Collapse>
+            </Card>
+          </Accordion>
+        )
+      }
+
+      return outputArray;
+  }
+
   render() {
 
     var layoutSelectButtons;
@@ -425,24 +479,8 @@ class TaskCreationForm extends React.Component {
     var layoutBody;
     if (this.state.selectedLayout != null) {
         
-      let tileArray = [];
+      layoutBody = this.renderAccordion();
 
-      for (let branchName in this.state.available_layouts[this.state.selectedLayout]) {          
-        tileArray.push(
-          <CollapsibleTile content={
-            <TreeLayout 
-              parameterDict={this.state.available_layouts[this.state.selectedLayout][branchName]} 
-              currentPath={[branchName]}
-              changeHandler={this.modifyLayoutStateByPath}/>}
-            title={branchName} />
-        )
-      }
-
-      layoutBody = (
-        <div>
-          {tileArray}
-        </div>
-      )
     } else {
       layoutBody = (
         <p>No layout selected</p>
@@ -468,8 +506,11 @@ function LayoutButton(props) {
 }
 
 function StripButton(props) {
-  return <button onClick={() => props.onClickHandler(props.buttonId)}>
-    {props.buttonDisplayName}</button>
+  return <Button 
+    variant="primary"
+    size="lg"
+    onClick={() => props.onClickHandler(props.buttonId)}>
+    {props.buttonDisplayName}</Button> 
 }
 
 function ConfigsElement(props) {
