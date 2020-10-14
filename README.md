@@ -42,12 +42,21 @@ conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-fo
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
+### Optional dependencies
+Some types of compressed tiff files require an additional package to be read correctly (eg: Zlib, 
+ZSTD, LZMA, ...). To run plantseg on those stacks you need to install `imagecodecs`. 
+In the terminal: 
+```bash
+conda activate plant-seg
+pip install imagecodecs
+```
+
 ### Update PlantSeg
 The tool is actively developed and improvement and small bugs fix are continuosly coming. 
 To update PlantSeg type in the terminal: 
 ```bash
- conda activate plant-seg
- conda update -c lcerrone plantseg
+conda activate plant-seg
+conda update -c lcerrone plantseg
 ```
 
 ### Pipeline Usage (command line)
