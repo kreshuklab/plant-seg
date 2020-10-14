@@ -34,6 +34,7 @@ requirements:
     - elf =0.1.0
     - gasp
     - pytorch-3dunet
+    - simpleitk =1.2.4
 
 test:
   imports:

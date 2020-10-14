@@ -276,7 +276,7 @@ class SegmentationFrame(ModuleFramePrototype):
                                              text="Algorithm: ",
                                              row=1,
                                              column=0,
-                                             menu={"MultiCut", "GASP", "MutexWS", "DtWatershed"},
+                                             menu={"MultiCut", "GASP", "MutexWS", "DtWatershed", "SimpleITK"},
                                              is_segmentation=True,
                                              default=config[self.module]["name"],
                                              font=font),
@@ -305,6 +305,7 @@ class SegmentationFrame(ModuleFramePrototype):
                                                        text="CNN Predictions Threshold: ",
                                                        row=5,
                                                        column=0,
+                                                       data_range=(0, 1, 0.001),
                                                        _type=float,
                                                        _font=font),
 
