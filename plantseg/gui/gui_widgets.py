@@ -160,6 +160,12 @@ class PreprocessingFrame(ModuleFramePrototype):
                                                  row=4,
                                                  column=0,
                                                  font=font),
+                           "crop_volume": SimpleEntry(self.preprocessing_frame,
+                                                         text="Crop Volume: ",
+                                                         row=5,
+                                                         column=0,
+                                                         _type=str,
+                                                         _font=font),
                            }
 
         self.show_options()
