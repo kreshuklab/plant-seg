@@ -1,6 +1,7 @@
 import numpy as np
 
 import SimpleITK as sitk
+from vigra.filters import gaussianSmoothing
 from plantseg.pipeline.steps import AbstractSegmentationStep
 
 
@@ -26,12 +27,15 @@ class SimpleITKWatershed(AbstractSegmentationStep):
         self.ws_sigma = ws_sigma
 
     def process(self, pmaps):
-        # Itk gaussian smoothing
-        itk_pmaps = sitk.GetImageFromArray(pmaps)
         if self.ws_sigma > 0:
-            itk_pmaps = sitk.SmoothingRecursiveGaussian(itk_pmaps, self.ws_sigma)
+            # fix ws sigma length
+            # ws sigma cannot be shorter than pmaps dims
+            max_sigma = (np.array(pmaps.shape) - 1) / 3
+            ws_sigma = np.minimum(max_sigma, np.ones(max_sigma.ndim) * self.ws_sigma)
+            pmaps = gaussianSmoothing(pmaps, ws_sigma)
 
         # Itk watershed + size filtering
+        itk_pmaps = sitk.GetImageFromArray(pmaps)
         itk_segmentation = sitk.MorphologicalWatershed(itk_pmaps,
                                                        self.ws_threshold,
                                                        markWatershedLine=False,
