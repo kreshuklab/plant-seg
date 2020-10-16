@@ -1,6 +1,6 @@
 import numpy as np
 
-SUPPORTED_ALGORITMS = ["GASP", "MutexWS", "DtWatershed", "MultiCut", "SimpleITK"]
+SUPPORTED_ALGORITMS = ["GASP", "MutexWS", "DtWatershed", "MultiCut", "LiftedMulticut", "SimpleITK"]
 
 
 def configure_segmentation_step(predictions_paths, config):
