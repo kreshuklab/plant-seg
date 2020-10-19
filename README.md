@@ -31,7 +31,7 @@ wget https://repo.anaconda.com/archive/Anaconda3-2020.07-Linux-x86_64.sh
 ```
 Then install by typing:
 ```bash
-bash ./Anaconda3-2019.10-Linux-x86_64.sh
+bash ./Anaconda3-2020.07-Linux-x86_64.sh
 ```
 Follow the instructions to complete the anaconda installation.
 
