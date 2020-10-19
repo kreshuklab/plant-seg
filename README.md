@@ -27,7 +27,7 @@ or
  If you already have a working anaconda setup you can go directly to next item. 
 To download Anaconda Python open a terminal and type:
 ```bash
-wget https://repo.anaconda.com/archive/Anaconda3-2019.10-Linux-x86_64.sh
+wget https://repo.anaconda.com/archive/Anaconda3-2020.07-Linux-x86_64.sh
 ```
 Then install by typing:
 ```bash
@@ -49,6 +49,13 @@ In the terminal:
 ```bash
 conda activate plant-seg
 pip install imagecodecs
+```
+
+Experimental support for SimpleITK watershed segmentation has been added to PlantSeg version 1.1.8. This features can be used only 
+after installing the SimpleITK package: 
+```bash
+conda activate plant-seg
+pip install SimpleITK
 ```
 
 ### Update PlantSeg
