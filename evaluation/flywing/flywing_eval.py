@@ -47,7 +47,7 @@ def compute_seg_score(res_seg, gt_seg):
             os.makedirs(out_dir)
         wget.download(SCRIPT_URL, out=out_dir)
         # make the script executable
-        os.chmod(SCRIPT_PATH, 0775)
+        os.chmod(SCRIPT_PATH, 0o0775)
 
     # holy cow, they need 16-bit encodings!
     if res_seg.max() >= 2 ** 16:
