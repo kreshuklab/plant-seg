@@ -185,6 +185,14 @@ docker run -it --rm -v PATH_TO_DATASET:/root/datasets -e DISPLAY=$DISPLAY wolny/
 ```
 where `PATH_TO_DATASET` is the path to the directory on Mac OS where the data to be processed are stored.
 
+**Troubleshooting**
+
+If you see the error:
+```
+_tkinter.TclError: couldn't connect to display "/private/tmp/com.apple.launchd.mAtyr7ic37/org.macosforge.xquartz:0
+```
+Please follow the instructions from https://github.com/hci-unihd/plant-seg/issues/53#issuecomment-713661156
+
 
 
 ## Datasets
