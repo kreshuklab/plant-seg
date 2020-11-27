@@ -85,15 +85,11 @@ def root():
 @app.route("/tasks", methods=["GET"])
 def get_task_list():
     """
-    Returns a list of task ids
+    Returns the :tasks: global variable.
     """
     load_tasks(TASKS_DIR) # reload all tasks
 
-    output = {
-        'result': list(tasks.keys())
-    }
-
-    return jsonify(output)
+    return jsonify(tasks)
 
 @app.route("/template_configs", methods=["GET"])
 def get_template_configs():

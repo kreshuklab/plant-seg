@@ -5,6 +5,7 @@ import './App.css';
 import Button from 'react-bootstrap/Button'
 import Accordion from 'react-bootstrap/Accordion'
 import Card from 'react-bootstrap/Card'
+import Table from 'react-bootstrap/Table'
 
 function WrittenInputBox(props) {
   /*
@@ -317,36 +318,6 @@ class ArrayFileSelector extends React.Component {
 
 }
 
-//class CollapsibleTile extends React.Component {
-//  constructor(props) {
-//    /*
-//    Props:
-//      :content: content to display when tile is expanded
-//      :title: 
-//    */
-//    super(props);
-//
-//    this.state = {
-//      expanded: false
-//    }
-//  }
-//
-//  render() {
-//    let output;
-//    if (this.state.expanded) {        
-//      output = (
-//        <div>
-//          <div><button onClick={() => this.setState({expanded: false})}>{this.props.title}</button></div>
-//          <div>{this.props.content}</div>
-//        </div>)
-//    } else {        
-//      output = <button onClick={() => this.setState({expanded: true})}>{this.props.title}</button>
-//    }
-//
-//    return output;
-//  }
-//}
-
 class TaskCreationForm extends React.Component {
   
   constructor(props) {
@@ -513,14 +484,6 @@ function StripButton(props) {
     {props.buttonDisplayName}</Button> 
 }
 
-function ConfigsElement(props) {
-  return (
-    <div>
-      <span>{props.taskId}</span>
-      <span>{props.modelName}</span> 
-    </div>
-  );
-}
 
 class ConfigsList extends React.Component {
 
@@ -534,24 +497,52 @@ class ConfigsList extends React.Component {
 
     fetch("/tasks")
     .then(res => res.json())
-    .then((res) => this.setState({isLoading: false, currentResponse: res.result}))
+    .then((res) => this.setState({isLoading: false, currentResponse: res}))
   }
 
   render() {
+    let message = this.state.isLoading ? "Waiting for API response..." : "Configurations List";
 
-    let message = this.state.isLoading ? "Loading..." : "Configurations List";
+    if (this.state.isLoading) {        
+      return(
+        <div>
+          {message}
+        </div>
+      )
+    }
 
-    return (
+    else {
+      let taskIds = Object.keys(this.state.currentResponse);
+      let attributes = Object.keys(this.state.currentResponse[taskIds[0]].attributes);
+      return (
         <div>
           <div>
             {message}
           </div>
           <div>
-            {this.state.currentResponse.map((taskId) => <li>{taskId}</li>)}
+            <Table striped bordered hover>
+              <thead>
+                <th>id</th>
+                {attributes.map( (attr) => <th>{attr}</th> )}
+              </thead>
+              <tbody>
+                {taskIds.map(
+                  taskId => (
+                    <tr>                          
+                      <td>{taskId}</td>
+                      {attributes.map(
+                        attr => (<td>{this.state.currentResponse[taskId].attributes[attr]}</td>)
+                      )}
+                    </tr>
+                  )
+                )}
+              </tbody>
+            </Table>
           </div>
         </div>
-      
+
       );
+    }
 
   }
 }
@@ -563,6 +554,7 @@ class PageLayout extends React.Component {
 
     // Layout states:
     // 0: Main page
+    // 1: Task Creation Form
     this.state = {
       mainLayoutState: 0
     }
