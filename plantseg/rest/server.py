@@ -119,11 +119,10 @@ def get_task_object(task_id):
 @app.route("/tasks", methods=["POST"])
 def create_task():
     """
-    Save the task instance and start the plantseg computation.
-    Task instance is created via the Web UI wizard.
-    Returns an id of newly created task.
+    Save the task instance. Task instance is created via the 
+    Web UI wizard. Returns an id of newly created task.
     """
-    task = request.json
+    task = request.get_json(request.get_data())
     # generate a new task_id
     task_id = _new_task_id()
     # save the task object
@@ -136,7 +135,7 @@ def create_task():
     yaml.safe_dump(task['config'], open(task_config_file, 'w'))
 
     # initiate pipeline execution in a separate thread
-    #TODO execution via a special button!
+    # TODO execution via a special button!
     # pipeline_executor.submit(task['config'])
     # FIXME: how do we change the <TASK_ID>.status when the pipeline gets executed?
 

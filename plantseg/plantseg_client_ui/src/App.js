@@ -432,6 +432,19 @@ class TaskCreationForm extends React.Component {
       return outputArray;
   }
 
+  saveTask() {
+    fetch('/tasks', {
+      method : 'POST',
+      body : JSON.stringify({
+        attributes : {
+          modelName : this.state.selectedLayout,
+          executionStatus : 'pending'},
+        config : this.state.available_layouts[this.state.selectedLayout]
+      })
+    }).then(res => res.json())
+      .then(res => alert("Created taskID " + res.newTaskId))
+  }
+
   render() {
 
     var layoutSelectButtons;
@@ -458,6 +471,14 @@ class TaskCreationForm extends React.Component {
       )
     }
 
+    var createTaskButton;
+    createTaskButton = <Button 
+      variant="primary"
+      size="lg"
+      onClick={() => this.saveTask()}>
+      Save Task</Button> 
+
+
     return (
       <div>
         <div>
@@ -465,6 +486,9 @@ class TaskCreationForm extends React.Component {
         </div>
         <div>
           {layoutBody}
+        </div>
+        <div>
+          {createTaskButton}
         </div>
       </div>
     );
