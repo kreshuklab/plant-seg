@@ -1,0 +1,8 @@
+channels:
+    - pytorch
+    - conda-forge
+    - defaults
+name:
+    unet2d-arabidopsis-ovules
+dependencies:
+    - pytorch>=1,<2

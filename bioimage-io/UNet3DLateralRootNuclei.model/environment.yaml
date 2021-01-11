@@ -1,0 +1,8 @@
+channels:
+    - pytorch
+    - conda-forge
+    - defaults
+name:
+    unet3d-lateral-root-nuclei
+dependencies:
+    - pytorch>=1,<2
