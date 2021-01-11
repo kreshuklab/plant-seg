@@ -1,0 +1,74 @@
+format_version: 0.3.0
+
+name: 3D UNet Lateral Root Primordia
+timestamp: 2020-01-18T08:00:00
+description: "A 3d U-Net trained to predict the cell boundaries in lightsheet stacks of Arabidopsis Lateral Root Primordia. (0.25x0.1625x0.1625) microns ZYX"
+
+authors:
+  - Adrian Wolny;@wolny
+  - Lorenzo Cerrone;@lorenzocerrone
+
+cite:
+  - text: "Cerrone, Wolny et al. Accurate and Versatile 3D Segmentation of Plant Tissues at Cellular Resolution. eLife 2020."
+    doi: https://doi.org/10.1101/2020.01.17.910562
+
+
+git_repo: https://github.com/hci-unihd/plant-seg/bioimage-io/UNet3DLateralRoot.model
+tags: [unet3d, pytorch, arabidopsis, lateral root, cell membrane, segmentation, plant tissue]
+license: MIT
+
+language: python
+framework: pytorch
+
+documentation: ./unet3d.md
+
+source: ./unet.py:UNet3D
+# additional model parameters
+kwargs:
+  in_channels: 1
+  out_channels: 1
+  layer_order: gcr  # determines the order of operators in a single layer (crg - Conv3d+ReLU+GroupNorm)
+  f_maps: 32  # initial number of feature maps
+  num_groups: 8  # number of groups in the groupnorm
+  final_sigmoid: true
+  is_segmentation: true
+  testing: true
+
+test_inputs:
+  - ./test_input.npy
+test_outputs:
+  - ./test_output.npy
+
+covers: [raw.png, pred.png]
+
+inputs:
+  - name: raw
+    description: 3D lightsheet image stack
+    axes: bczyx
+    data_type: float32
+    data_range: [-inf, inf]
+    shape: [1, 1, 80, 160, 160]
+    preprocessing:
+      - name: zero_mean_unit_variance
+        kwargs:
+          mode: per_sample
+          axes: xyz
+
+outputs:
+  - name: probabilities
+    description: Probabilities for cell boundaries
+    axes: bczyx
+    data_type: float32
+    data_range: [0, 1]
+    halo: [0, 0, 8, 16, 16]
+    shape:
+        reference_input: raw
+        scale: [1, 1, 1, 1, 1]
+        offset: [0, 0, 0, 0, 0]
+
+dependencies: conda:./environment.yaml
+
+weights:
+  pytorch_state_dict:
+    source: https://zenodo.org/record/4432750/files/unet3d-lateral-root-lightsheet-ds1x.pytorch
+    sha256: b8acbc7a6125bc5fc9109ca5126511e04d78dfebf6f983a8bf7f591ccdcb18a0

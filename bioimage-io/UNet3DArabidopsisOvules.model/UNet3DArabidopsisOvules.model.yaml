@@ -14,7 +14,7 @@ cite:
 
 
 git_repo: https://github.com/hci-unihd/plant-seg/bioimage-io/UNet3DArabidopsisOvules.model
-tags: [unet3d, pytorch, arabidopsis, ovuls, cell membrane, segmentation, plant tissue]
+tags: [unet3d, pytorch, arabidopsis, ovules, cell membrane, segmentation, plant tissue]
 license: MIT
 
 language: python
