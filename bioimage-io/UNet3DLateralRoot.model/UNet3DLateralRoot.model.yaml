@@ -1,6 +1,6 @@
 format_version: 0.3.0
 
-name: 3D UNet Lateral Root Primordia
+name: 3D UNet Lateral Root Primordia Cell Boundaries
 timestamp: 2020-01-18T08:00:00
 description: "A 3d U-Net trained to predict the cell boundaries in lightsheet stacks of Arabidopsis Lateral Root Primordia. (0.25x0.1625x0.1625) microns ZYX"
 

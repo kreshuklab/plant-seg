@@ -23,8 +23,6 @@ with torch.no_grad():
     out = net(inp)
     out = out.cpu().numpy()
 
-    np.savez('test_output.npz', out)
-
     # compare with test_output
     test_out = np.load('test_output.npz')
     test_out = test_out['arr_0']
