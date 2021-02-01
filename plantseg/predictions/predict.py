@@ -3,6 +3,7 @@ import os
 import time
 
 import h5py
+import torch
 from pytorch3dunet.datasets.utils import get_test_loaders
 from pytorch3dunet.unet3d import utils
 from pytorch3dunet.unet3d.model import get_model
@@ -47,7 +48,7 @@ class UnetPredictions:
             config = create_predict_config(self.paths, self.cnn_config)
 
             # Create the model
-            model = get_model(config['model'])
+            model = get_model(config)
 
             # Load model state
             model_path = config['model_path']
@@ -82,6 +83,10 @@ class UnetPredictions:
                 gui_logger.info(f"Network prediction took {runtime:.2f} s")
 
             self._update_voxel_size(self.paths, output_paths)
+
+            # free GPU memory after the inference is finished
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
             return output_paths
 

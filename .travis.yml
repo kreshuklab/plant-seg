@@ -27,7 +27,7 @@ install:
 
 before_script:
   # create test env
-  - conda create -n plant-seg -c abailoni -c cpape -c awolny -c conda-forge --use-local python=$TRAVIS_PYTHON_VERSION nifty=vplantseg1.0.8 plantseg
+  - conda create -n plant-seg -c abailoni -c cpape -c awolny -c conda-forge --use-local python=$TRAVIS_PYTHON_VERSION nifty=vplantseg1.0.8 pytorch-3dunet=1.2.5 plantseg
   - conda activate plant-seg
   # install test dependencies
   - conda install pytest
