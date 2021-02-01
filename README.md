@@ -252,7 +252,7 @@ plantseg --config nuclei_predictions_example.yaml
 2. Using PlantSeg to segment the input image with `LiftedMulticut` algorithm given the nuclei probability maps from the 1st step.
 See [example config](plantseg/resources/lifted_multicut_example.yaml). The notable difference is that in the `segmentation`
 part of the config we set `name: LiftedMulticut` and the `nuclei_predictions_path` as the path to the directory where the nuclei pmaps
-were saved in step 1.
+were saved in step 1. Also make sure that the `path` attribute points to the raw files containing the cell boundary staining (NOT THE NUCLEI).
 ```bash
 plantseg --config lifted_multicut_example.yaml
 ```
