@@ -9,7 +9,7 @@ To run the evaluation it is necessary to create in a text editor a YAML configur
 A complete [example](./evaluation_config.yml) is provided with comments for each field.\
 Then the script can be run by executing in a terminal:
 ```bash
-$ python evaluation.py --config PATH_TO_CONFIG_FILE
+$ python evaluation_segmentation.py --config PATH_TO_CONFIG_FILE
 ```
 The script must be executed from inside the evaluation directory.
 ## Neural Network Predictions Evaluation
