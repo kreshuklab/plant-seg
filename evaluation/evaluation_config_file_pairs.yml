@@ -1,0 +1,26 @@
+# H5 file structure
+gt_name: "label"
+seg_name: "segmentation"
+
+# Files location GT files and Segmentation files have to share a single ID number in order to be matched
+gt_dir: /path-to-gt-files/
+seg_dir: /path-to-gt-files/
+file_pairs:
+  - {gt_filename: file_gt1.h5, seg_filename: file_seg1.h5}
+  - {gt_filename: file_gt2.h5, seg_filename: file_seg2.h5}
+
+# train_config_file: # (Optional) Path to config file used for experiments
+# segmentation_config_file: # (Optional) Segmentation Algorithm config file. Empty if it does not exists
+
+# remove_background from evaluation:
+# If True the groundtruth background pixels (default label 0) are removed from groundthruth and segmentation, used for all evaluation in the PlantSeg manuscript.
+# If False the evaluation is performed on the data as they are (default label 0 is still ignored).
+remove_background: True
+
+# Output
+output_csv: "./test_config" # Path to output CSV file
+
+# Custom notes, for comments not in the training configuration file
+metadata: # (Optional)
+  segmentation_algorithm: "MultiCut" # Segmentation algorithm
+  down_sampling: [1, 2, 2] # For example if there is any down sampling
