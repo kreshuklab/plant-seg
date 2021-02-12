@@ -599,9 +599,11 @@ class Files2Process:
 # Generic GUI tools
 #
 ######################################################################################################################
-def report_error(data, font=None):
+def report_error(data, font=None, depth=3):
     """ creates pop up and show error messages """
     data = data if type(data) is str else f"Unknown Error. Error type: {type(data)} \n {data}"
+    # reduce message depth
+    data = '\n' + ''.join([f"{_str} \n" for _str in data.split('\n')[-depth:]])
 
     default = "The complete error message is reported in the terminal." \
               " If the error persists, please let us know by opening an issue on" \
