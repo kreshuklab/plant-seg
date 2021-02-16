@@ -77,7 +77,7 @@ class ModuleFramePrototype:
                     if obj.tk_value[0].get():
                         config[dict_key]["filter"]["state"] = True
                         config[dict_key]["filter"]["type"] = obj.tk_value[1].get()
-                        config[dict_key]["filter"]["param"] = float(obj.tk_value[2].get())
+                        config[dict_key]["filter"]["filter_param"] = float(obj.tk_value[2].get())
                     else:
                         config[dict_key]["filter"]["state"] = False
 
