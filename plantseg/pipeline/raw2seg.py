@@ -17,7 +17,7 @@ def configure_preprocessing_step(input_paths, config):
     filter_param = None
     if config["filter"]["state"]:
         filter_type = config["filter"]["type"]
-        filter_param = config["filter"]["param"]
+        filter_param = config["filter"]["filter_param"]
 
     state = config.get('state', True)
     crop = config.get('crop_volume', None)
