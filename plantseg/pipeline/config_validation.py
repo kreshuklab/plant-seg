@@ -1,14 +1,15 @@
-import yaml
-from plantseg.pipeline import raw2seg_config_template
-from functools import partial
-from plantseg.pipeline import gui_logger
 import importlib
+import os
+
+import numpy as np
+import torch
+import yaml
+
 from plantseg.gui import list_models
+from plantseg.pipeline import gui_logger
+from plantseg.pipeline import raw2seg_config_template
 from plantseg.predictions.utils import STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_DRAFT
 from plantseg.segmentation.utils import SUPPORTED_ALGORITMS
-import os
-import torch
-import numpy as np
 
 
 def _error_message(error, key, value, fallback):
@@ -159,7 +160,6 @@ def load_template():
             raise NotImplementedError("!check constructor must be dict or list.")
 
     yaml.add_constructor('!check', _check)
-
     with open(raw2seg_config_template, 'r') as f:
         return yaml.full_load(f)
 
