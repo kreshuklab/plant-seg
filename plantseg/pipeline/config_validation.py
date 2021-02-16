@@ -51,7 +51,7 @@ def is_list(key, value, fallback=None):
 
 
 def is_length3(key, value, fallback=None):
-    if len(value) == 3:
+    if len(value) != 3:
         _error_message(f"value must be a list of length 3", key, value, fallback)
         return fallback
     else:
@@ -59,13 +59,11 @@ def is_length3(key, value, fallback=None):
 
 
 def iterative_is_float(key, value, fallback=None):
-    for v in value:
-        return is_float(key, v, fallback)
+    return [is_float(key, v, f) for v, f in zip(value, fallback)]
 
 
 def iterative_is_int(key, value, fallback=None):
-    for v in value:
-        return is_int(key, v, fallback)
+    return [is_int(key, v, f) for v, f in zip(value, fallback)]
 
 
 def is_stride(key, value, fallback):
@@ -182,7 +180,6 @@ def check_scaling_factor(config):
     pre_rescaling = config["preprocessing"]["factor"]
     post_pred_rescaling = config["cnn_postprocessing"]["factor"]
     post_seg_rescaling = config["segmentation_postprocessing"]["factor"]
-
     pre_inverse_rescaling = [1.0/f for f in pre_rescaling]
     if not np.allclose(pre_inverse_rescaling, post_pred_rescaling):
         gui_logger.warning(f"Prediction post processing scaling is not set up correctly. "
