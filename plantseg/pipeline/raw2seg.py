@@ -51,7 +51,7 @@ def _create_postprocessing_step(input_paths, input_type, config):
 
 
 def raw2seg(config):
-    config_validation(config)
+    config = config_validation(config)
 
     input_paths = load_paths(config["path"])
     gui_logger.info(f"Running the pipeline on: {input_paths}")
