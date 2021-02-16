@@ -94,6 +94,3 @@ segmentation_postprocessing:
   order: 0
   # save raw input in the output segmentation file h5 file
   save_raw: False
-
-
-
