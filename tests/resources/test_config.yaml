@@ -22,7 +22,7 @@ preprocessing:
     # Accepted values: 'gaussian'/'median'
     type: gaussian
     # sigma (gaussian) or disc radius (median)
-    param: 1.0
+    filter_param: 1.0
 
 cnn_prediction:
   # enable/disable UNet prediction
