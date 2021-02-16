@@ -8,9 +8,12 @@ preprocessing:
   save_directory: !check {tests: [is_string], fallback: "PreProcessing"}
   # rescaling the volume is essential for the generalization of the networks. The rescaling factor can be computed as the resolution
   # of the volume at hand divided by the resolution of the dataset used in training. Be careful, if the difference is too large check for a different model.
-  factor: !check {tests: [is_3float_tuple], fallback: [1.0, 1.0, 1.0]}
+  factor: !check {tests: [is_list, is_length3, iterative_is_float], fallback: [1.0, 1.0, 1.0]}
   # the order of the spline interpolation
   order: !check {tests: [is_int], fallback: 2}
+  # cropping out areas of little interest can drastically improve the performance of plantseg.
+  # crop volume has to be input using the numpy slicing convention [b_z:e_z, b_x:e_x, b_y:e_y], where b_zxy is the
+  # first point of a bounding box and e_zxy is the second. eg: [:, 100:500, 400:900]
   crop_volume: !check {tests: [is_string], fallback: "[:,:,:]"}
   # optional: perform Gaussian smoothing or median filtering on the input.
   filter:
@@ -25,15 +28,15 @@ cnn_prediction:
   # enable/disable UNet prediction
   state: !check {tests: [is_binary], fallback: False}
   # Trained model name, more info on available models and custom models in the README
-  model_name: !check {tests: [model_exist], fallback:}
+  model_name: !check {tests: [is_string, model_exist], fallback:}
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
-  device: !check {tests: [is_cuda], fallback: "cpu"}
+  device: !check {tests: [check_cuda], fallback: "cpu"}
   # (int or tuple) mirror pad the input stack in each axis for best prediction performance
-  mirror_padding: !check {tests: [is_3int_tuple], fallback: [16, 32, 32]}
+  mirror_padding: !check {tests: [is_list, is_length3, iterative_is_int], fallback: [16, 32, 32]}
   # how many subprocesses to use for data loading
   num_workers: !check {tests: [is_int], fallback: 8}
   # patch size given to the network (adapt to fit in your GPU mem)
-  patch: !check {tests: [is_3int_tuple], fallback: [32, 128, 128]}
+  patch: !check {tests: [is_list, is_length3, iterative_is_int], fallback: [32, 128, 128]}
   # stride between patches (make sure the the patches overlap in order to get smoother prediction maps)
   stride: !check {tests: [is_stride], fallback: [20, 100, 100]}
   # "best" refers to best performing on the val set (recommended), alternatively "last" refers to the last version before interruption
@@ -47,7 +50,7 @@ cnn_postprocessing:
   # if True convert to result to tiff
   tiff: !check {tests: [is_binary], fallback: False}
   # rescaling factor
-  factor: !check {tests: [is_3float_tuple], fallback: [1.0, 1.0, 1.0]}
+  factor: !check {tests: [is_list, is_length3, iterative_is_float], fallback: [1.0, 1.0, 1.0]}
   # spline order for rescaling
   order: !check {tests: [is_int], fallback: 2}
 
@@ -56,7 +59,7 @@ segmentation:
   # enable/disable segmentation
   state: !check {tests: [is_binary], fallback: False}
   # Name of the algorithm to use for inferences. Options: MultiCut, MutexWS, GASP, DtWatershed
-  name: !check {tests: [is_segmentation], fallback: GASP}
+  name: !check {tests: [is_string, is_segmentation], fallback: GASP}
   # Segmentation specific parameters here
   # balance under-/over-segmentation; 0 - aim for undersegmentation, 1 - aim for oversegmentation. (Not active for DtWatershed)
   beta: !check {tests: [is_float, is_0to1], fallback: 0.6}
@@ -83,7 +86,7 @@ segmentation_postprocessing:
   # if True convert to result to tiff
   tiff: !check {tests: [is_binary], fallback: False}
   # rescaling factor
-  factor: !check {tests: [is_3float_tuple], fallback: [1.0, 1.0, 1.0]}
+  factor: !check {tests: [is_list, is_length3, iterative_is_int], fallback: [1.0, 1.0, 1.0]}
   # spline order for rescaling (keep 0 for segmentation post processing
   order: !check {tests: [is_int], fallback: 0}
   # save raw input in the output segmentation file h5 file

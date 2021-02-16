@@ -39,7 +39,9 @@ cnn_prediction:
   version: best
   # If "True" forces downloading networks for the online repos
   model_update: False
-  mirror_padding: [16, 32, 32]
+  # (int or tuple) mirror pad the input stack in each axis for best prediction performance
+  mirror_padding: [ 16, 32, 32 ]
+  # how many subprocesses to use for data loading
   num_workers: 8
 
 cnn_postprocessing:
