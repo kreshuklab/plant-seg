@@ -32,7 +32,7 @@ cnn_prediction:
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
   device: "cpu"
   # If True raw data will be mirror padded with 20 voxels in each axis
-  mirror_padding: False
+  mirror_padding: [16, 32, 32]
   # how many subprocesses to use for data loading
   num_workers: 1
   # patch size given to the network (adapt to fit in your GPU mem)
