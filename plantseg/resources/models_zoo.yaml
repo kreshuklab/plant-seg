@@ -55,3 +55,13 @@ lightsheet_unet_bce_dice_ds3x:
   path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_dice_ds3x&files=
   resolution: [0.25, 0.4875, 0.4875]
   description: "Unet trained on light-sheet images on 1/3-resolution in XY with BCEDiceLoss."
+
+# PNAS
+confocal_PNAS_2d:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FPNAS%2Fconfocal_PNAS_2d&files=
+  resolution: [0.25, 0.25, 0.25]
+  description: "2D Unet trained on z-slices of confocal images of Arabidopsis thaliana apical stem cell: https://www.repository.cam.ac.uk/handle/1810/262530"
+confocal_PNAS_3d:
+  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FPNAS%2Fconfocal_PNAS_3d&files=
+  resolution: [0.25, 0.25, 0.25]
+  description: "3D Unet trained on confocal images of Arabidopsis thaliana apical stem cell: https://www.repository.cam.ac.uk/handle/1810/262530"
