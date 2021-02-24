@@ -56,11 +56,15 @@ def create_predict_config(paths, cnn_config):
 
     # Add correct device for inference
     if cnn_config["device"] == 'cuda':
-        prediction_config["device"] = torch.device("cuda:0")
+        if torch.cuda.is_available():
+            prediction_config["device"] = torch.device("cuda:0")
+        else:
+            gui_logger.warn('CUDA capable device not available. Using CPU for prediction')
+            prediction_config["device"] = torch.device("cpu")
     elif cnn_config["device"] == 'cpu':
         prediction_config["device"] = torch.device("cpu")
     else:
-        raise RuntimeError(f"Unsupported device type: {cnn_config['device']}")
+        raise RuntimeError(f"Unsupported device type: {cnn_config['device']}. Supported types: 'cpu', 'cuda'")
 
     # check if all files are in the data directory (~/.plantseg_models/) and download if needed
     check_models(cnn_config['model_name'], update_files=cnn_config['model_update'])
