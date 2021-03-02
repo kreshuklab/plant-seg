@@ -7,7 +7,6 @@ import torch
 from pytorch3dunet.datasets.utils import get_test_loaders
 from pytorch3dunet.unet3d import utils
 from pytorch3dunet.unet3d.model import get_model
-
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.utils import create_predict_config
 
@@ -29,10 +28,40 @@ def _get_predictor(model, loader, output_file, config):
     return predictor_class(model, loader, output_file, config, **predictor_config)
 
 
+def _check_patch_size(paths, config):
+    axis = ['z', 'x', 'y']
+    patch_size = config["patch"]
+    valid_paths = []
+
+    for path in paths:
+        incorrect_axis = []
+        with h5py.File(path, 'r') as f:
+            raw_size = f["raw"].shape
+
+        for _ax, _patch_size, _raw_size in zip(axis, patch_size, raw_size):
+            if _patch_size > _raw_size:
+                incorrect_axis.append(_ax)
+
+        if len(incorrect_axis) > 0:
+            gui_logger.warning(f"Incorrect Patch size for {path}.\n Patch size {patch_size} along {incorrect_axis}"
+                               f" axis (axis order zxy) is too big for an image of size {raw_size},"
+                               f" patch size should be smaller or equal than the raw stack size. \n"
+                               f"{path} will be skipped.")
+        else:
+            valid_paths.append(path)
+
+    if len(valid_paths) == 0:
+        raise RuntimeError(f"No valid path found for the patch size specified in the PlantSeg config. \n"
+                           f" Patch size should be smaller or equal than the raw stack size.")
+    return valid_paths
+
+
 class UnetPredictions:
     def __init__(self, paths, cnn_config):
         assert isinstance(paths, list)
-        self.paths = paths
+        # check if all file in paths are large enough for the patch size in the config
+        valid_paths = _check_patch_size(paths, cnn_config)
+        self.paths = valid_paths
         self.cnn_config = cnn_config
         self.state = cnn_config.get("state", True)
 

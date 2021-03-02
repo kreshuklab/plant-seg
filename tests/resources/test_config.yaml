@@ -11,6 +11,10 @@ preprocessing:
   factor: [1, 1, 1]
   # the order of the spline interpolation
   order: 2
+  # cropping out areas of little interest can drastically improve the performance of plantseg.
+  # crop volume has to be input using the numpy slicing convention [b_z:e_z, b_x:e_x, b_y:e_y], where b_zxy is the
+  # first point of a bounding box and e_zxy is the second. eg: [:, 100:500, 400:900]
+  crop_volume: "[:, :, :]"
   # optional: perform Gaussian smoothing or median filtering on the input.
   filter:
     # enable/disable filtering
@@ -18,7 +22,7 @@ preprocessing:
     # Accepted values: 'gaussian'/'median'
     type: gaussian
     # sigma (gaussian) or disc radius (median)
-    param: 1.0
+    filter_param: 1.0
 
 cnn_prediction:
   # enable/disable UNet prediction
@@ -28,7 +32,7 @@ cnn_prediction:
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
   device: "cpu"
   # If True raw data will be mirror padded with 20 voxels in each axis
-  mirror_padding: False
+  mirror_padding: [16, 32, 32]
   # how many subprocesses to use for data loading
   num_workers: 1
   # patch size given to the network (adapt to fit in your GPU mem)
@@ -49,6 +53,8 @@ cnn_postprocessing:
   factor: [1, 1, 1]
   # spline order for rescaling
   order: 2
+  # save raw input in the output prediction file h5 file
+  save_raw: False
 
 
 segmentation:
@@ -85,3 +91,5 @@ segmentation_postprocessing:
   factor: [1, 1, 1]
   # spline order for rescaling (keep 0 for segmentation post processing
   order: 0
+  # save raw input in the output segmentation file h5 file
+  save_raw: False

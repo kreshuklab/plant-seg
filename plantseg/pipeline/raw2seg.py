@@ -5,6 +5,7 @@ from plantseg.pipeline.utils import load_paths
 from plantseg.predictions.predict import UnetPredictions
 from plantseg.predictions.utils import create_predict_config
 from plantseg.segmentation.utils import configure_segmentation_step
+from plantseg.pipeline.config_validation import config_validation
 
 
 def configure_preprocessing_step(input_paths, config):
@@ -16,7 +17,7 @@ def configure_preprocessing_step(input_paths, config):
     filter_param = None
     if config["filter"]["state"]:
         filter_type = config["filter"]["type"]
-        filter_param = config["filter"]["param"]
+        filter_param = config["filter"]["filter_param"]
 
     state = config.get('state', True)
     crop = config.get('crop_volume', None)
@@ -50,6 +51,8 @@ def _create_postprocessing_step(input_paths, input_type, config):
 
 
 def raw2seg(config):
+    config = config_validation(config)
+
     input_paths = load_paths(config["path"])
     gui_logger.info(f"Running the pipeline on: {input_paths}")
 

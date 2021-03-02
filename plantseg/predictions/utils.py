@@ -26,10 +26,6 @@ STRIDE_MENU = {
 def create_predict_config(paths, cnn_config):
     """ Creates the configuration file needed for running the neural network inference"""
 
-    def _stride_shape(patch_shape, stride_key):
-        # striding MUST be >=1
-        return [max(int(p * STRIDE_MENU[stride_key]), 1) for p in patch_shape]
-
     # Load template config
     prediction_config = yaml.load(
         open(os.path.join(plantseg_global_path, "resources", "config_predict_template.yaml"), 'r'),
@@ -41,15 +37,15 @@ def create_predict_config(paths, cnn_config):
     # Add patch and stride to the config
     patch_shape = cnn_config["patch"]
     prediction_config["loaders"]["test"]["slice_builder"]["patch_shape"] = patch_shape
-    stride_key, stride_shape = cnn_config["stride"], _stride_shape(patch_shape, "Balanced")
+    stride_key, stride_shape = cnn_config["stride"], get_stride_shape(patch_shape, "Balanced")
 
     if type(stride_key) is list:
         prediction_config["loaders"]["test"]["slice_builder"]["stride_shape"] = stride_key
     elif type(stride_key) is str:
-        stride_shape = _stride_shape(patch_shape, stride_key)
+        stride_shape = get_stride_shape(patch_shape, stride_key)
         prediction_config["loaders"]["test"]["slice_builder"]["stride_shape"] = stride_shape
     else:
-        raise RuntimeError(f"Unsupported stride type: {type(stride)}")
+        raise RuntimeError(f"Unsupported stride type: {type(stride_key)}")
 
     # Add paths to raw data
     prediction_config["loaders"]["test"]["file_paths"] = paths
@@ -118,6 +114,11 @@ def create_predict_config(paths, cnn_config):
     prediction_config["state"] = cnn_config["state"]
 
     return prediction_config
+
+
+def get_stride_shape(patch_shape, stride_key):
+    # striding MUST be >=1
+    return [max(int(p * STRIDE_MENU[stride_key]), 1) for p in patch_shape]
 
 
 def check_models(model_name, update_files=False):

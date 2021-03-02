@@ -30,7 +30,7 @@ cnn_prediction:
   # Trained model name, more info on available models and custom models in the README
   model_name: "generic_confocal_3d_unet"
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
-  device: "cpu"
+  device: "cuda"
   # patch size given to the network (adapt to fit in your GPU mem)
   patch: [32, 128, 128]
   # stride between patches (make sure the the patches overlap in order to get smoother prediction maps)
@@ -39,6 +39,10 @@ cnn_prediction:
   version: best
   # If "True" forces downloading networks for the online repos
   model_update: False
+  # (int or tuple) mirror pad the input stack in each axis for best prediction performance
+  mirror_padding: [ 16, 32, 32 ]
+  # how many subprocesses to use for data loading
+  num_workers: 8
 
 cnn_postprocessing:
   # enable/disable cnn post processing
@@ -90,6 +94,3 @@ segmentation_postprocessing:
   order: 0
   # save raw input in the output segmentation file h5 file
   save_raw: False
-
-
-

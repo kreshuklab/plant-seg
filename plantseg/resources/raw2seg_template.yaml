@@ -1,94 +1,93 @@
 # Contains the path to the directory or file to process
-path:
+path: !check {tests: [is_string, is_file_or_dir], fallback:}
 
 preprocessing:
   # enable/disable preprocessing
-  state: True
+  state: !check {tests: [is_binary], fallback:}
   # create a new sub folder where all results will be stored
-  save_directory: "PreProcessing"
+  save_directory: !check {tests: [is_string], fallback: "PreProcessing"}
   # rescaling the volume is essential for the generalization of the networks. The rescaling factor can be computed as the resolution
   # of the volume at hand divided by the resolution of the dataset used in training. Be careful, if the difference is too large check for a different model.
-  factor: [1.0, 1.0, 1.0]
+  factor: !check {tests: [is_list, is_length3, iterative_is_float], fallback: [1.0, 1.0, 1.0]}
   # the order of the spline interpolation
-  order: 2
+  order: !check {tests: [is_int], fallback: 2}
   # cropping out areas of little interest can drastically improve the performance of plantseg.
   # crop volume has to be input using the numpy slicing convention [b_z:e_z, b_x:e_x, b_y:e_y], where b_zxy is the
   # first point of a bounding box and e_zxy is the second. eg: [:, 100:500, 400:900]
-  crop_volume: "[:,:,:]"
+  crop_volume: !check {tests: [is_string], fallback: "[:,:,:]"}
   # optional: perform Gaussian smoothing or median filtering on the input.
   filter:
     # enable/disable filtering
-    state: False
+    state: !check {tests: [is_binary], fallback: False}
     # Accepted values: 'gaussian'/'median'
-    type: gaussian
+    type: !check {tests: [is_string, filter_name], fallback: "gaussian"}
     # sigma (gaussian) or disc radius (median)
-    filter_param: 1.0
+    filter_param: !check {tests: [is_float], fallback: 1.0}
 
 cnn_prediction:
   # enable/disable UNet prediction
-  state: True
+  state: !check {tests: [is_binary], fallback:}
   # Trained model name, more info on available models and custom models in the README
-  model_name: "generic_confocal_3d_unet"
+  model_name: !check {tests: [is_string, model_exist], fallback:}
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
-  device: "cuda"
+  device: !check {tests: [check_cuda], fallback: "cpu"}
   # (int or tuple) mirror pad the input stack in each axis for best prediction performance
-  mirror_padding: [16, 32, 32]
+  mirror_padding: !check {tests: [is_list, is_length3, iterative_is_int], fallback: [16, 32, 32]}
   # how many subprocesses to use for data loading
-  num_workers: 8
+  num_workers: !check {tests: [is_int], fallback: 8}
   # patch size given to the network (adapt to fit in your GPU mem)
-  patch: [32, 128, 128]
+  patch: !check {tests: [is_list, is_length3, iterative_is_int], fallback: [32, 128, 128]}
   # stride between patches (make sure the the patches overlap in order to get smoother prediction maps)
-  stride: [20, 100, 100]
+  stride: !check {tests: [is_stride], fallback: [20, 100, 100]}
   # "best" refers to best performing on the val set (recommended), alternatively "last" refers to the last version before interruption
-  version: best
+  version: !check {tests: [is_string], fallback: "best"}
   # If "True" forces downloading networks from the online repos
-  model_update: False
+  model_update: !check {tests: [is_binary], fallback: False}
 
 cnn_postprocessing:
   # enable/disable cnn post processing
-  state: False
+  state: !check {tests: [is_binary], fallback:}
   # if True convert to result to tiff
-  tiff: False
+  tiff: !check {tests: [is_binary], fallback: False}
   # rescaling factor
-  factor: [1, 1, 1]
+  factor: !check {tests: [is_list, is_length3, iterative_is_float], fallback: [1.0, 1.0, 1.0]}
   # spline order for rescaling
-  order: 2
+  order: !check {tests: [is_int], fallback: 2}
 
 
 segmentation:
   # enable/disable segmentation
-  state: True
+  state: !check {tests: [is_binary], fallback:}
   # Name of the algorithm to use for inferences. Options: MultiCut, MutexWS, GASP, DtWatershed
-  name: "MultiCut"
+  name: !check {tests: [is_string, is_segmentation], fallback:}
   # Segmentation specific parameters here
   # balance under-/over-segmentation; 0 - aim for undersegmentation, 1 - aim for oversegmentation. (Not active for DtWatershed)
-  beta: 0.5
+  beta: !check {tests: [is_float, is_0to1], fallback: 0.6}
   # directory where to save the results
-  save_directory: "MultiCut"
+  save_directory: !check {tests: [is_string], fallback: "GASP"}
   # enable/disable watershed
-  run_ws: True
+  run_ws: !check {tests: [is_binary], fallback: True}
   # use 2D instead of 3D watershed
-  ws_2D: True
+  ws_2D: !check {tests: [is_binary], fallback: True}
   # probability maps threshold
-  ws_threshold: 0.5
+  ws_threshold: !check {tests: [is_float, is_0to1], fallback: 0.5}
   # set the minimum superpixels size
-  ws_minsize: 50
+  ws_minsize: !check {tests: [is_int], fallback: 50}
   # sigma for the gaussian smoothing of the distance transform
-  ws_sigma: 2.0
+  ws_sigma: !check {tests: [is_float], fallback: 2.0}
   # sigma for the gaussian smoothing of boundary
-  ws_w_sigma: 0
+  ws_w_sigma: !check {tests: [is_float], fallback: 0.0}
   # set the minimum segment size in the final segmentation. (Not active for DtWatershed)
-  post_minsize: 50
+  post_minsize: !check {tests: [is_int], fallback: 50}
 
 segmentation_postprocessing:
   # enable/disable segmentation post processing
-  state: False
+  state: !check {tests: [is_binary], fallback:}
   # if True convert to result to tiff
-  tiff: False
+  tiff: !check {tests: [is_binary], fallback: False}
   # rescaling factor
-  factor: [1, 1, 1]
+  factor: !check {tests: [is_list, is_length3, iterative_is_float], fallback: [1.0, 1.0, 1.0]}
   # spline order for rescaling (keep 0 for segmentation post processing
-  order: 0
+  order: !check {tests: [is_int], fallback: 0}
   # save raw input in the output segmentation file h5 file
-  save_raw: False
-
+  save_raw: !check {tests: [is_binary], fallback: False}
