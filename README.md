@@ -25,13 +25,13 @@ or
 ### Install Anaconda python
 - First step required to use the pipeline is installing anaconda python.
  If you already have a working anaconda setup you can go directly to next item. 
-To download Anaconda Python open a terminal and type:
+To download Anaconda Python open a terminal and type
 ```bash
-wget https://repo.anaconda.com/archive/Anaconda3-2020.07-Linux-x86_64.sh
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 ```
 Then install by typing:
 ```bash
-bash ./Anaconda3-2020.07-Linux-x86_64.sh
+bash ./Miniconda3-latest-Linux-x86_64.sh
 ```
 Follow the instructions to complete the anaconda installation.
 
