@@ -3,7 +3,7 @@ path: !check {tests: [is_string, is_file_or_dir], fallback:}
 
 preprocessing:
   # enable/disable preprocessing
-  state: !check {tests: [is_binary], fallback: False}
+  state: !check {tests: [is_binary], fallback:}
   # create a new sub folder where all results will be stored
   save_directory: !check {tests: [is_string], fallback: "PreProcessing"}
   # rescaling the volume is essential for the generalization of the networks. The rescaling factor can be computed as the resolution
@@ -26,7 +26,7 @@ preprocessing:
 
 cnn_prediction:
   # enable/disable UNet prediction
-  state: !check {tests: [is_binary], fallback: False}
+  state: !check {tests: [is_binary], fallback:}
   # Trained model name, more info on available models and custom models in the README
   model_name: !check {tests: [is_string, model_exist], fallback:}
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
@@ -46,7 +46,7 @@ cnn_prediction:
 
 cnn_postprocessing:
   # enable/disable cnn post processing
-  state: !check {tests: [is_binary], fallback: False}
+  state: !check {tests: [is_binary], fallback:}
   # if True convert to result to tiff
   tiff: !check {tests: [is_binary], fallback: False}
   # rescaling factor
@@ -57,9 +57,9 @@ cnn_postprocessing:
 
 segmentation:
   # enable/disable segmentation
-  state: !check {tests: [is_binary], fallback: False}
+  state: !check {tests: [is_binary], fallback:}
   # Name of the algorithm to use for inferences. Options: MultiCut, MutexWS, GASP, DtWatershed
-  name: !check {tests: [is_string, is_segmentation], fallback: GASP}
+  name: !check {tests: [is_string, is_segmentation], fallback:}
   # Segmentation specific parameters here
   # balance under-/over-segmentation; 0 - aim for undersegmentation, 1 - aim for oversegmentation. (Not active for DtWatershed)
   beta: !check {tests: [is_float, is_0to1], fallback: 0.6}
@@ -82,7 +82,7 @@ segmentation:
 
 segmentation_postprocessing:
   # enable/disable segmentation post processing
-  state: !check {tests: [is_binary], fallback: False}
+  state: !check {tests: [is_binary], fallback:}
   # if True convert to result to tiff
   tiff: !check {tests: [is_binary], fallback: False}
   # rescaling factor
