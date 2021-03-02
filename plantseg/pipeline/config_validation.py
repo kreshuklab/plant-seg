@@ -8,8 +8,10 @@ import yaml
 from plantseg.gui import list_models
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline import raw2seg_config_template
-from plantseg.predictions.utils import STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_DRAFT
+from plantseg.predictions.utils import STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_DRAFT, get_stride_shape
 from plantseg.segmentation.utils import SUPPORTED_ALGORITMS
+
+deprecated_keys = {'param': 'filter_param'}
 
 
 def _error_message(error, key, value, fallback):
@@ -163,13 +165,27 @@ def load_template():
 
 
 def recursive_config_check(config, template):
+    # check if deprecated keys are used
+    for d_key in deprecated_keys.keys():
+        correct_key = deprecated_keys[d_key]
+
+        if d_key in config.keys() and correct_key not in config.keys():
+            gui_logger.warning(f"Deprecated config warning. You are using an old version of the config file. "
+                               f"key: '{d_key}' has been renamed '{correct_key}'")
+            config[correct_key] = config[d_key]
+            del config[d_key]
+
     for key, value in template.items():
+
+        # check if key exist
         if key not in config:
             raise RuntimeError(f"key: '{key}' is missing, plant-seg requires '{key}' to run.")
 
+        # perform checks from template
         if isinstance(value, Check):
             config[key] = value(key, config[key])
 
+        # recursively go trough all inner-dictionaries
         elif isinstance(value, dict):
             config[key] = recursive_config_check(config[key], template[key])
 
@@ -177,6 +193,9 @@ def recursive_config_check(config, template):
 
 
 def check_scaling_factor(config):
+    """
+    This function check if all scaling factors are correctly setup
+    """
     pre_rescaling = config["preprocessing"]["factor"]
     post_pred_rescaling = config["cnn_postprocessing"]["factor"]
     post_seg_rescaling = config["segmentation_postprocessing"]["factor"]
@@ -198,11 +217,34 @@ def check_scaling_factor(config):
     return config
 
 
+def check_patch_and_stride(config):
+    """
+    This function check if patch and stride are large enough, if not the case will raise a warning and the predictions
+    will have empty slices.
+    """
+    _stride = config["cnn_prediction"]["stride"]
+    patch = config["cnn_prediction"]["patch"]
+    axis = ['z', 'x', 'y']
+    stride = get_stride_shape(patch, _stride) if isinstance(_stride, str) else _stride
+    for _ax, _patch, _stride in zip(axis, patch, stride):
+        test_z = _ax == 'z' and 1 < _patch - _stride <= 8
+        test_x = _ax == 'x' and _patch - _stride <= 16
+        test_y = _ax == 'y' and _patch - _stride <= 16
+        if test_z or test_x or test_y:
+            gui_logger.warning(f"Stride along {_ax} axis (axis order zxy) is too large, "
+                               f"this might lead to empty strides artifacts in the cnn predictions. "
+                               f"Please try to reduce eider reduce the stride "
+                               f"(equivalently, select the 'Accurate' mode in the gui) or to increase the patch size.")
+    return config
+
+
 def config_validation(config):
+    # check keys from template
     template = load_template()
     config = recursive_config_check(config, template)
 
     # additional tests:
     config = check_scaling_factor(config)
+    config = check_patch_and_stride(config)
 
     return config
