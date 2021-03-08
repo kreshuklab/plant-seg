@@ -1,11 +1,9 @@
 import time
 
 import nifty
-import nifty.graph.rag as nrag
-import numpy as np
-from elf.segmentation.features import compute_rag
+from elf.segmentation.features import compute_rag, compute_boundary_mean_and_length
 from elf.segmentation.multicut import multicut_kernighan_lin, transform_probabilities_to_costs
-from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
+from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter, stacked_watershed
 
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
@@ -52,8 +50,10 @@ class MulticutFromPmaps(AbstractSegmentationStep):
         gui_logger.info('Clustering with MultiCut...')
         runtime = time.time()
         segmentation = self.segment_volume(pmaps)
+        segmentation = segmentation.astype('uint32')
 
         if self.post_minsize > self.ws_minsize:
+            gui_logger.info("Applying size filter for post-processing")
             segmentation, _ = apply_size_filter(segmentation, pmaps, self.post_minsize)
 
         # stop real world clock timer
@@ -65,40 +65,33 @@ class MulticutFromPmaps(AbstractSegmentationStep):
     def segment_volume(self, pmaps):
         if self.ws_2D:
             # WS in 2D
-            ws = self.ws_dt_2D(pmaps)
+            gui_logger.info("Computing watershed in 2d")
+            ws, n_labels = stacked_watershed(pmaps, n_threads=self.n_threads,
+                                             threshold=self.ws_threshold,
+                                             sigma_seeds=self.ws_sigma,
+                                             sigma_weights=self.ws_w_sigma,
+                                             min_size=self.ws_minsize)
         else:
             # WS in 3D
-            ws, _ = distance_transform_watershed(pmaps, self.ws_threshold,
-                                                 self.ws_sigma,
-                                                 sigma_weights=self.ws_w_sigma,
-                                                 min_size=self.ws_minsize)
+            gui_logger.info("Computing watershed in 3d")
+            ws, n_labels = distance_transform_watershed(pmaps, self.ws_threshold,
+                                                        self.ws_sigma,
+                                                        sigma_weights=self.ws_w_sigma,
+                                                        min_size=self.ws_minsize)
 
-        rag = compute_rag(ws, 1)
+        gui_logger.info("Computing region adjacency graph")
+        n_labels += 1
+        rag = compute_rag(ws, n_labels=n_labels, n_threads=self.n_threads)
+
+        gui_logger.info("Computing edge_features")
+        features = compute_boundary_mean_and_length(rag, pmaps, n_threads=self.n_threads)
         # Computing edge features
-        features = nrag.accumulateEdgeMeanAndLength(rag, pmaps, numberOfThreads=1)  # DO NOT CHANGE numberOfThreads
         probs = features[:, 0]  # mean edge prob
         edge_sizes = features[:, 1]
         # Prob -> edge costs
         costs = transform_probabilities_to_costs(probs, edge_sizes=edge_sizes, beta=self.beta)
-        # Creating graph
-        graph = nifty.graph.undirectedGraph(rag.numberOfNodes)
-        graph.insertEdges(rag.uvIds())
-        # Solving Multicut
-        node_labels = multicut_kernighan_lin(graph, costs)
-        return nifty.tools.take(node_labels, ws)
 
-    def ws_dt_2D(self, pmaps):
-        # Axis 0 is assumed z-axis!!!
-        ws = np.zeros_like(pmaps)
-        max_idx = 1
-        for i in range(pmaps.shape[0]):
-            _pmaps = pmaps[i]
-            _ws, _ = distance_transform_watershed(_pmaps,
-                                                  self.ws_threshold,
-                                                  self.ws_sigma,
-                                                  sigma_weights=self.ws_w_sigma,
-                                                  min_size=self.ws_minsize)
-            _ws = _ws + max_idx
-            max_idx = _ws.max()
-            ws[i] = _ws
-        return ws
+        # Solving Multicut
+        gui_logger.info("Computing multicut")
+        node_labels = multicut_kernighan_lin(rag, costs)
+        return nifty.tools.take(node_labels, ws)
