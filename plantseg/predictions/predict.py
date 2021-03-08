@@ -18,14 +18,16 @@ def _get_output_file(dataset, model_name, suffix='_predictions'):
     return os.path.join(basepath, model_name, basename)
 
 
-def _get_predictor(model, loader, output_file, config):
+def _get_predictor(model, output_file, config):
     predictor_config = config.get('predictor', {})
     class_name = predictor_config.get('name', 'StandardPredictor')
 
     m = importlib.import_module('pytorch3dunet.unet3d.predictor')
     predictor_class = getattr(m, class_name)
 
-    return predictor_class(model, loader, output_file, config, **predictor_config)
+    output_dir, _ = os.path.split(output_file)
+
+    return predictor_class(model, output_dir, config, **predictor_config)
 
 
 def _check_patch_size(paths, config):
@@ -59,11 +61,10 @@ def _check_patch_size(paths, config):
 class UnetPredictions:
     def __init__(self, paths, cnn_config):
         assert isinstance(paths, list)
-        # check if all file in paths are large enough for the patch size in the config
-        valid_paths = _check_patch_size(paths, cnn_config)
-        self.paths = valid_paths
-        self.cnn_config = cnn_config
         self.state = cnn_config.get("state", True)
+        # check if all file in paths are large enough for the patch size in the config
+        self.paths = _check_patch_size(paths, cnn_config) if self.state else paths
+        self.cnn_config = cnn_config
 
     def __call__(self):
         logger = utils.get_logger('UNet3DPredictor')
@@ -77,7 +78,7 @@ class UnetPredictions:
             config = create_predict_config(self.paths, self.cnn_config)
 
             # Create the model
-            model = get_model(config)
+            model = get_model(config['model'])
 
             # Load model state
             model_path = config['model_path']
@@ -100,10 +101,10 @@ class UnetPredictions:
 
                 output_file = _get_output_file(test_loader.dataset, model_name)
 
-                predictor = _get_predictor(model, test_loader, output_file, config)
+                predictor = _get_predictor(model, output_file, config)
 
                 # run the model prediction on the entire dataset and save to the 'output_file' H5
-                predictor.predict()
+                predictor(test_loader)
 
                 # save resulting output path
                 output_paths.append(output_file)
