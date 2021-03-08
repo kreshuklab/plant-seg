@@ -73,7 +73,7 @@ class MulticutFromPmaps(AbstractSegmentationStep):
                                                  sigma_weights=self.ws_w_sigma,
                                                  min_size=self.ws_minsize)
 
-        rag = compute_rag(ws, 1)
+        rag = compute_rag(ws)
         # Computing edge features
         features = nrag.accumulateEdgeMeanAndLength(rag, pmaps, numberOfThreads=1)  # DO NOT CHANGE numberOfThreads
         probs = features[:, 0]  # mean edge prob
@@ -84,12 +84,13 @@ class MulticutFromPmaps(AbstractSegmentationStep):
         graph = nifty.graph.undirectedGraph(rag.numberOfNodes)
         graph.insertEdges(rag.uvIds())
         # Solving Multicut
+
         node_labels = multicut_kernighan_lin(graph, costs)
         return nifty.tools.take(node_labels, ws)
 
     def ws_dt_2D(self, pmaps):
         # Axis 0 is assumed z-axis!!!
-        ws = np.zeros_like(pmaps)
+        ws = np.zeros_like(pmaps).astype(np.uint32)
         max_idx = 1
         for i in range(pmaps.shape[0]):
             _pmaps = pmaps[i]
