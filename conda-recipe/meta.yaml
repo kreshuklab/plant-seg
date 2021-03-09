@@ -6,6 +6,7 @@ source:
   path: ..
 
 build:
+  noarch: python
   script: "pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
   number: 1
 
@@ -18,21 +19,20 @@ requirements:
     - pip
 
   run:
-    - python 3.7
-    # TODO: remove pillow dep after new torchvision release
-    - pillow<7
+    - python
+    - pillow
     - h5py
     - pywget
     - pyyaml
-    - scipy =1.2
+    - scipy
     - scikit-image
     - scikit-learn
     - tifffile
     - vigra
     - torchvision
     - pytorch
-    - elf =0.1.0
-    - gasp
+    - elf
+    - gasp=v1.0.4
     - pytorch-3dunet
 
 test:
