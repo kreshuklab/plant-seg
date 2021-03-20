@@ -298,13 +298,12 @@ Alternatively one can create the `plant-seg` environment from scratch and ensuri
 conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge cudatoolkit=<YOU_CUDA_VERSION> plantseg
 ```
 
-* If you receive an error similar to:
+* If you use plantseg from the GUI and you receive an error similar to:
 ```
-File "/home/usr/miniconda3/envs/plant-seg/lib/python3.7/site-packages/plantseg/gui/gui_widgets.py", line 210, in init
-default=config[self.module]["model_name"],
-KeyError: 'cnn_prediction'
+RuntimeError: key : 'crop_volume' is missing, plant-seg requires 'crop_volume' to run
 ```
-It might be that the default configuration file got corrupted.
+(or a similar message for any of the other keys)
+It might be that the last session configuration file got corrupted or is outdated.
 You should be able to solve it by removing the corrupted file `config_gui_last.yaml`.
 
 If you have a standard installation of plantseg, you can remove it by executing on the terminal:
@@ -312,10 +311,17 @@ If you have a standard installation of plantseg, you can remove it by executing 
 $ rm ~/.plantseg_models/configs/config_gui_last.yaml
 ```
 
+* If you use plantseg from the comand line and you receive an error similar to:
+```
+RuntimeError: key : 'crop_volume' is missing, plant-seg requires 'crop_volume' to run
+```
+
+Please make sure that your configuratiuon has the correct formatting and contains all required keys. 
+An updated example can be found inside the directory `examples`, in this repository.
+
 * PlantSeg is under active development so it may happen that the models/configuration files saved in `~/.plantseg_modes`
 are outdated. In case of errors related to loading the configuration file, please close the PlantSeg app, 
 remove `~/.plantseg_models` directory and try again.
-
 
 ## Tests
 In order to run tests make sure that `pytest` is installed in your conda environment. You can run your tests 
