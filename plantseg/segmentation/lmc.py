@@ -61,6 +61,8 @@ class LiftedMulticut(AbstractSegmentationStep):
                                           self.ws_minsize)
 
         if self.post_minsize > self.ws_minsize:
+            segmentation = segmentation.astype('uint32')
+            boundary_pmaps = boundary_pmaps.astype('float32')
             segmentation, _ = apply_size_filter(segmentation, boundary_pmaps, self.post_minsize)
 
         # stop real world clock timer
