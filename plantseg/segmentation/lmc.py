@@ -1,5 +1,5 @@
-import time
 import os
+import time
 
 import elf.segmentation.lifted_multicut as lmc
 import numpy as np
@@ -9,7 +9,6 @@ from elf.segmentation.features import lifted_problem_from_probabilities, \
 from elf.segmentation.multicut import transform_probabilities_to_costs
 from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
 
-from evaluation.lmc_eval import np
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
 from plantseg.pipeline.utils import load_paths
