@@ -74,7 +74,8 @@ class LiftedMulticut(AbstractSegmentationStep):
         boundary_pmaps, voxel_size = self.load_stack(input_path)
         nuclei_pmaps_path = self._find_nuclei_pmaps_path(input_path)
         if nuclei_pmaps_path is None:
-            raise RuntimeError(f'Cannot find nuclei probability maps for: {input_path}')
+            raise RuntimeError(f'Cannot find nuclei probability maps for: {input_path}. '
+                               f'Nuclei files: {self.nuclei_predictions_paths}')
         nuclei_pmaps, _ = self.load_stack(nuclei_pmaps_path)
 
         # pass boundary_pmaps and nuceli_pmaps to process with Lifted Multicut
@@ -92,6 +93,10 @@ class LiftedMulticut(AbstractSegmentationStep):
         return output_path
 
     def _find_nuclei_pmaps_path(self, input_path):
+        if len(self.nuclei_predictions_paths) == 1:
+            return self.nuclei_predictions_paths[0]
+
+        # if more than one nuclei pmaps file given in the config, match by filename
         filename = os.path.split(input_path)[1]
         for nuclei_path in self.nuclei_predictions_paths:
             fn = os.path.split(nuclei_path)[1]
