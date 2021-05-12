@@ -49,10 +49,13 @@ cnn_postprocessing:
   state: !check {tests: [is_binary], fallback:}
   # if True convert to result to tiff
   tiff: !check {tests: [is_binary], fallback: False}
+  output_type: !check {tests: [is_string], fallback: "data_float32"}
   # rescaling factor
   factor: !check {tests: [is_list, is_length3, iterative_is_float], fallback: [1.0, 1.0, 1.0]}
   # spline order for rescaling
   order: !check {tests: [is_int], fallback: 2}
+  # save raw input in the output segmentation file h5 file
+  save_raw: !check { tests: [ is_binary ], fallback: False }
 
 
 segmentation:

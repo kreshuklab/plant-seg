@@ -145,8 +145,14 @@ class Check(object):
 
     def __call__(self, key, value):
         out = value
+        if out is None:
+            gui_logger.warning(f"key: '{key}' is missing, plant-seg is trying to use a default.")
+
         for check in self.check_list:
             out = check(key, value, self.fallback)
+
+        if out is None:
+            raise RuntimeError(f"key: '{key}' is required, plant-seg can not run use default for '{key}'.")
 
         return out
 
@@ -179,7 +185,7 @@ def recursive_config_check(config, template):
 
         # check if key exist
         if key not in config:
-            raise RuntimeError(f"key: '{key}' is missing, plant-seg requires '{key}' to run.")
+            config[key] = None
 
         # perform checks from template
         if isinstance(value, Check):
@@ -238,6 +244,19 @@ def check_patch_and_stride(config):
     return config
 
 
+def reverse_recursive_config_check(template, config):
+    # check if deprecated keys are used
+    for key, value in config.items():
+        # check if key exist
+        if key not in template:
+            raise RuntimeError(f"Unknown key: '{key}', please remove it from the config file to run plantseg.")
+
+        if isinstance(value, dict):
+            reverse_recursive_config_check(template[key], config[key])
+
+    return None
+
+
 def config_validation(config):
     # check keys from template
     template = load_template()
@@ -247,4 +266,6 @@ def config_validation(config):
     config = check_scaling_factor(config)
     config = check_patch_and_stride(config)
 
+    # reverse check
+    reverse_recursive_config_check(template, config)
     return config
