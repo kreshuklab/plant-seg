@@ -39,6 +39,7 @@ Follow the instructions to complete the anaconda installation.
 The tool can be installed directly by executing in the terminal:
 ```bash
 conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge plantseg
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c abailoni -c cpape -c awolny pytorch plantseg
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
