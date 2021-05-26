@@ -12,6 +12,7 @@ from plantseg.predictions.utils import STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_
 from plantseg.segmentation.utils import SUPPORTED_ALGORITMS
 
 deprecated_keys = {'param': 'filter_param'}
+special_keys = {'nuclei_predictions_path'}
 
 
 def _error_message(error, key, value, fallback):
@@ -248,7 +249,7 @@ def reverse_recursive_config_check(template, config):
     # check if deprecated keys are used
     for key, value in config.items():
         # check if key exist
-        if key not in template:
+        if (key not in template) and (key not in special_keys):
             raise RuntimeError(f"Unknown key: '{key}', please remove it from the config file to run plantseg.")
 
         if isinstance(value, dict):
