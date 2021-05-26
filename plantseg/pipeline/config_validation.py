@@ -12,7 +12,7 @@ from plantseg.predictions.utils import STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_
 from plantseg.segmentation.utils import SUPPORTED_ALGORITMS
 
 deprecated_keys = {'param': 'filter_param'}
-special_keys = {'nuclei_predictions_path'}
+special_keys = {'nuclei_predictions_path', 'is_segmentation'}
 
 
 def _error_message(error, key, value, fallback):

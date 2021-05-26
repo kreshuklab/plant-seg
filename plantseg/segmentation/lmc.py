@@ -18,6 +18,7 @@ class LiftedMulticut(AbstractSegmentationStep):
     def __init__(self,
                  predictions_paths,
                  nuclei_predictions_path,
+                 is_segmentation=False,
                  save_directory="LiftedMulticut",
                  beta=0.6,
                  run_ws=True,
@@ -36,6 +37,7 @@ class LiftedMulticut(AbstractSegmentationStep):
                          state=state)
 
         self.nuclei_predictions_paths = load_paths(nuclei_predictions_path)
+        self.is_segmentation = is_segmentation
 
         self.beta = beta
 
@@ -57,8 +59,18 @@ class LiftedMulticut(AbstractSegmentationStep):
         gui_logger.info('Clustering with LiftedMulticut...')
         boundary_pmaps, nuclei_pmaps = pmaps
         runtime = time.time()
-        segmentation = segment_volume_lmc(boundary_pmaps, nuclei_pmaps, self.ws_threshold, self.ws_sigma,
-                                          self.ws_minsize)
+        if self.is_segmentation:
+            segmentation = segment_volume_lmc_from_seg(boundary_pmaps,
+                                                       nuclei_pmaps,
+                                                       self.ws_threshold,
+                                                       self.ws_sigma,
+                                                       self.ws_minsize)
+        else:
+            segmentation = segment_volume_lmc(boundary_pmaps,
+                                              nuclei_pmaps,
+                                              self.ws_threshold,
+                                              self.ws_sigma,
+                                              self.ws_minsize)
 
         if self.post_minsize > self.ws_minsize:
             segmentation = segmentation.astype('uint32')
@@ -80,7 +92,7 @@ class LiftedMulticut(AbstractSegmentationStep):
                                f'Nuclei files: {self.nuclei_predictions_paths}')
         nuclei_pmaps, _ = self.load_stack(nuclei_pmaps_path)
 
-        # pass boundary_pmaps and nuceli_pmaps to process with Lifted Multicut
+        # pass boundary_pmaps and nuclei_pmaps to process with Lifted Multicut
         pmaps = (boundary_pmaps, nuclei_pmaps)
         output_data = self.process(pmaps)
 
@@ -118,7 +130,7 @@ def segment_volume_lmc(boundary_pmaps, nuclei_pmaps, threshold=0.4, sigma=2.0, s
     costs, sizes = features[:, 0], features[:, 1]
 
     # transform the edge costs from [0, 1] to  [-inf, inf], which is
-    # necessary for the multicut. This is done by intepreting the values
+    # necessary for the multicut. This is done by interpreting the values
     # as probabilities for an edge being 'true' and then taking the negative log-likelihood.
     # in addition, we weight the costs by the size of the corresponding edge
 
@@ -152,7 +164,7 @@ def segment_volume_lmc_from_seg(boundary_pmaps, nuclei_seg, threshold=0.4, sigma
     costs, sizes = features[:, 0], features[:, 1]
 
     # transform the edge costs from [0, 1] to  [-inf, inf], which is
-    # necessary for the multicut. This is done by intepreting the values
+    # necessary for the multicut. This is done by interpreting the values
     # as probabilities for an edge being 'true' and then taking the negative log-likelihood.
     # in addition, we weight the costs by the size of the corresponding edge
 
