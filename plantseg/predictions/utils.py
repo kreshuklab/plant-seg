@@ -80,14 +80,11 @@ def create_predict_config(paths, cnn_config):
     for key, value in config_train["model"].items():
         prediction_config["model"][key] = value
 
+    # configure halo to be removed from the patches
+    patch_halo = cnn_config.get("patch_halo", [8, 16, 16])
+
     # configure mirror padding
-    mirror_padding = cnn_config.get("mirror_padding", True)
-    if isinstance(mirror_padding, bool):
-        if mirror_padding:
-            # use default mirror_padding
-            mirror_padding = [16, 32, 32]
-        else:
-            mirror_padding = [0, 0, 0]
+    mirror_padding = cnn_config.get("mirror_padding", [16, 32, 32])
 
     # adapt for UNet2D
     if prediction_config["model"]["name"] == "UNet2D":
@@ -106,6 +103,9 @@ def create_predict_config(paths, cnn_config):
         assert stride_shape[0] == 1, \
             f"Incorrect z-dimension in the stride_shape for the 2D UNet prediction. {stride_shape[0]} was given, but has to be 1"
 
+    
+    prediction_config["predictor"]["patch_halo"] = patch_halo
+    
     prediction_config["loaders"]["mirror_padding"] = mirror_padding
 
     # Additional attributes

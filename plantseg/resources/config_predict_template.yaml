@@ -20,6 +20,8 @@ model:
 predictor:
   # standard in memory predictor
   name: 'StandardPredictor'
+  # padding to be removed from each axis in a given patch in order to avoid checkerboard artifacts
+  patch_halo: [8, 16, 16]
 
 # specify the test datasets
 loaders:
