@@ -12,12 +12,15 @@ from elf.segmentation.watershed import distance_transform_watershed, apply_size_
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
 from plantseg.pipeline.utils import load_paths
+import h5py
+from plantseg.pipeline.utils import read_tiff_voxel_size, read_h5_voxel_size, find_input_key
 
 
 class LiftedMulticut(AbstractSegmentationStep):
     def __init__(self,
                  predictions_paths,
                  nuclei_predictions_path,
+                 is_segmentation=False,
                  save_directory="LiftedMulticut",
                  beta=0.6,
                  run_ws=True,
@@ -36,6 +39,7 @@ class LiftedMulticut(AbstractSegmentationStep):
                          state=state)
 
         self.nuclei_predictions_paths = load_paths(nuclei_predictions_path)
+        self.is_segmentation = is_segmentation
 
         self.beta = beta
 
@@ -57,8 +61,18 @@ class LiftedMulticut(AbstractSegmentationStep):
         gui_logger.info('Clustering with LiftedMulticut...')
         boundary_pmaps, nuclei_pmaps = pmaps
         runtime = time.time()
-        segmentation = segment_volume_lmc(boundary_pmaps, nuclei_pmaps, self.ws_threshold, self.ws_sigma,
-                                          self.ws_minsize)
+        if self.is_segmentation:
+            segmentation = segment_volume_lmc_from_seg(boundary_pmaps,
+                                                       nuclei_pmaps,
+                                                       self.ws_threshold,
+                                                       self.ws_sigma,
+                                                       self.ws_minsize)
+        else:
+            segmentation = segment_volume_lmc(boundary_pmaps,
+                                              nuclei_pmaps,
+                                              self.ws_threshold,
+                                              self.ws_sigma,
+                                              self.ws_minsize)
 
         if self.post_minsize > self.ws_minsize:
             segmentation = segmentation.astype('uint32')
@@ -78,9 +92,9 @@ class LiftedMulticut(AbstractSegmentationStep):
         if nuclei_pmaps_path is None:
             raise RuntimeError(f'Cannot find nuclei probability maps for: {input_path}. '
                                f'Nuclei files: {self.nuclei_predictions_paths}')
-        nuclei_pmaps, _ = self.load_stack(nuclei_pmaps_path)
+        nuclei_pmaps, _ = self._load_stack_nuclei_seg(nuclei_pmaps_path)
 
-        # pass boundary_pmaps and nuceli_pmaps to process with Lifted Multicut
+        # pass boundary_pmaps and nuclei_pmaps to process with Lifted Multicut
         pmaps = (boundary_pmaps, nuclei_pmaps)
         output_data = self.process(pmaps)
 
@@ -93,6 +107,24 @@ class LiftedMulticut(AbstractSegmentationStep):
 
         # return output_path
         return output_path
+
+    def _load_stack_nuclei_seg(self, file_path):
+        with h5py.File(file_path, "r") as f:
+            h5_input_key = find_input_key(f)
+            gui_logger.info(f"Found '{h5_input_key}' dataset inside {file_path}")
+            # set h5_output_key to be the same as h5_input_key if h5_output_key not defined
+            if self.h5_output_key is None:
+                self.h5_output_key = h5_input_key
+
+            ds = f[h5_input_key]
+            data = ds[...]
+
+        # Parse voxel size
+        voxel_size = read_h5_voxel_size(file_path)
+        # reshape data to 3D always
+        data = np.nan_to_num(data)
+        data = self._fix_input_shape(data)
+        return data, voxel_size
 
     def _find_nuclei_pmaps_path(self, input_path):
         if len(self.nuclei_predictions_paths) == 1:
@@ -118,7 +150,7 @@ def segment_volume_lmc(boundary_pmaps, nuclei_pmaps, threshold=0.4, sigma=2.0, s
     costs, sizes = features[:, 0], features[:, 1]
 
     # transform the edge costs from [0, 1] to  [-inf, inf], which is
-    # necessary for the multicut. This is done by intepreting the values
+    # necessary for the multicut. This is done by interpreting the values
     # as probabilities for an edge being 'true' and then taking the negative log-likelihood.
     # in addition, we weight the costs by the size of the corresponding edge
 
@@ -143,7 +175,6 @@ def segment_volume_lmc(boundary_pmaps, nuclei_pmaps, threshold=0.4, sigma=2.0, s
 
 def segment_volume_lmc_from_seg(boundary_pmaps, nuclei_seg, threshold=0.4, sigma=2.0, sp_min_size=100):
     watershed = distance_transform_watershed(boundary_pmaps, threshold, sigma, min_size=sp_min_size)[0]
-
     # compute the region adjacency graph
     rag = compute_rag(watershed)
 
@@ -152,7 +183,7 @@ def segment_volume_lmc_from_seg(boundary_pmaps, nuclei_seg, threshold=0.4, sigma
     costs, sizes = features[:, 0], features[:, 1]
 
     # transform the edge costs from [0, 1] to  [-inf, inf], which is
-    # necessary for the multicut. This is done by intepreting the values
+    # necessary for the multicut. This is done by interpreting the values
     # as probabilities for an edge being 'true' and then taking the negative log-likelihood.
     # in addition, we weight the costs by the size of the corresponding edge
 
@@ -169,6 +200,8 @@ def segment_volume_lmc_from_seg(boundary_pmaps, nuclei_seg, threshold=0.4, sigma
 
     # solve the full lifted problem using the kernighan lin approximation introduced in
     # http://openaccess.thecvf.com/content_iccv_2015/html/Keuper_Efficient_Decomposition_of_ICCV_2015_paper.html
+    lifted_costs = lifted_costs.astype('float64')
+    lifted_costs = lifted_costs[:, 0]
     node_labels = lmc.lifted_multicut_kernighan_lin(rag, costs, lifted_uvs, lifted_costs)
     lifted_segmentation = project_node_labels_to_pixels(rag, node_labels)
     return lifted_segmentation
