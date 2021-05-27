@@ -260,6 +260,9 @@ were saved in step 1. Also make sure that the `path` attribute points to the raw
 plantseg --config lifted_multicut_example.yaml
 ```
 
+If case when the nuclei segmentation is given, one should skip step 1., add `is_segmentation=True` flag in the [config](plantseg/resources/lifted_multicut_example.yaml)
+and directly run step 2.
+
 ## Troubleshooting
 * If you stumble in the following error message:
 ```

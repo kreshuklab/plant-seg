@@ -55,8 +55,10 @@ cnn_postprocessing:
 segmentation:
   # enable/disable segmentation
   state: True
-  # path to the directory containing the nuclei probability maps
-  nuclei_predictions_path: PATH_TO_NUCLEI_PMAPS
+  # path to the directory containing the nuclei predictions (either probability maps or segmentation)
+  nuclei_predictions_path: PATH_TO_NUCLEI_PREDS
+  # whether the `nuclei_predictions_path` contains the probability maps (is_segmentation=False) or segmentation (is_segmentation=True)
+  is_segmentation: False
   # Name of the algorithm to use for inferences
   name: "LiftedMulticut"
   # Segmentation specific parameters here
