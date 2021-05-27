@@ -11,7 +11,7 @@ RUN wget \
     && bash Miniconda3-latest-Linux-x86_64.sh -b \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
 
-RUN conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge plantseg
+RUN conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c abailoni -c cpape -c awolny pytorch nifty=1.0.9 plantseg
 
 ENTRYPOINT ["conda", "run", "-n", "plant-seg", "plantseg", "--gui"]
 
