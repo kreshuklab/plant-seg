@@ -33,6 +33,8 @@ cnn_prediction:
   device: !check {tests: [check_cuda], fallback: "cpu"}
   # (int or tuple) mirror pad the input stack in each axis for best prediction performance
   mirror_padding: !check {tests: [is_list, is_length3, iterative_is_int], fallback: [16, 32, 32]}
+  # (int or tuple) padding to be removed from each axis in a given patch in order to avoid checkerboard artifacts
+  patch_halo: !check {tests: [is_list, is_length3, iterative_is_int], fallback: [8, 16, 16]}
   # how many subprocesses to use for data loading
   num_workers: !check {tests: [is_int], fallback: 8}
   # patch size given to the network (adapt to fit in your GPU mem)
