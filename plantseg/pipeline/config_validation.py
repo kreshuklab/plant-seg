@@ -150,7 +150,7 @@ class Check(object):
             gui_logger.warning(f"key: '{key}' is missing, plant-seg is trying to use a default.")
 
         for check in self.check_list:
-            out = check(key, value, self.fallback)
+            out = check(key, out, self.fallback)
 
         if out is None:
             raise RuntimeError(f"key: '{key}' is required, plant-seg can not run use default for '{key}'.")
