@@ -33,6 +33,8 @@ cnn_prediction:
   device: "cpu"
   # If True raw data will be mirror padded with 20 voxels in each axis
   mirror_padding: [16, 32, 32]
+  # halo to be removed from each patch
+  patch_halo: [8, 16, 16]
   # how many subprocesses to use for data loading
   num_workers: 1
   # patch size given to the network (adapt to fit in your GPU mem)
