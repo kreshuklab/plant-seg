@@ -1,5 +1,6 @@
-format_version: 0.3.0
+format_version: 0.3.2
 
+type: model
 name: 3D UNet Lateral Root Primordia Nuclei
 timestamp: 2020-01-18T08:00:00
 description: "A variant of 3D U-Net trained on light-sheet images of Arabidopsis lateral root nuclei on original resolution. Voxel size: (0.25x0.1625x0.1625 µm^3) (ZYX)."
@@ -30,9 +31,9 @@ kwargs:
   layer_order: gcr  # determines the order of operators in a single layer (crg - Conv3d+ReLU+GroupNorm)
   f_maps: 32  # initial number of feature maps
   num_groups: 8  # number of groups in the groupnorm
-  final_sigmoid: true
-  is_segmentation: true
-  testing: true
+  final_sigmoid: true  # apply element-wise nn.Sigmoid after the final 1x1x1 convolution, otherwise apply nn.Softmax
+  is_segmentation: true # normalize after final activation in order to get probability maps
+  testing: true # required in the inference mode
 
 test_inputs:
   - ./test_input.npy

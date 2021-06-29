@@ -1,5 +1,6 @@
-format_version: 0.3.0
+format_version: 0.3.2
 
+type: model
 name: 2D UNet Arabidopsis Ovules
 timestamp: 2020-01-18T08:00:00
 description: "A 2D U-Net trained to predict the cell boundaries in confocal stacks of Arabidopsis ovules. Trained on z-slices of 3D confocal images."
@@ -24,15 +25,15 @@ documentation: ./unet2d.md
 
 source: ./unet.py:UNet2D
 # additional model parameters
-optional:
+kwargs:
   in_channels: 1
   out_channels: 1
   layer_order: gcr  # determines the order of operators in a single layer (crg - Conv3d+ReLU+GroupNorm)
   f_maps: 64   # initial number of feature maps
   num_groups: 8  # number of groups in the groupnorm
   final_sigmoid: true  # apply element-wise nn.Sigmoid after the final 1x1x1 convolution, otherwise apply nn.Softmax
-  is_segmentation: true  # don't touch, use postprocessing instead
-  testing: false  # don't touch, use postprocessing instead
+  is_segmentation: true # normalize after final activation in order to get probability maps
+  testing: true # required in the inference mode
 
 test_inputs:
   - ./test_input.npy
@@ -43,7 +44,7 @@ covers: [raw.png, pred.png]
 
 inputs:
   - name: raw
-    description: 3D Confocal image stack
+    description: 2D Confocal image stack
     # although the model is 2d unet it requires a singleton z-dim, cause 3d convolutions with (1,3,3) kernel are used
     axes: bczyx
     data_type: float32
