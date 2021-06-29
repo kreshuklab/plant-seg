@@ -23,7 +23,7 @@ framework: pytorch
 
 documentation: ./unet2d.md
 
-source: ./unet.py:UNet2D
+source: unet.py::UNet2D
 # additional model parameters
 kwargs:
   in_channels: 1
