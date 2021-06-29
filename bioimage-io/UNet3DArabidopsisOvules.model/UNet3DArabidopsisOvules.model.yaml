@@ -6,8 +6,8 @@ timestamp: 2020-01-18T08:00:00
 description: "A 3d U-Net trained to predict the cell boundaries in confocal stacks of Arabidopsis ovules. Voxel size: (0.235, 0.150, 0.150) microns ZYX"
 
 authors:
-  - Adrian Wolny;@wolny
-  - Lorenzo Cerrone;@lorenzocerrone
+  - name: Adrian Wolny;@wolny
+  - name: Lorenzo Cerrone;@lorenzocerrone
 
 cite:
   - text: "Cerrone, Wolny et al. Accurate and Versatile 3D Segmentation of Plant Tissues at Cellular Resolution. eLife 2020."
