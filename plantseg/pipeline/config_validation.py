@@ -8,7 +8,7 @@ import yaml
 from plantseg.gui import list_models
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline import raw2seg_config_template
-from plantseg.predictions.utils import STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_DRAFT, get_stride_shape
+from plantseg.predictions.utils import STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_DRAFT, get_stride_shape, check_models
 from plantseg.segmentation.utils import SUPPORTED_ALGORITMS
 
 deprecated_keys = {'param': 'filter_param'}
@@ -103,7 +103,7 @@ def is_file_or_dir(key, value, fallback):
 
 def model_exist(key, value, fallback):
     _list_models = list_models()
-    if value not in _list_models:
+    if value not in _list_models and not check_models(value):
         _error_message(f"value must be one of {_list_models}", key, value, fallback)
         return fallback
     else:
