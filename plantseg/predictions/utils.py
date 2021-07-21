@@ -125,11 +125,13 @@ def check_models(model_name, update_files=False):
     """
     Simple script to check and download trained modules
     """
-    model_dir = os.path.join(os.path.expanduser("~"), PLANTSEG_MODELS_DIR, model_name)
-
-    # Check if model directory exist if not create it
-    if ~os.path.exists(model_dir):
-        os.makedirs(model_dir, exist_ok=True)
+    if os.path.isdir(model_name):
+        model_dir = model_name
+    else:
+        model_dir = os.path.join(os.path.expanduser("~"), PLANTSEG_MODELS_DIR, model_name)
+        # Check if model directory exist if not create it
+        if ~os.path.exists(model_dir):
+            os.makedirs(model_dir, exist_ok=True)
 
     model_config_path = os.path.exists(os.path.join(model_dir, CONFIG_TRAIN_YAML))
     model_best_path = os.path.exists(os.path.join(model_dir, BEST_MODEL_PYTORCH))
@@ -154,3 +156,4 @@ def check_models(model_name, update_files=False):
             wget.download(url + LAST_MODEL_PYTORCH, out=model_dir)
         else:
             raise RuntimeError(f"Custom model {model_name} corrupted. Required files not found.")
+    return True
