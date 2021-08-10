@@ -2,6 +2,7 @@ import numpy as np
 from scipy.ndimage import zoom
 from skimage.filters import median
 from skimage.morphology import ball, disk
+from skimage.transform import resize
 from vigra.filters import gaussianSmoothing
 
 from plantseg.pipeline import gui_logger
@@ -43,7 +44,8 @@ class DataPostProcessing3D(GenericPipelineStep):
                  factor=None,
                  out_ext=".h5",
                  state=True,
-                 save_raw=False):
+                 save_raw=False,
+                 output_shapes=None):
         if factor is None:
             factor = [1, 1, 1]
 
@@ -60,14 +62,26 @@ class DataPostProcessing3D(GenericPipelineStep):
 
         # rescaling
         self.factor = factor
+        # output shapes (override factor if provided)
+        self.output_shapes = output_shapes
         # spline order, use 2 for 'segmentation' and 0 for 'predictions'
         self.order = 0 if input_type == "labels" else 2
+        # count processed images
+        self.img_count = 0
 
     def process(self, image):
         gui_logger.info("Postprocessing files...")
 
-        image = _rescale(image, self.factor, self.order)
+        if self.output_shapes is not None:
+            # use resize
+            output_shape = self.output_shapes[self.img_count]
+            gui_logger.info(f"Resizing image {self.img_count} from shape: {image.shape} to shape: {output_shape}")
+            image = resize(image, output_shape, self.order)
+        else:
+            # use standard rescaling
+            image = _rescale(image, self.factor, self.order)
 
+        self.img_count += 1
         return image
 
 

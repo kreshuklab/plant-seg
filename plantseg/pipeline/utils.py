@@ -3,8 +3,9 @@ import logging
 import os
 import warnings
 
-import tifffile
 import h5py
+import tifffile
+
 from plantseg.pipeline import gui_logger, H5_KEYS
 
 warnings.simplefilter('once', UserWarning)
@@ -12,6 +13,9 @@ warnings.simplefilter('once', UserWarning)
 loggers = {}
 
 ALLOWED_DATA_FORMAT = [".tiff", ".tif", ".hdf", ".hdf5", ".h5", ".hd5"]
+SUPPORTED_TYPES = ["labels", "data_float32", "data_uint8"]
+TIFF_EXTENSIONS = [".tiff", ".tif"]
+H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]
 
 
 def load_paths(base_path):
@@ -70,6 +74,19 @@ def find_input_key(h5_file):
 
         raise RuntimeError(f"Ambiguous datasets '{found_datasets}' in {h5_file.filename}. "
                            f"plantseg expects only one dataset to be present in input H5.")
+
+
+def load_shape(input_file):
+    _, ext = os.path.splitext(input_file)
+    if ext in TIFF_EXTENSIONS:
+        data = tifffile.imread(input_file)
+        return data.shape
+    elif ext in H5_EXTENSIONS:
+        with h5py.File(input_file, "r") as f:
+            h5_input_key = find_input_key(f)
+            return f[h5_input_key].shape
+    else:
+        raise RuntimeError(f"Unsupported file extension: {ext}")
 
 
 def read_tiff_voxel_size(file_path):

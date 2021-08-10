@@ -6,11 +6,8 @@ import tifffile
 import yaml
 
 from plantseg.pipeline import gui_logger
-from plantseg.pipeline.utils import read_tiff_voxel_size, read_h5_voxel_size, find_input_key
-
-SUPPORTED_TYPES = ["labels", "data_float32", "data_uint8"]
-TIFF_EXTENSIONS = [".tiff", ".tif"]
-H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]
+from plantseg.pipeline.utils import read_tiff_voxel_size, read_h5_voxel_size, find_input_key, SUPPORTED_TYPES, \
+    TIFF_EXTENSIONS, H5_EXTENSIONS
 
 
 class GenericPipelineStep:
@@ -74,7 +71,9 @@ class GenericPipelineStep:
         input_data, voxel_size = self.load_stack(input_path)
 
         output_data = self.process(input_data)
-        # TODO: voxel_size may change after pre-/post-processing (i.e. when scaling is used); adapt accordingly
+        # voxel_size may change after pre-/post-processing (i.e. when scaling is used)
+        scale_factor = np.array(output_data.shape) / np.array(input_data.shape)
+        voxel_size = np.array(voxel_size) * scale_factor
 
         output_path = self._create_output_path(input_path)
         gui_logger.info(f'Saving results in {output_path}')
@@ -117,9 +116,8 @@ class GenericPipelineStep:
 
             # Parse voxel size
             voxel_size = read_h5_voxel_size(file_path)
-
         else:
-            raise RuntimeError("Unsupported file extension")
+            raise RuntimeError(f"Unsupported file extension: {ext}")
 
         # reshape data to 3D always
         data = np.nan_to_num(data)
