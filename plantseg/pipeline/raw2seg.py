@@ -1,11 +1,12 @@
+import numpy as np
+
 from plantseg.dataprocessing.dataprocessing import DataPostProcessing3D
 from plantseg.dataprocessing.dataprocessing import DataPreProcessing3D
 from plantseg.pipeline import gui_logger
-from plantseg.pipeline.utils import load_paths
-from plantseg.predictions.predict import UnetPredictions
-from plantseg.predictions.utils import create_predict_config
-from plantseg.segmentation.utils import configure_segmentation_step
 from plantseg.pipeline.config_validation import config_validation
+from plantseg.pipeline.utils import load_paths, load_shape
+from plantseg.predictions.predict import UnetPredictions
+from plantseg.segmentation.utils import configure_segmentation_step
 
 
 def configure_preprocessing_step(input_paths, config):
@@ -42,12 +43,21 @@ def _create_postprocessing_step(input_paths, input_type, config):
     output_type = config.get('output_type', input_type)
     save_directory = config.get('save_directory', 'PostProcessing')
     factor = config.get('factor', [1, 1, 1])
+    output_shapes = config.get('output_shapes', None)
     out_ext = ".tiff" if config["tiff"] else ".h5"
     state = config.get('state', True)
     save_raw = config.get('save_raw', False)
     return DataPostProcessing3D(input_paths, input_type=input_type, output_type=output_type,
                                 save_directory=save_directory, factor=factor, out_ext=out_ext,
-                                state=state, save_raw=save_raw)
+                                state=state, save_raw=save_raw, output_shapes=output_shapes)
+
+
+def _validate_cnn_postprocessing_rescaling(input_paths, config):
+    input_shapes = [load_shape(input_path) for input_path in input_paths]
+    # if CNN output was rescaled, it needs to be scaled back to the correct input size
+    if not np.array_equal(np.array([1, 1, 1]), config["cnn_postprocessing"]["factor"]):
+        # prevent scipy zoom rounding errors
+        config["cnn_postprocessing"]["output_shapes"] = input_shapes
 
 
 def raw2seg(config):
@@ -66,6 +76,9 @@ def raw2seg(config):
     ]
 
     for pipeline_step_name, pipeline_step_setup in all_pipeline_steps:
+        if pipeline_step_name == 'preprocessing':
+            _validate_cnn_postprocessing_rescaling(input_paths, config)
+
         gui_logger.info(
             f"Executing pipeline step: '{pipeline_step_name}'. Parameters: '{config[pipeline_step_name]}'. Files {input_paths}.")
         pipeline_step = pipeline_step_setup(input_paths, config[pipeline_step_name])
