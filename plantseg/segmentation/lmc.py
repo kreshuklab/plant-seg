@@ -159,9 +159,11 @@ def segment_volume_lmc(boundary_pmaps, nuclei_pmaps, threshold=0.4, sigma=2.0, s
     boundary_bias = .6
 
     costs = transform_probabilities_to_costs(costs, edge_sizes=sizes, beta=boundary_bias)
-    # compute lifted multicut features from vesicle and dendrite pmaps
+    # assert nuclei pmaps are floats
+    nuclei_pmaps = nuclei_pmaps.astype('float32')
     input_maps = [nuclei_pmaps]
     assignment_threshold = .9
+    # compute lifted multicut features from boundary pmaps
     lifted_uvs, lifted_costs = lifted_problem_from_probabilities(rag, watershed,
                                                                  input_maps, assignment_threshold,
                                                                  graph_depth=4)
