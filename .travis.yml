@@ -48,7 +48,6 @@ deploy:
       && sudo docker push wolny/plantseg:latest
     on:
       tags: true
-    skip_cleanup: true
 
 env:
   global:
