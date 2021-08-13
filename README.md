@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/hci-unihd/plant-seg.svg?branch=master)](https://travis-ci.com/hci-unihd/plant-seg)
 
-# PlantSeg 
+# PlantSeg
 ![alt text](./Documentation-GUI/images/main_figure_nologo.png)
 [PlantSeg](plantseg) is a tool for cell instance aware segmentation in densely packed 3D volumetric images.
 The pipeline uses a two stages segmentation strategy (Neural Network + Segmentation).
