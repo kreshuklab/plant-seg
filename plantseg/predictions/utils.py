@@ -89,23 +89,27 @@ def create_predict_config(paths, cnn_config):
     # adapt for UNet2D
     if prediction_config["model"]["name"] == "UNet2D":
         # make sure that z-pad is 0 for 2d UNet
-        mirror_padding = [0, 32, 32]
+        mirror_padding[0] = 0
         # make sure to skip the patch size validation for 2d unet
         prediction_config["loaders"]["test"]["slice_builder"]["skip_shape_check"] = True
         # set the right patch_halo
-        prediction_config["predictor"]["patch_halo"] = [0, 8, 8]
+        patch_halo[0] = 0
 
         # z-dim of patch and stride has to be one
         patch_shape = prediction_config["loaders"]["test"]["slice_builder"]["patch_shape"]
         stride_shape = prediction_config["loaders"]["test"]["slice_builder"]["stride_shape"]
-        assert patch_shape[0] == 1, \
-            f"Incorrect z-dimension in the patch_shape for the 2D UNet prediction. {patch_shape[0]} was given, but has to be 1"
-        assert stride_shape[0] == 1, \
-            f"Incorrect z-dimension in the stride_shape for the 2D UNet prediction. {stride_shape[0]} was given, but has to be 1"
 
-    
+        if patch_shape[0] != 1:
+            gui_logger.warning(f"Incorrect z-dimension in the patch_shape for the 2D UNet prediction. {patch_shape[0]}"
+                               f" was given, but has to be 1. Defaulting default value: 1")
+            patch_shape[0] = 1
+
+        if stride_shape[0] != 1:
+            gui_logger.warning(f"Incorrect z-dimension in the stride_shape for the 2D UNet prediction. "
+                               f"{stride_shape[0]} was given, but has to be 1. Defaulting default value: 1")
+            stride_shape[0] = 1
+
     prediction_config["predictor"]["patch_halo"] = patch_halo
-    
     prediction_config["loaders"]["mirror_padding"] = mirror_padding
 
     # Additional attributes
