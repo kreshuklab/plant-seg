@@ -323,6 +323,15 @@ RuntimeError: key : 'crop_volume' is missing, plant-seg requires 'crop_volume' t
 Please make sure that your configuratiuon has the correct formatting and contains all required keys. 
 An updated example can be found inside the directory `examples`, in this repository.
 
+* If when trying to execute the Lifted Multicut pipeline you receive an error like:
+```
+'cannot import name 'lifted_problem_from_probabilities' from 'elf.segmentation.features''
+```
+The solution is to re-install [elf](https://github.com/constantinpape/elf) via
+```
+conda install -c conda-forge -c cpape elf
+```
+
 * PlantSeg is under active development so it may happen that the models/configuration files saved in `~/.plantseg_modes`
 are outdated. In case of errors related to loading the configuration file, please close the PlantSeg app, 
 remove `~/.plantseg_models` directory and try again.
