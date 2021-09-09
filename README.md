@@ -1,6 +1,6 @@
 ![alt text](./plantseg/gui/logo.png)
 
-![example workflow](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-on-conda.yml/badge.svg)
+[![build status](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-on-conda.yml/badge.svg)](https://github.com/hci-unihd/plant-seg/actions/)
 
 # PlantSeg
 
