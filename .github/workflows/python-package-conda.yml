@@ -15,7 +15,7 @@ jobs:
     - name: Test
       run: |
         echo $RELEASE_VERSION
-        echo ${{ env.RELEASE_VERSION }}
+        echo $
     - name: Check Version
       run: echo "$GITHUB_REF $GITHUB_SHA"
     - name: Set up Python 3.8
