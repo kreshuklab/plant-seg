@@ -1,6 +1,6 @@
 ![alt text](./plantseg/gui/logo.png)
 
-[![Build Status](https://travis-ci.com/hci-unihd/plant-seg.svg?branch=master)](https://travis-ci.com/hci-unihd/plant-seg)
+![example workflow](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-on-conda.yml/badge.svg)
 
 # PlantSeg
 

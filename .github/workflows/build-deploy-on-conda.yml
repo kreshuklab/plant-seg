@@ -1,4 +1,4 @@
-name: Build and Deploy Python Package using Conda
+name: Conda Build
 
 on: [push]
 
