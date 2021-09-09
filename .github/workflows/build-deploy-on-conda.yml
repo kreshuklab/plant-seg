@@ -14,7 +14,7 @@ jobs:
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
     - name: Deploy on conda test
       if: ${{ success() }} && startsWith( github.ref, 'refs/tags/')
-      run: echo "ok"
+      run: echo "ok "
 
     - name: Print PlantSeg version name
       run: |
