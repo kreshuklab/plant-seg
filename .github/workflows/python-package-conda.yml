@@ -9,6 +9,8 @@ jobs:
       max-parallel: 1
 
     steps:
+    - name: Check Version
+      run: echo "$GITHUB_REF $GITHUB_SHA"
     - uses: actions/checkout@v2
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
