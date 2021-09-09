@@ -38,7 +38,6 @@ jobs:
         pytest
 
     - name: Deploy on conda
-      needs: Test
       if: startsWith( github.ref, 'refs/tags/')
       env:
         ANACONDA_SECRET: ${{ secrets.ANACONDA_TOKEN }}
