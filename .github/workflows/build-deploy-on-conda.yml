@@ -12,14 +12,9 @@ jobs:
     - uses: actions/checkout@v2
     - name: Set PlantSeg version name
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-    - name: Deploy on conda test
-      if: ${{ startsWith( github.ref, 'refs/tags/') && success() }}
-      run: echo "ok "
-
     - name: Print PlantSeg version name
       run: |
         echo $RELEASE_VERSION
-        echo ${{ secrets.ANACONDA_TOKEN }}
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -40,7 +35,7 @@ jobs:
         conda install pytest
         pytest
     - name: Deploy on conda
-      if: ${{ success() }} && startsWith( github.ref, 'refs/tags/')
+      if: ${{ startsWith( github.ref, 'refs/tags/') && success() }}
       env:
         ANACONDA_SECRET: ${{ secrets.ANACONDA_TOKEN }}
       run: |
