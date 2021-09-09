@@ -1,6 +1,6 @@
 package:
   name: plantseg
-  version: {{ GIT_DESCRIBE_TAG }}
+  version: {{ environ.get('GITHUB_REF', 'default') }}
 
 source:
   path: ..

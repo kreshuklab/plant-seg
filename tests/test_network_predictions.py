@@ -38,4 +38,4 @@ class TestUnetPredictions:
 
         with h5py.File(output_paths[0], 'r') as f:
             assert 'predictions' in f
-            assert np.array_equal(expected_voxel_size, f['predictions'].attrs['element_size_um'])
+            assert np.allclose(expected_voxel_size, f['predictions'].attrs['element_size_um'])
