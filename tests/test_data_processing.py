@@ -70,7 +70,7 @@ class TestDataProcessing:
         with h5py.File(output_paths[0], 'r') as f:
             rescaled = f['segmentation'][...]
 
-        assert np.array_equal(np.array(rescaled.shape), np.array(original.shape) * factor)
+        assert np.allclose(np.array(rescaled.shape), np.array(original.shape) * factor)
 
     def test_processing_disabled(self, input_path):
         pre = DataPreProcessing3D([input_path], state=False)
@@ -94,7 +94,7 @@ class TestDataProcessing:
         with h5py.File(output_paths[0], 'r') as f:
             voxel_size = f['raw'].attrs['element_size_um']
 
-        assert np.array_equal((1, 1, 1), voxel_size)
+        assert np.allclose((1, 1, 1), voxel_size)
 
     def test_preprocessing_voxel_size(self, input_path):
         with h5py.File(input_path, 'r') as f:
@@ -108,7 +108,7 @@ class TestDataProcessing:
         with h5py.File(output_paths[0], 'r') as f:
             voxel_size = f['raw'].attrs['element_size_um']
 
-        assert np.array_equal(np.array(expected_voxel_size), np.array(voxel_size))
+        assert np.allclose(np.array(expected_voxel_size), np.array(voxel_size))
 
     def test_tiff_voxel_size(self, input_path):
         """
@@ -128,4 +128,4 @@ class TestDataProcessing:
         with h5py.File(output_paths[0], 'r') as f:
             voxel_size = f['raw'].attrs['element_size_um']
 
-        assert np.array_equal(expected_voxel_size, voxel_size)
+        assert np.allclose(expected_voxel_size, voxel_size)
