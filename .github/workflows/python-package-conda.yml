@@ -9,9 +9,15 @@ jobs:
       max-parallel: 1
 
     steps:
+    - uses: actions/checkout@v2
+    - name: Set env
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+    - name: Test
+      run: |
+      echo $RELEASE_VERSION
+      echo ${{ env.RELEASE_VERSION }}
     - name: Check Version
       run: echo "$GITHUB_REF $GITHUB_SHA"
-    - uses: actions/checkout@v2
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
