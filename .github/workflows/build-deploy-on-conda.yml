@@ -10,9 +10,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set env
+    - name: Set PlantSeg version name
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-    - name: Print version name
+    - name: Print PlantSeg version name
       run: |
         echo $RELEASE_VERSION
     - name: Set up Python 3.8
@@ -30,7 +30,7 @@ jobs:
     - name: Install dependencies
       run: |
         conda install -c abailoni -c cpape -c awolny -c conda-forge --use-local plantseg
-    - name: Test
+    - name: Run pytest
       run: |
         conda install pytest
         pytest
@@ -39,4 +39,5 @@ jobs:
       env:
         ANACONDA_SECRET: ${{ secrets.ANACONDA_TOKEN }}
       run: |
+        conda install -q anaconda-client
         anaconda -t $ANACONDA_SECRET upload $CONDA/conda-bld/**/plantseg-*.tar.bz2
