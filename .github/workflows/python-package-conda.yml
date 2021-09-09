@@ -15,6 +15,7 @@ jobs:
     - name: Test
       run: |
         echo $RELEASE_VERSION
+        echo github.ref
         echo ${{ env.RELEASE_VERSION }}
     - name: Test if tagged
       if: startsWith( github.ref, 'refs/tags/releases/')
