@@ -85,12 +85,13 @@ class GenericPipelineStep:
         # return output_path
         return output_path
 
-    def load_stack(self, file_path):
+    def load_stack(self, file_path, check_input_type=True):
         """
         Load data from a given file.
 
         Args:
             file_path (str): path to the file containing the stack
+            check_input_type (bool): check input type and normalize data according to processing type
 
         Returns:
             tuple(nd.array, tuple(float)): (numpy array containing stack's data, stack's data voxel size)
@@ -123,8 +124,9 @@ class GenericPipelineStep:
         data = np.nan_to_num(data)
         data = self._fix_input_shape(data)
 
-        # normalize data according to processing type
-        data = self._adjust_input_type(data)
+        if check_input_type:
+            # normalize data according to processing type
+            data = self._adjust_input_type(data)
         return data, voxel_size
 
     def save_raw_dataset(self, input_path, output_path, voxel_size):
