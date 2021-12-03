@@ -92,7 +92,7 @@ class LiftedMulticut(AbstractSegmentationStep):
         if nuclei_pmaps_path is None:
             raise RuntimeError(f'Cannot find nuclei probability maps for: {input_path}. '
                                f'Nuclei files: {self.nuclei_predictions_paths}')
-        nuclei_pmaps, _ = self._load_stack_nuclei_seg(nuclei_pmaps_path)
+        nuclei_pmaps, _ = self.load_stack(nuclei_pmaps_path, check_input_type=False)
 
         # pass boundary_pmaps and nuclei_pmaps to process with Lifted Multicut
         pmaps = (boundary_pmaps, nuclei_pmaps)
@@ -107,24 +107,6 @@ class LiftedMulticut(AbstractSegmentationStep):
 
         # return output_path
         return output_path
-
-    def _load_stack_nuclei_seg(self, file_path):
-        with h5py.File(file_path, "r") as f:
-            h5_input_key = find_input_key(f)
-            gui_logger.info(f"Found '{h5_input_key}' dataset inside {file_path}")
-            # set h5_output_key to be the same as h5_input_key if h5_output_key not defined
-            if self.h5_output_key is None:
-                self.h5_output_key = h5_input_key
-
-            ds = f[h5_input_key]
-            data = ds[...]
-
-        # Parse voxel size
-        voxel_size = read_h5_voxel_size(file_path)
-        # reshape data to 3D always
-        data = np.nan_to_num(data)
-        data = self._fix_input_shape(data)
-        return data, voxel_size
 
     def _find_nuclei_pmaps_path(self, input_path):
         if len(self.nuclei_predictions_paths) == 1:
