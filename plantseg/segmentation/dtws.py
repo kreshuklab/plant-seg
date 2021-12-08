@@ -1,6 +1,8 @@
+import time
 import numpy as np
 from functools import partial
 from plantseg.pipeline.steps import AbstractSegmentationStep
+from plantseg.pipeline import gui_logger
 from elf.segmentation.watershed import distance_transform_watershed, stacked_watershed
 
 
@@ -66,4 +68,12 @@ class DistanceTransformWatershed(AbstractSegmentationStep):
                                     min_size=ws_minsize, n_threads=n_threads)
 
     def process(self, pmaps):
-        return self.dt_watershed(pmaps)
+        gui_logger.info('Segmentation with Distance Transform Watershed...')
+        runtime = time.time()
+
+        segmentation = self.dt_watershed(pmaps)
+
+        # stop real world clock timer
+        runtime = time.time() - runtime
+        gui_logger.info(f"Segmentation took {runtime:.2f} s")
+        return segmentation
