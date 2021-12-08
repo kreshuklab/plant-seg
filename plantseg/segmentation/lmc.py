@@ -1,20 +1,18 @@
 import os
 import time
+from functools import partial
 
 import elf.segmentation.lifted_multicut as lmc
 import numpy as np
-from functools import partial
 from elf.segmentation.features import compute_rag, compute_boundary_mean_and_length
-from elf.segmentation.features import lifted_problem_from_probabilities, \
-    project_node_labels_to_pixels, lifted_problem_from_segmentation
+from elf.segmentation.features import lifted_problem_from_probabilities
+from elf.segmentation.features import project_node_labels_to_pixels, lifted_problem_from_segmentation
 from elf.segmentation.multicut import transform_probabilities_to_costs
-from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
+from elf.segmentation.watershed import apply_size_filter
 
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
 from plantseg.pipeline.utils import load_paths
-import h5py
-from plantseg.pipeline.utils import read_tiff_voxel_size, read_h5_voxel_size, find_input_key
 from plantseg.segmentation.dtws import compute_distance_transfrom_watershed
 
 

@@ -1,9 +1,11 @@
 import time
-import numpy as np
 from functools import partial
-from plantseg.pipeline.steps import AbstractSegmentationStep
-from plantseg.pipeline import gui_logger
+
+import numpy as np
 from elf.segmentation.watershed import distance_transform_watershed, stacked_watershed
+
+from plantseg.pipeline import gui_logger
+from plantseg.pipeline.steps import AbstractSegmentationStep
 
 
 def compute_distance_transfrom_watershed(pmaps, threshold, sigma_seeds,

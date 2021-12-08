@@ -1,14 +1,14 @@
 import time
-
 from functools import partial
+
 import numpy as np
-from GASP.segmentation import GaspFromAffinities, WatershedOnDistanceTransformFromAffinities
+from GASP.segmentation import GaspFromAffinities
 from GASP.segmentation.watershed import SizeThreshAndGrowWithWS
 
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
-from plantseg.segmentation.utils import shift_affinities
 from plantseg.segmentation.dtws import compute_distance_transfrom_watershed
+from plantseg.segmentation.utils import shift_affinities
 
 
 class WSSegmentationFeeder:

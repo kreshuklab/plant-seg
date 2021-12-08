@@ -1,9 +1,9 @@
 import time
+from functools import partial
 
 import nifty
 import nifty.graph.rag as nrag
 import numpy as np
-from functools import partial
 from elf.segmentation.features import compute_rag
 from elf.segmentation.multicut import multicut_kernighan_lin, transform_probabilities_to_costs
 from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
