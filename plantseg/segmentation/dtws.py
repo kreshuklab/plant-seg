@@ -6,7 +6,7 @@ from elf.segmentation.watershed import distance_transform_watershed, stacked_wat
 
 def compute_distance_transfrom_watershed(pmaps, threshold, sigma_seeds,
                                          stacked=False, sigma_weights=2.,
-                                         min_size=100, alpha=.9,
+                                         min_size=100, alpha=1.0,
                                          pixel_pitch=None, apply_nonmax_suppression=False,
                                          n_threads=None):
     """ Wrapper around elf.distance_transform_watershed
