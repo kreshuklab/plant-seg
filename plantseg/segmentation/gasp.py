@@ -1,5 +1,6 @@
 import time
 
+from functools import partial
 import numpy as np
 from GASP.segmentation import GaspFromAffinities, WatershedOnDistanceTransformFromAffinities
 from GASP.segmentation.watershed import SizeThreshAndGrowWithWS
@@ -7,6 +8,15 @@ from GASP.segmentation.watershed import SizeThreshAndGrowWithWS
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
 from plantseg.segmentation.utils import shift_affinities
+from plantseg.segmentation.dtws import compute_distance_transfrom_watershed
+
+
+class WSSegmentationFeeder:
+    def __init__(self, segmentation):
+        self.segmentation = segmentation
+
+    def __call__(self, *args, **kwargs):
+        return self.segmentation
 
 
 class GaspFromPmaps(AbstractSegmentationStep):
@@ -20,6 +30,7 @@ class GaspFromPmaps(AbstractSegmentationStep):
                  ws_threshold=0.4,
                  ws_minsize=50,
                  ws_sigma=0.3,
+                 ws_w_sigma=0,
                  post_minsize=100,
                  n_threads=6,
                  state=True,
@@ -49,10 +60,32 @@ class GaspFromPmaps(AbstractSegmentationStep):
 
         self.n_threads = n_threads
 
+        self.dt_watershed = partial(compute_distance_transfrom_watershed,
+                                    threshold=ws_threshold, sigma_seeds=ws_sigma,
+                                    stacked=ws_2D, sigma_weights=ws_w_sigma,
+                                    min_size=ws_minsize, n_threads=n_threads)
+
     def process(self, pmaps):
         gui_logger.info('Clustering with GASP...')
+        # start real world clock timer
+        runtime = time.time()
 
-        # Pmaps are interpreted as affinities
+        if self.run_ws:
+            # In this case the agglomeration is initialized with superpixels:
+            # use additional option 'intersect_with_boundary_pixels' to break the SP along the boundaries
+            # (see CREMI-experiments script for an example)
+            ws = self.dt_watershed(pmaps)
+            superpixel_gen = WSSegmentationFeeder(ws)
+
+        else:
+            superpixel_gen = None
+
+        # Run GASP
+        run_GASP_kwargs = {'linkage_criteria': self.gasp_linkage_criteria,
+                           'add_cannot_link_constraints': False,
+                           'use_efficient_implementations': False}
+
+        # pmaps are interpreted as affinities
         affinities = np.stack([pmaps, pmaps, pmaps], axis=0)
 
         offsets = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
@@ -61,31 +94,6 @@ class GaspFromPmaps(AbstractSegmentationStep):
 
         # invert affinities
         affinities = 1 - affinities
-
-        # Run GASP:
-        if self.run_ws:
-            # In this case the agglomeration is initialized with superpixels:
-            # use additional option 'intersect_with_boundary_pixels' to break the SP along the boundaries
-            # (see CREMI-experiments script for an example)
-            superpixel_gen = WatershedOnDistanceTransformFromAffinities(offsets,
-                                                                        threshold=self.ws_threshold,
-                                                                        min_segment_size=self.ws_minsize,
-                                                                        preserve_membrane=True,
-                                                                        sigma_seeds=self.ws_sigma,
-                                                                        stacked_2d=self.ws_2d,
-                                                                        used_offsets=[0, 1, 2],
-                                                                        offset_weights=[1, 1, 1],
-                                                                        n_threads=self.n_threads)
-
-        else:
-            superpixel_gen = None
-
-        # start real world clock timer
-        runtime = time.time()
-
-        run_GASP_kwargs = {'linkage_criteria': self.gasp_linkage_criteria,
-                           'add_cannot_link_constraints': False,
-                           'use_efficient_implementations': False}
 
         # Init and run Gasp
         gasp_instance = GaspFromAffinities(offsets,
