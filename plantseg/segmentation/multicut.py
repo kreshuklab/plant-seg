@@ -3,12 +3,14 @@ import time
 import nifty
 import nifty.graph.rag as nrag
 import numpy as np
+from functools import partial
 from elf.segmentation.features import compute_rag
 from elf.segmentation.multicut import multicut_kernighan_lin, transform_probabilities_to_costs
 from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
 
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
+from plantseg.segmentation.dtws import compute_distance_transfrom_watershed
 
 
 class MulticutFromPmaps(AbstractSegmentationStep):
@@ -48,6 +50,11 @@ class MulticutFromPmaps(AbstractSegmentationStep):
         # Multithread
         self.n_threads = n_threads
 
+        self.dt_watershed = partial(compute_distance_transfrom_watershed,
+                                    threshold=ws_threshold, sigma_seeds=ws_sigma,
+                                    stacked=ws_2D, sigma_weights=ws_w_sigma,
+                                    min_size=ws_minsize, n_threads=n_threads)
+
     def process(self, pmaps):
         gui_logger.info('Clustering with MultiCut...')
         runtime = time.time()
@@ -63,15 +70,7 @@ class MulticutFromPmaps(AbstractSegmentationStep):
         return segmentation
 
     def segment_volume(self, pmaps):
-        if self.ws_2D:
-            # WS in 2D
-            ws = self.ws_dt_2D(pmaps)
-        else:
-            # WS in 3D
-            ws, _ = distance_transform_watershed(pmaps, self.ws_threshold,
-                                                 self.ws_sigma,
-                                                 sigma_weights=self.ws_w_sigma,
-                                                 min_size=self.ws_minsize)
+        ws = self.dt_watershed(pmaps)
 
         rag = compute_rag(ws)
         # Computing edge features
