@@ -160,7 +160,7 @@ If your docker host does not have modern GPU and/or nvidia-docker is not install
 docker run -it --rm -v PATH_TO_DATASET:/root/datasets -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY wolny/plantseg
 ```
 
-this will start the plantseg GUI application. `PATH_TO_DATASET` is the path to the directory on the docker host where the data to be processed are stored.
+this will start the plantseg GUI application. Replace `PATH_TO_DATASET` by the directory on the host machine that you want to mount (i.e. this is the path where your data is stored on your computer). `/root/datasets` is the directory inside the Docker container and this is where you should navigate the PlantSeg GUI to find your files.
 
 ### Windows 10
 - [Install Docker Desktop on Windows](https://docs.docker.com/docker-for-windows/install/). 
@@ -175,7 +175,11 @@ replace `YOUR-IP` with your actual host IP address (you can find it by running `
 ```bash
 docker run -it --rm -v PATH_TO_DATASET:/root/datasets -e DISPLAY=$DISPLAY wolny/plantseg
 ```
-where `PATH_TO_DATASET` is the path to the directory on Windows where the data to be processed are stored.
+Replace `PATH_TO_DATASET` by the directory on the host machine that you want to mount (i.e. this is the path where your data is stored on your computer). `/root/datasets` is the directory inside the Docker container and this is where you should navigate the PlantSeg GUI to find your files.
+E.g. if your data is stored in `C:\Datasets\ConfocalImages` run:
+```bash
+docker run -it --rm -v C:\Datasets\ConfocalImages:/root/datasets -e DISPLAY=$DISPLAY wolny/plantseg
+```
 
 ### Mac OS
 - [Install Docker Desktop on Mac](https://docs.docker.com/docker-for-mac/install/)
@@ -184,7 +188,11 @@ where `PATH_TO_DATASET` is the path to the directory on Windows where the data t
 ```bash
 docker run -it --rm -v PATH_TO_DATASET:/root/datasets -e DISPLAY=$DISPLAY wolny/plantseg
 ```
-where `PATH_TO_DATASET` is the path to the directory on Mac OS where the data to be processed are stored.
+Replace `PATH_TO_DATASET` by the directory on the host machine that you want to mount (i.e. this is the path where your data is stored on your computer). `/root/datasets` is the directory inside the Docker container and this is where you should navigate the PlantSeg GUI to find your files.
+E.g. if your data is stored in `/Users/foobar/datasets/confocal` run:
+```bash
+docker run -it --rm -v /Users/foobar/datasets/confocal:/root/datasets -e DISPLAY=$DISPLAY wolny/plantseg
+```
 
 **Troubleshooting**
 
