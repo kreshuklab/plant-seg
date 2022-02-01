@@ -108,7 +108,6 @@ class GaspFromPmaps(AbstractSegmentationStep):
 
         # init and run size threshold
         if self.post_minsize > self.ws_minsize:
-            print('post')
             segmentation, _ = apply_size_filter(segmentation.astype('uint32'), pmaps, self.post_minsize)
 
         # stop real world clock timer
