@@ -32,7 +32,7 @@ def compute_distance_transfrom_watershed(pmaps, threshold, sigma_seeds,
     Returns:
         np.ndarray: watershed segmentation
     """
-
+    gui_logger.info('Computing segmentation with dtWS...')
     ws_kwargs = dict(threshold=threshold, sigma_seeds=sigma_seeds,
                      sigma_weights=sigma_weights,
                      min_size=min_size, alpha=alpha,
@@ -70,7 +70,6 @@ class DistanceTransformWatershed(AbstractSegmentationStep):
                                     min_size=ws_minsize, n_threads=n_threads)
 
     def process(self, pmaps):
-        gui_logger.info('Segmentation with Distance Transform Watershed...')
         runtime = time.time()
 
         segmentation = self.dt_watershed(pmaps)

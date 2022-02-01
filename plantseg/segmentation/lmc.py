@@ -63,11 +63,12 @@ class LiftedMulticut(AbstractSegmentationStep):
                                     min_size=ws_minsize, n_threads=n_threads)
 
     def process(self, pmaps):
-        gui_logger.info('Clustering with LiftedMulticut...')
         boundary_pmaps, nuclei_pmaps = pmaps
 
         runtime = time.time()
         ws = self.dt_watershed(boundary_pmaps)
+
+        gui_logger.info('Clustering with LiftedMulticut...')
         if self.is_segmentation:
             segmentation = segment_volume_lmc_from_seg(boundary_pmaps,
                                                        nuclei_pmaps,

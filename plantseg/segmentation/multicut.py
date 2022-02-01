@@ -56,7 +56,6 @@ class MulticutFromPmaps(AbstractSegmentationStep):
                                     min_size=ws_minsize, n_threads=n_threads)
 
     def process(self, pmaps):
-        gui_logger.info('Clustering with MultiCut...')
         runtime = time.time()
         segmentation = self.segment_volume(pmaps)
 
@@ -72,6 +71,7 @@ class MulticutFromPmaps(AbstractSegmentationStep):
     def segment_volume(self, pmaps):
         ws = self.dt_watershed(pmaps)
 
+        gui_logger.info('Clustering with MultiCut...')
         rag = compute_rag(ws)
         # Computing edge features
         features = nrag.accumulateEdgeMeanAndLength(rag, pmaps, numberOfThreads=1)  # DO NOT CHANGE numberOfThreads
@@ -86,19 +86,3 @@ class MulticutFromPmaps(AbstractSegmentationStep):
 
         node_labels = multicut_kernighan_lin(graph, costs)
         return nifty.tools.take(node_labels, ws)
-
-    def ws_dt_2D(self, pmaps):
-        # Axis 0 is assumed z-axis!!!
-        ws = np.zeros_like(pmaps).astype(np.uint32)
-        max_idx = 1
-        for i in range(pmaps.shape[0]):
-            _pmaps = pmaps[i]
-            _ws, _ = distance_transform_watershed(_pmaps,
-                                                  self.ws_threshold,
-                                                  self.ws_sigma,
-                                                  sigma_weights=self.ws_w_sigma,
-                                                  min_size=self.ws_minsize)
-            _ws = _ws + max_idx
-            max_idx = _ws.max()
-            ws[i] = _ws
-        return ws
