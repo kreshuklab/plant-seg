@@ -2,8 +2,8 @@ import time
 from functools import partial
 
 import numpy as np
-from GASP.segmentation import GaspFromAffinities
-from GASP.segmentation.watershed import SizeThreshAndGrowWithWS
+from elf.segmentation import GaspFromAffinities
+from elf.segmentation.watershed import apply_size_filter
 
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
@@ -66,7 +66,6 @@ class GaspFromPmaps(AbstractSegmentationStep):
                                     min_size=ws_minsize, n_threads=n_threads)
 
     def process(self, pmaps):
-        gui_logger.info('Clustering with GASP...')
         # start real world clock timer
         runtime = time.time()
 
@@ -75,11 +74,14 @@ class GaspFromPmaps(AbstractSegmentationStep):
             # use additional option 'intersect_with_boundary_pixels' to break the SP along the boundaries
             # (see CREMI-experiments script for an example)
             ws = self.dt_watershed(pmaps)
-            superpixel_gen = WSSegmentationFeeder(ws)
+
+            def superpixel_gen(*args, **kwargs):
+                return ws
 
         else:
             superpixel_gen = None
 
+        gui_logger.info('Clustering with GASP...')
         # Run GASP
         run_GASP_kwargs = {'linkage_criteria': self.gasp_linkage_criteria,
                            'add_cannot_link_constraints': False,
@@ -105,8 +107,9 @@ class GaspFromPmaps(AbstractSegmentationStep):
         segmentation, _ = gasp_instance(affinities)
 
         # init and run size threshold
-        size_threshold = SizeThreshAndGrowWithWS(self.post_minsize, offsets)
-        segmentation = size_threshold(affinities, segmentation)
+        if self.post_minsize > self.ws_minsize:
+            print('post')
+            segmentation, _ = apply_size_filter(segmentation.astype('uint32'), pmaps, self.post_minsize)
 
         # stop real world clock timer
         runtime = time.time() - runtime
