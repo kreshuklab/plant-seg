@@ -7,8 +7,7 @@ source:
 
 build:
   noarch: python
-  script: "pip install . --no-deps --ignore-installed --no-cache-dir -vvv;
-  {{ PYTHON }} -m pip install https://github.com/abailoni/GASP/archive/refs/tags/v1.0.4.tar.gz#egg=gasp"
+  script: "pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
   number: 1
 
   entry_points:
@@ -27,12 +26,11 @@ requirements:
     - pyyaml
     - scipy
     - scikit-image
-    - scikit-learn
     - tifffile
     - vigra
     - torchvision
     - pytorch
-    - elf
+    - python-elf
     - pytorch-3dunet
 
 test:
