@@ -1,8 +1,50 @@
-import numpy as np
-from GASP.segmentation import WatershedOnDistanceTransformFromAffinities
+import time
+from functools import partial
 
+import numpy as np
+from elf.segmentation.watershed import distance_transform_watershed, stacked_watershed
+
+from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
-from plantseg.segmentation.utils import shift_affinities
+
+
+def compute_distance_transfrom_watershed(pmaps, threshold, sigma_seeds,
+                                         stacked=False, sigma_weights=2.,
+                                         min_size=100, alpha=1.0,
+                                         pixel_pitch=None, apply_nonmax_suppression=False,
+                                         n_threads=None):
+    """ Wrapper around elf.distance_transform_watershed
+
+    Args:
+        pmaps (np.ndarray): input height map.
+        threshold (float): value for the threshold applied before distance transform.
+        sigma_seeds (float): smoothing factor for the watershed seed map.
+        stacked (bool): if true the ws will be executed in 2D slice by slice, otherwise in 3D.
+        sigma_weights (float): smoothing factor for the watershed weight map (default: 2).
+        min_size (int): minimal size of watershed segments (default: 100)
+        alpha (float): alpha used to blend input_ and distance_transform in order to obtain the
+            watershed weight map (default: .9)
+        pixel_pitch (list-like[int]): anisotropy factor used to compute the distance transform (default: None)
+        apply_nonmax_suppression (bool): whether to apply non-maximum suppression to filter out seeds.
+            Needs nifty. (default: False)
+        n_threads (int): if not None, parallelize the 2D stacked ws. (default: None)
+
+    Returns:
+        np.ndarray: watershed segmentation
+    """
+    gui_logger.info('Computing segmentation with dtWS...')
+    ws_kwargs = dict(threshold=threshold, sigma_seeds=sigma_seeds,
+                     sigma_weights=sigma_weights,
+                     min_size=min_size, alpha=alpha,
+                     pixel_pitch=pixel_pitch, apply_nonmax_suppression=apply_nonmax_suppression)
+    if stacked:
+        # WS in 2D
+        ws, _ = stacked_watershed(pmaps, ws_function=distance_transform_watershed, n_threads=n_threads, **ws_kwargs)
+    else:
+        # WS in 3D
+        ws, _ = distance_transform_watershed(pmaps, **ws_kwargs)
+
+    return ws
 
 
 class DistanceTransformWatershed(AbstractSegmentationStep):
@@ -13,6 +55,7 @@ class DistanceTransformWatershed(AbstractSegmentationStep):
                  ws_threshold=0.4,
                  ws_minsize=50,
                  ws_sigma=0.3,
+                 ws_w_sigma=0,
                  n_threads=8,
                  state=True,
                  **kwargs):
@@ -21,29 +64,17 @@ class DistanceTransformWatershed(AbstractSegmentationStep):
                          file_suffix='_dtws',
                          state=state)
 
-        self.offsets = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
-        # TODO: should we use this DTWS or the one from elf
-        # In this case the agglomeration is initialized with superpixels:
-        # use additional option 'intersect_with_boundary_pixels' to break the SP along the boundaries
-        # (see CREMI-experiments script for an example)
-        self.superpixel_gen = WatershedOnDistanceTransformFromAffinities(self.offsets,
-                                                                         threshold=ws_threshold,
-                                                                         min_segment_size=ws_minsize,
-                                                                         preserve_membrane=True,
-                                                                         sigma_seeds=ws_sigma,
-                                                                         stacked_2d=ws_2D,
-                                                                         used_offsets=[0, 1, 2],
-                                                                         offset_weights=[1, 1, 1],
-                                                                         n_threads=n_threads)
+        self.dt_watershed = partial(compute_distance_transfrom_watershed,
+                                    threshold=ws_threshold, sigma_seeds=ws_sigma,
+                                    stacked=ws_2D, sigma_weights=ws_w_sigma,
+                                    min_size=ws_minsize, n_threads=n_threads)
 
     def process(self, pmaps):
-        # Pmaps are interpreted as affinities
-        affinities = np.stack([pmaps, pmaps, pmaps], axis=0)
+        runtime = time.time()
 
-        # Shift is required to correct aligned affinities
-        affinities = shift_affinities(affinities, offsets=self.offsets)
+        segmentation = self.dt_watershed(pmaps)
 
-        # invert affinities
-        affinities = 1 - affinities
-
-        return self.superpixel_gen(affinities)
+        # stop real world clock timer
+        runtime = time.time() - runtime
+        gui_logger.info(f"Segmentation took {runtime:.2f} s")
+        return segmentation

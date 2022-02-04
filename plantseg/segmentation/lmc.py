@@ -1,19 +1,19 @@
 import os
 import time
+from functools import partial
 
 import elf.segmentation.lifted_multicut as lmc
 import numpy as np
 from elf.segmentation.features import compute_rag, compute_boundary_mean_and_length
-from elf.segmentation.features import lifted_problem_from_probabilities, \
-    project_node_labels_to_pixels, lifted_problem_from_segmentation
+from elf.segmentation.features import lifted_problem_from_probabilities
+from elf.segmentation.features import project_node_labels_to_pixels, lifted_problem_from_segmentation
 from elf.segmentation.multicut import transform_probabilities_to_costs
-from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
+from elf.segmentation.watershed import apply_size_filter
 
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
 from plantseg.pipeline.utils import load_paths
-import h5py
-from plantseg.pipeline.utils import read_tiff_voxel_size, read_h5_voxel_size, find_input_key
+from plantseg.segmentation.dtws import compute_distance_transfrom_watershed
 
 
 class LiftedMulticut(AbstractSegmentationStep):
@@ -57,22 +57,28 @@ class LiftedMulticut(AbstractSegmentationStep):
         # Multithread
         self.n_threads = n_threads
 
+        self.dt_watershed = partial(compute_distance_transfrom_watershed,
+                                    threshold=ws_threshold, sigma_seeds=ws_sigma,
+                                    stacked=ws_2D, sigma_weights=ws_w_sigma,
+                                    min_size=ws_minsize, n_threads=n_threads)
+
     def process(self, pmaps):
-        gui_logger.info('Clustering with LiftedMulticut...')
         boundary_pmaps, nuclei_pmaps = pmaps
+
         runtime = time.time()
+        ws = self.dt_watershed(boundary_pmaps)
+
+        gui_logger.info('Clustering with LiftedMulticut...')
         if self.is_segmentation:
             segmentation = segment_volume_lmc_from_seg(boundary_pmaps,
                                                        nuclei_pmaps,
-                                                       self.ws_threshold,
-                                                       self.ws_sigma,
-                                                       self.ws_minsize)
+                                                       watershed_segmentation=ws,
+                                                       beta=self.beta)
         else:
             segmentation = segment_volume_lmc(boundary_pmaps,
                                               nuclei_pmaps,
-                                              self.ws_threshold,
-                                              self.ws_sigma,
-                                              self.ws_minsize)
+                                              watershed_segmentation=ws,
+                                              beta=self.beta)
 
         if self.post_minsize > self.ws_minsize:
             segmentation = segmentation.astype('uint32')
@@ -121,12 +127,7 @@ class LiftedMulticut(AbstractSegmentationStep):
         return None
 
 
-def segment_volume_lmc(boundary_pmaps, nuclei_pmaps, threshold=0.4, sigma=2.0, sp_min_size=100):
-    watershed = distance_transform_watershed(boundary_pmaps, threshold, sigma, min_size=sp_min_size)[0]
-
-    # compute the region adjacency graph
-    rag = compute_rag(watershed)
-
+def compute_mc_costs(boundary_pmaps, rag, beta):
     # compute the edge costs
     features = compute_boundary_mean_and_length(rag, boundary_pmaps)
     costs, sizes = features[:, 0], features[:, 1]
@@ -136,17 +137,23 @@ def segment_volume_lmc(boundary_pmaps, nuclei_pmaps, threshold=0.4, sigma=2.0, s
     # as probabilities for an edge being 'true' and then taking the negative log-likelihood.
     # in addition, we weight the costs by the size of the corresponding edge
 
-    # we choose a boundary bias smaller than 0.5 in order to
-    # decrease the degree of over segmentation
-    boundary_bias = .6
+    costs = transform_probabilities_to_costs(costs, edge_sizes=sizes, beta=beta)
+    return costs
 
-    costs = transform_probabilities_to_costs(costs, edge_sizes=sizes, beta=boundary_bias)
+
+def segment_volume_lmc(boundary_pmaps, nuclei_pmaps, watershed_segmentation, beta):
+    # compute the region adjacency graph
+    rag = compute_rag(watershed_segmentation)
+
+    # compute multi cut edges costs
+    costs = compute_mc_costs(boundary_pmaps, rag, beta)
+
     # assert nuclei pmaps are floats
     nuclei_pmaps = nuclei_pmaps.astype('float32')
     input_maps = [nuclei_pmaps]
     assignment_threshold = .9
     # compute lifted multicut features from boundary pmaps
-    lifted_uvs, lifted_costs = lifted_problem_from_probabilities(rag, watershed,
+    lifted_uvs, lifted_costs = lifted_problem_from_probabilities(rag, watershed_segmentation,
                                                                  input_maps, assignment_threshold,
                                                                  graph_depth=4)
 
@@ -157,27 +164,15 @@ def segment_volume_lmc(boundary_pmaps, nuclei_pmaps, threshold=0.4, sigma=2.0, s
     return lifted_segmentation
 
 
-def segment_volume_lmc_from_seg(boundary_pmaps, nuclei_seg, threshold=0.4, sigma=2.0, sp_min_size=100):
-    watershed = distance_transform_watershed(boundary_pmaps, threshold, sigma, min_size=sp_min_size)[0]
+def segment_volume_lmc_from_seg(boundary_pmaps, nuclei_seg, watershed_segmentation, beta):
     # compute the region adjacency graph
-    rag = compute_rag(watershed)
+    rag = compute_rag(watershed_segmentation)
 
-    # compute the edge costs
-    features = compute_boundary_mean_and_length(rag, boundary_pmaps)
-    costs, sizes = features[:, 0], features[:, 1]
-
-    # transform the edge costs from [0, 1] to  [-inf, inf], which is
-    # necessary for the multicut. This is done by interpreting the values
-    # as probabilities for an edge being 'true' and then taking the negative log-likelihood.
-    # in addition, we weight the costs by the size of the corresponding edge
-
-    # we choose a boundary bias smaller than 0.5 in order to
-    # decrease the degree of over segmentation
-    boundary_bias = .6
-
-    costs = transform_probabilities_to_costs(costs, edge_sizes=sizes, beta=boundary_bias)
+    # compute multi cut edges costs
+    costs = compute_mc_costs(boundary_pmaps, rag, beta)
     max_cost = np.abs(np.max(costs))
-    lifted_uvs, lifted_costs = lifted_problem_from_segmentation(rag, watershed, nuclei_seg, overlap_threshold=0.2,
+    lifted_uvs, lifted_costs = lifted_problem_from_segmentation(rag, watershed_segmentation, nuclei_seg,
+                                                                overlap_threshold=0.2,
                                                                 graph_depth=4,
                                                                 same_segment_cost=5 * max_cost,
                                                                 different_segment_cost=-5 * max_cost)

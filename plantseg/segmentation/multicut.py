@@ -1,4 +1,5 @@
 import time
+from functools import partial
 
 import nifty
 import nifty.graph.rag as nrag
@@ -9,6 +10,7 @@ from elf.segmentation.watershed import distance_transform_watershed, apply_size_
 
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
+from plantseg.segmentation.dtws import compute_distance_transfrom_watershed
 
 
 class MulticutFromPmaps(AbstractSegmentationStep):
@@ -48,8 +50,12 @@ class MulticutFromPmaps(AbstractSegmentationStep):
         # Multithread
         self.n_threads = n_threads
 
+        self.dt_watershed = partial(compute_distance_transfrom_watershed,
+                                    threshold=ws_threshold, sigma_seeds=ws_sigma,
+                                    stacked=ws_2D, sigma_weights=ws_w_sigma,
+                                    min_size=ws_minsize, n_threads=n_threads)
+
     def process(self, pmaps):
-        gui_logger.info('Clustering with MultiCut...')
         runtime = time.time()
         segmentation = self.segment_volume(pmaps)
 
@@ -63,16 +69,9 @@ class MulticutFromPmaps(AbstractSegmentationStep):
         return segmentation
 
     def segment_volume(self, pmaps):
-        if self.ws_2D:
-            # WS in 2D
-            ws = self.ws_dt_2D(pmaps)
-        else:
-            # WS in 3D
-            ws, _ = distance_transform_watershed(pmaps, self.ws_threshold,
-                                                 self.ws_sigma,
-                                                 sigma_weights=self.ws_w_sigma,
-                                                 min_size=self.ws_minsize)
+        ws = self.dt_watershed(pmaps)
 
+        gui_logger.info('Clustering with MultiCut...')
         rag = compute_rag(ws)
         # Computing edge features
         features = nrag.accumulateEdgeMeanAndLength(rag, pmaps, numberOfThreads=1)  # DO NOT CHANGE numberOfThreads
@@ -87,19 +86,3 @@ class MulticutFromPmaps(AbstractSegmentationStep):
 
         node_labels = multicut_kernighan_lin(graph, costs)
         return nifty.tools.take(node_labels, ws)
-
-    def ws_dt_2D(self, pmaps):
-        # Axis 0 is assumed z-axis!!!
-        ws = np.zeros_like(pmaps).astype(np.uint32)
-        max_idx = 1
-        for i in range(pmaps.shape[0]):
-            _pmaps = pmaps[i]
-            _ws, _ = distance_transform_watershed(_pmaps,
-                                                  self.ws_threshold,
-                                                  self.ws_sigma,
-                                                  sigma_weights=self.ws_w_sigma,
-                                                  min_size=self.ws_minsize)
-            _ws = _ws + max_idx
-            max_idx = _ws.max()
-            ws[i] = _ws
-        return ws
