@@ -28,7 +28,6 @@ requirements:
     - scikit-image
     - tifffile
     - vigra
-    - torchvision
     - pytorch
     - python-elf
     - pytorch-3dunet
