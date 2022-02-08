@@ -60,7 +60,7 @@ pip install SimpleITK
 ```
 
 ### Update PlantSeg
-The tool is actively developed and improvement and small bugs fix are continuosly coming. 
+The tool is actively developed and improvement and small bugs fix are continuously coming. 
 To update PlantSeg type in the terminal: 
 ```bash
 conda activate plant-seg
