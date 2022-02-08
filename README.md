@@ -39,7 +39,7 @@ Follow the instructions to complete the anaconda installation.
 ### Install PlantSeg using conda
 The tool can be installed directly by executing in the terminal:
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c abailoni -c cpape -c awolny pytorch nifty=1.0.9 plantseg
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
@@ -60,7 +60,7 @@ pip install SimpleITK
 ```
 
 ### Update PlantSeg
-The tool is actively developed and improvement and small bugs fix are continuosly coming. 
+The tool is actively developed and improvement and small bugs fix are continuously coming. 
 To update PlantSeg type in the terminal: 
 ```bash
 conda activate plant-seg
