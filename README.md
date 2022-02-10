@@ -51,31 +51,6 @@ conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny pytorc
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
-### Install on Linux
-#### Install Anaconda python
-First step required to use the pipeline is installing anaconda python.
-If you already have a working anaconda setup you can go directly to next item. Anaconda can be downloaded for all 
-platforms from here [anaconda](https://www.anaconda.com/products/individual). We suggest to use Miniconda, 
-because it is lighter and install fewer unnecessary packages.
-
-To download Anaconda Python open a terminal and type
-```bash
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-```
-Then install by typing:
-```bash
-bash ./Miniconda3-latest-Linux-x86_64.sh
-```
-Follow the instructions to complete the anaconda installation. 
-The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
-
-#### Install PlantSeg using conda
-The tool can be installed directly by executing in the terminal:
-```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny pytorch=1.9 plantseg
-```
-Above command will create new conda environment `plant-seg` together with all required dependencies.
-
 ### Install on Windows
 #### Install Anaconda python
 First step required to use the pipeline is installing anaconda python.
@@ -95,7 +70,7 @@ conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plants
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
 
-#### Optional dependencies (not fully tested on windows)
+### Optional dependencies (not fully tested on windows)
 Some types of compressed tiff files require an additional package to be read correctly (eg: Zlib, 
 ZSTD, LZMA, ...). To run plantseg on those stacks you need to install `imagecodecs`. 
 In the terminal: 
