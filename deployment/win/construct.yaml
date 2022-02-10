@@ -1,8 +1,7 @@
-name: covid-if-annotations
-version: 0.0.3dev6
+name: plantseg
+version: 1.4.3
 
-attempt_hardlinks: True
-uninstall_name: uninstall-covid-if-annotations
+uninstall_name: uninstall-plantseg
 
 channels:
   - http://repo.anaconda.com/pkgs/main/
