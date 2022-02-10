@@ -22,7 +22,7 @@ requirements:
     - python
     - pillow
     - h5py
-    - pywget
+    - requests
     - pyyaml
     - scipy
     - scikit-image
