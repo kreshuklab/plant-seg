@@ -47,7 +47,7 @@ The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
 #### Install PlantSeg using conda
 The tool can be installed directly by executing in the terminal:
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny pytorch=1.9 plantseg
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny pytorch=1.9 pytorch-3dunet=1.3.7 plantseg
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
