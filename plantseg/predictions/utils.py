@@ -1,7 +1,7 @@
 import os
 
 import torch
-import wget
+import requests
 import yaml
 
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR
@@ -125,6 +125,13 @@ def get_stride_shape(patch_shape, stride_key):
     return [max(int(p * STRIDE_MENU[stride_key]), 1) for p in patch_shape]
 
 
+def download_model(url, out_dir='.'):
+    for file in [CONFIG_TRAIN_YAML, BEST_MODEL_PYTORCH, LAST_MODEL_PYTORCH]:
+        with requests.get(f'{url}{file}', allow_redirects=True) as r:
+            with open(os.path.join(out_dir, file), 'wb') as f:
+                f.write(r.content)
+
+
 def check_models(model_name, update_files=False):
     """
     Simple script to check and download trained modules
@@ -155,9 +162,7 @@ def check_models(model_name, update_files=False):
             url = config[model_name]["path"]
 
             gui_logger.info(f"Downloading model files from: '{url}' ...")
-            wget.download(url + CONFIG_TRAIN_YAML, out=model_dir)
-            wget.download(url + BEST_MODEL_PYTORCH, out=model_dir)
-            wget.download(url + LAST_MODEL_PYTORCH, out=model_dir)
+            download_model(url, out_dir=model_dir)
         else:
             raise RuntimeError(f"Custom model {model_name} corrupted. Required files not found.")
     return True

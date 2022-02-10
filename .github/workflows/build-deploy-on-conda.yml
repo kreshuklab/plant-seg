@@ -24,10 +24,10 @@ jobs:
     - name: Build PlantSeg
       run: |
           conda install -q conda-build
-          conda build -c abailoni -c cpape -c awolny -c conda-forge conda-recipe
+          conda build -c conda-forge -c awolny conda-recipe
     - name: Install dependencies
       run: |
-        conda install -c abailoni -c cpape -c awolny -c conda-forge --use-local plantseg
+        conda install -c conda-forge -c awolny --use-local plantseg
     - name: Run pytest
       run: |
         conda install pytest
