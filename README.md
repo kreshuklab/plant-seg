@@ -10,22 +10,29 @@ The pipeline uses a two stages segmentation strategy (Neural Network + Segmentat
 The pipeline is tuned for plant cell tissue acquired with confocal and light sheet microscopy.
 Pre-trained models are provided.  
 
+## News:
+* As of version 1.4.3 plantseg is natively supported on Windows!
+
 ## Getting Started
-The recommended way of installing plantseg is via the conda package, which is only supported on Linux.
-Running plantseg on other operating systems (Windows 10, Mac OS) is currently possible only via a Docker image
+The recommended way of installing plantseg is via the conda package, which is currently supported on Linux and Windows.
+Running plantseg on other operating systems on Mac OS is currently possible only via a Docker image
 that we provide  ([see below](#docker-image)).
 
 ### Prerequisites for conda package
-* Linux
-* (Optional) Nvidia GPU + CUDA
+* Linux or Windows 
+* (Optional) Nvidia GPU with official Nvidia drivers installed
 
 or
 
-* Windows 10 / MacOS via Docker
+* MacOS via Docker
 
-### Install Anaconda python
-- First step required to use the pipeline is installing anaconda python.
- If you already have a working anaconda setup you can go directly to next item. 
+### Install on Linux
+#### Install Anaconda python
+First step required to use the pipeline is installing anaconda python.
+If you already have a working anaconda setup you can go directly to next item. Anaconda can be downloaded for all 
+platforms from here [anaconda](https://www.anaconda.com/products/individual). We suggest to use Miniconda, 
+because it is lighter and install fewer unnecessary packages.
+
 To download Anaconda Python open a terminal and type
 ```bash
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -34,16 +41,61 @@ Then install by typing:
 ```bash
 bash ./Miniconda3-latest-Linux-x86_64.sh
 ```
-Follow the instructions to complete the anaconda installation.
+Follow the instructions to complete the anaconda installation. 
+The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
 
-### Install PlantSeg using conda
+#### Install PlantSeg using conda
 The tool can be installed directly by executing in the terminal:
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny pytorch=1.9 plantseg
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
-### Optional dependencies
+### Install on Linux
+#### Install Anaconda python
+First step required to use the pipeline is installing anaconda python.
+If you already have a working anaconda setup you can go directly to next item. Anaconda can be downloaded for all 
+platforms from here [anaconda](https://www.anaconda.com/products/individual). We suggest to use Miniconda, 
+because it is lighter and install fewer unnecessary packages.
+
+To download Anaconda Python open a terminal and type
+```bash
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+```
+Then install by typing:
+```bash
+bash ./Miniconda3-latest-Linux-x86_64.sh
+```
+Follow the instructions to complete the anaconda installation. 
+The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
+
+#### Install PlantSeg using conda
+The tool can be installed directly by executing in the terminal:
+```bash
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny pytorch=1.9 plantseg
+```
+Above command will create new conda environment `plant-seg` together with all required dependencies.
+
+### Install on Windows
+#### Install Anaconda python
+First step required to use the pipeline is installing anaconda python.
+If you already have a working anaconda setup you can go directly to next item. Anaconda can be downloaded for all 
+platforms from here [anaconda](https://www.anaconda.com/products/individual). We suggest to use Miniconda, 
+because it is lighter and install fewer unnecessary packages.
+
+Miniconda can be downloaded from [miniconda](https://docs.conda.io/en/latest/miniconda.html). Download the 
+executable `.exe` for your Windows version and follow the installation instructions.
+
+#### Install PlantSeg using conda
+The tool can be installed directly by executing in the anaconda prompt 
+(***For installing and running plantseg this is equivalent to a linux terminal***):
+```bash
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg pillow=8.4
+```
+Above command will create new conda environment `plant-seg` together with all required dependencies.
+
+
+#### Optional dependencies (not fully tested on windows)
 Some types of compressed tiff files require an additional package to be read correctly (eg: Zlib, 
 ZSTD, LZMA, ...). To run plantseg on those stacks you need to install `imagecodecs`. 
 In the terminal: 
@@ -59,15 +111,18 @@ conda activate plant-seg
 pip install SimpleITK
 ```
 
-### Update PlantSeg
-The tool is actively developed and improvement and small bugs fix are continuously coming. 
-To update PlantSeg type in the terminal: 
+## Pipeline Usage (GUI)
+PlantSeg app can also be started in a GUI mode, where basic user interface allows to configure and run the pipeline.
+First, activate the newly created conda environment with:
 ```bash
 conda activate plant-seg
-conda update -c lcerrone plantseg
 ```
 
-### Pipeline Usage (command line)
+then, run the GUI by simply typing:
+```bash
+$ plantseg --gui
+```
+## Pipeline Usage (command line)
 Our pipeline is completely configuration file based and does not require any coding.
 
 First, activate the newly created conda environment with:
@@ -79,19 +134,7 @@ then, one can just start the pipeline with
 plantseg --config CONFIG_PATH
 ```
 where `CONFIG_PATH` is the path to the YAML configuration file. See [config.yaml](examples/config.yaml) for a sample configuration
-file and detailed description of the parameters. 
-
-### Pipeline Usage (GUI)
-PlantSeg app can also be started in a GUI mode, where basic user interface allows to configure and run the pipeline.
-First, activate the newly created conda environment with:
-```bash
-conda activate plant-seg
-```
-
-then, run the GUI by simply typing:
-```bash
-$ plantseg --gui
-```
+file and detailed description of the parameters.
 
 ### Guide to Custom Configuration File
 The configuration file defines all the operations in our pipeline together with the data to be processed.
