@@ -27,7 +27,7 @@ def download_plantseg(out_path):
     if key in plantseg_win_urls.keys():
         url = plantseg_win_urls[key]['url']
 
-        print('downloading plantseg... ')
+        print(' -Downloading plantseg... ')
         with requests.get(f'{url}', allow_redirects=True) as r:
             with open(out_path, 'wb') as f:
                 f.write(r.content)
@@ -36,13 +36,13 @@ def download_plantseg(out_path):
 
 
 def unzip_plantseg(zip_path, out_path):
-    print('Unzipping plantseg... ')
+    print(' -Unzipping plantseg... ')
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(out_path)
 
 
 def cleanup(zip_path):
-    print('Clean up... ')
+    print(' -Clean up... ')
     os.remove(zip_path)
 
 
@@ -77,6 +77,7 @@ def check():
 
         download_plantseg(plantseg_zip_path)
         unzip_plantseg(plantseg_zip_path, plantseg_dir_path)
+        cleanup(plantseg_zip_path)
     else:
         print(f'plantseg installation found in {plantseg_dir_path}')
 
