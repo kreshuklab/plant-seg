@@ -69,7 +69,7 @@ def check():
 
     if not os.path.isdir(plantseg_dir_path):
         print(f"plantseg Installation... \n"
-              f" plantseg is going to be downloaded in {configs_path},"
+              f" plantseg is going to be installed in {configs_path},"
               f" to uninstall plantseg you can simply delete this directory.")
         install_permission = input('Do you want to proceed with the Installation? (y/n)')
         if install_permission != 'y':
@@ -103,5 +103,5 @@ def run(plantseg_config_path, plantseg_bin_dir):
 
 
 if __name__ == '__main__':
-    plantseg_config_path, plantseg_path = check()
-    run(plantseg_config_path, plantseg_path)
+    plantseg_paths = check()
+    run(*plantseg_paths)
