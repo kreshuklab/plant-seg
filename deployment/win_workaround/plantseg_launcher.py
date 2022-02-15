@@ -47,7 +47,8 @@ def cleanup(zip_path):
 
 
 def modify_config(base_path, file):
-    config_path = os.path.join(base_path, 'configs', 'config_gui_last.yaml')
+    config_path = os.path.join(base_path, 'Lib', 'site-packages', 'plantseg', 'resources', 'config_gui_template.yaml')
+
     if os.path.isfile(config_path):
         config = yaml.load(open(config_path, 'r'), Loader=yaml.FullLoader)
 
@@ -81,10 +82,10 @@ def check():
     else:
         print(f'plantseg installation found in {plantseg_dir_path}')
 
-    return configs_path, plantseg_dir_path
+    return plantseg_dir_path
 
 
-def run(plantseg_config_path, plantseg_bin_dir):
+def run(plantseg_bin_dir):
     python_path = os.path.join(plantseg_bin_dir, 'python.exe')
     run_script_path = os.path.join(plantseg_bin_dir, 'Lib', 'site-packages', 'plantseg', 'run_plantseg.py')
 
@@ -98,10 +99,10 @@ def run(plantseg_config_path, plantseg_bin_dir):
         if extension == '.yaml':
             subprocess.run([python_path, run_script_path, '--config', file])
         elif extension in ['.h5', '.hdf', '.tiff', '.tif'] or os.path.isdir(file):
-            modify_config(plantseg_config_path, file)
+            modify_config(plantseg_bin_dir, file)
             subprocess.run([python_path, run_script_path, '--gui'])
 
 
 if __name__ == '__main__':
-    plantseg_paths = check()
-    run(*plantseg_paths)
+    plantseg_path = check()
+    run(plantseg_path)
