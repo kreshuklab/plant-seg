@@ -22,9 +22,7 @@ that we provide  ([see below](#docker-image)).
 * Linux or Windows 
 * (Optional) Nvidia GPU with official Nvidia drivers installed
 
-or
-
-* MacOS via Docker
+* Native MacOS installation (not yet M1) coming soon. 
 
 ### Install on Linux
 #### Install Anaconda python
@@ -145,82 +143,6 @@ The PlantSeg repository is organised as follows:
 [Wolny et al.](https://www.biorxiv.org/content/10.1101/2020.01.17.910562v1).
 * **examples**: Contains the files required to test PlantSeg.
 * **tests**: Contains automated tests that ensures the PlantSeg functionality are not compromised during an update.
-
-## Docker image
-We also provide a Docker image with plantseg package, which can be run on any operating system with Docker
-installed. Since plantseg is normally used in a GUI mode, one has to share a display on the host operating system
-with a docker container running plantseg. Below we provide a detailed instruction of how to run a plantseg Docker
-image on Linux, Windows 10 and Mac OS.
-
-As a side note: running plantseg via Docker on Windows and Mac OS works only with CPU mode, which is significantly slower
-than when running on the GPU, e.g. for a 3D stack of size `200x400x400` it took ~40mins to segment with plantseg Docker image
-on Windows (as compared to 1.5 mins when segmenting the same stack using plantseg with GPU) on a modern laptop.
-
-Also bear in mind that plantseg is quite memory hungry, so when running with Docker on a laptop, please make sure to process
-smaller volumes (up to 1GB) and use smaller patch sizes for neural network predictions, otherwise your Docker container
-may be terminated abruptly due to the out of memory issue.
-
-### Linux
-Make sure that [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) is installed on the docker host otherwise you won't be able to utilize the GPUs.
-
-In oder to execute the docker image in the GUI mode, fist we need to allow everyone to access X server
-on the docker host. This can be done by invoking the following command in the terminal:
-```bash
-xhost +
-
-```
-For GPU support run:
-```
-docker run --runtime=nvidia -it --rm -v PATH_TO_DATASET:/root/datasets -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY wolny/plantseg
-```
-If your docker host does not have modern GPU and/or nvidia-docker is not installed, run:
-```
-docker run -it --rm -v PATH_TO_DATASET:/root/datasets -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix$DISPLAY wolny/plantseg
-```
-
-this will start the plantseg GUI application. Replace `PATH_TO_DATASET` by the directory on the host machine that you want to mount (i.e. this is the path where your data is stored on your computer). `/root/datasets` is the directory inside the Docker container and this is where you should navigate the PlantSeg GUI to find your files.
-
-### Windows 10
-- [Install Docker Desktop on Windows](https://docs.docker.com/docker-for-windows/install/). 
-Make sure to have the latest Windows 10 version installed, if not you might need to sign up for the Windows Insider Program in order to install the version required by Docker.
-- [Install Windows X Server](https://dev.to/darksmile92/run-gui-app-in-linux-docker-container-on-windows-host-4kde).
-- After you install, configure and run the VcXsrv Windows X Server, open the Windows PowerShell and run:
-```bash
-set-variable -name DISPLAY -value YOUR-IP:0.0
-```
-replace `YOUR-IP` with your actual host IP address (you can find it by running `ipconfig` in the PowerShell)
-- Run plantseg via:
-```bash
-docker run -it --rm -v PATH_TO_DATASET:/root/datasets -e DISPLAY=$DISPLAY wolny/plantseg
-```
-Replace `PATH_TO_DATASET` by the directory on the host machine that you want to mount (i.e. this is the path where your data is stored on your computer). `/root/datasets` is the directory inside the Docker container and this is where you should navigate the PlantSeg GUI to find your files.
-E.g. if your data is stored in `C:\Datasets\ConfocalImages` run:
-```bash
-docker run -it --rm -v C:\Datasets\ConfocalImages:/root/datasets -e DISPLAY=$DISPLAY wolny/plantseg
-```
-
-### Mac OS
-- [Install Docker Desktop on Mac](https://docs.docker.com/docker-for-mac/install/)
-- [Install X Window System on Mac](https://www.xquartz.org/releases/XQuartz-2.7.10.html)
-- after you install and run XQuartz 2.7.10 on your Mac according to the instructions above, run:
-```bash
-docker run -it --rm -v PATH_TO_DATASET:/root/datasets -e DISPLAY=$DISPLAY wolny/plantseg
-```
-Replace `PATH_TO_DATASET` by the directory on the host machine that you want to mount (i.e. this is the path where your data is stored on your computer). `/root/datasets` is the directory inside the Docker container and this is where you should navigate the PlantSeg GUI to find your files.
-E.g. if your data is stored in `/Users/foobar/datasets/confocal` run:
-```bash
-docker run -it --rm -v /Users/foobar/datasets/confocal:/root/datasets -e DISPLAY=$DISPLAY wolny/plantseg
-```
-
-**Troubleshooting**
-
-If you see the error:
-```
-_tkinter.TclError: couldn't connect to display "/private/tmp/com.apple.launchd.mAtyr7ic37/org.macosforge.xquartz:0
-```
-Please follow the instructions from https://github.com/hci-unihd/plant-seg/issues/53#issuecomment-713661156
-
-
 
 ## Datasets
 We publicly release the datasets used for training the networks which available as part of the _PlantSeg_ package.
