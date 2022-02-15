@@ -277,7 +277,7 @@ An updated example can be found inside the directory `examples`, in this reposit
 ```
 The solution is to re-install [elf](https://github.com/constantinpape/elf) via
 ```
-conda install -c conda-forge -c cpape elf
+conda install -c conda-forge python-elf
 ```
 
 * PlantSeg is under active development so it may happen that the models/configuration files saved in `~/.plantseg_modes`

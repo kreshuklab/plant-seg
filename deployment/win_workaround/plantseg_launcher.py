@@ -5,6 +5,7 @@ import os
 import sys
 import yaml
 
+__version__ = '0.0.1'
 
 # Create configs directory at startup
 PLANTSEG_MODELS_DIR = ".plantseg_models"
