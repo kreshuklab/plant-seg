@@ -15,8 +15,7 @@ Pre-trained models are provided.
 
 ## Getting Started
 The recommended way of installing plantseg is via the conda package, which is currently supported on Linux and Windows.
-Running plantseg on other operating systems on Mac OS is currently possible only via a Docker image
-that we provide  ([see below](#docker-image)).
+Running plantseg.
 
 ### Prerequisites for conda package
 * Linux or Windows 
