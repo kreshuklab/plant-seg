@@ -70,7 +70,7 @@ Above command will create new conda environment `plant-seg` together with all re
 ### Optional dependencies (not fully tested on windows)
 Some types of compressed tiff files require an additional package to be read correctly (eg: Zlib, 
 ZSTD, LZMA, ...). To run plantseg on those stacks you need to install `imagecodecs`. 
-In the terminal: 
+In the terminal:
 ```bash
 conda activate plant-seg
 pip install imagecodecs
