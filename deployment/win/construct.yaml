@@ -23,6 +23,9 @@ specs:
   - menuinst [win]
   - python
 
+exclude:
+  - scikit-learn
+
 ignore_duplicate_files: True
 
 initialize_by_default: False
