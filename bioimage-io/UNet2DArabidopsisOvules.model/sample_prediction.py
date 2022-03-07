@@ -13,8 +13,7 @@ with torch.no_grad():
     net.load_state_dict(state)
 
     # load and normalize the input
-    im = np.load('test_input.npz')
-    im = im['arr_0'].astype('float32')
+    im = np.load('test_input.npy')
     im -= im.mean()
     im /= im.std()
 
@@ -24,6 +23,5 @@ with torch.no_grad():
     out = out.cpu().numpy()
 
     # compare with test_output
-    test_out = np.load('test_output.npz')
-    test_out = test_out['arr_0']
+    test_out = np.load('test_output.npy')
     assert np.allclose(out, test_out)
