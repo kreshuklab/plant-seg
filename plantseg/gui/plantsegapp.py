@@ -396,27 +396,27 @@ class PlantSegApp:
     @staticmethod
     def open_documentation_index():
         """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/tree/master/Documentation-GUI")
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki")
 
     @staticmethod
     def open_documentation_preprocessing():
         """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/blob/master/Documentation-GUI/Data-Processing.md")
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Data-Processing")
 
     @staticmethod
     def open_documentation_3dunet():
         """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/blob/master/Documentation-GUI/Predictions.md")
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Predictions")
 
     @staticmethod
     def open_documentation_segmentation():
         """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/blob/master/Documentation-GUI/Segmentation.md")
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Segmentation")
 
     @staticmethod
     def open_postprocessing():
         """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/blob/master/Documentation-GUI/Data-Processing.md")
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Data-Processing.md")
 
     def size_up(self):
         """ adjust font size in the main widget"""

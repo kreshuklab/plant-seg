@@ -117,12 +117,12 @@ Some key design choices:
 * `path` attribute: is used to define either the file to process or the directory containing the data.
 * `preprocessing` attribute: contains a simple set of possible operations one would need to run on their own data before calling the neural network. 
 If data is ready for neural network processing either delete the entire section or set `state: False` in order to skip this step.
-Detailed instructions can be found at [Data Processing](Documentation-GUI/Data-Processing.md).
+Detailed instructions can be found at [Data Processing](https://github.com/hci-unihd/plant-seg/wiki/Data-Processing).
 * `cnn_prediction` attribute: contains all parameters relevant for predicting with neural network. 
 Description of all pre-trained models provided with the package are described below.
-Detailed instructions can be found at [Predictions](Documentation-GUI/Predictions.md).
+Detailed instructions can be found at [Predictions](https://github.com/hci-unihd/plant-seg/wiki/Predictions).
 * `segmentation` attribute: contains all parameters needed to run the partitioning algorithm (i.e. final segmentation). 
-Detailed instructions can be found at [Segmentation](Documentation-GUI/Segmentation.md).
+Detailed instructions can be found at [Segmentation](https://github.com/hci-unihd/plant-seg/wiki/Segmentation.md).
 
 ### Additional information
 
@@ -137,7 +137,7 @@ E.g. run: `CUDA_VISIBLE_DEVICES=0 plantseg --config CONFIG_PATH` to restrict pre
 The PlantSeg repository is organised as follows:
 * **plantseg**: Contains the source code of PlantSeg.
 * **conda-reicpe**: Contains all necessary code and configuration to create the anaconda package.
-* **Documentation-GUI**: Contains an more in-depth documentation of PlantSeg functionality.
+* **Documentation-GUI**: Contains a more in-depth documentation of PlantSeg functionality.
 * **evaluation**: Contains all script required to reproduce the quantitative evaluation in 
 [Wolny et al.](https://www.biorxiv.org/content/10.1101/2020.01.17.910562v1).
 * **examples**: Contains the files required to test PlantSeg.
