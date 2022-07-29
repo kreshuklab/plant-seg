@@ -1,0 +1,33 @@
+name: plantseg
+version: 1.4.3
+
+uninstall_name: uninstall-plantseg
+
+channels:
+  - http://repo.anaconda.com/pkgs/main/
+  - http://conda.anaconda.org/conda-forge
+  - http://conda.anaconda.org/lcerrone
+  - http://conda.anaconda.org/awolny
+  - http://conda.anaconda.org/pytorch
+
+installer_filename: pantseg.exe
+
+menu_packages:
+  - plantseg
+
+specs:
+  - pillow=8.4
+  - plantseg
+  - pytorch=1.9
+  - pytorch-3dunet=1.3.7
+  - menuinst [win]
+  - python
+
+exclude:
+  - scikit-learn
+
+ignore_duplicate_files: True
+
+initialize_by_default: False
+register_python_default: False
+license_file: ../../LICENSE
