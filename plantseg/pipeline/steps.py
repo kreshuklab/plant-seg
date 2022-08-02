@@ -72,10 +72,10 @@ class GenericPipelineStep:
 
         output_data = self.process(input_data)
         # voxel_size may change after pre-/post-processing (i.e. when scaling is used)
-        if output_data.ndim == 4:
-            scale_factor = np.array(output_data[0].shape) / np.array(input_data.shape)
-        else:
-            scale_factor = np.array(output_data.shape) / np.array(input_data.shape)
+        in_shape = input_data.shape
+        out_shape = output_data[0].shape if output_data.ndim == 4 else output_data.shape
+
+        scale_factor = np.array(out_shape) / np.array(in_shape)
 
         voxel_size = np.array(voxel_size) * scale_factor
 
