@@ -7,8 +7,9 @@ import torch
 from pytorch3dunet.datasets.utils import get_test_loaders
 from pytorch3dunet.unet3d import utils
 from pytorch3dunet.unet3d.model import get_model
+from plantseg.predictions.utils import get_loader_config, get_model_config, get_predictor_config, set_device
 from plantseg.pipeline import gui_logger
-from plantseg.predictions.utils import create_predict_config
+from plantseg.pipeline.steps import GenericPipelineStep
 
 
 def _get_output_file(dataset, model_name, suffix='_predictions'):
@@ -58,7 +59,7 @@ def _check_patch_size(paths, config):
     return valid_paths
 
 
-class UnetPredictions:
+class _UnetPredictions:
     def __init__(self, paths, cnn_config):
         assert isinstance(paths, list)
         self.state = cnn_config.get("state", True)
@@ -130,3 +131,58 @@ class UnetPredictions:
 
             with h5py.File(out_path, 'r+') as f:
                 f['predictions'].attrs['element_size_um'] = voxel_size
+
+
+class UnetPredictions(GenericPipelineStep):
+    def __init__(self,
+                 input_paths,
+                 model_name,
+                 patch,
+                 stride,
+                 device,
+                 version='best',
+                 model_update=False,
+                 mirror_padding=(80, 160, 160),
+                 input_type="data_float32",
+                 output_type="data_float32",
+                 out_ext=".h5",
+                 state=True):
+        h5_output_key = "predictions"
+
+        # model config
+        self.model_name = model_name
+        self.device = device
+        self.version = version
+        self.model_update = model_update
+
+        # loader config
+        self.patch = patch
+        self.stride = stride
+        self.mirror_padding = mirror_padding
+
+        model, model_config, model_path = get_model_config(model_name, model_update=model_update)
+        utils.load_checkpoint(model_path, model)
+
+        device = set_device(device)
+        model = model.to(device)
+
+        predictor, predictor_config = get_predictor_config(model_name)
+        self.predictor = predictor(model=model, config=model_config, device=device, **predictor_config)
+
+        self.loader, self.loader_config = get_loader_config(model_name,
+                                                            patch=patch,
+                                                            stride=stride,
+                                                            mirror_padding=mirror_padding)
+
+        super().__init__(input_paths,
+                         input_type=input_type,
+                         output_type=output_type,
+                         save_directory=model_name,
+                         out_ext=out_ext,
+                         state=state,
+                         h5_output_key=h5_output_key)
+
+    def process(self, raw):
+        raw_loader = self.loader(raw, **self.loader_config)
+        pmaps = self.predictor(raw_loader)
+        return pmaps[0]

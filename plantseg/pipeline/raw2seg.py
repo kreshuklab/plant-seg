@@ -28,7 +28,15 @@ def configure_preprocessing_step(input_paths, config):
 
 
 def configure_cnn_step(input_paths, config):
-    return UnetPredictions(input_paths, config)
+    model_name = config['model_name']
+    patch = config.get('patch', (80, 160, 160))
+    stride = config.get('stride', 'Accurate (slowest)')
+    device = config.get('device', 'cuda')
+    version = config.get('version', 'best')
+    model_update = config.get('model_update', False)
+    mirror_padding = config.get('mirror_padding', (80, 160, 160))
+    return UnetPredictions(input_paths, model_name=model_name, patch=patch, stride=stride,
+                           device=device, version=version, model_update=model_update, mirror_padding=mirror_padding)
 
 
 def configure_cnn_postprocessing_step(input_paths, config):
