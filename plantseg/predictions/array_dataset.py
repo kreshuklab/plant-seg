@@ -20,6 +20,7 @@ class ArrayDataset(Dataset):
                  transformer_config,
                  mirror_padding=(16, 32, 32),
                  global_normalization=True,
+                 verbose_logging=True,
                  **kwargs):
         """
         :param raw: numpy array containing the raw image
@@ -68,7 +69,9 @@ class ArrayDataset(Dataset):
         self.weight_slices = slice_builder.weight_slices
 
         self.patch_count = len(self.raw_slices)
-        logger.info(f'Number of patches: {self.patch_count}')
+
+        if verbose_logging:
+            logger.info(f'Number of patches: {self.patch_count}')
 
     def __getitem__(self, idx):
         if idx >= len(self):

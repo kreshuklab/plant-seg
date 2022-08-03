@@ -3,7 +3,7 @@ from pytorch3dunet.unet3d import utils
 from plantseg.io.io import load_shape
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep
-from plantseg.predictions.utils import get_loader_config, get_model_config, get_predictor_config, set_device
+from plantseg.predictions.utils import get_dataset_config, get_model_config, get_predictor_config, set_device
 
 
 def _check_patch_size(paths, patch_size):
@@ -59,10 +59,10 @@ class UnetPredictions(GenericPipelineStep):
         predictor, predictor_config = get_predictor_config(model_name)
         self.predictor = predictor(model=model, config=model_config, device=device, **predictor_config)
 
-        self.loader, self.loader_config = get_loader_config(model_name,
-                                                            patch=patch,
-                                                            stride=stride,
-                                                            mirror_padding=mirror_padding)
+        self.dataset_builder, self.dataset_config = get_dataset_config(model_name,
+                                                                       patch=patch,
+                                                                       stride=stride,
+                                                                       mirror_padding=mirror_padding)
 
         super().__init__(valid_paths,
                          input_type=input_type,
@@ -74,6 +74,6 @@ class UnetPredictions(GenericPipelineStep):
                          h5_output_key=h5_output_key)
 
     def process(self, raw):
-        raw_loader = self.loader(raw, **self.loader_config)
-        pmaps = self.predictor(raw_loader)
+        dataset = self.dataset_builder(raw, **self.dataset_config)
+        pmaps = self.predictor(dataset)
         return pmaps[0]

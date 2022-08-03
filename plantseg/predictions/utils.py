@@ -70,52 +70,52 @@ def set_device(device):
     return device
 
 
-def get_loader_config(model_name, patch, stride, mirror_padding, num_workers=8, global_normalization=True):
+def get_dataset_config(model_name, patch, stride, mirror_padding, num_workers=8, global_normalization=True):
     predict_template = get_predict_template()
-    loader_config = predict_template.pop('loaders')
+    dataset_config = predict_template.pop('loaders')
 
-    loader_config["num_workers"] = num_workers
-    loader_config["mirror_padding"] = mirror_padding
+    dataset_config["num_workers"] = num_workers
+    dataset_config["mirror_padding"] = mirror_padding
 
     # Add patch and stride to the config
-    loader_config["test"]["slice_builder"]["patch_shape"] = patch
+    dataset_config["test"]["slice_builder"]["patch_shape"] = patch
     stride_key, stride_shape = stride, get_stride_shape(patch, "Balanced")
 
     if type(stride_key) is list:
-        loader_config["test"]["slice_builder"]["stride_shape"] = stride_key
+        dataset_config["test"]["slice_builder"]["stride_shape"] = stride_key
     elif type(stride_key) is str:
         stride_shape = get_stride_shape(patch, stride_key)
-        loader_config["test"]["slice_builder"]["stride_shape"] = stride_shape
+        dataset_config["test"]["slice_builder"]["stride_shape"] = stride_shape
     else:
         raise RuntimeError(f"Unsupported stride type: {type(stride_key)}")
 
     # Set paths to None
-    loader_config["test"]["file_paths"] = None
+    dataset_config["test"]["file_paths"] = None
 
     config_train = get_train_config(model_name)
     if config_train["model"]["name"] == "UNet2D":
         # make sure that z-pad is 0 for 2d UNet
-        mirror_padding[0] = 0
+        dataset_config["mirror_padding"] = [0, mirror_padding[1], mirror_padding[2]]
         # make sure to skip the patch size validation for 2d unet
-        loader_config["test"]["slice_builder"]["skip_shape_check"] = True
+        dataset_config["test"]["slice_builder"]["skip_shape_check"] = True
 
         # z-dim of patch and stride has to be one
-        patch_shape = loader_config["test"]["slice_builder"]["patch_shape"]
-        stride_shape = loader_config["test"]["slice_builder"]["stride_shape"]
+        patch_shape = dataset_config["test"]["slice_builder"]["patch_shape"]
+        stride_shape = dataset_config["test"]["slice_builder"]["stride_shape"]
 
         if patch_shape[0] != 1:
             gui_logger.warning(f"Incorrect z-dimension in the patch_shape for the 2D UNet prediction. {patch_shape[0]}"
                                f" was given, but has to be 1. Defaulting default value: 1")
-            loader_config["test"]["slice_builder"]["patch_shape"][0] = 1
+            dataset_config["test"]["slice_builder"]["patch_shape"][0] = 1
 
         if stride_shape[0] != 1:
             gui_logger.warning(f"Incorrect z-dimension in the stride_shape for the 2D UNet prediction. "
                                f"{stride_shape[0]} was given, but has to be 1. Defaulting default value: 1")
-            loader_config["test"]["slice_builder"]["stride_shape"][0] = 1
+            dataset_config["test"]["slice_builder"]["stride_shape"][0] = 1
 
-    dataset_config = {'slice_builder_config': loader_config['test']['slice_builder'],
-                      'transformer_config': loader_config['test']['transformer'],
-                      'mirror_padding': loader_config['mirror_padding'],
+    dataset_config = {'slice_builder_config': dataset_config['test']['slice_builder'],
+                      'transformer_config': dataset_config['test']['transformer'],
+                      'mirror_padding': dataset_config['mirror_padding'],
                       'global_normalization': global_normalization
                       }
 

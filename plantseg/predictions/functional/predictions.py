@@ -3,7 +3,7 @@ from typing import Tuple, Union
 from numpy.typing import ArrayLike
 from pytorch3dunet.unet3d import utils
 
-from plantseg.predictions.utils import get_loader_config, get_model_config, get_predictor_config, set_device
+from plantseg.predictions.utils import get_dataset_config, get_model_config, get_predictor_config, set_device
 
 
 def unet_predictions(raw: ArrayLike,
@@ -21,13 +21,16 @@ def unet_predictions(raw: ArrayLike,
     model = model.to(device)
 
     predictor, predictor_config = get_predictor_config(model_name)
-    predictor = predictor(model=model, config=model_config, device=device, **predictor_config)
+    predictor = predictor(model=model,
+                          config=model_config,
+                          device=device,
+                          verbose_logging=False, **predictor_config)
 
-    loader, loader_config = get_loader_config(model_name,
-                                              patch=patch,
-                                              stride=stride,
-                                              mirror_padding=mirror_padding)
+    dataset_builder, dataset_config = get_dataset_config(model_name,
+                                                         patch=patch,
+                                                         stride=stride,
+                                                         mirror_padding=mirror_padding)
 
-    raw_loader = loader(raw, **loader_config)
+    raw_loader = dataset_builder(raw, verbose_logging=False, **dataset_config)
     pmaps = predictor(raw_loader)
     return pmaps[0]
