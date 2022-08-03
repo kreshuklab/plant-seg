@@ -3,16 +3,16 @@ import os
 import h5py
 import numpy as np
 
-from plantseg.predictions.predict import UnetPredictions
+from plantseg.pipeline.raw2seg import configure_cnn_step
 
 
 class TestUnetPredictions:
     def test_state_false(self, prediction_config):
         prediction_config['cnn_prediction']['state'] = False
         paths = [prediction_config['path']]
-        preds = UnetPredictions(paths, prediction_config['cnn_prediction'])
+        step = configure_cnn_step(paths, prediction_config['cnn_prediction'])
 
-        assert paths == preds()
+        assert paths == step()
 
     def test_unet_predictions(self, prediction_config):
         """
@@ -20,12 +20,11 @@ class TestUnetPredictions:
         """
         paths = [prediction_config['path']]
         cnn_config = prediction_config['cnn_prediction']
+        step = configure_cnn_step(paths, prediction_config['cnn_prediction'])
 
-        preds = UnetPredictions(paths, cnn_config)
+        output_paths = step()
 
-        output_paths = preds()
-
-        # assert output_paths correcltly created
+        # assert output_paths correctly created
         basepath, basename = os.path.split(paths[0])
         expected_paths = [
             os.path.join(basepath, cnn_config['model_name'], os.path.splitext(basename)[0] + '_predictions.h5')

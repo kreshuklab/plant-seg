@@ -50,7 +50,7 @@ class UnetPredictions(GenericPipelineStep):
 
         valid_paths = _check_patch_size(input_paths, patch_size=patch)
 
-        model, model_config, model_path = get_model_config(model_name, model_update=model_update)
+        model, model_config, model_path = get_model_config(model_name, model_update=model_update, version=version)
         utils.load_checkpoint(model_path, model)
 
         device = set_device(device)
