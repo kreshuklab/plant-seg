@@ -113,13 +113,13 @@ def get_loader_config(model_name, patch, stride, mirror_padding, num_workers=8, 
                                f"{stride_shape[0]} was given, but has to be 1. Defaulting default value: 1")
             loader_config["test"]["slice_builder"]["stride_shape"][0] = 1
 
-    detaset_config = {'slice_builder_config': loader_config['test']['slice_builder'],
-                         'transformer_config': loader_config['test']['transformer'],
-                         'mirror_padding': loader_config['mirror_padding'],
-                         'global_normalization': global_normalization
-                         }
+    dataset_config = {'slice_builder_config': loader_config['test']['slice_builder'],
+                      'transformer_config': loader_config['test']['transformer'],
+                      'mirror_padding': loader_config['mirror_padding'],
+                      'global_normalization': global_normalization
+                      }
 
-    return ArrayDataset, detaset_config
+    return ArrayDataset, dataset_config
 
 
 def get_predictor_config(model_name):
@@ -133,9 +133,9 @@ def get_predictor_config(model_name):
     return ArrayPredictor, {'patch_halo': patch_halo}
 
 
-def create_predict_config(paths, cnn_config):
+def old_create_predict_config(paths, cnn_config):
     """ Creates the configuration file needed for running the neural network inference"""
-
+    # TODO safe remove it
     # Load template config
     prediction_config = yaml.load(
         open(os.path.join(plantseg_global_path, "resources", "config_predict_template.yaml"), 'r'),
