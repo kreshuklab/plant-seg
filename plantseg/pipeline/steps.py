@@ -5,7 +5,7 @@ import yaml
 
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.utils import SUPPORTED_TYPES
-from plantseg.io.io import smart_load, create_tiff, create_h5
+from plantseg.io import smart_load, create_tiff, create_h5
 
 
 class GenericPipelineStep:

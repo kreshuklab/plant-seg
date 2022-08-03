@@ -1,7 +1,9 @@
-from pytorch3dunet.unet3d import utils
-from plantseg.predictions.utils import get_loader_config, get_model_config, get_predictor_config, set_device
-from numpy.typing import ArrayLike
 from typing import Tuple, Union
+
+from numpy.typing import ArrayLike
+from pytorch3dunet.unet3d import utils
+
+from plantseg.predictions.utils import get_loader_config, get_model_config, get_predictor_config, set_device
 
 
 def unet_predictions(raw: ArrayLike,

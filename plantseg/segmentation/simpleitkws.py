@@ -1,7 +1,5 @@
-import numpy as np
-
-from plantseg.segmentation.functional.segmentation import simple_itk_watershed
 from plantseg.pipeline.steps import AbstractSegmentationStep
+from plantseg.segmentation.functional.segmentation import simple_itk_watershed
 
 
 class SimpleITKWatershed(AbstractSegmentationStep):

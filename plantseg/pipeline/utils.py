@@ -2,7 +2,8 @@ import glob
 import logging
 import os
 import warnings
-from plantseg.io.io import allowed_data_format
+
+from plantseg.io import allowed_data_format
 
 warnings.simplefilter('once', UserWarning)
 

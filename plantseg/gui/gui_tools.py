@@ -9,9 +9,8 @@ import yaml
 from plantseg import custom_zoo, home_path, PLANTSEG_MODELS_DIR, model_zoo_path
 from plantseg.__version__ import __version__
 from plantseg.gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
+from plantseg.io import read_tiff_voxel_size, read_h5_voxel_size, TIFF_EXTENSIONS, H5_EXTENSIONS
 from plantseg.pipeline import gui_logger
-from plantseg.io.io import read_tiff_voxel_size, read_h5_voxel_size, TIFF_EXTENSIONS, H5_EXTENSIONS
-
 
 current_model = None
 current_segmentation = None

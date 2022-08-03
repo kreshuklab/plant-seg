@@ -2,10 +2,10 @@ import numpy as np
 
 from plantseg.dataprocessing.dataprocessing import DataPostProcessing3D
 from plantseg.dataprocessing.dataprocessing import DataPreProcessing3D
+from plantseg.io.io import load_shape
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.config_validation import config_validation
 from plantseg.pipeline.utils import load_paths
-from plantseg.io.io import load_shape
 from plantseg.predictions.predict import UnetPredictions
 from plantseg.segmentation.utils import configure_segmentation_step
 

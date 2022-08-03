@@ -1,7 +1,8 @@
-import tifffile
-import h5py
-import warnings
 import os
+import warnings
+
+import h5py
+import tifffile
 
 TIFF_EXTENSIONS = [".tiff", ".tif"]
 H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]

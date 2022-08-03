@@ -1,9 +1,9 @@
-import h5py
 from pytorch3dunet.unet3d import utils
-from plantseg.predictions.utils import get_loader_config, get_model_config, get_predictor_config, set_device
-from plantseg.pipeline import gui_logger
+
 from plantseg.io.io import load_shape
+from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep
+from plantseg.predictions.utils import get_loader_config, get_model_config, get_predictor_config, set_device
 
 
 def _check_patch_size(paths, patch_size):

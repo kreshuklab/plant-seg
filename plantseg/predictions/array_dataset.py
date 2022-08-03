@@ -1,8 +1,8 @@
 import numpy as np
-from torch.utils.data import Dataset
 import pytorch3dunet.augment.transforms as transforms
 from pytorch3dunet.datasets.utils import get_slice_builder, calculate_stats, default_prediction_collate
 from pytorch3dunet.unet3d.utils import get_logger
+from torch.utils.data import Dataset
 
 logger = get_logger('ArrayDataset')
 

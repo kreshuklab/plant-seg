@@ -1,6 +1,6 @@
 from skimage.transform import resize
 
-from plantseg.dataprocessing.functional.dataprocessing import image_rescale, image_median, image_gaussian_smoothing,\
+from plantseg.dataprocessing.functional.dataprocessing import image_rescale, image_median, image_gaussian_smoothing, \
     image_crop
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep

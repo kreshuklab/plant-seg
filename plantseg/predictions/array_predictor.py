@@ -2,8 +2,9 @@ import numpy as np
 import torch
 from pytorch3dunet.unet3d.utils import get_logger
 from pytorch3dunet.unet3d.utils import remove_halo
-from plantseg.predictions.array_dataset import ArrayDataset
 from torch.utils.data import DataLoader
+
+from plantseg.predictions.array_dataset import ArrayDataset
 
 logger = get_logger('UNetArrayPredictor')
 

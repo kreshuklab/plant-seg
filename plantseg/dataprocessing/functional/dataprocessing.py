@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.ndimage import zoom
-from skimage.morphology import disk, ball
 from skimage.filters import median
+from skimage.morphology import disk, ball
 from vigra import gaussianSmoothing
 
 
