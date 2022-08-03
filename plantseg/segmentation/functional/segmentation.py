@@ -15,8 +15,8 @@ from plantseg.segmentation.functional.utils import shift_affinities, compute_mc_
 
 
 def dt_watershed(boundary_pmaps: ArrayLike,
-                 threshold: float,
-                 sigma_seeds: float,
+                 threshold: float = 0.5,
+                 sigma_seeds: float = 1.,
                  stacked: bool = False,
                  sigma_weights: float = 2.,
                  min_size: int = 100,
@@ -43,6 +43,8 @@ def dt_watershed(boundary_pmaps: ArrayLike,
     Returns:
         np.ndarray: watershed segmentation
     """
+
+    boundary_pmaps = boundary_pmaps.astype('float32')
     ws_kwargs = dict(threshold=threshold, sigma_seeds=sigma_seeds,
                      sigma_weights=sigma_weights,
                      min_size=min_size, alpha=alpha,
@@ -78,6 +80,7 @@ def gasp(boundary_pmaps: ArrayLike,
                        'use_efficient_implementations': False}
 
     # pmaps are interpreted as affinities
+    boundary_pmaps = boundary_pmaps.astype('float32')
     affinities = np.stack([boundary_pmaps, boundary_pmaps, boundary_pmaps], axis=0)
 
     offsets = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
