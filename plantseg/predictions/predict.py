@@ -2,18 +2,17 @@ import h5py
 from pytorch3dunet.unet3d import utils
 from plantseg.predictions.utils import get_loader_config, get_model_config, get_predictor_config, set_device
 from plantseg.pipeline import gui_logger
+from plantseg.io.io import load_shape
 from plantseg.pipeline.steps import GenericPipelineStep
 
 
-def _check_patch_size(paths, config):
+def _check_patch_size(paths, patch_size):
     axis = ['z', 'x', 'y']
-    patch_size = config["patch"]
     valid_paths = []
 
     for path in paths:
         incorrect_axis = []
-        with h5py.File(path, 'r') as f:
-            raw_size = f["raw"].shape
+        raw_size = load_shape(path, key='raw')
 
         for _ax, _patch_size, _raw_size in zip(axis, patch_size, raw_size):
             if _patch_size > _raw_size:
@@ -49,16 +48,7 @@ class UnetPredictions(GenericPipelineStep):
                  state=True):
         h5_output_key = "predictions"
 
-        # model config
-        self.model_name = model_name
-        self.device = device
-        self.version = version
-        self.model_update = model_update
-
-        # loader config
-        self.patch = patch
-        self.stride = stride
-        self.mirror_padding = mirror_padding
+        valid_paths = _check_patch_size(input_paths, patch_size=patch)
 
         model, model_config, model_path = get_model_config(model_name, model_update=model_update)
         utils.load_checkpoint(model_path, model)
@@ -74,12 +64,13 @@ class UnetPredictions(GenericPipelineStep):
                                                             stride=stride,
                                                             mirror_padding=mirror_padding)
 
-        super().__init__(input_paths,
+        super().__init__(valid_paths,
                          input_type=input_type,
                          output_type=output_type,
                          save_directory=model_name,
                          out_ext=out_ext,
                          state=state,
+                         file_suffix='_predictions',
                          h5_output_key=h5_output_key)
 
     def process(self, raw):

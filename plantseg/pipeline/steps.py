@@ -1,13 +1,11 @@
 import os
 
-import h5py
 import numpy as np
-import tifffile
 import yaml
 
 from plantseg.pipeline import gui_logger
-from plantseg.pipeline.utils import read_tiff_voxel_size, read_h5_voxel_size, find_input_key, SUPPORTED_TYPES, \
-    TIFF_EXTENSIONS, H5_EXTENSIONS
+from plantseg.pipeline.utils import SUPPORTED_TYPES
+from plantseg.io.io import smart_load, create_tiff, create_h5
 
 
 class GenericPipelineStep:
@@ -101,28 +99,9 @@ class GenericPipelineStep:
             tuple(nd.array, tuple(float)): (numpy array containing stack's data, stack's data voxel size)
         """
         _, ext = os.path.splitext(file_path)
-
-        if ext in TIFF_EXTENSIONS:
-            # load tiff file
-            data = tifffile.imread(file_path)
-            # parse voxel_size
-            voxel_size = read_tiff_voxel_size(file_path)
-        elif ext in H5_EXTENSIONS:
-            # load data from H5 file
-            with h5py.File(file_path, "r") as f:
-                h5_input_key = find_input_key(f)
-                gui_logger.info(f"Found '{h5_input_key}' dataset inside {file_path}")
-                # set h5_output_key to be the same as h5_input_key if h5_output_key not defined
-                if self.h5_output_key is None:
-                    self.h5_output_key = h5_input_key
-
-                ds = f[h5_input_key]
-                data = ds[...]
-
-            # Parse voxel size
-            voxel_size = read_h5_voxel_size(file_path)
-        else:
-            raise RuntimeError(f"Unsupported file extension: {ext}")
+        data, (voxel_size, data_shape, key) = smart_load(file_path, key=None)
+        if self.h5_output_key is None:
+            self.h5_output_key = key
 
         # reshape data to 3D always
         data = np.nan_to_num(data)
@@ -139,12 +118,9 @@ class GenericPipelineStep:
         """
         raw_path = self._raw_path(input_path)
         if os.path.exists(raw_path):
-            with h5py.File(raw_path, 'r') as f:
-                raw = f['raw'][...]
-            with h5py.File(output_path, 'r+') as f:
-                f.create_dataset('raw', data=raw, compression='gzip')
-                # save voxel_size
-                f['raw'].attrs['element_size_um'] = voxel_size
+            raw, _, _ = smart_load(raw_path, key='raw')
+            create_h5(output_path, stack=raw, key='raw', voxel_size=voxel_size, mode='a')
+
         else:
             gui_logger.warning(f'Cannot save raw input: {raw_path} not found')
 
@@ -197,28 +173,11 @@ class GenericPipelineStep:
         assert ext in [".h5", ".tiff"], f"Unsupported file extension {ext}"
 
         if ext == ".h5":
-            # Save output results as h5
-            with h5py.File(output_path, "w") as f:
-                if self.h5_output_key is None:
-                    # this can happen if input file is tiff and h5_output_key was not specified
-                    self.h5_output_key = 'raw'
+            key = self.h5_output_key if self.h5_output_key is not None else 'raw'
+            create_h5(output_path, stack=data, key=key, voxel_size=voxel_size, mode='w')
 
-                f.create_dataset(self.h5_output_key, data=data, compression='gzip')
-                # save voxel_size
-                f[self.h5_output_key].attrs['element_size_um'] = voxel_size
         elif ext == ".tiff":
-            # taken from: https://pypi.org/project/tifffile docs
-            z, y, x = data.shape
-            data.shape = 1, z, 1, y, x, 1  # dimensions in TZCYXS order
-            spacing, y, x = voxel_size
-            resolution = (1. / x, 1. / y)
-            # Save output results as tiff
-            tifffile.imsave(output_path,
-                            data=data,
-                            dtype=data.dtype,
-                            imagej=True,
-                            resolution=resolution,
-                            metadata={'axes': 'TZCYXS', 'spacing': spacing, 'unit': 'um'})
+            create_tiff(output_path, stack=data, voxel_size=voxel_size)
 
         self._log_params(output_path)
 

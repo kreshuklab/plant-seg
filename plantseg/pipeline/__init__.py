@@ -14,9 +14,6 @@ formatter = logging.Formatter(
 stream_handler.setFormatter(formatter)
 gui_logger.addHandler(stream_handler)
 
-# allowed h5 keys
-H5_KEYS = ["raw", "predictions", "segmentation"]
-
 # Resources directory
 RESOURCES_DIR = "resources"
 raw2seg_config_template = os.path.join(plantseg_global_path, RESOURCES_DIR, "raw2seg_template.yaml")

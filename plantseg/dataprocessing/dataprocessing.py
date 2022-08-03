@@ -1,34 +1,9 @@
-import numpy as np
-from scipy.ndimage import zoom
-from skimage.filters import median
-from skimage.morphology import ball, disk
 from skimage.transform import resize
-from vigra.filters import gaussianSmoothing
 
+from plantseg.dataprocessing.functional.dataprocessing import image_rescale, image_median, image_gaussian_smoothing,\
+    image_crop
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep
-
-
-def _rescale(image, factor, order):
-    if np.array_equal(factor, [1, 1, 1]):
-        return image
-    else:
-        return zoom(image, zoom=factor, order=order)
-
-
-def _median(image, radius):
-    if image.shape[0] == 1:
-        shape = image.shape
-        median_image = median(image[0], disk(radius))
-        return median_image.reshape(shape)
-    else:
-        return median(image, ball(radius))
-
-
-def _gaussian(image, sigma):
-    max_sigma = (np.array(image.shape) - 1) / 3
-    sigma = np.minimum(max_sigma, np.ones(max_sigma.ndim) * sigma)
-    return gaussianSmoothing(image, sigma)
 
 
 def _no_filter(image, param):
@@ -79,17 +54,10 @@ class DataPostProcessing3D(GenericPipelineStep):
             image = resize(image, output_shape, self.order)
         else:
             # use standard rescaling
-            image = _rescale(image, self.factor, self.order)
+            image = image_rescale(image, self.factor, self.order)
 
         self.img_count += 1
         return image
-
-
-def _parse_crop(crop_str):
-    crop_str = crop_str.replace('[', '').replace(']', '')
-    return tuple(
-        (slice(*(int(i) if i else None for i in part.strip().split(':'))) if ':' in part else int(part.strip())) for
-        part in crop_str.split(','))
 
 
 class DataPreProcessing3D(GenericPipelineStep):
@@ -115,8 +83,6 @@ class DataPreProcessing3D(GenericPipelineStep):
         if factor is None:
             factor = [1, 1, 1]
 
-        if crop is not None:
-            crop = _parse_crop(crop)
         self.crop = crop
 
         # rescaling
@@ -130,9 +96,9 @@ class DataPreProcessing3D(GenericPipelineStep):
             assert filter_param is not None
 
             if filter_type == "median":
-                self.filter = _median
+                self.filter = image_median
             else:
-                self.filter = _gaussian
+                self.filter = image_gaussian_smoothing
 
             self.filter_param = filter_param
         else:
@@ -143,9 +109,9 @@ class DataPreProcessing3D(GenericPipelineStep):
         gui_logger.info(f"Preprocessing files...")
         if self.crop is not None:
             gui_logger.info(f"Cropping input image to: {self.crop}")
-            image = image[self.crop]
+            image = image_crop(image, self.crop)
 
         image = self.filter(image, self.filter_param)
-        image = _rescale(image, self.factor, self.order)
+        image = image_rescale(image, self.factor, self.order)
 
         return image
