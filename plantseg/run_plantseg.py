@@ -4,12 +4,14 @@ import yaml
 
 from plantseg.gui.plantsegapp import PlantSegApp
 from plantseg.pipeline.raw2seg import raw2seg
+from plantseg.napari.viewer import run_viewer
 
 
 def parser():
     parser = argparse.ArgumentParser(description='Plant cell instance segmentation script')
     parser.add_argument('--config', type=str, help='Path to the YAML config file', required=False)
     parser.add_argument('--gui', action='store_true', help='Launch GUI configurator', required=False)
+    parser.add_argument('--napari', action='store_true', help='Napari Viewer', required=False)
     args = parser.parse_args()
     return args
 
@@ -24,6 +26,9 @@ def main():
 
     if args.gui:
         PlantSegApp()
+
+    if args.napari:
+        run_viewer()
 
     elif args.config is not None:
         config = load_config(args)
