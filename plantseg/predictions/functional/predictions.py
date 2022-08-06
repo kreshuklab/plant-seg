@@ -1,5 +1,6 @@
 from typing import Tuple, Union
 
+import numpy as np
 from numpy.typing import ArrayLike
 from pytorch3dunet.unet3d import utils
 
@@ -31,6 +32,10 @@ def unet_predictions(raw: ArrayLike,
                                                          stride=stride,
                                                          mirror_padding=mirror_padding)
 
+    if raw.ndim == 2:
+        raw = raw[None, ...]
+
     raw_loader = dataset_builder(raw, verbose_logging=False, **dataset_config)
     pmaps = predictor(raw_loader)
-    return pmaps[0]
+    pmaps = np.squeeze(pmaps[0])
+    return pmaps

@@ -70,10 +70,19 @@ def gasp(boundary_pmaps: ArrayLike,
          n_threads: int = 6) -> ArrayLike:
 
     if superpixels is not None:
+        assert boundary_pmaps.shape == superpixels.shape
+
+        if superpixels.ndim == 2:
+            superpixels = superpixels[None, ...]
+
         def superpixel_gen(*args, **kwargs):
             return superpixels
     else:
         superpixel_gen = None
+
+    if boundary_pmaps.ndim == 2:
+        boundary_pmaps = boundary_pmaps[None, ...]
+
 
     run_GASP_kwargs = {'linkage_criteria': gasp_linkage_criteria,
                        'add_cannot_link_constraints': False,
