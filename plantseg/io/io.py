@@ -78,7 +78,6 @@ def _find_input_key(h5_file):
 
 
 def load_h5(path, key, slices=None, info_only=False):
-
     with h5py.File(path, 'r') as f:
         if key is None:
             key = _find_input_key(f)
@@ -116,7 +115,7 @@ def smart_load(path, key=None, info_only=False, default=load_tiff):
     if ext in H5_EXTENSIONS:
         return load_h5(path, key, info_only=info_only)
 
-    elif ext in H5_EXTENSIONS:
+    elif ext in TIFF_EXTENSIONS:
         return load_tiff(path, info_only=info_only)
 
     else:
@@ -134,6 +133,11 @@ def create_h5(path, stack, key, voxel_size=(1.0, 1.0, 1.0), mode='a'):
         f.create_dataset(key, data=stack, compression='gzip')
         # save voxel_size
         f[key].attrs['element_size_um'] = voxel_size
+
+
+def list_keys(path, mode='r'):
+    with h5py.File(path, mode) as f:
+        return [key for key in f.keys() if isinstance(f[key], h5py.Dataset)]
 
 
 def del_h5_key(path, key, mode='a'):
@@ -159,9 +163,9 @@ def create_tiff(path, stack, voxel_size):
     spacing, y, x = voxel_size
     resolution = (1. / x, 1. / y)
     # Save output results as tiff
-    tifffile.imsave(path,
-                    data=stack,
-                    dtype=stack.dtype,
-                    imagej=True,
-                    resolution=resolution,
-                    metadata={'axes': 'TZCYXS', 'spacing': spacing, 'unit': 'um'})
+    tifffile.imwrite(path,
+                     data=stack,
+                     dtype=stack.dtype,
+                     imagej=True,
+                     resolution=resolution,
+                     metadata={'axes': 'TZCYXS', 'spacing': spacing, 'unit': 'um'})

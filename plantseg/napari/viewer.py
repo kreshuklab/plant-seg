@@ -11,8 +11,8 @@ def run_viewer():
     container2 = get_gasp_workflow()
 
     main_w = viewer.window.add_dock_widget(main_container, name='Main')
-    container1_w = viewer.window.add_dock_widget(container1, name='Processing')
-    container2_w = viewer.window.add_dock_widget(container2, name='GASP')
+    container1_w = viewer.window.add_dock_widget(container1, name='Data - Processing')
+    container2_w = viewer.window.add_dock_widget(container2, name='GASP Workflow')
 
     viewer.window._qt_window.tabifyDockWidget(main_w, container1_w)
     viewer.window._qt_window.tabifyDockWidget(main_w, container2_w)

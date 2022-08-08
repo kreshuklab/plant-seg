@@ -9,9 +9,15 @@ from plantseg.napari.widget.utils import start_threading_process
 from plantseg.predictions.functional import unet_predictions
 
 
-@magicgui(call_button='Run Predictions', model_name={"choices": list_models()}, )
+@magicgui(call_button='Run Predictions',
+          model_name={"choices": list_models()},
+          stride={"choices": ['Accurate', 'Balanced', 'Draft']},
+          device={"choices": ['cpu', 'cuda']}
+          )
 def widget_unet_predictions(image: ImageData,
                             model_name,
+                            device: str = 'cpu',
+                            stride: str = 'Accurate',
                             patch_size: Tuple[int, int, int] = (80, 160, 160)) -> Future[LayerDataTuple]:
     image = image.astype('float32')
 

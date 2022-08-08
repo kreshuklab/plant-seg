@@ -33,3 +33,21 @@ def image_crop(image, crop_str):
                             if i else None for i in part.strip().split(':')))
                     if ':' in part else int(part.strip())) for part in crop_str.split(','))
     return image[slices]
+
+
+def fix_input_shape(data):
+    if data.ndim == 2:
+        return data.reshape(1, data.shape[0], data.shape[1])
+
+    elif data.ndim == 3:
+        return data
+
+    elif data.ndim == 4:
+        return data[0]
+
+    else:
+        raise RuntimeError(f"Expected input data to be 2d, 3d or 4d, but got {data.ndim}d input")
+
+
+def normalize_01(data):
+    return (data - np.min(data)) / (np.max(data) - np.max(data) + 1e-12)

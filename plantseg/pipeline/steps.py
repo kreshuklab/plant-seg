@@ -1,4 +1,5 @@
 import os
+from abc import ABC
 
 import numpy as np
 import yaml
@@ -6,11 +7,12 @@ import yaml
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.utils import SUPPORTED_TYPES
 from plantseg.io import smart_load, create_tiff, create_h5
+from plantseg.dataprocessing.functional.dataprocessing import normalize_01, fix_input_shape
 
 
 class GenericPipelineStep:
     """
-    Base class for the a single step of a pipeline
+    Base class for a single step of a pipeline
     
     Args:
         input_paths (iterable): paths to the files to be processed
@@ -40,7 +42,7 @@ class GenericPipelineStep:
         self.state = state
         self.save_raw = save_raw
 
-        # create save_directory if doesn't exist
+        # create save_directory if it doesn't exist
         self.save_directory = os.path.join(os.path.dirname(input_paths[0]), save_directory)
         if self.state:
             os.makedirs(self.save_directory, exist_ok=True)
@@ -126,17 +128,7 @@ class GenericPipelineStep:
 
     @staticmethod
     def _fix_input_shape(data):
-        if data.ndim == 2:
-            return data.reshape(1, data.shape[0], data.shape[1])
-
-        elif data.ndim == 3:
-            return data
-
-        elif data.ndim == 4:
-            return data[0]
-
-        else:
-            raise RuntimeError(f"Expected input data to be 2d, 3d or 4d, but got {data.ndim}d input")
+        return fix_input_shape(data)
 
     def _adjust_input_type(self, data):
         if self.input_type == "labels":
@@ -149,7 +141,7 @@ class GenericPipelineStep:
 
     @staticmethod
     def _normalize_01(data):
-        return (data - data.min()) / (data.max() - data.min() + 1e-12)
+        return normalize_01(data)
 
     def _log_params(self, file):
         file = os.path.splitext(file)[0] + ".yaml"
@@ -208,7 +200,7 @@ class GenericPipelineStep:
         return os.path.join(base, filename)
 
 
-class AbstractSegmentationStep(GenericPipelineStep):
+class AbstractSegmentationStep(GenericPipelineStep, ABC):
     def __init__(self, input_paths, save_directory, file_suffix, state):
         super().__init__(input_paths=input_paths,
                          input_type="data_float32",

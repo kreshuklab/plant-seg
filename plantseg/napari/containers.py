@@ -3,12 +3,12 @@ from magicgui.widgets import Container
 from plantseg.napari.widget.dataprocessing import widget_generic_preprocessing, widget_cropping, widget_add_layers
 from plantseg.napari.widget.predictions import widget_unet_predictions
 from plantseg.napari.widget.segmentation import widget_dt_ws, widget_gasp
-from plantseg.napari.widget.io import open_file, export_stack
+from plantseg.napari.widget.io import open_file, export_stacks
 
 
 def get_main():
     container = Container(widgets=[open_file,
-                                   export_stack],
+                                   export_stacks],
                           labels=False)
     return container
 
@@ -16,7 +16,7 @@ def get_main():
 def get_preprocessing_workflow():
     container = Container(widgets=[widget_generic_preprocessing,
                                    widget_cropping,
-                                   widget_cropping],
+                                   widget_add_layers],
                           labels=False)
     return container
 
