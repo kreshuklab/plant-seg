@@ -2,6 +2,7 @@ from concurrent.futures import Future
 from functools import partial
 from typing import Tuple, Union
 
+import math
 from magicgui import magicgui
 from napari.layers import Image, Labels, Shapes, Layer
 from napari.types import LayerDataTuple
@@ -65,12 +66,9 @@ def widget_cropping(image: Layer,
     layer_type = 'image'
 
     rectangle = crop_roi.data[0].astype('int64')
-    crop_slices = [slice(rectangle[0, 0], rectangle[2, 0]), slice(rectangle[0, 1], rectangle[2, 1])]
-    data_image = image.data
-    if data_image.ndim == 2:
-        crop_slices = tuple(crop_slices)
-    elif data_image.ndim == 3:
-        crop_slices = tuple([1] + crop_slices)
+    crop_slices = [slice(rectangle[0, 0] - crop_z//2, rectangle[0, 0] + math.ceil(crop_z/2)),
+                   slice(rectangle[0, 1], rectangle[2, 1]),
+                   slice(rectangle[0, 2], rectangle[2, 2])]
 
     func = partial(_cropping, crop_slices=crop_slices)
     return start_threading_process(func,
@@ -79,6 +77,7 @@ def widget_cropping(image: Layer,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
+                                   skip_dag=True,
                                    )
 
 
