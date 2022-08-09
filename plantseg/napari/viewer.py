@@ -1,22 +1,22 @@
 import napari
-
-from plantseg.napari.containers import get_gasp_workflow, get_preprocessing_workflow, get_main
+from magicgui import magicgui
+from plantseg.napari.containers import get_gasp_workflow, get_preprocessing_workflow, get_main, get_extra
+from plantseg.napari.widget.segmentation import widget_multicut, widget_lifted_multicut
 
 
 def run_viewer():
     viewer = napari.Viewer()
-
     main_container = get_main()
-    container1 = get_preprocessing_workflow()
-    container2 = get_gasp_workflow()
-
     main_w = viewer.window.add_dock_widget(main_container, name='Main')
-    container1_w = viewer.window.add_dock_widget(container1, name='Data - Processing')
-    container2_w = viewer.window.add_dock_widget(container2, name='GASP Workflow')
 
-    viewer.window._qt_window.tabifyDockWidget(main_w, container1_w)
-    viewer.window._qt_window.tabifyDockWidget(main_w, container2_w)
+    for _containers, name in [(get_preprocessing_workflow(), 'Data - Processing'),
+                              (get_gasp_workflow(), 'UNet + GASP Workflow'),
+                              (get_extra(), 'Extra')]:
+        _container_w = viewer.window.add_dock_widget(_containers, name=name)
+        viewer.window._qt_window.tabifyDockWidget(main_w, _container_w)
+
     napari.run()
+
 
 
 

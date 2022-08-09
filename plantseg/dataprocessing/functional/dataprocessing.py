@@ -22,6 +22,7 @@ def image_median(image, radius):
 
 
 def image_gaussian_smoothing(image, sigma):
+    image = image.astype('float32')
     max_sigma = (np.array(image.shape) - 1) / 3
     sigma = np.minimum(max_sigma, np.ones(max_sigma.ndim) * sigma)
     return gaussianSmoothing(image, sigma)
@@ -50,4 +51,4 @@ def fix_input_shape(data):
 
 
 def normalize_01(data):
-    return (data - np.min(data)) / (np.max(data) - np.max(data) + 1e-12)
+    return (data - np.min(data)) / (np.max(data) - np.min(data) + 1e-12).astype('float32')

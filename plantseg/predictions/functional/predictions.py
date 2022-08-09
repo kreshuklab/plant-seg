@@ -3,7 +3,7 @@ from typing import Tuple, Union
 import numpy as np
 from numpy.typing import ArrayLike
 from pytorch3dunet.unet3d import utils
-
+from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape
 from plantseg.predictions.utils import get_dataset_config, get_model_config, get_predictor_config, set_device
 
 
@@ -32,10 +32,10 @@ def unet_predictions(raw: ArrayLike,
                                                          stride=stride,
                                                          mirror_padding=mirror_padding)
 
-    if raw.ndim == 2:
-        raw = raw[None, ...]
+    raw = fix_input_shape(raw)
+    raw = raw.astype('float32')
 
     raw_loader = dataset_builder(raw, verbose_logging=False, **dataset_config)
     pmaps = predictor(raw_loader)
-    pmaps = np.squeeze(pmaps[0])
+    pmaps = fix_input_shape(pmaps[0])
     return pmaps

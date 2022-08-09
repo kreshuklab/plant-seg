@@ -3,10 +3,11 @@ from pathlib import Path
 from typing import List, Tuple
 
 from magicgui import magicgui
-from napari.layers import Layer
+from napari.layers import Layer, Image, Labels
 from napari.types import LayerDataTuple
+from warnings import warn
 
-from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape
+from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape, normalize_01
 from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, allowed_data_format
 from plantseg.io.io import load_tiff, load_h5, create_tiff
 from plantseg.napari.dag_manager import dag
@@ -38,7 +39,7 @@ def _filter_channel(data, channel, layout):
     return data[tuple(slices)]
 
 
-def _advanced_load(path, key, channel, advanced_load=False, headless=False):
+def _advanced_load(path, key, channel, advanced_load=False, layer_type='image', headless=False):
     base, ext = path.stem, path.suffix
     if ext not in allowed_data_format:
         raise ValueError(f'File extension is {ext} but should be one of {allowed_data_format}')
@@ -59,6 +60,12 @@ def _advanced_load(path, key, channel, advanced_load=False, headless=False):
         raise NotImplementedError()
 
     data = fix_input_shape(data)
+
+    if layer_type == 'image':
+        data = normalize_01(data)
+
+    elif layer_type == 'labels':
+        data = data.astype('uint16')
 
     if headless:
         return data
@@ -85,20 +92,29 @@ def open_file(path: Path = Path.home(),
               channel: Tuple[int, str] = (0, 'xcxx'),
               ) -> LayerDataTuple:
     name = layer_type if name == '' else name
-    _func_gui = partial(_advanced_load, key=key, channel=channel, advanced_load=advanced_load, headless=False)
-    _func_dask = partial(_advanced_load, key=key, channel=channel, advanced_load=advanced_load, headless=True)
+    _func_gui = partial(_advanced_load,
+                        key=key,
+                        channel=channel,
+                        advanced_load=advanced_load,
+                        layer_type=layer_type,
+                        headless=False)
+    _func_dask = partial(_advanced_load,
+                         key=key,
+                         channel=channel,
+                         advanced_load=advanced_load,
+                         layer_type=layer_type,
+                         headless=True)
 
     data, voxel_size = _func_gui(path)
     dag.add_step(_func_dask, input_keys=(f'{name}_path',), output_key=name)
     return data, layer_properties(name=name, scale=voxel_size), layer_type
 
 
-def export_stack_as_tiff(data, name, voxel_size, directory, suffix):
+def export_stack_as_tiff(data, name, voxel_size, directory, dtype, suffix):
     stack_name = f'{name}_{suffix}'
     out_path = directory / f'{stack_name}.tiff'
     data = fix_input_shape(data)
-    print(data.shape, data.dtype, voxel_size)
-    data = data.astype('float32')
+    data = data.astype(dtype)
     create_tiff(path=out_path, stack=data[...], voxel_size=voxel_size)
     return stack_name
 
@@ -114,12 +130,25 @@ def export_stacks(images: List[Tuple[Layer, str]],
                   ) -> None:
     names, suffixes = [], []
     for image, image_suffix in images:
-        out_name = export_stack_as_tiff(data=image.data,
-                                        name=image.name,
-                                        voxel_size=image.scale,
-                                        directory=directory,
-                                        suffix=image_suffix)
-        names.append(out_name)
+        if isinstance(image, Image):
+            dtype = data_type
+
+        elif isinstance(image, Labels):
+            if data_type in ['uint8', 'uint16']:
+                dtype = data_type
+            else:
+                dtype = 'uint16'
+                warn(f"{data_type} is not a valid type for Labels, please use uint8 or uint16")
+        else:
+            raise ValueError(f'{type(image)} cannot be exported, please use Image layers or Labels layers')
+
+        _ = export_stack_as_tiff(data=image.data,
+                                 name=image.name,
+                                 voxel_size=image.scale,
+                                 directory=directory,
+                                 dtype=dtype,
+                                 suffix=image_suffix)
+        names.append(image.name)
         suffixes.append(image_suffix)
 
     out_path = directory / 'workflow.pkl'
