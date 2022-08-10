@@ -59,10 +59,12 @@ def get_model_config(model_name, model_update=False, version='best'):
     return model, model_config, model_path
 
 
-def set_device(device):
+def set_device(device, device_id=0):
+    device = device if torch.cuda.is_available() else 'cpu'
+
     # Add correct device for inference
     if device == 'cuda':
-        device = torch.device("cuda:0")
+        device = torch.device(f"cuda:{device_id}")
     elif device == 'cpu':
         device = torch.device("cpu")
     else:
@@ -76,7 +78,6 @@ def get_dataset_config(model_name, patch, stride, mirror_padding, num_workers=8,
 
     dataset_config["num_workers"] = num_workers
     dataset_config["mirror_padding"] = mirror_padding
-
     # Add patch and stride to the config
     dataset_config["test"]["slice_builder"]["patch_shape"] = patch
     stride_key, stride_shape = stride, get_stride_shape(patch, "Balanced")
@@ -106,12 +107,12 @@ def get_dataset_config(model_name, patch, stride, mirror_padding, num_workers=8,
         if patch_shape[0] != 1:
             gui_logger.warning(f"Incorrect z-dimension in the patch_shape for the 2D UNet prediction. {patch_shape[0]}"
                                f" was given, but has to be 1. Defaulting default value: 1")
-            dataset_config["test"]["slice_builder"]["patch_shape"][0] = 1
+            dataset_config["test"]["slice_builder"]["patch_shape"] = (1, patch_shape[1], patch_shape[2])
 
         if stride_shape[0] != 1:
             gui_logger.warning(f"Incorrect z-dimension in the stride_shape for the 2D UNet prediction. "
                                f"{stride_shape[0]} was given, but has to be 1. Defaulting default value: 1")
-            dataset_config["test"]["slice_builder"]["stride_shape"][0] = 1
+            dataset_config["test"]["slice_builder"]["stride_shape"] = (1, stride_shape[1], stride_shape[2])
 
     dataset_config = {'slice_builder_config': dataset_config['test']['slice_builder'],
                       'transformer_config': dataset_config['test']['transformer'],
