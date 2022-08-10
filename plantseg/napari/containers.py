@@ -1,9 +1,10 @@
 from magicgui.widgets import Container
 
-from plantseg.napari.widget.dataprocessing import widget_generic_preprocessing, widget_cropping, widget_add_layers
+from plantseg.napari.widget.dataprocessing import widget_rescaling, widget_gaussian_smoothing
+from plantseg.napari.widget.dataprocessing import widget_cropping, widget_add_layers
 from plantseg.napari.widget.io import open_file, export_stacks
 from plantseg.napari.widget.predictions import widget_unet_predictions, widget_test_all_unet_predictions
-from plantseg.napari.widget.predictions import widget_iterative_unet_predictions
+from plantseg.napari.widget.predictions import widget_iterative_unet_predictions, widget_add_custom_model
 from plantseg.napari.widget.segmentation import widget_dt_ws, widget_gasp
 from plantseg.napari.widget.segmentation import widget_multicut, widget_lifted_multicut
 
@@ -17,7 +18,8 @@ def get_main():
 
 
 def get_preprocessing_workflow():
-    container = Container(widgets=[widget_generic_preprocessing,
+    container = Container(widgets=[widget_gaussian_smoothing,
+                                   widget_rescaling,
                                    widget_cropping,
                                    widget_add_layers],
                           labels=False)
@@ -32,11 +34,16 @@ def get_gasp_workflow():
     return container
 
 
-def get_extra():
+def get_extra_seg():
     container = Container(widgets=[widget_multicut,
-                                   widget_lifted_multicut,
-                                   widget_test_all_unet_predictions,
+                                   widget_lifted_multicut],
+                          labels=False)
+    return container
+
+
+def get_extra_pred():
+    container = Container(widgets=[widget_test_all_unet_predictions,
                                    widget_iterative_unet_predictions,
-                                   ],
+                                   widget_add_custom_model],
                           labels=False)
     return container

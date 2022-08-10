@@ -11,6 +11,7 @@ from plantseg.__version__ import __version__
 from plantseg.gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
 from plantseg.io import read_tiff_voxel_size, read_h5_voxel_size, TIFF_EXTENSIONS, H5_EXTENSIONS
 from plantseg.pipeline import gui_logger
+from plantseg.gui import add_custom_model
 
 current_model = None
 current_segmentation = None
@@ -853,37 +854,13 @@ class LoadModelPopup:
         # Get description
         description = str(self.simple_entry2.tk_value.get())
 
-        dest_dir = os.path.join(home_path, PLANTSEG_MODELS_DIR, model_name)
-        os.makedirs(dest_dir, exist_ok=True)
-        all_files = glob.glob(os.path.join(path, "*"))
-        all_expected_files = ['config_train.yml',
-                              'last_checkpoint.pytorch',
-                              'best_checkpoint.pytorch']
-        for file in all_files:
-            if os.path.basename(file) in all_expected_files:
-                copy2(file, dest_dir)
-                all_expected_files.remove(os.path.basename(file))
-
-        if len(all_expected_files) != 0:
-            msg = f'It was not possible to find in the directory specified {all_expected_files}, ' \
-                  f'the model can not be loaded.'
-            gui_logger.error(msg)
+        success = add_custom_model(new_model_name=model_name, location=path, resolution=resolution,
+                                   description=description)
+        if not success[0]:
+            gui_logger.error(success[1])
             self.popup.destroy()
-            raise RuntimeError(msg)
+            raise RuntimeError(success[1])
 
-        custom_zoo_dict = yaml.load(open(custom_zoo, 'r'), Loader=yaml.FullLoader)
-        if custom_zoo_dict is None:
-            custom_zoo_dict = {}
-
-        custom_zoo_dict[model_name] = {}
-        custom_zoo_dict[model_name]["path"] = path
-        custom_zoo_dict[model_name]["resolution"] = resolution
-        custom_zoo_dict[model_name]["description"] = description
-
-        with open(custom_zoo, 'w') as f:
-            yaml.dump(custom_zoo_dict, f)
-
-        gui_logger.info("Model successfully added!")
         self.restart()
 
 

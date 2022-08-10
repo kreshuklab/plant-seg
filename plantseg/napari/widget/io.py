@@ -7,6 +7,7 @@ from napari.layers import Layer, Image, Labels
 from napari.types import LayerDataTuple
 from warnings import warn
 
+from plantseg.dataprocessing.functional.dataprocessing import scale_image_to_voxelsize
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape, normalize_01
 from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, allowed_data_format
 from plantseg.io.io import load_tiff, load_h5, create_tiff
@@ -128,11 +129,17 @@ def export_stack_as_tiff(data, name, voxel_size, directory, dtype, suffix):
 )
 def export_stacks(images: List[Tuple[Layer, str]],
                   directory: Path = Path.home(),
+                  to_original_resolution: bool = True,
                   data_type: str = 'float32',
                   workflow_name: str = 'workflow',
                   ) -> None:
     names, suffixes = [], []
     for i, (image, image_suffix) in enumerate(images):
+        if 'original_voxel_size' in image.metadata.keys():
+            output_resolution = image.metadata['original_voxel_size']
+            image.data = scale_image_to_voxelsize(image.data, image.scale, output_resolution)
+            image.scale = output_resolution
+
         if isinstance(image, Image):
             dtype = data_type
 

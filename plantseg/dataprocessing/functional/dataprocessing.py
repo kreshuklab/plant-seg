@@ -5,8 +5,23 @@ from skimage.morphology import disk, ball
 from vigra import gaussianSmoothing
 
 
+def compute_scaling_factor(input_voxel_size, output_voxel_size):
+    scaling = [i_size / o_size for i_size, o_size in zip(input_voxel_size, output_voxel_size)]
+    return scaling
+
+
+def compute_scaling_voxelsize(input_voxel_size, scaling_factor):
+    output_voxel_size = [i_size / s_size for i_size, s_size in zip(input_voxel_size, scaling_factor)]
+    return output_voxel_size
+
+
+def scale_image_to_voxelsize(image, input_voxel_size, output_voxel_size, order=0):
+    factor = compute_scaling_factor(input_voxel_size, output_voxel_size)
+    return image_rescale(image, factor, order=order)
+
+
 def image_rescale(image, factor, order):
-    if np.array_equal(factor, [1, 1, 1]):
+    if np.array_equal(factor, [1., 1., 1.]):
         return image
     else:
         return zoom(image, zoom=factor, order=order)

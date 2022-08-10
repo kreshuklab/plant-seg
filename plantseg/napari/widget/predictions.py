@@ -1,14 +1,17 @@
 from concurrent.futures import Future
-from typing import Tuple, List
 from functools import partial
+from typing import Tuple, List
+
 from magicgui import magicgui
-from napari.layers import Image, Points
-from napari.types import ImageData, LayerDataTuple
+from napari.layers import Image
 from napari.qt.threading import thread_worker
-from plantseg.gui import list_models
+from napari.types import LayerDataTuple
+
+from pathlib import Path
+from plantseg.dataprocessing.functional import image_gaussian_smoothing
+from plantseg.gui import list_models, add_custom_model
 from plantseg.napari.widget.utils import start_threading_process, build_nice_name
 from plantseg.predictions.functional import unet_predictions
-from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
 
 
@@ -106,7 +109,6 @@ def widget_iterative_unet_predictions(image: Image,
                                       patch_size: Tuple[int, int, int] = (80, 160, 160),
                                       stride: str = STRIDE_ACCURATE,
                                       device: str = 'cuda', ) -> Future[LayerDataTuple]:
-
     out_name = build_nice_name(image.name, f'iterative-{model_name}-x{num_iterations}')
     inputs_names = (image.name,)
     layer_kwargs = {'name': out_name, 'scale': image.scale}
@@ -127,3 +129,16 @@ def widget_iterative_unet_predictions(image: Image,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    )
+
+
+@magicgui(call_button='Add Custom Model',
+          )
+def widget_add_custom_model(new_model_name: str = '',
+                            model_location: Path = Path.home(),
+                            resolution: Tuple[float, float, float] = (1., 1., 1.),
+                            description: str = '') -> None:
+    new_model_name = 'custom_model' if new_model_name == '' else new_model_name
+    add_custom_model(new_model_name=new_model_name,
+                     location=model_location,
+                     resolution=resolution,
+                     description=description)
