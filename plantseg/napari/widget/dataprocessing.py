@@ -8,7 +8,7 @@ from napari.layers import Image, Labels, Shapes, Layer
 from napari.types import LayerDataTuple
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing, image_rescale
-from plantseg.napari.widget.utils import start_threading_process
+from plantseg.napari.widget.utils import start_threading_process, build_nice_name
 
 
 def _generic_preprocessing(image_data, sigma, gaussian_smoothing, rescale, rescaling_factors):
@@ -29,7 +29,7 @@ def widget_generic_preprocessing(image: Image,
                                  rescaling_factors: Tuple[float, float, float] = (1., 1., 1.),
                                  ) -> Future[LayerDataTuple]:
 
-    out_name = f'{image.name}_processed'
+    out_name = build_nice_name(image.name, 'processed')
     inputs_kwarg = {'image_data': image.data}
     inputs_names = (image.name, )
     layer_kwargs = {'name': out_name, 'scale': image.scale}
@@ -38,6 +38,7 @@ def widget_generic_preprocessing(image: Image,
                    gaussian_smoothing=gaussian_smoothing,
                    rescale=rescale,
                    rescaling_factors=rescaling_factors)
+
     return start_threading_process(func,
                                    func_kwargs=inputs_kwarg,
                                    out_name=out_name,
@@ -60,7 +61,7 @@ def widget_cropping(image: Layer,
     assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
     assert crop_roi.shape_type[0] == 'rectangle', "Only a rectangle shape should be used for cropping"
 
-    out_name = f'{image.name}_cropped'
+    out_name = build_nice_name(image.name, 'cropped')
     inputs_names = (image.name,)
     layer_kwargs = {'name': out_name, 'scale': image.scale}
     layer_type = 'image'

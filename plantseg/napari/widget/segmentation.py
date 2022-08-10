@@ -4,7 +4,7 @@ from magicgui import magicgui
 from napari.types import ImageData, LayerDataTuple, LabelsData
 from napari.layers import Labels, Image, Layer
 from typing import Union, Tuple, Callable
-from plantseg.napari.widget.utils import start_threading_process
+from plantseg.napari.widget.utils import start_threading_process, build_nice_name
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
 
@@ -14,7 +14,8 @@ def _generic_clustering(image: Image, labels: Labels,
                         minsize: int = 100,
                         name: str = "GASP",
                         agg_func: Callable = gasp) -> Future[LayerDataTuple]:
-    out_name = f'{image.name}_{name}'
+
+    out_name = build_nice_name(image.name, name)
     inputs_names = (image.name, labels.name)
     layer_kwargs = {'name': out_name, 'scale': image.scale}
     layer_type = 'labels'
@@ -60,7 +61,7 @@ def widget_lifted_multicut(image: Image,
     else:
         raise ValueError(f'{nuclei} must be either an image or a labels layer')
 
-    out_name = f'{image.name}_Lifted_MultiCut'
+    out_name = build_nice_name(image.name, 'LiftedMultiCut')
     inputs_names = (image.name, nuclei.name, labels.name)
     layer_kwargs = {'name': out_name, 'scale': image.scale}
     layer_type = 'labels'
@@ -91,7 +92,8 @@ def widget_dt_ws(image: Image,
                  use_pixel_pitch: bool = False,
                  pixel_pitch: Tuple[int, int, int] = (1, 1, 1),
                  apply_nonmax_suppression: bool = False) -> Future[LayerDataTuple]:
-    out_name = f'{image.name}_dt_WS'
+
+    out_name = build_nice_name(image.name, 'dtWS')
     inputs_names = (image.name,)
     layer_kwargs = {'name': out_name, 'scale': image.scale}
     layer_type = 'labels'

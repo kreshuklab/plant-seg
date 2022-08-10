@@ -1,7 +1,5 @@
 import napari
-from magicgui import magicgui
 from plantseg.napari.containers import get_gasp_workflow, get_preprocessing_workflow, get_main, get_extra
-from plantseg.napari.widget.segmentation import widget_multicut, widget_lifted_multicut
 
 
 def run_viewer():

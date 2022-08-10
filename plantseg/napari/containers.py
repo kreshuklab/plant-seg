@@ -2,7 +2,8 @@ from magicgui.widgets import Container
 
 from plantseg.napari.widget.dataprocessing import widget_generic_preprocessing, widget_cropping, widget_add_layers
 from plantseg.napari.widget.io import open_file, export_stacks
-from plantseg.napari.widget.predictions import widget_unet_predictions
+from plantseg.napari.widget.predictions import widget_unet_predictions, widget_test_all_unet_predictions
+from plantseg.napari.widget.predictions import widget_iterative_unet_predictions
 from plantseg.napari.widget.segmentation import widget_dt_ws, widget_gasp
 from plantseg.napari.widget.segmentation import widget_multicut, widget_lifted_multicut
 
@@ -34,6 +35,8 @@ def get_gasp_workflow():
 def get_extra():
     container = Container(widgets=[widget_multicut,
                                    widget_lifted_multicut,
+                                   widget_test_all_unet_predictions,
+                                   widget_iterative_unet_predictions,
                                    ],
                           labels=False)
     return container

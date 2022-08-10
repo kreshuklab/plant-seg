@@ -123,13 +123,16 @@ def export_stack_as_tiff(data, name, voxel_size, directory, dtype, suffix):
     call_button='Export stack',
     images={'label': 'Layers to export', 'layout': 'vertical'},
     data_type={'label': 'Data Type', 'choices': ['float32', 'uint8', 'uint16']},
-    directory={'label': 'Directory to export files'})
+    directory={'label': 'Directory to export files'},
+    workflow_name={'label': 'Workflow name'},
+)
 def export_stacks(images: List[Tuple[Layer, str]],
                   directory: Path = Path.home(),
                   data_type: str = 'float32',
+                  workflow_name: str = 'workflow',
                   ) -> None:
     names, suffixes = [], []
-    for image, image_suffix in images:
+    for i, (image, image_suffix) in enumerate(images):
         if isinstance(image, Image):
             dtype = data_type
 
@@ -142,6 +145,7 @@ def export_stacks(images: List[Tuple[Layer, str]],
         else:
             raise ValueError(f'{type(image)} cannot be exported, please use Image layers or Labels layers')
 
+        image_suffix = f'export_{i}' if image_suffix == '' else image_suffix
         _ = export_stack_as_tiff(data=image.data,
                                  name=image.name,
                                  voxel_size=image.scale,
@@ -151,5 +155,5 @@ def export_stacks(images: List[Tuple[Layer, str]],
         names.append(image.name)
         suffixes.append(image_suffix)
 
-    out_path = directory / 'workflow.pkl'
+    out_path = directory / f'{workflow_name}.pkl'
     dag.export_dag(out_path, names, suffixes)

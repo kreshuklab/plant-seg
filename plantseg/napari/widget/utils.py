@@ -37,11 +37,26 @@ def layer_properties(name, scale):
     return {'name': name, 'scale': scale}
 
 
-def choices_of_image_layers(viewer: napari.Viewer):
-    return [layer.name for layer in viewer.layers if isinstance(layer,
-                                                                napari.layers.image.image.Image)]
+def _find_version(old_suffix, new_suffix):
+    s_idx = old_suffix.find(new_suffix)
+    if s_idx != -1:
+        v_idx = s_idx + len(new_suffix)
+        old_suffix, current_version = old_suffix[:v_idx], old_suffix[v_idx:]
+
+        current_version = 0 if current_version == '' else int(current_version[1:-1])
+        current_version += 1
+        new_version = f'[{current_version}]'
+        return old_suffix, new_version
+
+    return f'{old_suffix}_{new_suffix}', ''
 
 
-def choices_of_label_layers(viewer: napari.Viewer):
-    return [layer.name for layer in viewer.layers if isinstance(layer,
-                                                                napari.layers.labels.labels.Labels)]
+def build_nice_name(base, new_suffix):
+    if base.find('_') == -1:
+        return f'{base}_{new_suffix}'
+
+    *base_without_suffix, old_suffix = base.split('_')
+    base_without_suffix = '_'.join(base_without_suffix)
+
+    new_suffix, version = _find_version(old_suffix, new_suffix)
+    return f'{base_without_suffix}_{new_suffix}{version}'
