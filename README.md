@@ -44,7 +44,7 @@ The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
 #### Install PlantSeg using conda
 The tool can be installed directly by executing in the terminal:
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny pytorch=1.9 pytorch-3dunet=1.3.7 plantseg
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pytorch-3dunet=1.3.7 plantseg napari
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
@@ -62,7 +62,7 @@ executable `.exe` for your Windows version and follow the installation instructi
 The tool can be installed directly by executing in the anaconda prompt 
 (***For installing and running plantseg this is equivalent to a linux terminal***):
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg pillow=8.4
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pillow=8.4 plantseg napari
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
@@ -81,6 +81,18 @@ after installing the SimpleITK package:
 ```bash
 conda activate plant-seg
 pip install SimpleITK
+```
+
+## Pipeline Usage (Napari viewer)
+PlantSeg app can also be started using napari as a viewer.
+First, activate the newly created conda environment with:
+```bash
+conda activate plant-seg
+```
+
+then, start the plantseg in napari
+```bash
+$ plantseg --napari
 ```
 
 ## Pipeline Usage (GUI)
