@@ -6,6 +6,7 @@ from plantseg.napari.widget.io import open_file, export_stacks
 from plantseg.napari.widget.predictions import widget_unet_predictions, widget_test_all_unet_predictions
 from plantseg.napari.widget.predictions import widget_iterative_unet_predictions, widget_add_custom_model
 from plantseg.napari.widget.segmentation import widget_dt_ws, widget_gasp
+from plantseg.napari.widget.segmentation import widget_fix_over_under_segmentation_from_nuclei
 from plantseg.napari.widget.segmentation import widget_multicut, widget_lifted_multicut
 from plantseg.napari.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.napari.widget.dataprocessing import widget_label_processing
@@ -41,7 +42,8 @@ def get_gasp_workflow():
 
 def get_extra_seg():
     container = Container(widgets=[widget_multicut,
-                                   widget_lifted_multicut],
+                                   widget_lifted_multicut,
+                                   widget_fix_over_under_segmentation_from_nuclei],
                           labels=False)
     return container
 

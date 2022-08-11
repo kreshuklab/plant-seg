@@ -8,6 +8,7 @@ from plantseg.napari.widget.utils import start_threading_process, build_nice_nam
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
 from plantseg.dataprocessing.functional.dataprocessing import normalize_01
+from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_under_segmentation_from_nuclei
 
 
 def _generic_clustering(image: Image, labels: Labels,
@@ -144,6 +145,39 @@ def widget_dt_ws(image: Image,
                    )
     return start_threading_process(func,
                                    func_kwargs={'boundary_pmaps': image.data},
+                                   out_name=out_name,
+                                   input_keys=inputs_names,
+                                   layer_kwarg=layer_kwargs,
+                                   layer_type=layer_type,
+                                   )
+
+
+@magicgui(call_button='Run Segmentation Fix from Nuclei')
+def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
+                                                   nuclei_segmentation: Labels,
+                                                   boundary_pmaps: Union[None, Image],
+                                                   threshold_merge=0.33,
+                                                   threshold_split=0.66) -> Future[LayerDataTuple]:
+    out_name = build_nice_name(cell_segmentation.name, 'NucleiSegFix')
+
+    if boundary_pmaps is not None:
+        inputs_names = (cell_segmentation.name, nuclei_segmentation.name, boundary_pmaps.name)
+        func_kwargs = {'cell_seg': cell_segmentation.data,
+                       'nuclei_seg': nuclei_segmentation.data,
+                       'boundary': boundary_pmaps.data}
+    else:
+        inputs_names = (cell_segmentation.name, nuclei_segmentation.name)
+        func_kwargs = {'cell_seg': cell_segmentation.data,
+                       'nuclei_seg': nuclei_segmentation.data}
+    layer_kwargs = {'name': out_name, 'scale': cell_segmentation.scale}
+    layer_type = 'labels'
+
+    func = partial(fix_over_under_segmentation_from_nuclei,
+                   threshold_merge=threshold_merge,
+                   threshold_split=threshold_split,
+                   )
+    return start_threading_process(func,
+                                   func_kwargs=func_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
