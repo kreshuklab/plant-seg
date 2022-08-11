@@ -7,6 +7,7 @@ from typing import Union, Tuple, Callable
 from plantseg.napari.widget.utils import start_threading_process, build_nice_name
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
+from plantseg.dataprocessing.functional.dataprocessing import normalize_01
 
 
 def _generic_clustering(image: Image, labels: Labels,
@@ -14,7 +15,6 @@ def _generic_clustering(image: Image, labels: Labels,
                         minsize: int = 100,
                         name: str = "GASP",
                         agg_func: Callable = gasp) -> Future[LayerDataTuple]:
-
     out_name = build_nice_name(image.name, name)
     inputs_names = (image.name, labels.name)
     layer_kwargs = {'name': out_name, 'scale': image.scale}
@@ -79,6 +79,36 @@ def widget_lifted_multicut(image: Image,
                                    )
 
 
+def _nuclei_aware_dtws_wrapper(boundary_pmaps,
+                               stacked: bool = True,
+                               threshold: float = 0.5,
+                               min_size: int = 100,
+                               sigma_seeds: float = .2,
+                               sigma_weights: float = 2.,
+                               alpha: float = 1.,
+                               pixel_pitch: Tuple[int, int, int] = (1, 1, 1),
+                               apply_nonmax_suppression: bool = False,
+                               nuclei: bool = False):
+    if nuclei:
+        boundary_pmaps = normalize_01(boundary_pmaps)
+        boundary_pmaps = 1. - boundary_pmaps
+        mask = boundary_pmaps < threshold
+    else:
+        mask = None
+
+    return dt_watershed(boundary_pmaps=boundary_pmaps,
+                        threshold=threshold,
+                        min_size=min_size,
+                        stacked=stacked,
+                        sigma_seeds=sigma_seeds,
+                        sigma_weights=sigma_weights,
+                        alpha=alpha,
+                        pixel_pitch=pixel_pitch,
+                        apply_nonmax_suppression=apply_nonmax_suppression,
+                        mask=mask
+                        )
+
+
 @magicgui(call_button='Run WS',
           stacked={'widget_type': 'RadioButtons', 'orientation': 'horizontal', 'choices': ['2D', '3D']},
           threshold={"widget_type": "FloatSlider", "max": 1., 'min': 0.}, )
@@ -91,8 +121,8 @@ def widget_dt_ws(image: Image,
                  alpha: float = 1.,
                  use_pixel_pitch: bool = False,
                  pixel_pitch: Tuple[int, int, int] = (1, 1, 1),
-                 apply_nonmax_suppression: bool = False) -> Future[LayerDataTuple]:
-
+                 apply_nonmax_suppression: bool = False,
+                 nuclei: bool = False) -> Future[LayerDataTuple]:
     out_name = build_nice_name(image.name, 'dtWS')
     inputs_names = (image.name,)
     layer_kwargs = {'name': out_name, 'scale': image.scale}
@@ -100,7 +130,8 @@ def widget_dt_ws(image: Image,
 
     stacked = False if stacked == '3D' else True
     pixel_pitch = pixel_pitch if use_pixel_pitch else None
-    func = partial(dt_watershed,
+
+    func = partial(_nuclei_aware_dtws_wrapper,
                    threshold=threshold,
                    min_size=min_size,
                    stacked=stacked,
@@ -108,7 +139,8 @@ def widget_dt_ws(image: Image,
                    sigma_weights=sigma_weights,
                    alpha=alpha,
                    pixel_pitch=pixel_pitch,
-                   apply_nonmax_suppression=apply_nonmax_suppression
+                   apply_nonmax_suppression=apply_nonmax_suppression,
+                   nuclei=nuclei
                    )
     return start_threading_process(func,
                                    func_kwargs={'boundary_pmaps': image.data},

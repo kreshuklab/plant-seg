@@ -13,6 +13,7 @@ from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, allowed_data_format
 from plantseg.io.io import load_tiff, load_h5, create_tiff
 from plantseg.napari.dag_manager import dag
 from plantseg.napari.widget.utils import layer_properties
+from napari.utils.notifications import show_info
 
 
 def _check_layout_string(layout):
@@ -108,6 +109,7 @@ def open_file(path: Path = Path.home(),
 
     data, voxel_size = _func_gui(path)
     dag.add_step(_func_dask, input_keys=(f'{name}_path',), output_key=name)
+    show_info(f'Napari - PlantSeg info: {name} correctly imported')
     return data, layer_properties(name=name, scale=voxel_size), layer_type
 
 
@@ -124,26 +126,24 @@ def export_stack_as_tiff(data, name, voxel_size, directory, dtype, suffix):
     call_button='Export stack',
     images={'label': 'Layers to export', 'layout': 'vertical'},
     data_type={'label': 'Data Type', 'choices': ['float32', 'uint8', 'uint16']},
-    directory={'label': 'Directory to export files'},
+    directory={'label': 'Directory to export files', 'mode': 'd'},
     workflow_name={'label': 'Workflow name'},
 )
 def export_stacks(images: List[Tuple[Layer, str]],
                   directory: Path = Path.home(),
-                  to_original_resolution: bool = True,
+                  rescale_to_original_resolution: bool = True,
                   data_type: str = 'float32',
                   workflow_name: str = 'workflow',
                   ) -> None:
     names, suffixes = [], []
     for i, (image, image_suffix) in enumerate(images):
-        if 'original_voxel_size' in image.metadata.keys():
-            output_resolution = image.metadata['original_voxel_size']
-            image.data = scale_image_to_voxelsize(image.data, image.scale, output_resolution)
-            image.scale = output_resolution
 
         if isinstance(image, Image):
+            order = 1
             dtype = data_type
 
         elif isinstance(image, Labels):
+            order = 0
             if data_type in ['uint8', 'uint16']:
                 dtype = data_type
             else:
@@ -151,6 +151,11 @@ def export_stacks(images: List[Tuple[Layer, str]],
                 warn(f"{data_type} is not a valid type for Labels, please use uint8 or uint16")
         else:
             raise ValueError(f'{type(image)} cannot be exported, please use Image layers or Labels layers')
+
+        if rescale_to_original_resolution and 'original_voxel_size' in image.metadata.keys():
+            output_resolution = image.metadata['original_voxel_size']
+            image.data = scale_image_to_voxelsize(image.data, image.scale, output_resolution, order=order)
+            image.scale = output_resolution
 
         image_suffix = f'export_{i}' if image_suffix == '' else image_suffix
         _ = export_stack_as_tiff(data=image.data,
@@ -164,3 +169,4 @@ def export_stacks(images: List[Tuple[Layer, str]],
 
     out_path = directory / f'{workflow_name}.pkl'
     dag.export_dag(out_path, names, suffixes)
+    show_info(f'Napari - PlantSeg info: workflow correctly exported')

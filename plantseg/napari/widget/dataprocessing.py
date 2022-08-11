@@ -11,6 +11,8 @@ from napari.types import LayerDataTuple
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing, image_rescale
 from plantseg.dataprocessing.functional.dataprocessing import compute_scaling_factor, compute_scaling_voxelsize
+from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
+from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation as _relabel_segmentation
 from plantseg.gui import list_models, get_model_resolution
 from plantseg.napari.widget.utils import start_threading_process, build_nice_name
 
@@ -61,7 +63,6 @@ def widget_rescaling(image: Layer,
                      reference_model: str = list_models()[0],
                      order: int = 1,
                      ) -> Future[LayerDataTuple]:
-
     if isinstance(image, Image):
         pass
 
@@ -89,7 +90,7 @@ def widget_rescaling(image: Layer,
 
     out_name = build_nice_name(image.name, 'Rescaled')
     inputs_kwarg = {'image': image.data}
-    inputs_names = (image.name, )
+    inputs_names = (image.name,)
     layer_kwargs = {'name': out_name,
                     'scale': out_voxel_size,
                     'metadata': {'original_voxel_size': current_resolution}}
@@ -138,13 +139,6 @@ def widget_cropping(image: Layer,
                                    )
 
 
-class Operation(Enum):
-    add = np.add
-    subtract = np.subtract
-    maximum = np.max
-    minimum = np.min
-
-
 def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
     if operation == 'Mean':
         return weights * data1 + (1. - weights) * data2
@@ -167,7 +161,6 @@ def widget_add_layers(image1: Image,
                       operation: str,
                       weights: float = 0.5,
                       ) -> Future[LayerDataTuple]:
-
     out_name = build_nice_name(f'{image1.name}-{image2.name}', operation)
     inputs_names = (image1.name, image2.name)
     layer_kwargs = {'name': out_name, 'scale': image1.scale}
@@ -177,6 +170,41 @@ def widget_add_layers(image1: Image,
     assert image1.data.shape == image2.data.shape
     return start_threading_process(func,
                                    func_kwargs={'data1': image1.data, 'data2': image2.data},
+                                   out_name=out_name,
+                                   input_keys=inputs_names,
+                                   layer_kwarg=layer_kwargs,
+                                   layer_type=layer_type,
+                                   )
+
+
+def _label_processing(segmentation, set_bg_to_0, relabel_segmentation):
+
+    if relabel_segmentation:
+        segmentation = _relabel_segmentation(segmentation)
+
+    if set_bg_to_0:
+        segmentation = set_background_to_value(segmentation, value=0)
+
+    return segmentation
+
+
+@magicgui(call_button='Run Label processing')
+def widget_label_processing(segmentation: Labels,
+                            set_bg_to_0: bool = True,
+                            relabel_segmentation: bool = True,
+                            ) -> Future[LayerDataTuple]:
+    out_name = build_nice_name(segmentation.name, 'Processed')
+    inputs_kwarg = {'segmentation': segmentation.data}
+    inputs_names = (segmentation.name,)
+    layer_kwargs = {'name': out_name,
+                    'scale': segmentation.scale}
+    layer_type = 'labels'
+    func = partial(_label_processing,
+                   set_bg_to_0=set_bg_to_0,
+                   relabel_segmentation=relabel_segmentation)
+
+    return start_threading_process(func,
+                                   func_kwargs=inputs_kwarg,
                                    out_name=out_name,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,

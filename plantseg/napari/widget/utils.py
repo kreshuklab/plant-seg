@@ -1,9 +1,10 @@
 from concurrent.futures import Future
+from functools import partial
 from typing import Callable, Tuple
 
 from napari.qt.threading import thread_worker
-import napari
-from functools import partial
+from napari.utils.notifications import show_info
+
 from plantseg.napari.dag_manager import dag
 
 
@@ -22,6 +23,7 @@ def start_threading_process(func: Callable,
     future = Future()
 
     def on_done(result):
+        show_info(f'Napari - PlantSeg info: widget computation complete')
         _func = func if not skip_dag else identity
         dag.add_step(_func, input_keys=input_keys, output_key=out_name)
         result = result, layer_kwarg, layer_type

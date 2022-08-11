@@ -23,7 +23,8 @@ def dt_watershed(boundary_pmaps: ArrayLike,
                  alpha: float = 1.0,
                  pixel_pitch: List[int] = None,
                  apply_nonmax_suppression: bool = False,
-                 n_threads: int = None) -> ArrayLike:
+                 n_threads: int = None,
+                 mask: ArrayLike = None) -> ArrayLike:
     """ Wrapper around elf.distance_transform_watershed
 
     Args:
@@ -39,6 +40,7 @@ def dt_watershed(boundary_pmaps: ArrayLike,
         apply_nonmax_suppression (bool): whether to apply non-maximum suppression to filter out seeds.
             Needs nifty. (default: False)
         n_threads (int): if not None, parallelize the 2D stacked ws. (default: None)
+        mask (np.ndarray)
 
     Returns:
         np.ndarray: watershed segmentation
@@ -48,7 +50,9 @@ def dt_watershed(boundary_pmaps: ArrayLike,
     ws_kwargs = dict(threshold=threshold, sigma_seeds=sigma_seeds,
                      sigma_weights=sigma_weights,
                      min_size=min_size, alpha=alpha,
-                     pixel_pitch=pixel_pitch, apply_nonmax_suppression=apply_nonmax_suppression)
+                     pixel_pitch=pixel_pitch,
+                     apply_nonmax_suppression=apply_nonmax_suppression,
+                     mask=mask)
     if stacked:
         # WS in 2D
         ws, _ = stacked_watershed(boundary_pmaps,
@@ -68,7 +72,6 @@ def gasp(boundary_pmaps: ArrayLike,
          beta: float = 0.5,
          post_minsize: int = 100,
          n_threads: int = 6) -> ArrayLike:
-
     if superpixels is not None:
         assert boundary_pmaps.shape == superpixels.shape
 
@@ -82,7 +85,6 @@ def gasp(boundary_pmaps: ArrayLike,
 
     if boundary_pmaps.ndim == 2:
         boundary_pmaps = boundary_pmaps[None, ...]
-
 
     run_GASP_kwargs = {'linkage_criteria': gasp_linkage_criteria,
                        'add_cannot_link_constraints': False,
@@ -118,7 +120,6 @@ def multicut(boundary_pmaps: ArrayLike,
              superpixels: ArrayLike,
              beta: float = 0.5,
              post_minsize: int = 50) -> ArrayLike:
-
     rag = compute_rag(superpixels)
 
     # Prob -> edge costs

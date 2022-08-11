@@ -7,11 +7,15 @@ from plantseg.napari.widget.predictions import widget_unet_predictions, widget_t
 from plantseg.napari.widget.predictions import widget_iterative_unet_predictions, widget_add_custom_model
 from plantseg.napari.widget.segmentation import widget_dt_ws, widget_gasp
 from plantseg.napari.widget.segmentation import widget_multicut, widget_lifted_multicut
+from plantseg.napari.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
+from plantseg.napari.widget.dataprocessing import widget_label_processing
 
 
 def get_main():
     container = Container(widgets=[open_file,
-                                   export_stacks],
+                                   export_stacks,
+                                   widget_split_and_merge_from_scribbles
+                                   ],
                           labels=False)
 
     return container
@@ -21,7 +25,8 @@ def get_preprocessing_workflow():
     container = Container(widgets=[widget_gaussian_smoothing,
                                    widget_rescaling,
                                    widget_cropping,
-                                   widget_add_layers],
+                                   widget_add_layers,
+                                   widget_label_processing],
                           labels=False)
     return container
 
