@@ -71,6 +71,7 @@ def _find_input_key(h5_file):
     if len(found_datasets) == 1:
         return found_datasets[0]
     else:
+        print(found_datasets)
         for h5_key in H5_KEYS:
             if h5_key in found_datasets:
                 return h5_key

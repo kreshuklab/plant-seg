@@ -136,7 +136,9 @@ def multicut(boundary_pmaps: ArrayLike,
 
     # run size threshold
     if post_minsize > 0:
-        segmentation, _ = apply_size_filter(segmentation, boundary_pmaps, post_minsize)
+        segmentation, _ = apply_size_filter(segmentation.astype('uint32'),
+                                            boundary_pmaps,
+                                            post_minsize)
     return segmentation
 
 

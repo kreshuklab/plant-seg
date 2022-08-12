@@ -48,7 +48,16 @@ class UnetPredictions(GenericPipelineStep):
                  state=True):
         h5_output_key = "predictions"
 
-        valid_paths = _check_patch_size(input_paths, patch_size=patch)
+        valid_paths = _check_patch_size(input_paths, patch_size=patch) if state else input_paths
+
+        super().__init__(valid_paths,
+                         input_type=input_type,
+                         output_type=output_type,
+                         save_directory=model_name,
+                         out_ext=out_ext,
+                         state=state,
+                         file_suffix='_predictions',
+                         h5_output_key=h5_output_key)
 
         model, model_config, model_path = get_model_config(model_name, model_update=model_update, version=version)
         utils.load_checkpoint(model_path, model)
@@ -63,15 +72,6 @@ class UnetPredictions(GenericPipelineStep):
                                                                        patch=patch,
                                                                        stride=stride,
                                                                        mirror_padding=mirror_padding)
-
-        super().__init__(valid_paths,
-                         input_type=input_type,
-                         output_type=output_type,
-                         save_directory=model_name,
-                         out_ext=out_ext,
-                         state=state,
-                         file_suffix='_predictions',
-                         h5_output_key=h5_output_key)
 
     def process(self, raw):
         dataset = self.dataset_builder(raw, **self.dataset_config)
