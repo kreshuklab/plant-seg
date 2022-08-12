@@ -29,16 +29,18 @@ def read_tiff_voxel_size(file_path):
         image_metadata = tiff.imagej_metadata
         if image_metadata is not None:
             z = image_metadata.get('spacing', 1.)
+            voxel_size_unit = image_metadata.get('unit', 'um')
         else:
             # default voxel size
             z = 1.
+            voxel_size_unit = 'um'
 
         tags = tiff.pages[0].tags
         # parse X, Y resolution
         y = _xy_voxel_size(tags, 'YResolution')
         x = _xy_voxel_size(tags, 'XResolution')
         # return voxel size
-        return [z, y, x]
+        return [z, y, x], voxel_size_unit
 
 
 def read_h5_voxel_size(f, h5key):
@@ -85,7 +87,7 @@ def load_h5(path, key, slices=None, info_only=False):
         voxel_size = read_h5_voxel_size(f, key)
         file_shape = f[key].shape
 
-        infos = (voxel_size, file_shape, key)
+        infos = (voxel_size, file_shape, key, 'um')
         if info_only:
             return infos
 
@@ -97,13 +99,14 @@ def load_h5(path, key, slices=None, info_only=False):
 def load_tiff(path, info_only=False):
     file = tifffile.imread(path)
     try:
-        voxel_size = read_tiff_voxel_size(path)
+        voxel_size, voxel_size_unit = read_tiff_voxel_size(path)
     except:
         # ZeroDivisionError could happen while reading the voxel size
         warnings.warn('Voxel size not found, returning default [1.0, 1.0. 1.0]', RuntimeWarning)
         voxel_size = [1.0, 1.0, 1.0]
+        voxel_size_unit = 'um'
 
-    infos = (voxel_size, file.shape, None)
+    infos = (voxel_size, file.shape, None, voxel_size_unit)
     if info_only:
         return infos
     else:
@@ -124,7 +127,7 @@ def smart_load(path, key=None, info_only=False, default=load_tiff):
 
 
 def load_shape(path, key=None):
-    _, data_shape, _ = smart_load(path, key=key, info_only=True)
+    _, data_shape, _, _ = smart_load(path, key=key, info_only=True)
     return data_shape
 
 
@@ -156,7 +159,7 @@ def rename_h5_key(path, old_key, new_key, mode='r+'):
             f.close()
 
 
-def create_tiff(path, stack, voxel_size):
+def create_tiff(path, stack, voxel_size, voxel_size_unit='um'):
     # taken from: https://pypi.org/project/tifffile docs
     z, y, x = stack.shape
     stack.shape = 1, z, 1, y, x, 1  # dimensions in TZCYXS order
@@ -168,4 +171,4 @@ def create_tiff(path, stack, voxel_size):
                      dtype=stack.dtype,
                      imagej=True,
                      resolution=resolution,
-                     metadata={'axes': 'TZCYXS', 'spacing': spacing, 'unit': 'um'})
+                     metadata={'axes': 'TZCYXS', 'spacing': spacing, 'unit': voxel_size_unit})

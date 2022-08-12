@@ -731,7 +731,7 @@ class AutoResPopup:
         if ext in H5_EXTENSIONS:
             file_resolution = read_h5_voxel_size(file_dialog.config["path"])
         elif ext in TIFF_EXTENSIONS:
-            file_resolution = read_tiff_voxel_size(file_dialog.config["path"])
+            file_resolution, _ = read_tiff_voxel_size(file_dialog.config["path"])
         else:
             raise NotImplementedError
 

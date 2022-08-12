@@ -10,7 +10,7 @@ from napari.types import LayerDataTuple
 from pathlib import Path
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.gui import list_models, add_custom_model
-from plantseg.napari.widget.utils import start_threading_process, build_nice_name
+from plantseg.napari.widget.utils import start_threading_process, build_nice_name, layer_properties
 from plantseg.predictions.functional import unet_predictions
 from plantseg.predictions.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
 
@@ -28,7 +28,9 @@ def widget_unet_predictions(image: Image,
     out_name = build_nice_name(image.name, model_name)
 
     inputs_names = (image.name,)
-    layer_kwargs = {'name': out_name, 'scale': image.scale}
+    layer_kwargs = layer_properties(name=out_name,
+                                    scale=image.scale,
+                                    metadata=image.metadata)
     layer_type = 'image'
 
     func = partial(unet_predictions, model_name=model_name, stride=stride, patch=patch_size, device=device)
@@ -46,7 +48,9 @@ def _compute_multiple_predictions(image, patch_size, stride, device):
     out_layers = []
     for model_name in list_models():
         out_name = build_nice_name(image.name, model_name)
-        layer_kwargs = {'name': out_name, 'scale': image.scale}
+        layer_kwargs = layer_properties(name=out_name,
+                                        scale=image.scale,
+                                        metadata=image.metadata)
         layer_type = 'image'
         try:
             pmap = unet_predictions(raw=image.data,
@@ -111,7 +115,9 @@ def widget_iterative_unet_predictions(image: Image,
                                       device: str = 'cuda', ) -> Future[LayerDataTuple]:
     out_name = build_nice_name(image.name, f'iterative-{model_name}-x{num_iterations}')
     inputs_names = (image.name,)
-    layer_kwargs = {'name': out_name, 'scale': image.scale}
+    layer_kwargs = layer_properties(name=out_name,
+                                    scale=image.scale,
+                                    metadata=image.metadata)
     layer_type = 'image'
 
     func = partial(_compute_iterative_predictions,

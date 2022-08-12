@@ -14,7 +14,7 @@ from plantseg.dataprocessing.functional.dataprocessing import compute_scaling_fa
 from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
 from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation as _relabel_segmentation
 from plantseg.gui import list_models, get_model_resolution
-from plantseg.napari.widget.utils import start_threading_process, build_nice_name
+from plantseg.napari.widget.utils import start_threading_process, build_nice_name, layer_properties
 
 
 def _generic_preprocessing(image_data, sigma, gaussian_smoothing, rescale, rescaling_factors):
@@ -34,7 +34,7 @@ def widget_gaussian_smoothing(image: Image,
     out_name = build_nice_name(image.name, 'GaussianSmoothing')
     inputs_kwarg = {'image': image.data}
     inputs_names = (image.name,)
-    layer_kwargs = {'name': out_name, 'scale': image.scale}
+    layer_kwargs = layer_properties(name=out_name, scale=image.scale, metadata=image.metadata)
     layer_type = 'image'
     func = partial(image_gaussian_smoothing, sigma=sigma)
 
@@ -51,7 +51,7 @@ def widget_gaussian_smoothing(image: Image,
           type_of_refactor={'widget_type': 'RadioButtons',
                             'orientation': 'vertical',
                             'choices': ['Rescaling factor',
-                                        'Voxel size (um)',
+                                        'Voxel size',
                                         'Same as Reference Layer',
                                         'Same as Reference Model']},
           reference_model={"choices": list_models()})
@@ -91,9 +91,10 @@ def widget_rescaling(image: Layer,
     out_name = build_nice_name(image.name, 'Rescaled')
     inputs_kwarg = {'image': image.data}
     inputs_names = (image.name,)
-    layer_kwargs = {'name': out_name,
-                    'scale': out_voxel_size,
-                    'metadata': {'original_voxel_size': current_resolution}}
+    layer_kwargs = layer_properties(name=out_name,
+                                    scale=out_voxel_size,
+                                    metadata={**image.metadata,
+                                              **{'original_voxel_size': current_resolution}})
     layer_type = 'image'
     func = partial(image_rescale, factor=rescaling_factor, order=order)
 
@@ -120,7 +121,9 @@ def widget_cropping(image: Layer,
 
     out_name = build_nice_name(image.name, 'cropped')
     inputs_names = (image.name,)
-    layer_kwargs = {'name': out_name, 'scale': image.scale}
+    layer_kwargs = layer_properties(name=out_name,
+                                    scale=image.scale,
+                                    metadata=image.metadata)
     layer_type = 'image'
 
     rectangle = crop_roi.data[0].astype('int64')
@@ -163,7 +166,9 @@ def widget_add_layers(image1: Image,
                       ) -> Future[LayerDataTuple]:
     out_name = build_nice_name(f'{image1.name}-{image2.name}', operation)
     inputs_names = (image1.name, image2.name)
-    layer_kwargs = {'name': out_name, 'scale': image1.scale}
+    layer_kwargs = layer_properties(name=out_name,
+                                    scale=image1.scale,
+                                    metadata=image1.metadata)
     layer_type = 'image'
 
     func = partial(_two_layers_operation, weights=weights, operation=operation)
@@ -196,8 +201,9 @@ def widget_label_processing(segmentation: Labels,
     out_name = build_nice_name(segmentation.name, 'Processed')
     inputs_kwarg = {'segmentation': segmentation.data}
     inputs_names = (segmentation.name,)
-    layer_kwargs = {'name': out_name,
-                    'scale': segmentation.scale}
+    layer_kwargs = layer_properties(name=out_name,
+                                    scale=segmentation.scale,
+                                    metadata=segmentation.metadata)
     layer_type = 'labels'
     func = partial(_label_processing,
                    set_bg_to_0=set_bg_to_0,

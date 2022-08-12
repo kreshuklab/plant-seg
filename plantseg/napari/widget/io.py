@@ -48,11 +48,11 @@ def _advanced_load(path, key, channel, advanced_load=False, layer_type='image', 
 
     if ext in H5_EXTENSIONS:
         key = key if advanced_load else None
-        data, (voxel_size, _, _) = load_h5(path, key=key)
+        data, (voxel_size, _, _, voxel_size_unit) = load_h5(path, key=key)
 
     elif ext in TIFF_EXTENSIONS:
         channel, layout = channel
-        data, (voxel_size, _, _) = load_tiff(path)
+        data, (voxel_size, _, _, voxel_size_unit) = load_tiff(path)
         if advanced_load:
             assert data.ndim == len(layout)
             _check_layout_string(layout)
@@ -71,7 +71,7 @@ def _advanced_load(path, key, channel, advanced_load=False, layer_type='image', 
 
     if headless:
         return data
-    return data, voxel_size
+    return data, voxel_size, voxel_size_unit
 
 
 @magicgui(
@@ -107,18 +107,22 @@ def open_file(path: Path = Path.home(),
                          layer_type=layer_type,
                          headless=True)
 
-    data, voxel_size = _func_gui(path)
+    data, voxel_size, voxel_size_unit = _func_gui(path)
     dag.add_step(_func_dask, input_keys=(f'{name}_path',), output_key=name)
-    show_info(f'Napari - PlantSeg info: {name} correctly imported')
-    return data, layer_properties(name=name, scale=voxel_size), layer_type
+    show_info(f'Napari - PlantSeg info: {name} correctly imported, voxel_size: {voxel_size} {voxel_size_unit}')
+    layer_kwargs = layer_properties(name=name,
+                                    scale=voxel_size,
+                                    metadata={'original_voxel_size': voxel_size,
+                                              'voxel_size_unit': voxel_size_unit})
+    return data, layer_kwargs, layer_type
 
 
-def export_stack_as_tiff(data, name, voxel_size, directory, dtype, suffix):
+def export_stack_as_tiff(data, name, voxel_size, voxel_size_unit, directory, dtype, suffix):
     stack_name = f'{name}_{suffix}'
     out_path = directory / f'{stack_name}.tiff'
     data = fix_input_shape(data)
     data = data.astype(dtype)
-    create_tiff(path=out_path, stack=data[...], voxel_size=voxel_size)
+    create_tiff(path=out_path, stack=data[...], voxel_size=voxel_size, voxel_size_unit=voxel_size_unit)
     return stack_name
 
 
@@ -157,15 +161,23 @@ def export_stacks(images: List[Tuple[Layer, str]],
             image.data = scale_image_to_voxelsize(image.data, image.scale, output_resolution, order=order)
             image.scale = output_resolution
 
+        if 'voxel_size_unit' in image.metadata.keys():
+            voxel_size_unit = image.metadata['voxel_size_unit']
+        else:
+            voxel_size_unit = 'um'
+
         image_suffix = f'export_{i}' if image_suffix == '' else image_suffix
         _ = export_stack_as_tiff(data=image.data,
                                  name=image.name,
                                  voxel_size=image.scale,
+                                 voxel_size_unit=voxel_size_unit,
                                  directory=directory,
                                  dtype=dtype,
                                  suffix=image_suffix)
         names.append(image.name)
         suffixes.append(image_suffix)
+        show_info(f'Napari - PlantSeg info: {image.name} correctly exported,'
+                  f' voxel_size: {image.scale} {voxel_size_unit}')
 
     out_path = directory / f'{workflow_name}.pkl'
     dag.export_dag(out_path, names, suffixes)

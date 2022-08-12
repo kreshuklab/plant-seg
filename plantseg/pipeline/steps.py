@@ -101,7 +101,7 @@ class GenericPipelineStep:
             tuple(nd.array, tuple(float)): (numpy array containing stack's data, stack's data voxel size)
         """
         _, ext = os.path.splitext(file_path)
-        data, (voxel_size, data_shape, key) = smart_load(file_path, key=None)
+        data, (voxel_size, _, key, _) = smart_load(file_path, key=None)
         if self.h5_output_key is None:
             self.h5_output_key = key
 
@@ -120,7 +120,7 @@ class GenericPipelineStep:
         """
         raw_path = self._raw_path(input_path)
         if os.path.exists(raw_path):
-            raw, _, _ = smart_load(raw_path, key='raw')
+            raw, _ = smart_load(raw_path, key='raw')
             create_h5(output_path, stack=raw, key='raw', voxel_size=voxel_size, mode='a')
 
         else:

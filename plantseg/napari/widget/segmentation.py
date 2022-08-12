@@ -4,7 +4,7 @@ from magicgui import magicgui
 from napari.types import ImageData, LayerDataTuple, LabelsData
 from napari.layers import Labels, Image, Layer
 from typing import Union, Tuple, Callable
-from plantseg.napari.widget.utils import start_threading_process, build_nice_name
+from plantseg.napari.widget.utils import start_threading_process, build_nice_name, layer_properties
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
 from plantseg.dataprocessing.functional.dataprocessing import normalize_01
@@ -18,7 +18,9 @@ def _generic_clustering(image: Image, labels: Labels,
                         agg_func: Callable = gasp) -> Future[LayerDataTuple]:
     out_name = build_nice_name(image.name, name)
     inputs_names = (image.name, labels.name)
-    layer_kwargs = {'name': out_name, 'scale': image.scale}
+    layer_kwargs = layer_properties(name=out_name,
+                                    scale=image.scale,
+                                    metadata=image.metadata)
     layer_type = 'labels'
 
     func = partial(agg_func, beta=beta, post_minsize=minsize)
@@ -64,7 +66,9 @@ def widget_lifted_multicut(image: Image,
 
     out_name = build_nice_name(image.name, 'LiftedMultiCut')
     inputs_names = (image.name, nuclei.name, labels.name)
-    layer_kwargs = {'name': out_name, 'scale': image.scale}
+    layer_kwargs = layer_properties(name=out_name,
+                                    scale=image.scale,
+                                    metadata=image.metadata)
     layer_type = 'labels'
 
     func = partial(lmc, superpixels=labels, beta=beta, post_minsize=minsize)
@@ -126,7 +130,9 @@ def widget_dt_ws(image: Image,
                  nuclei: bool = False) -> Future[LayerDataTuple]:
     out_name = build_nice_name(image.name, 'dtWS')
     inputs_names = (image.name,)
-    layer_kwargs = {'name': out_name, 'scale': image.scale}
+    layer_kwargs = layer_properties(name=out_name,
+                                    scale=image.scale,
+                                    metadata=image.metadata)
     layer_type = 'labels'
 
     stacked = False if stacked == '3D' else True
@@ -169,7 +175,10 @@ def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
         inputs_names = (cell_segmentation.name, nuclei_segmentation.name)
         func_kwargs = {'cell_seg': cell_segmentation.data,
                        'nuclei_seg': nuclei_segmentation.data}
-    layer_kwargs = {'name': out_name, 'scale': cell_segmentation.scale}
+
+    layer_kwargs = layer_properties(name=out_name,
+                                    scale=cell_segmentation.scale,
+                                    metadata=cell_segmentation.metadata)
     layer_type = 'labels'
 
     func = partial(fix_over_under_segmentation_from_nuclei,

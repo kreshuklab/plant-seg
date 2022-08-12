@@ -35,8 +35,13 @@ def start_threading_process(func: Callable,
     return future
 
 
-def layer_properties(name, scale):
-    return {'name': name, 'scale': scale}
+def layer_properties(name, scale, metadata: dict = None):
+    keys_to_save = {'original_voxel_size', 'voxel_size_unit'}
+    if metadata is not None:
+        _new_metadata = {key: metadata[key] for key in keys_to_save if key in metadata}
+    else:
+        _new_metadata = {}
+    return {'name': name, 'scale': scale, 'metadata': _new_metadata}
 
 
 def _find_version(old_suffix, new_suffix):
