@@ -44,18 +44,18 @@ def _read_ome_meta(tiff):
     tree = ElementTree.fromstring(xml_om)
 
     image_element = [image for image in tree if image.tag.find('Image') != -1]
-    if len(image_element) == 1:
+    if image_element:
         image_element = image_element[0]
     else:
-        warnings.warn(f'Error parsing omero tiff meta. '
+        warnings.warn(f'Error parsing omero tiff meta Image. '
                       f'Reverting to default voxel size (1., 1., 1.) um')
         return [1., 1., 1.], 'um'
 
     pixels_element = [pixels for pixels in image_element if pixels.tag.find('Pixels') != -1]
-    if len(pixels_element) == 1:
+    if pixels_element:
         pixels_element = pixels_element[0]
     else:
-        warnings.warn(f'Error parsing omero tiff meta. '
+        warnings.warn(f'Error parsing omero tiff meta Pixels. '
                       f'Reverting to default voxel size (1., 1., 1.) um')
         return [1., 1., 1.], 'um'
 
@@ -75,16 +75,25 @@ def _read_ome_meta(tiff):
         if key in ['PhysicalSizeXUnit', 'PhysicalSizeYUnit', 'PhysicalSizeZUnit']:
             units.append(value)
 
-    if len(units) == 3:
+    if units:
         voxel_size_unit = units[0]
         if not np.alltrue([_value == units[0] for _value in units]):
             warnings.warn(f'Units are not homogeneous: {units}')
 
-    for value in [x, y, z]:
-        if value is None:
-            warnings.warn(f'Error parsing omero tiff meta. '
-                          f'Reverting to default voxel size (1., 1., 1.) um')
-            return [1., 1., 1.], 'um'
+    if x is None:
+        x = 1.
+        warnings.warn(f'Error parsing omero tiff meta. '
+                      f'Reverting to default voxel size x = 1.')
+
+    if y is None:
+        y = 1.
+        warnings.warn(f'Error parsing omero tiff meta. '
+                      f'Reverting to default voxel size y = 1.')
+
+    if z is None:
+        z = 1.
+        warnings.warn(f'Error parsing omero tiff meta. '
+                      f'Reverting to default voxel size z = 1.')
 
     return [z, y, x], voxel_size_unit
 
