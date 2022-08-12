@@ -2,7 +2,10 @@ import os
 import warnings
 
 import h5py
+import numpy as np
 import tifffile
+import warnings
+from xml.etree import cElementTree as ElementTree
 
 TIFF_EXTENSIONS = [".tiff", ".tif"]
 H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]
@@ -12,11 +15,10 @@ H5_KEYS = ["raw", "predictions", "segmentation"]
 allowed_data_format = TIFF_EXTENSIONS + H5_EXTENSIONS
 
 
-def read_tiff_voxel_size(file_path):
+def _read_imagej_meta(tiff):
     """
     Implemented based on information found in https://pypi.org/project/tifffile
     """
-
     def _xy_voxel_size(tags, key):
         assert key in ['XResolution', 'YResolution']
         if key in tags:
@@ -25,21 +27,83 @@ def read_tiff_voxel_size(file_path):
         # return default
         return 1.
 
+    image_metadata = tiff.imagej_metadata
+    z = image_metadata.get('spacing', 1.)
+    voxel_size_unit = image_metadata.get('unit', 'um')
+
+    tags = tiff.pages[0].tags
+    # parse X, Y resolution
+    y = _xy_voxel_size(tags, 'YResolution')
+    x = _xy_voxel_size(tags, 'XResolution')
+    # return voxel size
+    return [z, y, x], voxel_size_unit
+
+
+def _read_ome_meta(tiff):
+    xml_om = tiff.ome_metadata
+    tree = ElementTree.fromstring(xml_om)
+
+    image_element = [image for image in tree if image.tag.find('Image') != -1]
+    if len(image_element) == 1:
+        image_element = image_element[0]
+    else:
+        warnings.warn(f'Error parsing omero tiff meta. '
+                      f'Reverting to default voxel size (1., 1., 1.) um')
+        return [1., 1., 1.], 'um'
+
+    pixels_element = [pixels for pixels in image_element if pixels.tag.find('Pixels') != -1]
+    if len(pixels_element) == 1:
+        pixels_element = pixels_element[0]
+    else:
+        warnings.warn(f'Error parsing omero tiff meta. '
+                      f'Reverting to default voxel size (1., 1., 1.) um')
+        return [1., 1., 1.], 'um'
+
+    units = []
+    x, y, z, voxel_size_unit = None, None, None, 'um'
+
+    for key, value in pixels_element.items():
+        if key == 'PhysicalSizeX':
+            x = float(value)
+
+        elif key == 'PhysicalSizeY':
+            y = float(value)
+
+        elif key == 'PhysicalSizeZ':
+            z = float(value)
+
+        if key in ['PhysicalSizeXUnit', 'PhysicalSizeYUnit', 'PhysicalSizeZUnit']:
+            units.append(value)
+
+    if len(units) == 3:
+        voxel_size_unit = units[0]
+        if not np.alltrue([_value == units[0] for _value in units]):
+            warnings.warn(f'Units are not homogeneous: {units}')
+
+    for value in [x, y, z]:
+        if value is None:
+            warnings.warn(f'Error parsing omero tiff meta. '
+                          f'Reverting to default voxel size (1., 1., 1.) um')
+            return [1., 1., 1.], 'um'
+
+    return [z, y, x], voxel_size_unit
+
+
+def read_tiff_voxel_size(file_path):
     with tifffile.TiffFile(file_path) as tiff:
-        image_metadata = tiff.imagej_metadata
-        if image_metadata is not None:
-            z = image_metadata.get('spacing', 1.)
-            voxel_size_unit = image_metadata.get('unit', 'um')
+        if tiff.imagej_metadata is not None:
+            [z, y, x], voxel_size_unit = _read_imagej_meta(tiff)
+
+        elif tiff.ome_metadata is not None:
+            [z, y, x], voxel_size_unit = _read_ome_meta(tiff)
+
         else:
             # default voxel size
-            z = 1.
+            warnings.warn(f'No metadata found. '
+                          f'Reverting to default voxel size (1., 1., 1.) um')
+            x, y, z = 1., 1., 1.
             voxel_size_unit = 'um'
 
-        tags = tiff.pages[0].tags
-        # parse X, Y resolution
-        y = _xy_voxel_size(tags, 'YResolution')
-        x = _xy_voxel_size(tags, 'XResolution')
-        # return voxel size
         return [z, y, x], voxel_size_unit
 
 
