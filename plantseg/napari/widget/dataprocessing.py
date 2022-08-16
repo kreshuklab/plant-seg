@@ -27,7 +27,14 @@ def _generic_preprocessing(image_data, sigma, gaussian_smoothing, rescale, resca
 
 
 @magicgui(call_button='Run Gaussian Smoothing',
-          sigma={"widget_type": "FloatSlider", "max": 5., 'min': 0.1})
+          image={'label': 'Image',
+                 'tooltip': 'Image layer to apply the smoothing.'},
+          sigma={'label': 'Sigma',
+                 'widget_type': 'FloatSlider',
+                 'tooltip': 'Define the size of the gaussian smoothing kernel. '
+                            'The larger the more blurred will be the output image.',
+                 'max': 5.,
+                 'min': 0.1})
 def widget_gaussian_smoothing(image: Image,
                               sigma: float = 1.,
                               ) -> Future[LayerDataTuple]:
@@ -48,13 +55,29 @@ def widget_gaussian_smoothing(image: Image,
 
 
 @magicgui(call_button='Run Image Rescaling',
-          type_of_refactor={'widget_type': 'RadioButtons',
+          image={'label': 'Image or Label',
+                 'tooltip': 'Layer to apply the rescaling.'},
+          type_of_refactor={'label': 'Type of refactor',
+                            'tooltip': 'Select the mode of finding the right rescaling factor.',
+                            'widget_type': 'RadioButtons',
                             'orientation': 'vertical',
                             'choices': ['Rescaling factor',
                                         'Voxel size',
                                         'Same as Reference Layer',
                                         'Same as Reference Model']},
-          reference_model={"choices": list_models()})
+          rescaling_factor={'label': 'Rescaling factor',
+                            'tooltip': 'Define the scaling factor to use for resizing the input image.'},
+          out_voxel_size={'label': 'Out voxel size',
+                          'tooltip': 'Define the output voxel size. Units are same as imported, '
+                                     '(if units are missing default is "um").'},
+          reference_layer={'label': 'Reference layer',
+                           'tooltip': 'Rescale to same voxel size as selected layer.'},
+          reference_model={'label': 'Reference model',
+                           'tooltip': 'Rescale to same voxel size as selected model.',
+                           'choices': list_models()},
+          order={'label': 'Interpolation order',
+                 'tooltip': '0 for nearest neighbours (default for labels), 1 for linear, 2 for bilinear.',
+                 })
 def widget_rescaling(image: Layer,
                      type_of_refactor: str = 'Rescaling factor',
                      rescaling_factor: Tuple[float, float, float] = (1., 1., 1.),
@@ -111,7 +134,14 @@ def _cropping(data, crop_slices):
     return data[crop_slices]
 
 
-@magicgui(call_button='Run Cropping', )
+@magicgui(call_button='Run Cropping',
+          image={'label': 'Image or Label',
+                 'tooltip': 'Layer to apply the rescaling.'},
+          crop_roi={'label': 'Crop ROI',
+                    'tooltip': 'This must be a shape layer with a rectangle XY overlaying the area to crop.'},
+          crop_z={'label': 'Z slices',
+                  'tooltip': 'Numer of z slices to take next to the current selection.'},
+          )
 def widget_cropping(image: Layer,
                     crop_roi: Union[Shapes, None] = None,
                     crop_z: int = 1,
@@ -152,12 +182,17 @@ def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
 
 
 @magicgui(call_button='Run Merge Layers',
-          operation={'widget_type': 'RadioButtons',
+          image1={'label': 'Image 1'},
+          image2={'label': 'Image 2'},
+          operation={'label': 'Operation',
+                     'tooltip': 'Operation used to merge the two layers.',
+                     'widget_type': 'RadioButtons',
                      'orientation': 'horizontal',
                      'choices': ['Mean',
                                  'Maximum',
                                  'Minimum']},
-          weights={"widget_type": "FloatSlider", "max": 1., 'min': 0.},
+          weights={'label': 'Mean weights',
+                   'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
           )
 def widget_add_layers(image1: Image,
                       image2: Image,
@@ -183,7 +218,6 @@ def widget_add_layers(image1: Image,
 
 
 def _label_processing(segmentation, set_bg_to_0, relabel_segmentation):
-
     if relabel_segmentation:
         segmentation = _relabel_segmentation(segmentation)
 
@@ -193,11 +227,22 @@ def _label_processing(segmentation, set_bg_to_0, relabel_segmentation):
     return segmentation
 
 
-@magicgui(call_button='Run Label processing')
+@magicgui(call_button='Run Label processing',
+          segmentation={'label': 'Segmentation',
+                        'tooltip': 'Segmentation can be any label layer.'},
+          set_bg_to_0={'label': 'Set background to 0',
+                       'tooltip': 'Set the largest idx in the image to zero.'},
+          relabel_segmentation={'label': 'Relabel Segmentation',
+                                'tooltip': 'Relabel segmentation contiguously to avoid labels clash.'}
+          )
 def widget_label_processing(segmentation: Labels,
                             set_bg_to_0: bool = True,
                             relabel_segmentation: bool = True,
                             ) -> Future[LayerDataTuple]:
+
+    if relabel_segmentation and 'bboxes' in segmentation.metadata.keys():
+        del segmentation.metadata['bboxes']
+
     out_name = build_nice_name(segmentation.name, 'Processed')
     inputs_kwarg = {'segmentation': segmentation.data}
     inputs_names = (segmentation.name,)

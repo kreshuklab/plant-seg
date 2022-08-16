@@ -14,7 +14,7 @@ from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_
 def _generic_clustering(image: Image, labels: Labels,
                         beta: float = 0.5,
                         minsize: int = 100,
-                        name: str = "GASP",
+                        name: str = 'GASP',
                         agg_func: Callable = gasp) -> Future[LayerDataTuple]:
     out_name = build_nice_name(image.name, name)
     inputs_names = (image.name, labels.name)
@@ -35,24 +35,56 @@ def _generic_clustering(image: Image, labels: Labels,
                                    )
 
 
-@magicgui(call_button='Run GASP', beta={"widget_type": "FloatSlider", "max": 1., 'min': 0.})
-def widget_gasp(image: Image, labels: Labels,
+@magicgui(call_button='Run GASP',
+          image={'label': 'Image',
+                 'tooltip': 'Raw or boundary image to use as input for clustering.'},
+          _labels={'label': 'Over-segmentation',
+                   'tooltip': 'Over-segmentation labels layer to use as input for clustering.'},
+          beta={'label': 'Under/Over segmentation factor',
+                'tooltip': 'A low value will increase under-segmentation tendency '
+                           'and a large value increase over-segmentation tendency.',
+                'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
+          minsize={'label': 'Min-size',
+                   'tooltip': 'Minimum segment size allowed in voxels.'})
+def widget_gasp(image: Image, _labels: Labels,
                 beta: float = 0.5,
                 minsize: int = 100) -> Future[LayerDataTuple]:
-    return _generic_clustering(image, labels, beta=beta, minsize=minsize, name='GASP', agg_func=gasp)
+    return _generic_clustering(image, _labels, beta=beta, minsize=minsize, name='GASP', agg_func=gasp)
 
 
-@magicgui(call_button='Run MultiCut', beta={"widget_type": "FloatSlider", "max": 1., 'min': 0.})
-def widget_multicut(image: Image, labels: Labels,
+@magicgui(call_button='Run MultiCut',
+          image={'label': 'Image',
+                 'tooltip': 'Raw or boundary image to use as input for clustering.'},
+          _labels={'label': 'Over-segmentation',
+                   'tooltip': 'Over-segmentation labels layer to use as input for clustering.'},
+          beta={'label': 'Under/Over segmentation factor',
+                'tooltip': 'A low value will increase under-segmentation tendency '
+                           'and a large value increase over-segmentation tendency.',
+                'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
+          minsize={'label': 'Min-size',
+                   'tooltip': 'Minimum segment size allowed in voxels.'})
+def widget_multicut(image: Image, _labels: Labels,
                     beta: float = 0.5,
                     minsize: int = 100) -> Future[LayerDataTuple]:
-    return _generic_clustering(image, labels, beta=beta, minsize=minsize, name='MultiCut', agg_func=multicut)
+    return _generic_clustering(image, _labels, beta=beta, minsize=minsize, name='MultiCut', agg_func=multicut)
 
 
-@magicgui(call_button='Run Lifted MultiCut', beta={"widget_type": "FloatSlider", "max": 1., 'min': 0.})
+@magicgui(call_button='Run Lifted MultiCut',
+          image={'label': 'Image',
+                 'tooltip': 'Raw or boundary image to use as input for clustering.'},
+          nuclei={'label': 'Nuclei',
+                  'tooltip': 'Nuclei binary predictions or Nuclei segmentation.'},
+          _labels={'label': 'Over-segmentation',
+                   'tooltip': 'Over-segmentation labels layer to use as input for clustering.'},
+          beta={'label': 'Under/Over segmentation factor',
+                'tooltip': 'A low value will increase under-segmentation tendency '
+                           'and a large value increase over-segmentation tendency.',
+                'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
+          minsize={'label': 'Min-size',
+                   'tooltip': 'Minimum segment size allowed in voxels.'})
 def widget_lifted_multicut(image: Image,
                            nuclei: Layer,
-                           labels: Labels,
+                           _labels: Labels,
                            beta: float = 0.5,
                            minsize: int = 100) -> Future[LayerDataTuple]:
     if isinstance(nuclei, Image):
@@ -65,18 +97,18 @@ def widget_lifted_multicut(image: Image,
         raise ValueError(f'{nuclei} must be either an image or a labels layer')
 
     out_name = build_nice_name(image.name, 'LiftedMultiCut')
-    inputs_names = (image.name, nuclei.name, labels.name)
+    inputs_names = (image.name, nuclei.name, _labels.name)
     layer_kwargs = layer_properties(name=out_name,
                                     scale=image.scale,
                                     metadata=image.metadata)
     layer_type = 'labels'
 
-    func = partial(lmc, superpixels=labels, beta=beta, post_minsize=minsize)
+    func = partial(lmc, superpixels=_labels, beta=beta, post_minsize=minsize)
 
     return start_threading_process(func,
                                    func_kwargs={'boundary_pmaps': image.data,
                                                 extra_key: nuclei.data,
-                                                'superpixels': labels.data},
+                                                'superpixels': _labels.data},
                                    out_name=out_name,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
@@ -114,9 +146,30 @@ def _nuclei_aware_dtws_wrapper(boundary_pmaps,
                         )
 
 
-@magicgui(call_button='Run WS',
-          stacked={'widget_type': 'RadioButtons', 'orientation': 'horizontal', 'choices': ['2D', '3D']},
-          threshold={"widget_type": "FloatSlider", "max": 1., 'min': 0.}, )
+@magicgui(call_button='Run Watershed',
+          image={'label': 'Image',
+                 'tooltip': 'Raw or boundary image to use as input for Watershed.'},
+          stacked={'label': 'Stacked',
+                   'tooltip': 'Define if the Watershed will run slice by slice (faster) '
+                              'or on the full volume (slower).',
+                   'widget_type': 'RadioButtons',
+                   'orientation': 'horizontal',
+                   'choices': ['2D', '3D']},
+          threshold={'label': 'Threshold',
+                     'tooltip': 'A low value will increase over-segmentation tendency '
+                                'and a large value increase under-segmentation tendency.',
+                     'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
+          min_size={'label': 'Min-size',
+                    'tooltip': 'Minimum segment size allowed in voxels.'},
+          sigma_seeds={'label': 'Sigma seeds'},
+          sigma_weights={'label': 'Sigma weights'},
+          alpha={'label': 'Alpha'},
+          use_pixel_pitch={'label': 'Use pixel pitch'},
+          pixel_pitch={'label': 'Pixel pitch'},
+          apply_nonmax_suppression={'label': 'Apply nonmax suppression'},
+          nuclei={'label': 'Is image Nuclei'}
+
+          )
 def widget_dt_ws(image: Image,
                  stacked: str = '2D',
                  threshold: float = 0.5,
@@ -158,7 +211,12 @@ def widget_dt_ws(image: Image,
                                    )
 
 
-@magicgui(call_button='Run Segmentation Fix from Nuclei')
+@magicgui(call_button='Run Segmentation Fix from Nuclei',
+          cell_segmentation={'label': 'Cell Segmentation'},
+          nuclei_segmentation={'label': 'Nuclei Segmentation'},
+          boundary_pmaps={'label': 'Boundary Image'},
+          threshold_merge={'label': 'Threshold merge'},
+          threshold_split={'label': 'Threshold split'})
 def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
                                                    nuclei_segmentation: Labels,
                                                    boundary_pmaps: Union[None, Image],

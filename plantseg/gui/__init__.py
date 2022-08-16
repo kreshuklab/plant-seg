@@ -98,7 +98,7 @@ def add_custom_model(new_model_name: str,
         custom_zoo_dict = {}
 
     custom_zoo_dict[new_model_name] = {}
-    custom_zoo_dict[new_model_name]["path"] = location
+    custom_zoo_dict[new_model_name]["path"] = str(location)
     custom_zoo_dict[new_model_name]["resolution"] = resolution
     custom_zoo_dict[new_model_name]["description"] = description
 

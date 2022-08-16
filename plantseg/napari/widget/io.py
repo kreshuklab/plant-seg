@@ -77,16 +77,23 @@ def _advanced_load(path, key, channel, advanced_load=False, layer_type='image', 
 
 @magicgui(
     call_button='Open file',
-    path={'label': 'Pick a file (tiff or h5)'},
-    name={'label': 'Layer Name'},
+    path={'label': 'Pick a file (tiff or h5)',
+          'tooltip': 'Select a file to be imported, the file can be a tiff or h5.'},
+    name={'label': 'Layer Name',
+          'tooltip': 'Define the name of the output layer, default is either image or label.'},
     layer_type={
         'label': 'Layer type',
+        'tooltip': 'Select if the image is a normal image or a segmentation',
         'widget_type': 'RadioButtons',
         'orientation': 'horizontal',
         'choices': ['image', 'labels']},
-    advanced_load={'label': 'Advanced load a specific h5-key / tiff-channel'},
-    key={'label': 'key/layout (h5 only)'},
-    channel={'label': 'channel/layout (tiff only)'})
+    advanced_load={'label': 'Advanced load a specific h5-key / tiff-channel',
+                   'tooltip': 'If specified allows to select specific h5 dataset in a file,'
+                              ' or specific channels in a tiff.'},
+    key={'label': 'Key/layout (h5 only)',
+         'tooltip': 'Key to be loaded from h5'},
+    channel={'label': 'Channel/layout (tiff only)',
+             'tooltip': 'Channel to select and channels layout'})
 def open_file(path: Path = Path.home(),
               layer_type: str = 'image',
               name: str = '',
@@ -94,6 +101,7 @@ def open_file(path: Path = Path.home(),
               key: str = 'raw',
               channel: Tuple[int, str] = (0, 'xcxx'),
               ) -> LayerDataTuple:
+
     name = layer_type if name == '' else name
     _func_gui = partial(_advanced_load,
                         key=key,
@@ -118,21 +126,41 @@ def open_file(path: Path = Path.home(),
     return data, layer_kwargs, layer_type
 
 
-def export_stack_as_tiff(data, name, voxel_size, voxel_size_unit, directory, dtype, suffix):
+def export_stack_as_tiff(data, name, voxel_size, voxel_size_unit, directory, func_typecast, dtype, suffix):
     stack_name = f'{name}_{suffix}'
     out_path = directory / f'{stack_name}.tiff'
     data = fix_input_shape(data)
-    data = data.astype(dtype)
+    data = func_typecast(data, dtype)
     create_tiff(path=out_path, stack=data[...], voxel_size=voxel_size, voxel_size_unit=voxel_size_unit)
     return stack_name
 
 
+def _image_typecast(data, dtype):
+    data = normalize_01(data)
+    if dtype != 'float32':
+        data = (data * np.iinfo(dtype).max)
+
+    data = data.astype(dtype)
+    return data
+
+
+def _label_typecast(data, dtype):
+    return data.astype(dtype)
+
+
 @magicgui(
     call_button='Export stack',
-    images={'label': 'Layers to export', 'layout': 'vertical'},
-    data_type={'label': 'Data Type', 'choices': ['float32', 'uint8', 'uint16']},
-    directory={'label': 'Directory to export files', 'mode': 'd'},
-    workflow_name={'label': 'Workflow name'},
+    images={'label': 'Layers to export',
+            'layout': 'vertical',
+            'tooltip': 'Select all layer to be exported, and (optional) set a suffix to append to each file name.'},
+    data_type={'label': 'Data Type',
+               'choices': ['float32', 'uint8', 'uint16'],
+               'tooltip': 'Export datatype (uint16 for segmentation) and all others for images.'},
+    directory={'label': 'Directory to export files',
+               'mode': 'd',
+               'tooltip': 'Select the directory where the files will be exported'},
+    workflow_name={'label': 'Workflow name',
+                   'tooltip': 'Name of the workflow object.'},
 )
 def export_stacks(images: List[Tuple[Layer, str]],
                   directory: Path = Path.home(),
@@ -145,14 +173,14 @@ def export_stacks(images: List[Tuple[Layer, str]],
 
         if isinstance(image, Image):
             order = 1
+            func_typecast = _image_typecast
             dtype = data_type
 
         elif isinstance(image, Labels):
             order = 0
-            if data_type in ['uint8', 'uint16']:
-                dtype = data_type
-            else:
-                dtype = 'uint16'
+            func_typecast = _image_typecast
+            dtype = 'uint16'
+            if data_type != 'uint16':
                 warn(f"{data_type} is not a valid type for Labels, please use uint8 or uint16")
         else:
             raise ValueError(f'{type(image)} cannot be exported, please use Image layers or Labels layers')
@@ -173,6 +201,7 @@ def export_stacks(images: List[Tuple[Layer, str]],
                                  voxel_size=image.scale,
                                  voxel_size_unit=voxel_size_unit,
                                  directory=directory,
+                                 func_typecast=func_typecast,
                                  dtype=dtype,
                                  suffix=image_suffix)
         names.append(image.name)

@@ -16,9 +16,17 @@ from plantseg.predictions.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACC
 
 
 @magicgui(call_button='Run Predictions',
-          model_name={"choices": list_models()},
-          stride={"choices": [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
-          device={"choices": ['cpu', 'cuda']}
+          image={'label': 'Image',
+                 'tooltip': 'Raw image to be processed with a neural network.'},
+          model_name={'label': 'Select model',
+                      'tooltip': 'Select a pretrained model.',
+                      'choices': list_models()},
+          patch_size={'label': 'Patch size',
+                      'tooltip': 'Patch size use to processed the data.'},
+          stride={'label': 'Stride',
+                  'choices': [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
+          device={'label': 'Device',
+                  'choices': ['cpu', 'cuda']}
           )
 def widget_unet_predictions(image: Image,
                             model_name: str,
@@ -66,9 +74,15 @@ def _compute_multiple_predictions(image, patch_size, stride, device):
     return out_layers
 
 
-@magicgui(call_button='Run Test Predictions',
-          stride={"choices": [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
-          device={"choices": ['cpu', 'cuda']}
+@magicgui(call_button='Try all Available Models',
+          image={'label': 'Image',
+                 'tooltip': 'Raw image to be processed with a neural network.'},
+          patch_size={'label': 'Patch size',
+                      'tooltip': 'Patch size use to processed the data.'},
+          stride={'label': 'Stride',
+                  'choices': [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
+          device={'label': 'Device',
+                  'choices': ['cpu', 'cuda']}
           )
 def widget_test_all_unet_predictions(image: Image,
                                      patch_size: Tuple[int, int, int] = (80, 160, 160),
@@ -102,9 +116,25 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
 
 
 @magicgui(call_button='Run Iterative Predictions',
-          model_name={"choices": list_models()},
-          stride={"choices": [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
-          device={"choices": ['cpu', 'cuda']}
+          image={'label': 'Image',
+                 'tooltip': 'Raw image to be processed with a neural network.'},
+          model_name={'label': 'Select model',
+                      'tooltip': 'Select a pretrained model.',
+                      'choices': list_models()},
+          num_iterations={'label': 'Num. of iterations',
+                          'tooltip': 'Nuber of iterations the model will run.'},
+          sigma={'label': 'Sigma',
+                 'widget_type': 'FloatSlider',
+                 'tooltip': 'Define the size of the gaussian smoothing kernel. '
+                            'The larger the more blurred will be the output image.',
+                 'max': 5.,
+                 'min': 0.1},
+          patch_size={'label': 'Patch size',
+                      'tooltip': 'Patch size use to processed the data.'},
+          stride={'label': 'Stride',
+                  'choices': [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
+          device={'label': 'Device',
+                  'choices': ['cpu', 'cuda']}
           )
 def widget_iterative_unet_predictions(image: Image,
                                       model_name: str,
@@ -138,6 +168,11 @@ def widget_iterative_unet_predictions(image: Image,
 
 
 @magicgui(call_button='Add Custom Model',
+          new_model_name={'label': 'New model name'},
+          model_location={'label': 'Model location',
+                          'mode': 'd'},
+          resolution={'label': 'Resolution'},
+          description={'label': 'Description'},
           )
 def widget_add_custom_model(new_model_name: str = '',
                             model_location: Path = Path.home(),
