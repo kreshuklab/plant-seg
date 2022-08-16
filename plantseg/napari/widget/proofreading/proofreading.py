@@ -87,7 +87,8 @@ def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label):
                                 max_label)
 
 
-def clean_scribble(viewer):
+@magicgui(call_button='Clean scribbles < c >')
+def widget_clean_scribble(viewer):
     if current_label_layer is None:
         show_info('Scribble not defined. Run the proofreading widget tool once first')
         return None
@@ -96,7 +97,7 @@ def clean_scribble(viewer):
     viewer.layers[current_label_layer].refresh()
 
 
-@magicgui(call_button='Split and Merge from scribbles - p')
+@magicgui(call_button='Split and Merge from scribbles < p >')
 def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
                                           scribbles: Labels,
                                           segmentation: Labels,

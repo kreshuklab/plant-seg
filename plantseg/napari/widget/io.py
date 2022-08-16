@@ -2,6 +2,7 @@ from functools import partial
 from pathlib import Path
 from typing import List, Tuple
 
+import numpy as np
 from magicgui import magicgui
 from napari.layers import Layer, Image, Labels
 from napari.types import LayerDataTuple
@@ -38,7 +39,7 @@ def _filter_channel(data, channel, layout):
                 raise ValueError(f'image has only {data.shape[i]} channels along {layout}')
             slices.append(slice(channel, channel + 1))
 
-    return data[tuple(slices)]
+    return np.squeeze(data[tuple(slices)])
 
 
 def _advanced_load(path, key, channel, advanced_load=False, layer_type='image', headless=False):

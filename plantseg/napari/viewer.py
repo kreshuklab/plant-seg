@@ -3,7 +3,7 @@ from napari.utils.notifications import show_info
 
 from plantseg.napari.containers import get_extra_seg, get_extra_pred
 from plantseg.napari.containers import get_gasp_workflow, get_preprocessing_workflow, get_main
-from plantseg.napari.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles, clean_scribble
+from plantseg.napari.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles, widget_clean_scribble
 
 
 def run_viewer():
@@ -12,7 +12,7 @@ def run_viewer():
     main_w = viewer.window.add_dock_widget(main_container, name='Main')
 
     viewer.bind_key('p', widget_split_and_merge_from_scribbles)
-    viewer.bind_key('c', clean_scribble)
+    viewer.bind_key('c', widget_clean_scribble)
 
     for _containers, name in [(get_preprocessing_workflow(), 'Data - Processing'),
                               (get_gasp_workflow(), 'UNet + GASP Workflow'),
