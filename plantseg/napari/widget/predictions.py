@@ -13,6 +13,7 @@ from plantseg.gui import list_models, add_custom_model
 from plantseg.napari.widget.utils import start_threading_process, build_nice_name, layer_properties
 from plantseg.predictions.functional import unet_predictions
 from plantseg.predictions.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
+from napari.utils.notifications import show_info
 
 
 @magicgui(call_button='Run Predictions',
@@ -49,12 +50,15 @@ def widget_unet_predictions(image: Image,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
+                                   process_name='UNet Predictions',
                                    )
 
 
 def _compute_multiple_predictions(image, patch_size, stride, device):
     out_layers = []
-    for model_name in list_models():
+    for i, model_name in enumerate(list_models()):
+        show_info(f'Napari - PlantSeg info: running UNet Predictions: {model_name} {i}/{len(list_models())}')
+
         out_name = build_nice_name(image.name, model_name)
         layer_kwargs = layer_properties(name=out_name,
                                         scale=image.scale,
@@ -164,6 +168,7 @@ def widget_iterative_unet_predictions(image: Image,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
+                                   process_name='UNet Iterative Predictions',
                                    )
 
 

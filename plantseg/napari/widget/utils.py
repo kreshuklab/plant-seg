@@ -18,12 +18,13 @@ def start_threading_process(func: Callable,
                             input_keys: Tuple[str, ...],
                             layer_kwarg: dict,
                             layer_type='image',
+                            process_name='',
                             skip_dag=False) -> Future:
     thread_func = thread_worker(partial(func, **func_kwargs))
     future = Future()
 
     def on_done(result):
-        show_info(f'Napari - PlantSeg info: widget computation complete')
+        show_info(f'Napari - PlantSeg info: widget {process_name} computation complete')
         _func = func if not skip_dag else identity
         dag.add_step(_func, input_keys=input_keys, output_key=out_name)
         result = result, layer_kwarg, layer_type
@@ -32,6 +33,7 @@ def start_threading_process(func: Callable,
     worker = thread_func()
     worker.returned.connect(on_done)
     worker.start()
+    show_info(f'Napari - PlantSeg info: widget {process_name} computation started')
     return future
 
 

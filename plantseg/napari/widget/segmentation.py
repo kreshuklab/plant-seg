@@ -32,6 +32,7 @@ def _generic_clustering(image: Image, labels: Labels,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
+                                   process_name=f'{name} Clustering',
                                    )
 
 
@@ -113,6 +114,7 @@ def widget_lifted_multicut(image: Image,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
+                                   process_name=f'Lifted Multicut Clustering',
                                    )
 
 
@@ -208,6 +210,7 @@ def widget_dt_ws(image: Image,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
+                                   process_name=f'Watershed Segmentation',
                                    )
 
 
@@ -249,4 +252,5 @@ def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
+                                   process_name=f'Fix Over / Under segmentation',
                                    )

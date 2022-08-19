@@ -51,6 +51,7 @@ def widget_gaussian_smoothing(image: Image,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
+                                   process_name='Gaussian Smoothing',
                                    )
 
 
@@ -126,8 +127,25 @@ def widget_rescaling(image: Layer,
                                    out_name=out_name,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
+                                   process_name='Rescaling',
                                    layer_type=layer_type,
                                    )
+
+
+def _compute_slices(rectangle, crop_z, shape):
+    z_start = max(rectangle[0, 0] - crop_z // 2, 0)
+    z_end = min(rectangle[0, 0] + math.ceil(crop_z / 2), shape[0])
+    z_slice = slice(z_start, z_end)
+
+    x_start = max(rectangle[0, 1], 0)
+    x_end = min(rectangle[2, 1], shape[1])
+    x_slice = slice(x_start, x_end)
+
+    y_start = max(rectangle[0, 2], 0)
+    y_end = min(rectangle[2, 2], shape[2])
+    y_slice = slice(y_start, y_end)
+
+    return [z_slice, x_slice, y_slice]
 
 
 def _cropping(data, crop_slices):
@@ -157,10 +175,8 @@ def widget_cropping(image: Layer,
     layer_type = 'image'
 
     rectangle = crop_roi.data[0].astype('int64')
-    crop_slices = [slice(rectangle[0, 0] - crop_z // 2, rectangle[0, 0] + math.ceil(crop_z / 2)),
-                   slice(rectangle[0, 1], rectangle[2, 1]),
-                   slice(rectangle[0, 2], rectangle[2, 2])]
 
+    crop_slices = _compute_slices(rectangle, crop_z, image.data.shape)
     func = partial(_cropping, crop_slices=crop_slices)
     return start_threading_process(func,
                                    func_kwargs={'data': image.data},
@@ -168,6 +184,7 @@ def widget_cropping(image: Layer,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
+                                   process_name='Cropping',
                                    skip_dag=True,
                                    )
 
@@ -214,6 +231,7 @@ def widget_add_layers(image1: Image,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
+                                   process_name='Merge Layers',
                                    )
 
 
@@ -239,7 +257,6 @@ def widget_label_processing(segmentation: Labels,
                             set_bg_to_0: bool = True,
                             relabel_segmentation: bool = True,
                             ) -> Future[LayerDataTuple]:
-
     if relabel_segmentation and 'bboxes' in segmentation.metadata.keys():
         del segmentation.metadata['bboxes']
 
@@ -260,4 +277,5 @@ def widget_label_processing(segmentation: Labels,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
+                                   process_name='Label Processing',
                                    )
