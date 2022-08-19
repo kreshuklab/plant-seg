@@ -10,8 +10,15 @@ from elf.segmentation.features import compute_rag, lifted_problem_from_probabili
 from elf.segmentation.multicut import multicut_kernighan_lin
 from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
 from numpy.typing import ArrayLike
+from vigra.filters import gaussianSmoothing
 
 from plantseg.segmentation.functional.utils import shift_affinities, compute_mc_costs
+
+try:
+    import SimpleITK as sitk
+    sitk_installed = True
+except ImportError:
+    sitk_installed = False
 
 
 def dt_watershed(boundary_pmaps: ArrayLike,
@@ -210,8 +217,8 @@ def simple_itk_watershed(boundary_pmaps: ArrayLike,
                          threshold: float,
                          sigma: float,
                          minsize: int):
-    import SimpleITK as sitk
-    from vigra.filters import gaussianSmoothing
+    if not sitk_installed:
+        raise ValueError('please install sitk before running this process')
 
     if sigma > 0:
         # fix ws sigma length
@@ -229,3 +236,14 @@ def simple_itk_watershed(boundary_pmaps: ArrayLike,
     itk_segmentation = sitk.RelabelComponent(itk_segmentation, minsize)
     segmentation = sitk.GetArrayFromImage(itk_segmentation).astype(np.uint16)
     return segmentation
+
+
+def simple_itk_watershed_from_markers(boundary_pmaps: ArrayLike,
+                                      seeds: ArrayLike):
+    if not sitk_installed:
+        raise ValueError('please install sitk before running this process')
+
+    itk_pmaps = sitk.GetImageFromArray(boundary_pmaps)
+    itk_seeds = sitk.GetImageFromArray(seeds)
+    segmentation = sitk.MorphologicalWatershedFromMarkers(itk_pmaps, itk_seeds, markWatershedLine=False, fullyConnected=False)
+    return sitk.GetArrayFromImage(segmentation).astype('uint32')

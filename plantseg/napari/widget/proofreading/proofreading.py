@@ -1,12 +1,26 @@
+from functools import partial
+
 import napari
 import numpy as np
 from magicgui import magicgui
 from napari.layers import Labels, Image
-from skimage.segmentation import watershed
-from vigra.analysis import watershedsNew
-from napari.utils.notifications import show_info
-from plantseg.napari.widget.proofreading.utils import get_bboxes, get_idx_slice
 from napari.qt.threading import thread_worker
+from napari.utils.notifications import show_info
+
+from plantseg.napari.widget.proofreading.utils import get_bboxes, get_idx_slice
+from skimage.segmentation import watershed
+
+"""
+try:
+    import SimpleITK as sitk
+    from plantseg.segmentation.functional.segmentation import simple_itk_watershed_from_markers as watershed
+
+except ImportError:
+    from skimage.segmentation import watershed as skimage_ws
+    watershed = partial(skimage_ws, compactness=0.01)
+    
+"""
+
 
 current_label_layer = None
 
@@ -39,11 +53,7 @@ def _split_from_seed(segmentation, sz, sx, sy, region_slice, all_idx, offsets, b
     mask = [region_segmentation == idx for idx in all_idx]
     mask = np.logical_or.reduce(mask)
 
-    new_seg = watershed(region_image,
-                        markers=region_seeds,
-                        mask=mask, compactness=0.01)
-    #new_seg, _ = watershedsNew(region_image.astype('float32'),
-    #                           seeds=region_seeds.astype('uint32'))
+    new_seg = watershed(region_image, region_seeds, mask=mask, compactness=0.001)
     new_seg[~mask] = region_segmentation[~mask]
 
     new_bboxes = get_bboxes(new_seg)
