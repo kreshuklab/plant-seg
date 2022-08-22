@@ -41,8 +41,8 @@ def widget_unet_predictions(image: Image,
                                     scale=image.scale,
                                     metadata=image.metadata)
     layer_type = 'image'
-
-    func = partial(unet_predictions, model_name=model_name, stride=stride, patch=patch_size, device=device)
+    step_kwargs = dict(model_name=model_name, stride=stride, patch=patch_size, device=device)
+    func = partial(unet_predictions, **step_kwargs)
 
     return start_threading_process(func,
                                    func_kwargs={'raw': image.data},
@@ -50,7 +50,8 @@ def widget_unet_predictions(image: Image,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
-                                   process_name='UNet Predictions',
+                                   step_name='UNet Predictions',
+                                   step_kwargs=step_kwargs
                                    )
 
 
@@ -153,14 +154,14 @@ def widget_iterative_unet_predictions(image: Image,
                                     scale=image.scale,
                                     metadata=image.metadata)
     layer_type = 'image'
+    step_kwargs = dict(model_name=model_name,
+                       num_iterations=num_iterations,
+                       sigma=sigma,
+                       patch_size=patch_size,
+                       stride=stride,
+                       device=device)
 
-    func = partial(_compute_iterative_predictions,
-                   model_name=model_name,
-                   num_iterations=num_iterations,
-                   sigma=sigma,
-                   patch_size=patch_size,
-                   stride=stride,
-                   device=device)
+    func = partial(_compute_iterative_predictions, **step_kwargs)
 
     return start_threading_process(func,
                                    func_kwargs={'pmap': image.data},
@@ -168,7 +169,8 @@ def widget_iterative_unet_predictions(image: Image,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
-                                   process_name='UNet Iterative Predictions',
+                                   step_name='UNet Iterative Predictions',
+                                   step_kwargs=step_kwargs
                                    )
 
 

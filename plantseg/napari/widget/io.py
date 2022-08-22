@@ -8,7 +8,7 @@ from napari.layers import Layer, Image, Labels
 from napari.types import LayerDataTuple
 from warnings import warn
 
-from plantseg.dataprocessing.functional.dataprocessing import scale_image_to_voxelsize
+from plantseg.dataprocessing.functional.dataprocessing import image_rescale, compute_scaling_factor
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape, normalize_01
 from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, allowed_data_format
 from plantseg.io.io import load_tiff, load_h5, create_tiff
@@ -42,7 +42,8 @@ def _filter_channel(data, channel, layout):
     return np.squeeze(data[tuple(slices)])
 
 
-def _advanced_load(path, key, channel, advanced_load=False, layer_type='image', headless=False):
+def _advanced_load(path, key, channel, advanced_load=False, layer_type='image'):
+    path = Path(path)
     base, ext = path.stem, path.suffix
     if ext not in allowed_data_format:
         raise ValueError(f'File extension is {ext} but should be one of {allowed_data_format}')
@@ -70,9 +71,14 @@ def _advanced_load(path, key, channel, advanced_load=False, layer_type='image', 
     elif layer_type == 'labels':
         data = data.astype('uint16')
 
-    if headless:
-        return data
-    return data, voxel_size, voxel_size_unit
+    return {'data': data,
+            'voxel_size': voxel_size,
+            'voxel_size_unit': voxel_size_unit
+            }
+
+
+def _unpack_load(loaded_dict, key):
+    return loaded_dict.get(key)
 
 
 @magicgui(
@@ -101,38 +107,64 @@ def open_file(path: Path = Path.home(),
               key: str = 'raw',
               channel: Tuple[int, str] = (0, 'xcxx'),
               ) -> LayerDataTuple:
-
     name = layer_type if name == '' else name
-    _func_gui = partial(_advanced_load,
-                        key=key,
-                        channel=channel,
-                        advanced_load=advanced_load,
-                        layer_type=layer_type,
-                        headless=False)
-    _func_dask = partial(_advanced_load,
-                         key=key,
-                         channel=channel,
-                         advanced_load=advanced_load,
-                         layer_type=layer_type,
-                         headless=True)
 
-    data, voxel_size, voxel_size_unit = _func_gui(path)
-    dag.add_step(_func_dask, input_keys=(f'{name}_path',), output_key=name)
+    # wrap load routine and add it to the dag
+    step_params = {'key': key,
+                   'channel': channel,
+                   'advanced_load': advanced_load,
+                   'layer_type': layer_type}
+    _func = partial(_advanced_load,
+                    **step_params)
+
+    dag.add_step(_func,
+                 input_keys=(f'{name}_path',),
+                 output_key=f'_loaded_dict',
+                 step_name='Load stack',
+                 step_params=step_params)
+
+    # locally unwrap the result
+    load_dict = _func(path)
+    data = load_dict['data']
+    voxel_size = load_dict['voxel_size']
+    voxel_size_unit = load_dict['voxel_size_unit']
+
+    # add the key unwrapping to the dag
+    for key, out_name in [('data', name),
+                          ('voxel_size', f'{name}_voxel_size'),
+                          ('voxel_size_unit', f'{name}_voxel_size_unit')]:
+        step_params = {'key': key}
+        dag.add_step(partial(_unpack_load, **step_params),
+                     input_keys=(f'_loaded_dict',),
+                     output_key=out_name,
+                     step_name=f'Unpack stack: {key}',
+                     step_params=step_params
+                     )
+
+    # return layer
     show_info(f'Napari - PlantSeg info: {name} correctly imported, voxel_size: {voxel_size} {voxel_size_unit}')
     layer_kwargs = layer_properties(name=name,
                                     scale=voxel_size,
                                     metadata={'original_voxel_size': voxel_size,
-                                              'voxel_size_unit': voxel_size_unit})
+                                              'voxel_size_unit': voxel_size_unit,
+                                              'root_name': name})
     return data, layer_kwargs, layer_type
 
 
-def export_stack_as_tiff(data, name, voxel_size, voxel_size_unit, directory, func_typecast, dtype, suffix):
+def export_stack_as_tiff(data, name, directory,
+                         voxel_size, voxel_size_unit,
+                         func_scale, func_typecast, dtype, suffix):
+
+    if func_scale is not None:
+        data = func_scale(data)
+
     stack_name = f'{name}_{suffix}'
+    directory = Path(directory)
     out_path = directory / f'{stack_name}.tiff'
     data = fix_input_shape(data)
     data = func_typecast(data, dtype)
     create_tiff(path=out_path, stack=data[...], voxel_size=voxel_size, voxel_size_unit=voxel_size_unit)
-    return stack_name
+    return out_path
 
 
 def _image_typecast(data, dtype):
@@ -146,6 +178,12 @@ def _image_typecast(data, dtype):
 
 def _label_typecast(data, dtype):
     return data.astype(dtype)
+
+
+def checkout(*args):
+    for stack in args:
+        stack = Path(stack)
+        assert stack.is_file()
 
 
 @magicgui(
@@ -168,9 +206,9 @@ def export_stacks(images: List[Tuple[Layer, str]],
                   data_type: str = 'float32',
                   workflow_name: str = 'workflow',
                   ) -> None:
-    names, suffixes = [], []
+    export_name = []
     for i, (image, image_suffix) in enumerate(images):
-
+        # parse type and casting function to use
         if isinstance(image, Image):
             order = 1
             func_typecast = _image_typecast
@@ -185,10 +223,17 @@ def export_stacks(images: List[Tuple[Layer, str]],
         else:
             raise ValueError(f'{type(image)} cannot be exported, please use Image layers or Labels layers')
 
+        # parse metadata in the layer
         if rescale_to_original_resolution and 'original_voxel_size' in image.metadata.keys():
             output_resolution = image.metadata['original_voxel_size']
-            image.data = scale_image_to_voxelsize(image.data, image.scale, output_resolution, order=order)
-            image.scale = output_resolution
+            input_resolution = image.scale
+            scaling_factor = compute_scaling_factor(input_voxel_size=input_resolution,
+                                                    output_voxel_size=output_resolution)
+            func_scaling = partial(image_rescale, factor=scaling_factor, order=order)
+
+        else:
+            output_resolution = image.scale
+            func_scaling = None
 
         if 'voxel_size_unit' in image.metadata.keys():
             voxel_size_unit = image.metadata['voxel_size_unit']
@@ -196,19 +241,46 @@ def export_stacks(images: List[Tuple[Layer, str]],
             voxel_size_unit = 'um'
 
         image_suffix = f'export_{i}' if image_suffix == '' else image_suffix
-        _ = export_stack_as_tiff(data=image.data,
-                                 name=image.name,
-                                 voxel_size=image.scale,
-                                 voxel_size_unit=voxel_size_unit,
-                                 directory=directory,
-                                 func_typecast=func_typecast,
-                                 dtype=dtype,
-                                 suffix=image_suffix)
-        names.append(image.name)
-        suffixes.append(image_suffix)
+        step_params = {'func_scale': func_scaling,
+                       'func_typecast': func_typecast,
+                       'dtype': dtype,
+                       'suffix': image_suffix
+                       }
+
+        func_export_tiff = partial(export_stack_as_tiff, **step_params)
+        _ = func_export_tiff(data=image.data,
+                             name=image.name,
+                             directory=directory,
+                             voxel_size=output_resolution,
+                             voxel_size_unit=voxel_size_unit, )
+
+        root_name = image.metadata['root_name']
+        input_keys = (image.name,
+                      'out_stack_name',
+                      'out_directory',
+                      f'{root_name}_voxel_size',
+                      f'{root_name}_voxel_size_unit'
+                      )
+
+        _export_name = f'{image.name}_export'
+        dag.add_step(func_export_tiff,
+                     input_keys=input_keys,
+                     output_key=_export_name,
+                     step_name='Export',
+                     step_params=step_params)
+        export_name.append(_export_name)
+
         show_info(f'Napari - PlantSeg info: {image.name} correctly exported,'
                   f' voxel_size: {image.scale} {voxel_size_unit}')
 
-    out_path = directory / f'{workflow_name}.pkl'
-    dag.export_dag(out_path, names, suffixes)
-    show_info(f'Napari - PlantSeg info: workflow correctly exported')
+    if export_name:
+        final_export_check = 'final_export_check'
+        dag.add_step(checkout,
+                     input_keys=export_name,
+                     output_key=final_export_check,
+                     step_name='Checkout Execution',
+                     step_params={})
+
+        out_path = directory / f'{workflow_name}.pkl'
+        dag.export_dag(out_path, final_export_check)
+        show_info(f'Napari - PlantSeg info: workflow correctly exported')

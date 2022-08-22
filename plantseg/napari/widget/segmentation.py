@@ -22,8 +22,8 @@ def _generic_clustering(image: Image, labels: Labels,
                                     scale=image.scale,
                                     metadata=image.metadata)
     layer_type = 'labels'
-
-    func = partial(agg_func, beta=beta, post_minsize=minsize)
+    step_kwargs = dict(beta=beta, post_minsize=minsize)
+    func = partial(agg_func, **step_kwargs)
 
     return start_threading_process(func,
                                    func_kwargs={'boundary_pmaps': image.data,
@@ -32,7 +32,8 @@ def _generic_clustering(image: Image, labels: Labels,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
-                                   process_name=f'{name} Clustering',
+                                   step_name=f'{name} Clustering',
+                                   step_kwargs=step_kwargs
                                    )
 
 
@@ -103,8 +104,8 @@ def widget_lifted_multicut(image: Image,
                                     scale=image.scale,
                                     metadata=image.metadata)
     layer_type = 'labels'
-
-    func = partial(lmc, superpixels=_labels, beta=beta, post_minsize=minsize)
+    step_kwargs = dict(beta=beta, post_minsize=minsize)
+    func = partial(lmc, step_kwargs)
 
     return start_threading_process(func,
                                    func_kwargs={'boundary_pmaps': image.data,
@@ -114,7 +115,8 @@ def widget_lifted_multicut(image: Image,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
-                                   process_name=f'Lifted Multicut Clustering',
+                                   step_name=f'Lifted Multicut Clustering',
+                                   step_kwargs=step_kwargs
                                    )
 
 
@@ -192,17 +194,18 @@ def widget_dt_ws(image: Image,
 
     stacked = False if stacked == '3D' else True
     pixel_pitch = pixel_pitch if use_pixel_pitch else None
+    step_kwargs = dict(threshold=threshold,
+                       min_size=min_size,
+                       stacked=stacked,
+                       sigma_seeds=sigma_seeds,
+                       sigma_weights=sigma_weights,
+                       alpha=alpha,
+                       pixel_pitch=pixel_pitch,
+                       apply_nonmax_suppression=apply_nonmax_suppression,
+                       nuclei=nuclei)
 
     func = partial(_nuclei_aware_dtws_wrapper,
-                   threshold=threshold,
-                   min_size=min_size,
-                   stacked=stacked,
-                   sigma_seeds=sigma_seeds,
-                   sigma_weights=sigma_weights,
-                   alpha=alpha,
-                   pixel_pitch=pixel_pitch,
-                   apply_nonmax_suppression=apply_nonmax_suppression,
-                   nuclei=nuclei
+                   **step_kwargs
                    )
     return start_threading_process(func,
                                    func_kwargs={'boundary_pmaps': image.data},
@@ -210,7 +213,8 @@ def widget_dt_ws(image: Image,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
-                                   process_name=f'Watershed Segmentation',
+                                   step_name=f'Watershed Segmentation',
+                                   step_kwargs=step_kwargs
                                    )
 
 
@@ -241,10 +245,10 @@ def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
                                     scale=cell_segmentation.scale,
                                     metadata=cell_segmentation.metadata)
     layer_type = 'labels'
+    step_kwargs = dict(threshold_merge=threshold_merge, threshold_split=threshold_split)
 
     func = partial(fix_over_under_segmentation_from_nuclei,
-                   threshold_merge=threshold_merge,
-                   threshold_split=threshold_split,
+                   **step_kwargs
                    )
     return start_threading_process(func,
                                    func_kwargs=func_kwargs,
@@ -252,5 +256,6 @@ def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
-                                   process_name=f'Fix Over / Under segmentation',
+                                   step_name=f'Fix Over / Under segmentation',
+                                   step_kwargs=step_kwargs
                                    )

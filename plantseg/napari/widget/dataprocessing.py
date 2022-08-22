@@ -40,10 +40,11 @@ def widget_gaussian_smoothing(image: Image,
                               ) -> Future[LayerDataTuple]:
     out_name = build_nice_name(image.name, 'GaussianSmoothing')
     inputs_kwarg = {'image': image.data}
+    step_kwargs = {'sigma': sigma}
     inputs_names = (image.name,)
     layer_kwargs = layer_properties(name=out_name, scale=image.scale, metadata=image.metadata)
     layer_type = 'image'
-    func = partial(image_gaussian_smoothing, sigma=sigma)
+    func = partial(image_gaussian_smoothing, **step_kwargs)
 
     return start_threading_process(func,
                                    func_kwargs=inputs_kwarg,
@@ -51,7 +52,8 @@ def widget_gaussian_smoothing(image: Image,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
-                                   process_name='Gaussian Smoothing',
+                                   step_name='Gaussian Smoothing',
+                                   step_kwargs=step_kwargs,
                                    )
 
 
@@ -106,7 +108,6 @@ def widget_rescaling(image: Layer,
 
     elif type_of_refactor == 'Same as Reference Model':
         out_voxel_size = get_model_resolution(reference_model)
-        print(out_voxel_size)
         rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
 
     else:
@@ -115,19 +116,21 @@ def widget_rescaling(image: Layer,
     out_name = build_nice_name(image.name, 'Rescaled')
     inputs_kwarg = {'image': image.data}
     inputs_names = (image.name,)
+    step_kwargs = {'factor': rescaling_factor, 'order': order}
     layer_kwargs = layer_properties(name=out_name,
                                     scale=out_voxel_size,
                                     metadata={**image.metadata,
                                               **{'original_voxel_size': current_resolution}})
     layer_type = 'image'
-    func = partial(image_rescale, factor=rescaling_factor, order=order)
+    func = partial(image_rescale, **step_kwargs)
 
     return start_threading_process(func,
                                    func_kwargs=inputs_kwarg,
                                    out_name=out_name,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
-                                   process_name='Rescaling',
+                                   step_name='Rescaling',
+                                   step_kwargs=step_kwargs,
                                    layer_type=layer_type,
                                    )
 
@@ -184,7 +187,7 @@ def widget_cropping(image: Layer,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
-                                   process_name='Cropping',
+                                   step_name='Cropping',
                                    skip_dag=True,
                                    )
 
@@ -222,16 +225,18 @@ def widget_add_layers(image1: Image,
                                     scale=image1.scale,
                                     metadata=image1.metadata)
     layer_type = 'image'
-
-    func = partial(_two_layers_operation, weights=weights, operation=operation)
+    step_kwargs = dict(weights=weights, operation=operation)
+    func = partial(_two_layers_operation, **step_kwargs)
     assert image1.data.shape == image2.data.shape
+
     return start_threading_process(func,
                                    func_kwargs={'data1': image1.data, 'data2': image2.data},
                                    out_name=out_name,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
-                                   process_name='Merge Layers',
+                                   step_name='Merge Layers',
+                                   step_kwargs=step_kwargs
                                    )
 
 
@@ -267,9 +272,9 @@ def widget_label_processing(segmentation: Labels,
                                     scale=segmentation.scale,
                                     metadata=segmentation.metadata)
     layer_type = 'labels'
+    step_kwargs = dict(set_bg_to_0=set_bg_to_0, relabel_segmentation=relabel_segmentation)
     func = partial(_label_processing,
-                   set_bg_to_0=set_bg_to_0,
-                   relabel_segmentation=relabel_segmentation)
+                   **step_kwargs)
 
     return start_threading_process(func,
                                    func_kwargs=inputs_kwarg,
@@ -277,5 +282,6 @@ def widget_label_processing(segmentation: Labels,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
-                                   process_name='Label Processing',
+                                   step_name='Label Processing',
+                                   step_kwargs=step_kwargs
                                    )

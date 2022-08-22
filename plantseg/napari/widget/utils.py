@@ -17,28 +17,33 @@ def start_threading_process(func: Callable,
                             out_name: str,
                             input_keys: Tuple[str, ...],
                             layer_kwarg: dict,
-                            layer_type='image',
-                            process_name='',
-                            skip_dag=False) -> Future:
+                            layer_type: str = 'image',
+                            step_name: str = '',
+                            step_kwargs: dict = None,
+                            skip_dag: bool = False) -> Future:
+
     thread_func = thread_worker(partial(func, **func_kwargs))
     future = Future()
 
     def on_done(result):
-        show_info(f'Napari - PlantSeg info: widget {process_name} computation complete')
+        show_info(f'Napari - PlantSeg info: widget {step_name} computation complete')
         _func = func if not skip_dag else identity
-        dag.add_step(_func, input_keys=input_keys, output_key=out_name)
+        dag.add_step(_func, input_keys=input_keys,
+                     output_key=out_name,
+                     step_name=step_name,
+                     step_params=step_kwargs)
         result = result, layer_kwarg, layer_type
         future.set_result(result)
 
     worker = thread_func()
     worker.returned.connect(on_done)
     worker.start()
-    show_info(f'Napari - PlantSeg info: widget {process_name} computation started')
+    show_info(f'Napari - PlantSeg info: widget {step_name} computation started')
     return future
 
 
 def layer_properties(name, scale, metadata: dict = None):
-    keys_to_save = {'original_voxel_size', 'voxel_size_unit'}
+    keys_to_save = {'original_voxel_size', 'voxel_size_unit', 'root_name'}
     if metadata is not None:
         _new_metadata = {key: metadata[key] for key in keys_to_save if key in metadata}
     else:
