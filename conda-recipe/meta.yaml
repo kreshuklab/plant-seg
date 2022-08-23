@@ -19,18 +19,16 @@ requirements:
     - pip
 
   run:
-    - python
-    - pillow
+    - python => 3.9
     - h5py
     - requests
     - pyyaml
-    - scipy
     - scikit-image
     - tifffile
     - vigra
     - pytorch
     - python-elf
-    - pytorch-3dunet
+    - pytorch-3dunet => 1.3.7
 
 test:
   imports:
