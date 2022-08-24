@@ -148,7 +148,7 @@ def _compute_slices(rectangle, crop_z, shape):
     y_end = min(rectangle[2, 2], shape[2])
     y_slice = slice(y_start, y_end)
 
-    return [z_slice, x_slice, y_slice]
+    return z_slice, x_slice, y_slice
 
 
 def _cropping(data, crop_slices):
@@ -181,6 +181,7 @@ def widget_cropping(image: Layer,
 
     crop_slices = _compute_slices(rectangle, crop_z, image.data.shape)
     func = partial(_cropping, crop_slices=crop_slices)
+
     return start_threading_process(func,
                                    func_kwargs={'data': image.data},
                                    out_name=out_name,
