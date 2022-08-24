@@ -137,7 +137,7 @@ def open_file(path: Path = Path.home(),
         dag.add_step(partial(_unpack_load, **step_params),
                      input_keys=(f'_loaded_dict',),
                      output_key=out_name,
-                     step_name=f'Unpack stack: {key}',
+                     step_name=f'Unpack {key}',
                      step_params=step_params
                      )
 

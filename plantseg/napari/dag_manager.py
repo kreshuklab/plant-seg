@@ -15,9 +15,23 @@ class DagManager:
         self.outputs_suffixes = []
 
     def __repr__(self):
-        return f'inputs: {self.inputs} \n ' \
-               f'dag: {self.human_readable_dag} \n' \
-               f'outputs: {self.outputs}'
+        max_key_len = max([len(key) for key in self.human_readable_dag.keys()])
+        out_str = 'PlantSeg Computation Graph Manager\n\n'
+        out_str += f'\033[1mInputs\033[0m: {", ".join(self.inputs)} \n\n'
+        out_str += '\033[1mDAG\033[0m: \n'
+        for key, value in self.human_readable_dag.items():
+            key += ' ' * (1 + max_key_len - len(key))
+            process = "\033[92m {}\033[00m" .format(value["step-name"])
+            process = f'  {key} <-- {process}('
+            len_process = len(process) - 2 * len('\033[92m')
+
+            for i, ikey in enumerate(value["step_inputs"]):
+                off_set = '' if i == 0 else len_process * ' '
+                end = ')\n' if i == (len(value["step_inputs"]) - 1) else ',\n'
+                process += f'{off_set}{ikey}{end}'
+
+            out_str += process
+        return out_str
 
     def get_dag(self, inputs_dict, get_type='threaded'):
         for _input in self.inputs:
