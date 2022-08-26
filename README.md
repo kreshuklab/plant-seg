@@ -13,11 +13,14 @@ Pre-trained models are provided.
 ## News:
 * As of version 1.4.3 plantseg is natively supported on Windows!
 
+
 ## Getting Started
 The recommended way of installing plantseg is via the conda package, which is currently supported on Linux and Windows.
 Running plantseg.
 
-Or checkout our wiki: [https://github.com/hci-unihd/plant-seg/wiki](https://github.com/hci-unihd/plant-seg/wiki)
+
+Or checkout our [**wiki**](https://github.com/hci-unihd/plant-seg/wiki) 
+[📖](https://github.com/hci-unihd/plant-seg/wiki):
 
 ### Prerequisites for conda package
 * Linux or Windows 
