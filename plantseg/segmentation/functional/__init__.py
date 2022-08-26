@@ -3,3 +3,4 @@ from plantseg.segmentation.functional.segmentation import gasp
 from plantseg.segmentation.functional.segmentation import lifted_multicut_from_nuclei_pmaps
 from plantseg.segmentation.functional.segmentation import lifted_multicut_from_nuclei_segmentation
 from plantseg.segmentation.functional.segmentation import multicut
+from plantseg.segmentation.functional.segmentation import mutex_ws

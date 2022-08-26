@@ -15,7 +15,7 @@ def run_viewer():
     viewer.bind_key('c', widget_clean_scribble)
 
     for _containers, name in [(get_preprocessing_workflow(), 'Data - Processing'),
-                              (get_gasp_workflow(), 'UNet + GASP Workflow'),
+                              (get_gasp_workflow(), 'UNet + Segmentation'),
                               (get_extra_pred(), 'Extra-Pred'),
                               (get_extra_seg(), 'Extra-Seg'),
                               ]:

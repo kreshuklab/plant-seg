@@ -1,5 +1,5 @@
 from typing import List
-
+from functools import partial
 import nifty
 import nifty.graph.rag as nrag
 import numpy as np
@@ -16,6 +16,7 @@ from plantseg.segmentation.functional.utils import shift_affinities, compute_mc_
 
 try:
     import SimpleITK as sitk
+
     sitk_installed = True
 except ImportError:
     sitk_installed = False
@@ -121,6 +122,19 @@ def gasp(boundary_pmaps: ArrayLike,
     if post_minsize > 0:
         segmentation, _ = apply_size_filter(segmentation.astype('uint32'), boundary_pmaps, post_minsize)
     return segmentation
+
+
+def mutex_ws(boundary_pmaps: ArrayLike,
+             superpixels: ArrayLike = None,
+             beta: float = 0.5,
+             post_minsize: int = 100,
+             n_threads: int = 6) -> ArrayLike:
+    return gasp(boundary_pmaps=boundary_pmaps,
+                superpixels=superpixels,
+                gasp_linkage_criteria='mutex_watershed',
+                beta=beta,
+                post_minsize=post_minsize,
+                n_threads=n_threads)
 
 
 def multicut(boundary_pmaps: ArrayLike,
@@ -245,5 +259,6 @@ def simple_itk_watershed_from_markers(boundary_pmaps: ArrayLike,
 
     itk_pmaps = sitk.GetImageFromArray(boundary_pmaps)
     itk_seeds = sitk.GetImageFromArray(seeds)
-    segmentation = sitk.MorphologicalWatershedFromMarkers(itk_pmaps, itk_seeds, markWatershedLine=False, fullyConnected=False)
+    segmentation = sitk.MorphologicalWatershedFromMarkers(itk_pmaps, itk_seeds, markWatershedLine=False,
+                                                          fullyConnected=False)
     return sitk.GetArrayFromImage(segmentation).astype('uint32')
