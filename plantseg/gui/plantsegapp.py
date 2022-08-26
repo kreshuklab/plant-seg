@@ -401,12 +401,12 @@ class PlantSegApp:
     @staticmethod
     def open_documentation_preprocessing():
         """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Data-Processing")
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Classic-Data-Processing")
 
     @staticmethod
     def open_documentation_3dunet():
         """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Predictions")
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/CNN-Predictions")
 
     @staticmethod
     def open_documentation_segmentation():
@@ -416,7 +416,7 @@ class PlantSegApp:
     @staticmethod
     def open_postprocessing():
         """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Data-Processing.md")
+        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Classic-Data-Processing")
 
     def size_up(self):
         """ adjust font size in the main widget"""

@@ -963,7 +963,7 @@ def version_popup():
     popup_frame.grid(row=0, column=0, sticky=stick_all)
 
     text = f"PlantSeg version: {__version__}\n \n" \
-           f"Visit our sorce page for more info \n \n" \
+           f"Visit our source page for more info \n \n" \
            f"https://github.com/hci-unihd/plant-seg"
 
     label = tkinter.Label(popup_frame, bg="white", text=text)
