@@ -13,10 +13,12 @@ from plantseg.napari.widget.utils import start_threading_process, build_nice_nam
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed, mutex_ws
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
 
+
 class ClusteringOptions(Enum):
     gasp = gasp
     multicut = multicut
     mutex_ws = mutex_ws
+
 
 def _generic_clustering(image: Image, labels: Labels,
                         beta: float = 0.5,
@@ -51,7 +53,7 @@ def _generic_clustering(image: Image, labels: Labels,
                    'tooltip': 'Over-segmentation labels layer to use as input for clustering.'},
           mode={'label': 'Aggl. Mode',
                 'choices': ['GASP', 'MutexWS', 'MultiCut'],
-                'tooltip': 'Which agglomeration algorithm to use.'
+                'tooltip': 'Select which agglomeration algorithm to use.'
                 },
           beta={'label': 'Under/Over segmentation factor',
                 'tooltip': 'A low value will increase under-segmentation tendency '
@@ -59,10 +61,10 @@ def _generic_clustering(image: Image, labels: Labels,
                 'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
           minsize={'label': 'Min-size',
                    'tooltip': 'Minimum segment size allowed in voxels.'})
-def widget_gasp(image: Image, _labels: Labels,
-                mode: str = "GASP",
-                beta: float = 0.6,
-                minsize: int = 100) -> Future[LayerDataTuple]:
+def widget_agglomeration(image: Image, _labels: Labels,
+                         mode: str = "GASP",
+                         beta: float = 0.6,
+                         minsize: int = 100) -> Future[LayerDataTuple]:
     if mode == 'GASP':
         func = gasp
 
@@ -73,23 +75,6 @@ def widget_gasp(image: Image, _labels: Labels,
         func = multicut
 
     return _generic_clustering(image, _labels, beta=beta, minsize=minsize, name=mode, agg_func=func)
-
-
-@magicgui(call_button='Run MultiCut',
-          image={'label': 'Image',
-                 'tooltip': 'Raw or boundary image to use as input for clustering.'},
-          _labels={'label': 'Over-segmentation',
-                   'tooltip': 'Over-segmentation labels layer to use as input for clustering.'},
-          beta={'label': 'Under/Over segmentation factor',
-                'tooltip': 'A low value will increase under-segmentation tendency '
-                           'and a large value increase over-segmentation tendency.',
-                'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
-          minsize={'label': 'Min-size',
-                   'tooltip': 'Minimum segment size allowed in voxels.'})
-def widget_multicut(image: Image, _labels: Labels,
-                    beta: float = 0.5,
-                    minsize: int = 100) -> Future[LayerDataTuple]:
-    return _generic_clustering(image, _labels, beta=beta, minsize=minsize, name='MultiCut', agg_func=multicut)
 
 
 @magicgui(call_button='Run Lifted MultiCut',
