@@ -4,7 +4,7 @@
 
 # PlantSeg
 
-![alt text](./Documentation-GUI/images/main_figure_nologo.png)
+![alt text](../assets/images/main_figure_nologo.png)
 [PlantSeg](plantseg) is a tool for cell instance aware segmentation in densely packed 3D volumetric images.
 The pipeline uses a two stages segmentation strategy (Neural Network + Segmentation).
 The pipeline is tuned for plant cell tissue acquired with confocal and light sheet microscopy.
