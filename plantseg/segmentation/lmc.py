@@ -179,8 +179,6 @@ def segment_volume_lmc_from_seg(boundary_pmaps, nuclei_seg, watershed_segmentati
 
     # solve the full lifted problem using the kernighan lin approximation introduced in
     # http://openaccess.thecvf.com/content_iccv_2015/html/Keuper_Efficient_Decomposition_of_ICCV_2015_paper.html
-    lifted_costs = lifted_costs.astype('float64')
-    lifted_costs = lifted_costs[:, 0]
     node_labels = lmc.lifted_multicut_kernighan_lin(rag, costs, lifted_uvs, lifted_costs)
     lifted_segmentation = project_node_labels_to_pixels(rag, node_labels)
     return lifted_segmentation
