@@ -1,4 +1,4 @@
-from magicgui.widgets import Container, MainWindow
+from magicgui.widgets import MainWindow
 
 from plantseg.napari.widget.dataprocessing import widget_rescaling, widget_gaussian_smoothing
 from plantseg.napari.widget.dataprocessing import widget_cropping, widget_add_layers
@@ -6,6 +6,7 @@ from plantseg.napari.widget.io import open_file, export_stacks
 from plantseg.napari.widget.predictions import widget_unet_predictions, widget_test_all_unet_predictions
 from plantseg.napari.widget.predictions import widget_iterative_unet_predictions, widget_add_custom_model
 from plantseg.napari.widget.segmentation import widget_dt_ws, widget_agglomeration
+from plantseg.napari.widget.segmentation import widget_simple_dt_ws
 from plantseg.napari.widget.segmentation import widget_fix_over_under_segmentation_from_nuclei
 from plantseg.napari.widget.segmentation import widget_lifted_multicut
 from plantseg.napari.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
@@ -52,7 +53,7 @@ def get_preprocessing_workflow():
 
 def get_gasp_workflow():
     container = MainWindow(widgets=[widget_unet_predictions,
-                                    widget_dt_ws,
+                                    widget_simple_dt_ws,
                                     widget_agglomeration],
                            labels=False)
     container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/UNet-GASP-Workflow')
@@ -60,7 +61,8 @@ def get_gasp_workflow():
 
 
 def get_extra_seg():
-    container = MainWindow(widgets=[widget_lifted_multicut,
+    container = MainWindow(widgets=[widget_dt_ws,
+                                    widget_lifted_multicut,
                                     widget_fix_over_under_segmentation_from_nuclei],
                            labels=False)
     container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/Extra-Seg')

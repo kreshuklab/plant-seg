@@ -5,6 +5,7 @@ import yaml
 from plantseg.gui.plantsegapp import PlantSegApp
 from plantseg.pipeline.raw2seg import raw2seg
 from plantseg.napari.viewer import run_viewer
+from plantseg.napari.headless import run_workflow_headless
 
 
 def parser():
@@ -12,6 +13,7 @@ def parser():
     parser.add_argument('--config', type=str, help='Path to the YAML config file', required=False)
     parser.add_argument('--gui', action='store_true', help='Launch GUI configurator', required=False)
     parser.add_argument('--napari', action='store_true', help='Napari Viewer', required=False)
+    parser.add_argument('--headless', type=str, help='Run headless workflow', required=False)
     args = parser.parse_args()
     return args
 
@@ -27,8 +29,11 @@ def main():
     if args.gui:
         PlantSegApp()
 
-    if args.napari:
+    elif args.napari:
         run_viewer()
+
+    elif args.headless:
+        run_workflow_headless(args.headless)
 
     elif args.config is not None:
         config = load_config(args)

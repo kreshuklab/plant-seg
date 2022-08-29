@@ -32,17 +32,16 @@ def _generic_clustering(image: Image, labels: Labels,
                                     metadata=image.metadata)
     layer_type = 'labels'
     step_kwargs = dict(beta=beta, post_minsize=minsize)
-    func = partial(agg_func, **step_kwargs)
 
-    return start_threading_process(func,
-                                   func_kwargs={'boundary_pmaps': image.data,
-                                                'superpixels': labels.data},
+    return start_threading_process(agg_func,
+                                   runtime_kwargs={'boundary_pmaps': image.data,
+                                                   'superpixels': labels.data},
+                                   statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    step_name=f'{name} Clustering',
-                                   step_kwargs=step_kwargs
                                    )
 
 
@@ -111,31 +110,30 @@ def widget_lifted_multicut(image: Image,
                                     metadata=image.metadata)
     layer_type = 'labels'
     step_kwargs = dict(beta=beta, post_minsize=minsize)
-    func = partial(lmc, step_kwargs)
 
-    return start_threading_process(func,
-                                   func_kwargs={'boundary_pmaps': image.data,
-                                                extra_key: nuclei.data,
-                                                'superpixels': _labels.data},
+    return start_threading_process(lmc,
+                                   runtime_kwargs={'boundary_pmaps': image.data,
+                                                   extra_key: nuclei.data,
+                                                   'superpixels': _labels.data},
+                                   statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    step_name=f'Lifted Multicut Clustering',
-                                   step_kwargs=step_kwargs
                                    )
 
 
-def _nuclei_aware_dtws_wrapper(boundary_pmaps,
-                               stacked: bool = True,
-                               threshold: float = 0.5,
-                               min_size: int = 100,
-                               sigma_seeds: float = .2,
-                               sigma_weights: float = 2.,
-                               alpha: float = 1.,
-                               pixel_pitch: Tuple[int, int, int] = (1, 1, 1),
-                               apply_nonmax_suppression: bool = False,
-                               nuclei: bool = False):
+def dtws_wrapper(boundary_pmaps,
+                 stacked: bool = True,
+                 threshold: float = 0.5,
+                 min_size: int = 100,
+                 sigma_seeds: float = .2,
+                 sigma_weights: float = 2.,
+                 alpha: float = 1.,
+                 pixel_pitch: Tuple[int, int, int] = (1, 1, 1),
+                 apply_nonmax_suppression: bool = False,
+                 nuclei: bool = False):
     if nuclei:
         boundary_pmaps = normalize_01(boundary_pmaps)
         boundary_pmaps = 1. - boundary_pmaps
@@ -210,17 +208,58 @@ def widget_dt_ws(image: Image,
                        apply_nonmax_suppression=apply_nonmax_suppression,
                        nuclei=nuclei)
 
-    func = partial(_nuclei_aware_dtws_wrapper,
-                   **step_kwargs
-                   )
-    return start_threading_process(func,
-                                   func_kwargs={'boundary_pmaps': image.data},
+    return start_threading_process(dtws_wrapper,
+                                   runtime_kwargs={'boundary_pmaps': image.data},
+                                   statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    step_name=f'Watershed Segmentation',
-                                   step_kwargs=step_kwargs
+                                   )
+
+
+@magicgui(call_button='Run Watershed',
+          image={'label': 'Image',
+                 'tooltip': 'Raw or boundary image to use as input for Watershed.'},
+          stacked={'label': 'Stacked',
+                   'tooltip': 'Define if the Watershed will run slice by slice (faster) '
+                              'or on the full volume (slower).',
+                   'widget_type': 'RadioButtons',
+                   'orientation': 'horizontal',
+                   'choices': ['2D', '3D']},
+          threshold={'label': 'Threshold',
+                     'tooltip': 'A low value will increase over-segmentation tendency '
+                                'and a large value increase under-segmentation tendency.',
+                     'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
+          min_size={'label': 'Min-size',
+                    'tooltip': 'Minimum segment size allowed in voxels.'},
+          )
+def widget_simple_dt_ws(image: Image,
+                        stacked: str = '2D',
+                        threshold: float = 0.5,
+                        min_size: int = 100) -> Future[LayerDataTuple]:
+    out_name = build_nice_name(image.name, 'dtWS')
+    inputs_names = (image.name,)
+    layer_kwargs = layer_properties(name=out_name,
+                                    scale=image.scale,
+                                    metadata=image.metadata)
+    layer_type = 'labels'
+
+    stacked = False if stacked == '3D' else True
+    step_kwargs = dict(threshold=threshold,
+                       min_size=min_size,
+                       stacked=stacked,
+                       pixel_pitch=None)
+
+    return start_threading_process(dtws_wrapper,
+                                   runtime_kwargs={'boundary_pmaps': image.data},
+                                   statics_kwargs=step_kwargs,
+                                   out_name=out_name,
+                                   input_keys=inputs_names,
+                                   layer_kwarg=layer_kwargs,
+                                   layer_type=layer_type,
+                                   step_name=f'Watershed Segmentation',
                                    )
 
 
@@ -253,15 +292,12 @@ def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
     layer_type = 'labels'
     step_kwargs = dict(threshold_merge=threshold_merge, threshold_split=threshold_split)
 
-    func = partial(fix_over_under_segmentation_from_nuclei,
-                   **step_kwargs
-                   )
-    return start_threading_process(func,
-                                   func_kwargs=func_kwargs,
+    return start_threading_process(fix_over_under_segmentation_from_nuclei,
+                                   runtime_kwargs=func_kwargs,
+                                   statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    step_name=f'Fix Over / Under segmentation',
-                                   step_kwargs=step_kwargs
                                    )

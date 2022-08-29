@@ -5,7 +5,7 @@ from typing import Callable, Tuple
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
 
-from plantseg.napari.dag_manager import dag
+from plantseg.napari.dag_handler import dag_manager
 
 
 def identity(x):
@@ -13,25 +13,26 @@ def identity(x):
 
 
 def start_threading_process(func: Callable,
-                            func_kwargs: dict,
+                            runtime_kwargs: dict,
+                            statics_kwargs: dict,
                             out_name: str,
                             input_keys: Tuple[str, ...],
                             layer_kwarg: dict,
                             layer_type: str = 'image',
                             step_name: str = '',
-                            step_kwargs: dict = None,
                             skip_dag: bool = False) -> Future:
 
-    thread_func = thread_worker(partial(func, **func_kwargs))
+    runtime_kwargs.update(statics_kwargs)
+    thread_func = thread_worker(partial(func, **runtime_kwargs))
     future = Future()
 
     def on_done(result):
         show_info(f'Napari - PlantSeg info: widget {step_name} computation complete')
         _func = func if not skip_dag else identity
-        dag.add_step(_func, input_keys=input_keys,
-                     output_key=out_name,
-                     step_name=step_name,
-                     step_params=step_kwargs)
+        dag_manager.add_step(_func, input_keys=input_keys,
+                             output_key=out_name,
+                             static_params=statics_kwargs,
+                             step_name=step_name)
         result = result, layer_kwarg, layer_type
         future.set_result(result)
 

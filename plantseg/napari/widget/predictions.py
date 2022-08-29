@@ -42,16 +42,15 @@ def widget_unet_predictions(image: Image,
                                     metadata=image.metadata)
     layer_type = 'image'
     step_kwargs = dict(model_name=model_name, stride=stride, patch=patch_size, device=device)
-    func = partial(unet_predictions, **step_kwargs)
 
-    return start_threading_process(func,
-                                   func_kwargs={'raw': image.data},
+    return start_threading_process(unet_predictions,
+                                   runtime_kwargs={'raw': image.data},
+                                   statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    step_name='UNet Predictions',
-                                   step_kwargs=step_kwargs
                                    )
 
 
@@ -164,13 +163,13 @@ def widget_iterative_unet_predictions(image: Image,
     func = partial(_compute_iterative_predictions, **step_kwargs)
 
     return start_threading_process(func,
-                                   func_kwargs={'pmap': image.data},
+                                   runtime_kwargs={'pmap': image.data},
+                                   statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    step_name='UNet Iterative Predictions',
-                                   step_kwargs=step_kwargs
                                    )
 
 
