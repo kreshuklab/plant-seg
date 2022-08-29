@@ -92,13 +92,17 @@ def run(plantseg_bin_dir):
 
     args = sys.argv
     if len(args) == 1:
-        subprocess.run([python_path, run_script_path, '--gui'])
+        subprocess.run([python_path, run_script_path, '--napari'])
 
     elif len(args) == 2:
         file = args[1]
         extension = os.path.splitext(file)[1]
         if extension == '.yaml':
             subprocess.run([python_path, run_script_path, '--config', file])
+
+        if extension == '.pkl':
+            subprocess.run([python_path, run_script_path, '--headless', file])
+
         elif extension in ['.h5', '.hdf', '.tiff', '.tif'] or os.path.isdir(file):
             modify_config(plantseg_bin_dir, file)
             subprocess.run([python_path, run_script_path, '--gui'])
