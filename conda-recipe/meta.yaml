@@ -29,7 +29,7 @@ requirements:
     - pytorch
     - python-elf
     - pytorch-3dunet =>1.3.7
-    - viewer
+    - napari
     - python-graphviz
 
 test:
