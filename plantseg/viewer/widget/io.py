@@ -12,8 +12,8 @@ from plantseg.dataprocessing.functional.dataprocessing import image_rescale, com
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape, normalize_01
 from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, allowed_data_format
 from plantseg.io.io import load_tiff, load_h5, create_tiff
-from plantseg.napari.dag_handler import dag_manager
-from plantseg.napari.widget.utils import layer_properties
+from plantseg.viewer.dag_handler import dag_manager
+from plantseg.viewer.widget.utils import layer_properties
 from napari.utils.notifications import show_info
 
 

@@ -7,7 +7,7 @@ from napari.layers import Labels, Image
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
 
-from plantseg.napari.widget.proofreading.utils import get_bboxes, get_idx_slice
+from plantseg.viewer.widget.proofreading.utils import get_bboxes, get_idx_slice
 from skimage.segmentation import watershed
 
 """

@@ -2,10 +2,10 @@ import argparse
 
 import yaml
 
-from plantseg.gui.plantsegapp import PlantSegApp
+from plantseg.legacy_gui.plantsegapp import PlantSegApp
 from plantseg.pipeline.raw2seg import raw2seg
-from plantseg.napari.viewer import run_viewer
-from plantseg.napari.headless import run_workflow_headless
+from plantseg.viewer.viewer import run_viewer
+from plantseg.viewer.headless import run_workflow_headless
 
 
 def parser():
@@ -41,7 +41,7 @@ def main():
 
     else:
         raise ValueError("Not enough arguments. Please use: \n"
-                         " --gui for launching the graphical pipeline configurator or \n"
+                         " --legacy_gui for launching the graphical pipeline configurator or \n"
                          " --config 'path_to_config.yaml' for launching the pipeline from command line")
 
 

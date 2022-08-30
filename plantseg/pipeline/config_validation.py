@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import yaml
 
-from plantseg.gui import list_models
+from plantseg.legacy_gui import list_models
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline import raw2seg_config_template
 from plantseg.predictions.utils import STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_DRAFT, get_stride_shape, check_models
@@ -40,7 +40,7 @@ def is_float(key, value, fallback=None):
 
 
 def is_int(key, value, fallback=None):
-    # some of the gui int come as strings
+    # some of the legacy_gui int come as strings
     value = int(value) if isinstance(value, str) else value
     return _is_type(key, value, fallback=fallback, check_types=int, text="integer")
 

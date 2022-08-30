@@ -13,8 +13,8 @@ from plantseg.dataprocessing.functional import image_gaussian_smoothing, image_r
 from plantseg.dataprocessing.functional.dataprocessing import compute_scaling_factor, compute_scaling_voxelsize
 from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
 from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation as _relabel_segmentation
-from plantseg.gui import list_models, get_model_resolution
-from plantseg.napari.widget.utils import start_threading_process, build_nice_name, layer_properties
+from plantseg.legacy_gui import list_models, get_model_resolution
+from plantseg.viewer.widget.utils import start_threading_process, build_nice_name, layer_properties
 
 
 @magicgui(call_button='Run Gaussian Smoothing',

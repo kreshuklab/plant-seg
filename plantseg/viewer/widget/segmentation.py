@@ -9,7 +9,7 @@ from enum import Enum
 
 from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_under_segmentation_from_nuclei
 from plantseg.dataprocessing.functional.dataprocessing import normalize_01
-from plantseg.napari.widget.utils import start_threading_process, build_nice_name, layer_properties
+from plantseg.viewer.widget.utils import start_threading_process, build_nice_name, layer_properties
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed, mutex_ws
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
 

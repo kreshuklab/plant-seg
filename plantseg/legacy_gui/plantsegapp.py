@@ -9,8 +9,8 @@ from tkinter import font
 import yaml
 
 from plantseg import plantseg_global_path, configs_path, RESOURCES_DIR, standard_config_template
-from plantseg.gui import convert_rgb
-from plantseg.gui.gui_tools import Files2Process, report_error, version_popup, LoadModelPopup, RemovePopup
+from plantseg.legacy_gui import convert_rgb
+from plantseg.legacy_gui.gui_tools import Files2Process, report_error, version_popup, LoadModelPopup, RemovePopup
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.executor import PipelineExecutor
 from plantseg.pipeline.utils import QueueHandler
@@ -325,7 +325,7 @@ class PlantSegApp:
         return plant_config_path, plantseg_config
 
     def load_app_config(self, config="gui_configuration.yaml"):
-        """Load gui style config"""
+        """Load legacy_gui style config"""
         conf_path = self.get_app_config_path(config)
         app_config = yaml.load(open(conf_path, 'r'), Loader=yaml.FullLoader)["plant_segapp"]
         return app_config
@@ -356,7 +356,7 @@ class PlantSegApp:
              self.post_obj) = self.init_menus()
 
     def save_config(self):
-        """ save yaml from current entries in the gui"""
+        """ save yaml from current entries in the legacy_gui"""
         self.update_config()
         default_start = os.path.join(configs_path)
         os.makedirs(default_start, exist_ok=True)
@@ -371,7 +371,7 @@ class PlantSegApp:
     # End config Read/Write ========= Begin Others
     def init_menus(self, show_all=True):
         """ Initialize menu entries from config"""
-        from ..gui.gui_widgets import PreprocessingFrame, UnetPredictionFrame, SegmentationFrame, PostFrame
+        from ..legacy_gui.gui_widgets import PreprocessingFrame, UnetPredictionFrame, SegmentationFrame, PostFrame
         pre_proc_obj = PreprocessingFrame(self.configuration_frame1, self.plantseg_config,
                                           col=0, module_name="Data Pre-Processing",
                                           font=self.font, show_all=show_all)
@@ -496,7 +496,7 @@ class PlantSegApp:
         x.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
 
     def update_config(self):
-        """ create from gui an updated yaml dictionary"""
+        """ create from legacy_gui an updated yaml dictionary"""
 
         # open a template config
         plantseg_config = yaml.load(open(self.plant_config_path, 'r'), Loader=yaml.FullLoader)
@@ -522,11 +522,11 @@ class PlantSegApp:
         self.plantseg_config = plantseg_config
 
     def _run(self):
-        """ create a yaml config from the gui and run the pipeline accordingly"""
+        """ create a yaml config from the legacy_gui and run the pipeline accordingly"""
         # Disable run button to avoid multiple actions.
         self.run_button["state"] = "disabled"
 
-        # Update config file from gui's menu
+        # Update config file from legacy_gui's menu
         self.update_config()
         self.plant_segapp.update()
 

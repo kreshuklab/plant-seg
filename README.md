@@ -1,4 +1,4 @@
-![alt text](./plantseg/gui/logo.png)
+![alt text](plantseg/legacy_gui/logo.png)
 
 [![build status](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-on-conda.yml/badge.svg)](https://github.com/hci-unihd/plant-seg/actions/)
 [![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/latest_release_date.svg)](https://anaconda.org/lcerrone/plantseg)
@@ -51,7 +51,7 @@ The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
 #### Install PlantSeg using conda
 The tool can be installed directly by executing in the terminal:
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pytorch-3dunet=1.3.7 plantseg napari
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pytorch-3dunet=1.3.7 plantseg viewer
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
@@ -69,7 +69,7 @@ executable `.exe` for your Windows version and follow the installation instructi
 The tool can be installed directly by executing in the anaconda prompt 
 (***For installing and running plantseg this is equivalent to a linux terminal***):
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pillow=8.4 plantseg napari
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pillow=8.4 plantseg viewer
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
@@ -82,7 +82,7 @@ conda activate plant-seg
 
 then, start the plantseg in napari
 ```bash
-$ plantseg --napari
+$ plantseg --viewer
 ```
 A more in depth guide can be found in our [wiki](https://github.com/hci-unihd/plant-seg/wiki/Napari).
 ## Pipeline Usage (GUI)
@@ -94,7 +94,7 @@ conda activate plant-seg
 
 then, run the GUI by simply typing:
 ```bash
-$ plantseg --gui
+$ plantseg --legacy_gui
 ```
 A more in depth guide can be found in our [wiki](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-GUI).
 ## Pipeline Usage (command line)

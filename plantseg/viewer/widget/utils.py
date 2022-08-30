@@ -5,7 +5,7 @@ from typing import Callable, Tuple
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
 
-from plantseg.napari.dag_handler import dag_manager
+from plantseg.viewer.dag_handler import dag_manager
 
 
 def identity(x):

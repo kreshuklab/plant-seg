@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import List, Tuple
-from plantseg.napari.dag_handler import DagHandler
+from plantseg.viewer.dag_handler import DagHandler
 from magicgui import magicgui
 import multiprocessing
 import dask
