@@ -13,8 +13,8 @@ The pipeline is tuned for plant cell tissue acquired with confocal and light she
 Pre-trained models are provided.
 
 ### News PlanSeg version 1.5:
-* A new interactive plantseg mode using napari as a viewer!
-* build-in proofreading
+* A new interactive plantseg mode using [napari](https://napari.org/stable/index.html) as a viewer!
+* build-in segmentation proofreading
 * New experimental headless mode
 * New workflows
 
