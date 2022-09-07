@@ -12,7 +12,7 @@ The pipeline uses a two stages segmentation strategy (Neural Network + Segmentat
 The pipeline is tuned for plant cell tissue acquired with confocal and light sheet microscopy.
 Pre-trained models are provided.
 
-### News PlanSeg version 1.5:
+### New in PlanSeg version 1.5:
 * A new interactive plantseg mode using [napari](https://napari.org/stable/index.html) as a viewer!
 * build-in segmentation proofreading
 * New experimental headless mode
