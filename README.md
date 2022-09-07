@@ -12,23 +12,24 @@ The pipeline uses a two stages segmentation strategy (Neural Network + Segmentat
 The pipeline is tuned for plant cell tissue acquired with confocal and light sheet microscopy.
 Pre-trained models are provided.
 
-## News:
-* As of version 1.4.3 plantseg is natively supported on Windows!
-
+### News PlanSeg version 1.5:
+* A new interactive plantseg mode using napari as a viewer!
+* build-in proofreading
+* New experimental headless mode
+* New workflows
 
 ## Getting Started
-The recommended way of installing plantseg is via the conda package, which is currently supported on Linux and Windows.
-Running plantseg.
-
-
-Or checkout our [**wiki**](https://github.com/hci-unihd/plant-seg/wiki) 
+The recommended way of installing plantseg is via the conda package, 
+which is currently supported on Linux and Windows.
+For detailed usage documentation checkout our [**wiki**](https://github.com/hci-unihd/plant-seg/wiki) 
 [📖](https://github.com/hci-unihd/plant-seg/wiki):
 
-### Prerequisites for conda package
-* Linux or Windows 
-* (Optional) Nvidia GPU with official Nvidia drivers installed
+Or quick test PlantSeg online using Google Colab (requires a google account)  
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hci-unihd/plant-seg/blob/assets/plantseg_colab.ipynb)
 
-* Native MacOS installation (not yet M1) coming soon. 
+### Prerequisites for conda package
+* Linux or Windows (Might work on MacOS but it's not tested).
+* (Optional) Nvidia GPU with official Nvidia drivers installed. 
 
 ### Install on Linux
 #### Install Anaconda python
