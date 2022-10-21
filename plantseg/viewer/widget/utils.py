@@ -8,8 +8,17 @@ from napari.utils.notifications import show_info
 from plantseg.viewer.dag_handler import dag_manager
 
 
-def identity(x):
-    return x
+def identity(*args, **kwargs):
+    """
+    Pass through any positional arguments and ignores any keywords arguments
+    """
+    if len(args) == 1:
+        return args[0]
+
+    elif len(args) > 1:
+        return args
+
+    raise ValueError('identity should have at least one positional argument')
 
 
 def start_threading_process(func: Callable,
