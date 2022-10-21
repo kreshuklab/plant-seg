@@ -22,7 +22,7 @@ except ImportError:
 """
 
 
-current_label_layer = None
+current_label_layer: str = '__undefined__'
 
 
 def _merge_from_seeds(segmentation, region_slice, region_bbox, bboxes, all_idx, max_label):
@@ -98,9 +98,13 @@ def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label):
 
 
 @magicgui(call_button='Clean scribbles - < c >')
-def widget_clean_scribble(viewer):
-    if current_label_layer is None:
-        show_info('Scribble not defined. Run the proofreading widget tool once first')
+def widget_clean_scribble(viewer: napari.Viewer):
+    if current_label_layer == '__undefined__':
+        show_info('Scribble Layer not defined. Run the proofreading widget tool once first')
+        return None
+
+    if current_label_layer not in viewer.layers:
+        show_info("Scribble Layer doesn't exit anymore")
         return None
 
     viewer.layers[current_label_layer].data = np.zeros_like(viewer.layers[current_label_layer].data)
