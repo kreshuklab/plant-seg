@@ -52,7 +52,7 @@ The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
 #### Install PlantSeg using conda
 The tool can be installed directly by executing in the terminal:
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pytorch-3dunet=1.3.7 plantseg viewer
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pytorch-3dunet=1.3.7 plantseg napari
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
@@ -187,7 +187,7 @@ If you want your model to be part of the open-source model zoo provided with thi
 
 ## Using LiftedMulticut segmentation
 As reported in our [paper](https://elifesciences.org/articles/57613), if one has a nuclei signal imaged together with
-the boundary signal, we could leverage the fact that one cell contains only one nuclei and use the `LiftedMultict` 
+the boundary signal, we could leverage the fact that one cell contains only one nucleus and use the `LiftedMultict` 
 segmentation strategy and obtain improved segmentation. This workflow can be used from our napari gui and from our 
 [CLI](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-CLI/_edit#liftedmulticut-segmentation).
 
@@ -243,12 +243,12 @@ If you have a standard installation of plantseg, you can remove it by executing 
 $ rm ~/.plantseg_models/configs/config_gui_last.yaml
 ```
 
-* If you use plantseg from the comand line and you receive an error similar to:
+* If you use plantseg from the command line, and you receive an error similar to:
 ```
 RuntimeError: key : 'crop_volume' is missing, plant-seg requires 'crop_volume' to run
 ```
 
-Please make sure that your configuratiuon has the correct formatting and contains all required keys. 
+Please make sure that your configuration has the correct formatting and contains all required keys. 
 An updated example can be found inside the directory `examples`, in this repository.
 
 * If when trying to execute the Lifted Multicut pipeline you receive an error like:
@@ -260,7 +260,7 @@ The solution is to re-install [elf](https://github.com/constantinpape/elf) via
 conda install -c conda-forge python-elf
 ```
 
-* PlantSeg is under active development so it may happen that the models/configuration files saved in `~/.plantseg_modes`
+* PlantSeg is under active development, so it may happen that the models/configuration files saved in `~/.plantseg_modes`
 are outdated. In case of errors related to loading the configuration file, please close the PlantSeg app, 
 remove `~/.plantseg_models` directory and try again.
 
