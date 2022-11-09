@@ -83,7 +83,6 @@ class ArrayPredictor:
 
                 # forward pass
                 predictions = self.model(batch)
-                print(predictions.max(), predictions.min())
 
                 # wrap predictions into a list if there is only one output head from the network
                 if output_heads == 1:
