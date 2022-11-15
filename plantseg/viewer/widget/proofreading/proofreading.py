@@ -21,8 +21,9 @@ except ImportError:
     
 """
 
-
 current_label_layer: str = '__undefined__'
+default_key_binding_split_merge = 'n'
+default_key_binding_clean = 'b'
 
 
 def _merge_from_seeds(segmentation, region_slice, region_bbox, bboxes, all_idx, max_label):
@@ -97,7 +98,7 @@ def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label):
                                 max_label)
 
 
-@magicgui(call_button='Clean scribbles - < c >')
+@magicgui(call_button=f'Clean scribbles - < {default_key_binding_clean} >')
 def widget_clean_scribble(viewer: napari.Viewer):
     if current_label_layer == '__undefined__':
         show_info('Scribble Layer not defined. Run the proofreading widget tool once first')
@@ -111,7 +112,7 @@ def widget_clean_scribble(viewer: napari.Viewer):
     viewer.layers[current_label_layer].refresh()
 
 
-@magicgui(call_button='Split/Merge from scribbles - < p >',
+@magicgui(call_button=f'Split/Merge from scribbles - < {default_key_binding_split_merge} >',
           scribbles={'label': 'Scribbles'},
           segmentation={'label': 'Segmentation'},
           image={'label': 'Image'})
@@ -119,6 +120,9 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
                                           scribbles: Labels,
                                           segmentation: Labels,
                                           image: Image) -> None:
+    if scribbles is None or segmentation is None:
+        show_info('Scribbles and segmentation must be provided to the widget')
+        return None
 
     if scribbles.name == segmentation.name:
         show_info('Scribbles layer and segmentation layer cannot be the same')
