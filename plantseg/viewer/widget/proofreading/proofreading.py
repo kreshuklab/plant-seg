@@ -63,7 +63,7 @@ def _split_from_seed(segmentation, sz, sx, sy, region_slice, all_idx, offsets, b
         values = values + offsets[None, :]
         bboxes[idx] = values
 
-    show_info('split_complete')
+    show_info('split complete')
     return new_seg, region_slice, {'bboxes': bboxes, 'max_label': max_label}
 
 
