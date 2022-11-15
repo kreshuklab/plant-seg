@@ -176,7 +176,6 @@ def dtws_wrapper(boundary_pmaps,
           pixel_pitch={'label': 'Pixel pitch'},
           apply_nonmax_suppression={'label': 'Apply nonmax suppression'},
           nuclei={'label': 'Is image Nuclei'}
-
           )
 def widget_dt_ws(image: Image,
                  stacked: str = '2D',

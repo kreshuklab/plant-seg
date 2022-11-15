@@ -1,5 +1,5 @@
 from typing import List
-from functools import partial
+
 import nifty
 import nifty.graph.rag as nrag
 import numpy as np
@@ -29,7 +29,7 @@ def dt_watershed(boundary_pmaps: ArrayLike,
                  sigma_weights: float = 2.,
                  min_size: int = 100,
                  alpha: float = 1.0,
-                 pixel_pitch: List[int] = None,
+                 pixel_pitch: tuple[int, ...] = None,
                  apply_nonmax_suppression: bool = False,
                  n_threads: int = None,
                  mask: ArrayLike = None) -> ArrayLike:

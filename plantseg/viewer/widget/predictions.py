@@ -132,7 +132,7 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
                  'tooltip': 'Define the size of the gaussian smoothing kernel. '
                             'The larger the more blurred will be the output image.',
                  'max': 5.,
-                 'min': 0.1},
+                 'min': 0.},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
           stride={'label': 'Stride',
@@ -143,7 +143,7 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
 def widget_iterative_unet_predictions(image: Image,
                                       model_name: str,
                                       num_iterations: int = 2,
-                                      sigma: float = 1.,
+                                      sigma: float = 1.0,
                                       patch_size: Tuple[int, int, int] = (80, 160, 160),
                                       stride: str = STRIDE_ACCURATE,
                                       device: str = 'cuda', ) -> Future[LayerDataTuple]:

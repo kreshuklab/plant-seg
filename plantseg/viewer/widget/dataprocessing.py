@@ -25,7 +25,7 @@ from plantseg.viewer.widget.utils import start_threading_process, build_nice_nam
                  'tooltip': 'Define the size of the gaussian smoothing kernel. '
                             'The larger the more blurred will be the output image.',
                  'max': 5.,
-                 'min': 0.1})
+                 'min': 0.})
 def widget_gaussian_smoothing(image: Image,
                               sigma: float = 1.,
                               ) -> Future[LayerDataTuple]:
