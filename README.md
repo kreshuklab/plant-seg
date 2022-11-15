@@ -71,7 +71,7 @@ executable `.exe` for your Windows version and follow the installation instructi
 The tool can be installed directly by executing in the anaconda prompt 
 (***For installing and running plantseg this is equivalent to a linux terminal***):
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pillow=8.4 plantseg viewer
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pillow=8.4 plantseg napari
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
