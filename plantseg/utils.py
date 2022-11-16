@@ -2,7 +2,7 @@ import glob
 import os
 from pathlib import Path
 from shutil import copy2
-from typing import Tuple
+from typing import Tuple, Optional
 
 import requests
 import yaml
@@ -11,13 +11,38 @@ from plantseg import model_zoo_path, custom_zoo, home_path, PLANTSEG_MODELS_DIR,
 from plantseg.pipeline import gui_logger
 
 
-def get_model_zoo():
-    zoo_config = os.path.join(model_zoo_path)
-    zoo_config = yaml.load(open(zoo_config, 'r'),
-                           Loader=yaml.FullLoader)
+CONFIG_TRAIN_YAML = "config_train.yml"
+BEST_MODEL_PYTORCH = "best_checkpoint.pytorch"
+LAST_MODEL_PYTORCH = "last_checkpoint.pytorch"
 
-    custom_zoo_config = yaml.load(open(custom_zoo, 'r'),
-                                  Loader=yaml.FullLoader)
+
+def load_config(config_path: str) -> dict:
+    """
+    load a yaml config in a dictionary
+    """
+    with open(config_path, 'r') as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+    return config
+
+
+def get_model_zoo() -> dict:
+    """
+    returns a dictionary of all models in the model zoo.
+    example:
+        {
+        ...
+        generic_confocal_3d_unet:
+            path: 'download link or model location'
+            resolution: [0.235, 0.150, 0.150]
+            description: 'Unet trained on confocal images on 1/2-resolution in XY with BCEDiceLoss.'
+        ...
+        }
+    """
+    zoo_config = os.path.join(model_zoo_path)
+
+    zoo_config = load_config(zoo_config)
+
+    custom_zoo_config = load_config(custom_zoo)
 
     if custom_zoo_config is None:
         custom_zoo_config = {}
@@ -26,15 +51,19 @@ def get_model_zoo():
     return zoo_config
 
 
-def list_models():
-    """ list model zoo """
+def list_models() -> list[str]:
+    """
+    return a list of models in the model zoo by name
+    """
     zoo_config = get_model_zoo()
     models = list(zoo_config.keys())
     return models
 
 
-def get_model_resolution(model):
-    """ list model zoo """
+def get_model_resolution(model: str) -> list[float, float, float]:
+    """
+    return a models reference resolution
+    """
     zoo_config = get_model_zoo()
     resolution = zoo_config[model].get('resolution', [1., 1., 1.])
     return resolution
@@ -43,7 +72,15 @@ def get_model_resolution(model):
 def add_custom_model(new_model_name: str,
                      location: Path = Path.home(),
                      resolution: Tuple[float, float, float] = (1., 1., 1.),
-                     description: str = ''):
+                     description: str = '') -> Tuple[bool, Optional[str]]:
+    """
+    Add a custom trained model in the model zoo
+    :param new_model_name: name of the new model
+    :param location: location of the directory containing the custom trained model
+    :param resolution: reference resolution of the custom trained model
+    :param description: description of the trained model
+    :return:
+    """
 
     dest_dir = os.path.join(home_path, PLANTSEG_MODELS_DIR, new_model_name)
     os.makedirs(dest_dir, exist_ok=True)
@@ -61,7 +98,7 @@ def add_custom_model(new_model_name: str,
               f'the model can not be loaded.'
         return False, msg
 
-    custom_zoo_dict = yaml.load(open(custom_zoo, 'r'), Loader=yaml.FullLoader)
+    custom_zoo_dict = load_config(custom_zoo)
     if custom_zoo_dict is None:
         custom_zoo_dict = {}
 
@@ -76,34 +113,38 @@ def add_custom_model(new_model_name: str,
     return True, None
 
 
-CONFIG_TRAIN_YAML = "config_train.yml"
-BEST_MODEL_PYTORCH = "best_checkpoint.pytorch"
-LAST_MODEL_PYTORCH = "last_checkpoint.pytorch"
-
-
-def get_train_config(model_name, model_update=False):
+def get_train_config(model_name: str, model_update: bool = False) -> dict:
+    """
+    Load the training configuration of a model in the model zoo
+    :param model_name: name of the model in the model zoo
+    :param model_update: if true force the re-download of the model
+    :return: the training config
+    """
     check_models(model_name, update_files=model_update)
     # Load train config and add missing info
     train_config_path = os.path.join(home_path,
                                      PLANTSEG_MODELS_DIR,
                                      model_name,
                                      CONFIG_TRAIN_YAML)
-    with open(train_config_path, 'r') as f:
-        config_train = yaml.full_load(f)
+
+    config_train = load_config(train_config_path)
     return config_train
 
 
-def download_model(url, out_dir='.'):
+def download_model(url: str, out_dir: str = '.') -> None:
     for file in [CONFIG_TRAIN_YAML, BEST_MODEL_PYTORCH, LAST_MODEL_PYTORCH]:
         with requests.get(f'{url}{file}', allow_redirects=True) as r:
             with open(os.path.join(out_dir, file), 'wb') as f:
                 f.write(r.content)
 
 
-def check_models(model_name, update_files=False):
+def check_models(model_name: str, update_files: bool = False) -> bool:
     """
     Simple script to check and download trained modules
+    :param model_name: name of the model in the model zoo
+    :param update_files: if true force the re-download of the model
     """
+
     if os.path.isdir(model_name):
         model_dir = model_name
     else:
@@ -124,7 +165,7 @@ def check_models(model_name, update_files=False):
 
         # Read config
         model_file = os.path.join(plantseg_global_path, "resources", "models_zoo.yaml")
-        config = yaml.load(open(model_file, 'r'), Loader=yaml.FullLoader)
+        config = load_config(model_file)
 
         if model_name in config:
             url = config[model_name]["path"]

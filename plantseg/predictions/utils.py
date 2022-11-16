@@ -5,6 +5,7 @@ import yaml
 from pytorch3dunet.unet3d.model import get_model
 
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR, home_path
+from plantseg.utils import load_config
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.array_dataset import ArrayDataset
 from plantseg.predictions.array_predictor import ArrayPredictor
@@ -27,8 +28,7 @@ def get_predict_template():
     predict_template_path = os.path.join(plantseg_global_path,
                                          "resources",
                                          "config_predict_template.yaml")
-    with open(predict_template_path, 'r') as f:
-        predict_template = yaml.full_load(f)
+    predict_template = load_config(predict_template_path)
     return predict_template
 
 

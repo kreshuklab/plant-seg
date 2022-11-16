@@ -10,7 +10,7 @@ from plantseg.__version__ import __version__
 from plantseg.io import read_tiff_voxel_size, read_h5_voxel_size, TIFF_EXTENSIONS, H5_EXTENSIONS
 from plantseg.legacy_gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
 from plantseg.pipeline import gui_logger
-from plantseg.utils import add_custom_model
+from plantseg.utils import add_custom_model, load_config
 
 current_model = None
 current_segmentation = None
@@ -481,9 +481,8 @@ class RescaleEntry:
         """ This method open a popup windows that automatically set the scaling
          factor from the resolution given by the user"""
         global current_model
-
-        model_config = yaml.load(open(model_zoo_path, 'r'),
-                                 Loader=yaml.FullLoader)
+        
+        model_config = load_config(model_zoo_path)
 
         net_resolution = model_config[current_model]["resolution"]
         AutoResPopup(net_resolution, current_model, self.tk_value, self.font)
@@ -915,7 +914,7 @@ class RemovePopup:
     def delete_model(self):
         # Delete entry in zoo custom
         self.file_to_remove = self.file_to_remove.get()
-        custom_zoo_dict = yaml.load(open(custom_zoo, 'r'), Loader=yaml.FullLoader)
+        custom_zoo_dict = load_config(custom_zoo)
         if custom_zoo_dict is None:
             custom_zoo_dict = {}
 
@@ -924,16 +923,15 @@ class RemovePopup:
         else:
             msg = f"Model {self.file_to_remove} not found." \
                   f" Please check if the name you typed is a custom model. Pre-loaded models can not be deleted."
-            gui_logger.error(msg)
+            self.error = gui_logger.error(msg)
             self.popup.destroy()
             raise RuntimeError(msg)
 
         with open(custom_zoo, 'w') as f:
             yaml.dump(custom_zoo_dict, f)
 
-        file_directory = os.path.join(home_path,
-                                      PLANTSEG_MODELS_DIR,
-                                      self.file_to_remove)
+        self.join = os.path.join(home_path, PLANTSEG_MODELS_DIR, self.file_to_remove)
+        file_directory = self.join
 
         if os.path.exists(file_directory):
             rmtree(file_directory)

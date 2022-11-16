@@ -8,6 +8,7 @@ from tkinter import font
 
 import yaml
 
+from plantseg.utils import load_config
 from plantseg import plantseg_global_path, configs_path, RESOURCES_DIR, standard_config_template
 from plantseg.legacy_gui import convert_rgb
 from plantseg.legacy_gui.gui_tools import Files2Process, report_error, version_popup, LoadModelPopup, RemovePopup
@@ -316,24 +317,24 @@ class PlantSegApp:
         plant_config_path = self.get_last_config_path(name)
 
         if os.path.exists(plant_config_path):
-            plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
+            plantseg_config = load_config(plant_config_path)
         else:
             # Do not modify this location
             plant_config_path = os.path.join(standard_config_template)
-            plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
+            plantseg_config = load_config(plant_config_path)
 
         return plant_config_path, plantseg_config
 
     def load_app_config(self, config="gui_configuration.yaml"):
         """Load legacy_gui style config"""
         conf_path = self.get_app_config_path(config)
-        app_config = yaml.load(open(conf_path, 'r'), Loader=yaml.FullLoader)["plant_segapp"]
+        app_config = load_config(conf_path)["plant_segapp"]
         return app_config
 
     def reset_config(self):
         """ reset to default config, do not change path"""
         plant_config_path = os.path.join(standard_config_template)
-        self.plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
+        self.plantseg_config = load_config(plant_config_path)
 
         (self.pre_proc_obj,
          self.predictions_obj,
@@ -349,7 +350,7 @@ class PlantSegApp:
                                                                filetypes=(("yaml files", "*.yaml"),
                                                                           ("yaml files", "*.yml")))
         if len(plant_config_path) > 0:
-            self.plantseg_config = yaml.load(open(plant_config_path, 'r'), Loader=yaml.FullLoader)
+            self.plantseg_config = load_config(plant_config_path)
             (self.pre_proc_obj,
              self.predictions_obj,
              self.segmentation_obj,
@@ -499,7 +500,7 @@ class PlantSegApp:
         """ create from legacy_gui an updated yaml dictionary"""
 
         # open a template config
-        plantseg_config = yaml.load(open(self.plant_config_path, 'r'), Loader=yaml.FullLoader)
+        plantseg_config = load_config(self.plant_config_path)
 
         # fill with modules input
         plantseg_config["path"] = self.file_to_process.files.get()

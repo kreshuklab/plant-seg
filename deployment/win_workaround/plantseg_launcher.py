@@ -51,7 +51,8 @@ def modify_config(base_path, file):
     config_path = os.path.join(base_path, 'Lib', 'site-packages', 'plantseg', 'resources', 'config_gui_template.yaml')
 
     if os.path.isfile(config_path):
-        config = yaml.load(open(config_path, 'r'), Loader=yaml.FullLoader)
+        with open(config_path, 'r') as f:
+            config = yaml.load(f, Loader=yaml.FullLoader)
 
         # edit config with file
         config['path'] = file
