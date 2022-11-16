@@ -4,8 +4,8 @@ import yaml
 
 from plantseg.legacy_gui.plantsegapp import PlantSegApp
 from plantseg.pipeline.raw2seg import raw2seg
-from plantseg.viewer.viewer import run_viewer
 from plantseg.viewer.headless import run_workflow_headless
+from plantseg.viewer.viewer import run_viewer
 
 
 def parser():

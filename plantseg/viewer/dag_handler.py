@@ -1,12 +1,11 @@
 import pathlib
 import pickle
 import warnings
+from functools import partial
 from typing import List, Callable, Tuple, Union, Set
 
-
-from functools import partial
-import yaml
 import dask
+import yaml
 from dask.multiprocessing import get as mpget
 from dask.threaded import get as tget
 

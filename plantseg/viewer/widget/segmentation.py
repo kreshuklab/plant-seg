@@ -1,17 +1,16 @@
 from concurrent.futures import Future
-from functools import partial
+from enum import Enum
 from typing import Union, Tuple, Callable
 
 from magicgui import magicgui
 from napari.layers import Labels, Image, Layer
 from napari.types import LayerDataTuple
-from enum import Enum
 
 from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_under_segmentation_from_nuclei
 from plantseg.dataprocessing.functional.dataprocessing import normalize_01
-from plantseg.viewer.widget.utils import start_threading_process, build_nice_name, layer_properties
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed, mutex_ws
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
+from plantseg.viewer.widget.utils import start_threading_process, build_nice_name, layer_properties
 
 
 class ClusteringOptions(Enum):

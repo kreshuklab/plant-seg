@@ -1,19 +1,19 @@
 from concurrent.futures import Future
 from functools import partial
+from pathlib import Path
 from typing import Tuple, List
 
 from magicgui import magicgui
 from napari.layers import Image
 from napari.qt.threading import thread_worker
 from napari.types import LayerDataTuple
+from napari.utils.notifications import show_info
 
-from pathlib import Path
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
-from plantseg.legacy_gui import list_models, add_custom_model
-from plantseg.viewer.widget.utils import start_threading_process, build_nice_name, layer_properties
 from plantseg.predictions.functional import unet_predictions
 from plantseg.predictions.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
-from napari.utils.notifications import show_info
+from plantseg.utils import list_models, add_custom_model
+from plantseg.viewer.widget.utils import start_threading_process, build_nice_name, layer_properties
 
 
 @magicgui(call_button='Run Predictions',

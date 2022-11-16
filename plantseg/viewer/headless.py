@@ -1,10 +1,12 @@
+import multiprocessing
+import time
 from pathlib import Path
 from typing import List, Tuple
-from plantseg.viewer.dag_handler import DagHandler
-from magicgui import magicgui
-import multiprocessing
+
 import dask
-import time
+from magicgui import magicgui
+
+from plantseg.viewer.dag_handler import DagHandler
 
 
 def _parse_input_paths(inputs, path_suffix='_path'):

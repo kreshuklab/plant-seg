@@ -3,9 +3,9 @@ from napari.utils.notifications import show_info
 
 from plantseg.viewer.containers import get_extra_seg, get_extra_pred
 from plantseg.viewer.containers import get_gasp_workflow, get_preprocessing_workflow, get_main
-from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
-from plantseg.viewer.widget.proofreading.proofreading import widget_clean_scribble
 from plantseg.viewer.widget.proofreading.proofreading import default_key_binding_clean, default_key_binding_split_merge
+from plantseg.viewer.widget.proofreading.proofreading import widget_clean_scribble
+from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 
 
 def run_viewer():

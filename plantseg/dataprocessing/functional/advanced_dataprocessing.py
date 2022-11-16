@@ -1,9 +1,10 @@
+import copy
+
+import numba
 import numpy as np
 import tqdm
-import copy
-import numba
-from skimage.segmentation import watershed
 from skimage.filters import gaussian
+from skimage.segmentation import watershed
 
 
 def get_bbox(mask, pixel_toll=0):

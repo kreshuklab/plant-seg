@@ -1,11 +1,10 @@
 import os
 import warnings
+from xml.etree import cElementTree as ElementTree
 
 import h5py
 import numpy as np
 import tifffile
-import warnings
-from xml.etree import cElementTree as ElementTree
 
 TIFF_EXTENSIONS = [".tiff", ".tif"]
 H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]

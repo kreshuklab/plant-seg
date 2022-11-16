@@ -4,10 +4,10 @@ from abc import ABC
 import numpy as np
 import yaml
 
+from plantseg.dataprocessing.functional.dataprocessing import normalize_01, fix_input_shape
+from plantseg.io import smart_load, create_tiff, create_h5
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.utils import SUPPORTED_TYPES
-from plantseg.io import smart_load, create_tiff, create_h5
-from plantseg.dataprocessing.functional.dataprocessing import normalize_01, fix_input_shape
 
 
 class GenericPipelineStep:

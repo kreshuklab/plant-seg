@@ -1,5 +1,3 @@
-from typing import List
-
 import nifty
 import nifty.graph.rag as nrag
 import numpy as np

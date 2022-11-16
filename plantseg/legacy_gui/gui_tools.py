@@ -1,17 +1,16 @@
-import glob
 import os
 import tkinter
-from shutil import copy2, rmtree
+from shutil import rmtree
 from tkinter import filedialog
 
 import yaml
 
 from plantseg import custom_zoo, home_path, PLANTSEG_MODELS_DIR, model_zoo_path
 from plantseg.__version__ import __version__
-from plantseg.legacy_gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
 from plantseg.io import read_tiff_voxel_size, read_h5_voxel_size, TIFF_EXTENSIONS, H5_EXTENSIONS
+from plantseg.legacy_gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
 from plantseg.pipeline import gui_logger
-from plantseg.legacy_gui import add_custom_model
+from plantseg.utils import add_custom_model
 
 current_model = None
 current_segmentation = None

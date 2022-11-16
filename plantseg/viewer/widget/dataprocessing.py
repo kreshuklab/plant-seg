@@ -1,6 +1,5 @@
 import math
 from concurrent.futures import Future
-from enum import Enum
 from functools import partial
 from typing import Tuple, Union
 
@@ -11,9 +10,9 @@ from napari.types import LayerDataTuple
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing, image_rescale
 from plantseg.dataprocessing.functional.dataprocessing import compute_scaling_factor, compute_scaling_voxelsize
-from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
 from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation as _relabel_segmentation
-from plantseg.legacy_gui import list_models, get_model_resolution
+from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
+from plantseg.utils import list_models, get_model_resolution
 from plantseg.viewer.widget.utils import start_threading_process, build_nice_name, layer_properties
 
 

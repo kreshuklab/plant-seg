@@ -1,7 +1,8 @@
 import logging
-from plantseg import plantseg_global_path
-import sys
 import os
+import sys
+
+from plantseg import plantseg_global_path
 
 gui_logger = logging.getLogger("PlantSeg")
 # hardcode the log-level for now

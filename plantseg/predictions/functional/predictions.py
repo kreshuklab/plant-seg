@@ -1,8 +1,8 @@
 from typing import Tuple, Union
 
-import numpy as np
 from numpy.typing import ArrayLike
 from pytorch3dunet.unet3d import utils
+
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape
 from plantseg.predictions.utils import get_dataset_config, get_model_config, get_predictor_config, set_device
 
