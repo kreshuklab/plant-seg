@@ -1,7 +1,7 @@
 import os
 import warnings
 from xml.etree import cElementTree as ElementTree
-
+from typing import Optional, Union
 import h5py
 import numpy as np
 import tifffile
@@ -14,9 +14,10 @@ H5_KEYS = ["raw", "predictions", "segmentation"]
 allowed_data_format = TIFF_EXTENSIONS + H5_EXTENSIONS
 
 
-def _read_imagej_meta(tiff):
+def _read_imagej_meta(tiff) -> tuple[list[float, float, float], str]:
     """
     Implemented based on information found in https://pypi.org/project/tifffile
+    :returns the voxels size and the voxel units
     """
     def _xy_voxel_size(tags, key):
         assert key in ['XResolution', 'YResolution']
@@ -38,7 +39,10 @@ def _read_imagej_meta(tiff):
     return [z, y, x], voxel_size_unit
 
 
-def _read_ome_meta(tiff):
+def _read_ome_meta(tiff) -> tuple[list[float, float, float], str]:
+    """
+    :returns the voxels size and the voxel units
+    """
     xml_om = tiff.ome_metadata
     tree = ElementTree.fromstring(xml_om)
 
@@ -97,7 +101,10 @@ def _read_ome_meta(tiff):
     return [z, y, x], voxel_size_unit
 
 
-def read_tiff_voxel_size(file_path):
+def read_tiff_voxel_size(file_path: str) -> tuple[list[float, float, float], str]:
+    """
+    :returns the voxels size and the voxel units for imagej and ome style tiff (if absent returns [1, 1, 1], um)
+    """
     with tifffile.TiffFile(file_path) as tiff:
         if tiff.imagej_metadata is not None:
             [z, y, x], voxel_size_unit = _read_imagej_meta(tiff)
@@ -115,7 +122,10 @@ def read_tiff_voxel_size(file_path):
         return [z, y, x], voxel_size_unit
 
 
-def read_h5_voxel_size(f, h5key):
+def read_h5_voxel_size(f, h5key: str) -> list[float, float, float]:
+    """
+    :returns the voxels size stored in a h5 dataset (if absent returns [1, 1, 1])
+    """
     ds = f[h5key]
 
     # parse voxel_size
@@ -128,7 +138,10 @@ def read_h5_voxel_size(f, h5key):
     return voxel_size
 
 
-def _find_input_key(h5_file):
+def _find_input_key(h5_file) -> str:
+    f"""
+    returns the first matching key in H5_KEYS or only one dataset is found the key to that dataset 
+    """
     found_datasets = []
 
     def visitor_func(name, node):
@@ -143,7 +156,6 @@ def _find_input_key(h5_file):
     if len(found_datasets) == 1:
         return found_datasets[0]
     else:
-        print(found_datasets)
         for h5_key in H5_KEYS:
             if h5_key in found_datasets:
                 return h5_key
@@ -152,7 +164,18 @@ def _find_input_key(h5_file):
                            f"plantseg expects only one dataset to be present in input H5.")
 
 
-def load_h5(path, key, slices=None, info_only=False):
+def load_h5(path: str,
+            key: str,
+            slices: Optional[slice] = None,
+            info_only: bool = False) -> Union[tuple, tuple[np.array, tuple]]:
+    """
+    Load a dataset from a h5 file and returns some meta info about it.
+    :param path: Path to the h5file
+    :param key: internal key of the desired dataset
+    :param slices: Optional, slice to load
+    :param info_only: if true will return a tuple with infos such as voxel resolution, units and shape.
+    :return: dataset as numpy array and infos
+    """
     with h5py.File(path, 'r') as f:
         if key is None:
             key = _find_input_key(f)
@@ -169,7 +192,13 @@ def load_h5(path, key, slices=None, info_only=False):
     return file, infos
 
 
-def load_tiff(path, info_only=False):
+def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.array, tuple]]:
+    """
+    Load a dataset from a tiff file and returns some meta info about it.
+    :param path: path to the tiff files
+    :param info_only: if true will return a tuple with infos such as voxel resolution, units and shape.
+    :return: dataset as numpy array and infos
+    """
     file = tifffile.imread(path)
     try:
         voxel_size, voxel_size_unit = read_tiff_voxel_size(path)
@@ -187,6 +216,14 @@ def load_tiff(path, info_only=False):
 
 
 def smart_load(path, key=None, info_only=False, default=load_tiff):
+    """
+    Smarth load tries to load a file that can be either a h5 or a tiff
+    :param path: Path to the h5file
+    :param key: internal key of the desired dataset
+    :param info_only: if true will return a tuple with infos such as voxel resolution, units and shape.
+    :param default: default loader if the type is not understood
+    :return:
+    """
     _, ext = os.path.splitext(path)
     if ext in H5_EXTENSIONS:
         return load_h5(path, key, info_only=info_only)
@@ -199,31 +236,54 @@ def smart_load(path, key=None, info_only=False, default=load_tiff):
         return default(path)
 
 
-def load_shape(path, key=None):
+def load_shape(path: str, key: str = None) -> tuple[int, ...]:
+    """
+    load only the stack shape from a file
+    """
     _, data_shape, _, _ = smart_load(path, key=key, info_only=True)
     return data_shape
 
 
-def create_h5(path, stack, key, voxel_size=(1.0, 1.0, 1.0), mode='a'):
+def create_h5(path: str,
+              stack: np.array,
+              key: str,
+              voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
+              mode: str = 'a') -> None:
+    """
+    Helper function to create a dataset inside a h5 file
+    :param path: file path
+    :param stack: numpy array
+    :param key: key of the dataset
+    :param voxel_size: voxel size in micrometers
+    :param mode: file io mode ['w', 'a']
+    :return:
+    """
+
     with h5py.File(path, mode) as f:
         f.create_dataset(key, data=stack, compression='gzip')
         # save voxel_size
         f[key].attrs['element_size_um'] = voxel_size
 
 
-def list_keys(path, mode='r'):
-    with h5py.File(path, mode) as f:
+def list_keys(path: str) -> list[str]:
+    """
+    returns all datasets in a h5 file
+    """
+    with h5py.File(path, 'r') as f:
         return [key for key in f.keys() if isinstance(f[key], h5py.Dataset)]
 
 
-def del_h5_key(path, key, mode='a'):
+def del_h5_key(path: str, key: str, mode: str = 'a') -> None:
+    """
+    helper function to delete a dataset from a h5file
+    """
     with h5py.File(path, mode) as f:
         if key in f:
             del f[key]
             f.close()
 
 
-def rename_h5_key(path, old_key, new_key, mode='r+'):
+def rename_h5_key(path: str, old_key: str, new_key: str, mode='r+') -> None:
     """ Rename the 'old_key' dataset to 'new_key' """
     with h5py.File(path, mode) as f:
         if old_key in f:
@@ -232,7 +292,15 @@ def rename_h5_key(path, old_key, new_key, mode='r+'):
             f.close()
 
 
-def create_tiff(path, stack, voxel_size, voxel_size_unit='um'):
+def create_tiff(path: str, stack: np.array, voxel_size: list[float, float, float], voxel_size_unit: str = 'um') -> None:
+    """
+    Helper function to create a tiff file from a numpy array
+    :param path: path of the new file
+    :param stack: numpy array
+    :param voxel_size: Optional voxel size
+    :param voxel_size_unit: Optional units of the voxel size
+    :return:
+    """
     # taken from: https://pypi.org/project/tifffile docs
     z, y, x = stack.shape
     stack.shape = 1, z, 1, y, x, 1  # dimensions in TZCYXS order

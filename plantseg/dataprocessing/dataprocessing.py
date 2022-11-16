@@ -1,3 +1,6 @@
+from typing import Optional
+
+import numpy as np
 from skimage.transform import resize
 
 from plantseg.dataprocessing.functional.dataprocessing import image_rescale, image_median, image_gaussian_smoothing, \
@@ -7,20 +10,21 @@ from plantseg.pipeline.steps import GenericPipelineStep
 
 
 def _no_filter(image, param):
+    """dummy identity for when no filter is selected"""
     return image
 
 
 class DataPostProcessing3D(GenericPipelineStep):
     def __init__(self,
-                 input_paths,
-                 input_type="labels",
-                 output_type="labels",
-                 save_directory="PostProcessing",
-                 factor=None,
-                 out_ext=".h5",
-                 state=True,
-                 save_raw=False,
-                 output_shapes=None):
+                 input_paths: list[str],
+                 input_type: str = "labels",
+                 output_type: str = "labels",
+                 save_directory: str = "PostProcessing",
+                 factor: Optional[list[float, float, float]] = None,
+                 out_ext: str = ".h5",
+                 state: bool = True,
+                 save_raw: bool = False,
+                 output_shapes: Optional[list] = None):
         if factor is None:
             factor = [1, 1, 1]
 
@@ -44,7 +48,7 @@ class DataPostProcessing3D(GenericPipelineStep):
         # count processed images
         self.img_count = 0
 
-    def process(self, image):
+    def process(self, image: np.array) -> np.array:
         gui_logger.info("Postprocessing files...")
 
         if self.output_shapes is not None:
@@ -62,15 +66,15 @@ class DataPostProcessing3D(GenericPipelineStep):
 
 class DataPreProcessing3D(GenericPipelineStep):
     def __init__(self,
-                 input_paths,
-                 input_type="data_float32",
-                 output_type="data_uint8",
-                 save_directory="PreProcessing",
-                 factor=None,
-                 filter_type=None,
-                 filter_param=None,
-                 state=True,
-                 crop=None):
+                 input_paths: list[str],
+                 input_type: str = "data_float32",
+                 output_type: str = "data_uint8",
+                 save_directory: str = "PreProcessing",
+                 factor: Optional[list[float, float, float]] = None,
+                 filter_type: Optional[str] = None,
+                 filter_param: Optional = None,
+                 state: bool = True,
+                 crop: str = None):
 
         super().__init__(input_paths,
                          input_type=input_type,
@@ -105,7 +109,7 @@ class DataPreProcessing3D(GenericPipelineStep):
             self.filter = _no_filter
             self.filter_param = 0
 
-    def process(self, image):
+    def process(self, image: np.array) -> np.array:
         gui_logger.info(f"Preprocessing files...")
         if self.crop is not None:
             gui_logger.info(f"Cropping input image to: {self.crop}")
