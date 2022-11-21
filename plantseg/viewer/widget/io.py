@@ -107,6 +107,7 @@ def open_file(path: Path = Path.home(),
               channel: Tuple[int, str] = (0, 'xcxx'),
               ) -> LayerDataTuple:
     name = layer_type if name == '' else name
+    loaded_dict_name = f'{name}_loaded_dict'
 
     # wrap load routine and add it to the dag
     step_params = {'key': key,
@@ -116,7 +117,7 @@ def open_file(path: Path = Path.home(),
 
     dag_manager.add_step(napari_image_load,
                          input_keys=(f'{name}_path',),
-                         output_key=f'_loaded_dict',
+                         output_key=loaded_dict_name,
                          step_name='Load stack',
                          static_params=step_params)
 
@@ -132,7 +133,7 @@ def open_file(path: Path = Path.home(),
                           ('voxel_size_unit', f'{name}_voxel_size_unit')]:
         step_params = {'key': key}
         dag_manager.add_step(unpack_load,
-                             input_keys=(f'_loaded_dict',),
+                             input_keys=(loaded_dict_name, ),
                              output_key=out_name,
                              step_name=f'Unpack {key}',
                              static_params=step_params

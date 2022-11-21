@@ -18,6 +18,8 @@ def _parse_input_paths(inputs, path_suffix='_path'):
 
 def run_workflow_headless(path):
     dag = DagHandler.from_pickle(path)
+    # nicely print the dag
+    print(dag)
     list_input_paths, input_names, input_hints = _parse_input_paths(dag.inputs)
 
     @magicgui(list_inputs={'label': input_names,
@@ -31,7 +33,7 @@ def run_workflow_headless(path):
                                       'The larger the more blurred will be the output image.',
                            'max': multiprocessing.cpu_count(), 'min': 1},
               scheduler={'label': 'Scheduler',
-                         'choices': ['multiprocessing', 'threading']
+                         'choices': ['multiprocessing', 'threaded']
                          }
               )
     def run(list_inputs: input_hints,
