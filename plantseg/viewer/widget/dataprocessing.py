@@ -80,9 +80,10 @@ def widget_rescaling(image: Layer,
                      order: int = 1,
                      ) -> Future[LayerDataTuple]:
     if isinstance(image, Image):
-        pass
+        layer_type = 'image'
 
     elif isinstance(image, Labels):
+        layer_type = 'labels'
         order = 0
 
     else:
@@ -111,7 +112,6 @@ def widget_rescaling(image: Layer,
                                     scale=out_voxel_size,
                                     metadata={**image.metadata,
                                               **{'original_voxel_size': current_resolution}})
-    layer_type = 'image'
 
     return start_threading_process(image_rescale,
                                    runtime_kwargs=inputs_kwarg,
@@ -159,12 +159,20 @@ def widget_cropping(image: Layer,
     assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
     assert crop_roi.shape_type[0] == 'rectangle', "Only a rectangle shape should be used for cropping"
 
+    if isinstance(image, Image):
+        layer_type = 'image'
+
+    elif isinstance(image, Labels):
+        layer_type = 'labels'
+
+    else:
+        raise ValueError(f'{type(image)} cannot be rescaled, please use Image layers or Labels layers')
+
     out_name = build_nice_name(image.name, 'cropped')
     inputs_names = (image.name,)
     layer_kwargs = layer_properties(name=out_name,
                                     scale=image.scale,
                                     metadata=image.metadata)
-    layer_type = 'image'
 
     rectangle = crop_roi.data[0].astype('int64')
 
