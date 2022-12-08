@@ -166,7 +166,7 @@ def widget_cropping(image: Layer,
         layer_type = 'labels'
 
     else:
-        raise ValueError(f'{type(image)} cannot be rescaled, please use Image layers or Labels layers')
+        raise ValueError(f'{type(image)} cannot be cropped, please use Image layers or Labels layers')
 
     out_name = build_nice_name(image.name, 'cropped')
     inputs_names = (image.name,)
