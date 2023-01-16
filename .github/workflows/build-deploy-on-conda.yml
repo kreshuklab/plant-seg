@@ -26,7 +26,9 @@ jobs:
     - name: Build PlantSeg using Boa
       shell: bash -l {0}
       run: |
-          conda install -c conda-forge mamba
+          conda config --set allow_conda_downgrades true
+          conda install conda=4.12.0 -y
+          conda install --yes -c conda-forge mamba
           mamba install -q boa
           mamba mambabuild -c conda-forge -c awolny conda-recipe
     - name: Create PlantSeg env
