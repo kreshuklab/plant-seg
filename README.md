@@ -49,10 +49,11 @@ bash ./Miniconda3-latest-Linux-x86_64.sh
 Follow the instructions to complete the anaconda installation. 
 The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
 
-#### Install PlantSeg using conda
+#### Install PlantSeg using mamba
 The tool can be installed directly by executing in the terminal:
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg=1.5
+conda install -c conda-forge mamba
+mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg
 ```
 
 Above command will create new conda environment `plant-seg` together with all required dependencies.
@@ -67,11 +68,12 @@ because it is lighter and install fewer unnecessary packages.
 Miniconda can be downloaded from [miniconda](https://docs.conda.io/en/latest/miniconda.html). Download the 
 executable `.exe` for your Windows version and follow the installation instructions.
 
-#### Install PlantSeg using conda
+#### Install PlantSeg using mamba
 The tool can be installed directly by executing in the anaconda prompt 
 (***For installing and running plantseg this is equivalent to a linux terminal***):
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg=1.5
+conda install -c conda-forge mamba
+mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
