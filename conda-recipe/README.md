@@ -3,7 +3,7 @@ In order to create conda package manually:
 
 Run: 
 ```
-conda build conda-recipe -c abailoni -c cpape -c awolny -c conda-forge
+conda build -c conda-forge -c awolny conda-recipe
 ```
 
 ## Release new version

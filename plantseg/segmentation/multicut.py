@@ -1,16 +1,11 @@
 import time
 from functools import partial
 
-import nifty
-import nifty.graph.rag as nrag
-import numpy as np
-from elf.segmentation.features import compute_rag
-from elf.segmentation.multicut import multicut_kernighan_lin, transform_probabilities_to_costs
-from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
+from elf.segmentation.watershed import apply_size_filter
 
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
-from plantseg.segmentation.dtws import compute_distance_transfrom_watershed
+from plantseg.segmentation.functional.segmentation import dt_watershed, multicut
 
 
 class MulticutFromPmaps(AbstractSegmentationStep):
@@ -44,20 +39,27 @@ class MulticutFromPmaps(AbstractSegmentationStep):
         self.ws_sigma = ws_sigma
         self.ws_w_sigma = ws_w_sigma
 
-        # Post processing size threshold
+        # Postprocessing size threshold
         self.post_minsize = post_minsize
 
         # Multithread
         self.n_threads = n_threads
 
-        self.dt_watershed = partial(compute_distance_transfrom_watershed,
+        self.dt_watershed = partial(dt_watershed,
                                     threshold=ws_threshold, sigma_seeds=ws_sigma,
                                     stacked=ws_2D, sigma_weights=ws_w_sigma,
                                     min_size=ws_minsize, n_threads=n_threads)
 
     def process(self, pmaps):
         runtime = time.time()
-        segmentation = self.segment_volume(pmaps)
+        gui_logger.info('Computing segmentation with dtWS...')
+        ws = self.dt_watershed(pmaps)
+
+        gui_logger.info('Clustering with MultiCut...')
+        segmentation = multicut(pmaps,
+                                superpixels=ws,
+                                beta=self.beta,
+                                post_minsize=self.post_minsize)
 
         if self.post_minsize > self.ws_minsize:
             segmentation, _ = apply_size_filter(segmentation, pmaps, self.post_minsize)
@@ -67,22 +69,3 @@ class MulticutFromPmaps(AbstractSegmentationStep):
         gui_logger.info(f"Clustering took {runtime:.2f} s")
 
         return segmentation
-
-    def segment_volume(self, pmaps):
-        ws = self.dt_watershed(pmaps)
-
-        gui_logger.info('Clustering with MultiCut...')
-        rag = compute_rag(ws)
-        # Computing edge features
-        features = nrag.accumulateEdgeMeanAndLength(rag, pmaps, numberOfThreads=1)  # DO NOT CHANGE numberOfThreads
-        probs = features[:, 0]  # mean edge prob
-        edge_sizes = features[:, 1]
-        # Prob -> edge costs
-        costs = transform_probabilities_to_costs(probs, edge_sizes=edge_sizes, beta=self.beta)
-        # Creating graph
-        graph = nifty.graph.undirectedGraph(rag.numberOfNodes)
-        graph.insertEdges(rag.uvIds())
-        # Solving Multicut
-
-        node_labels = multicut_kernighan_lin(graph, costs)
-        return nifty.tools.take(node_labels, ws)

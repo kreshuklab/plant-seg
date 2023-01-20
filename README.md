@@ -1,27 +1,35 @@
-![alt text](./plantseg/gui/logo.png)
+![alt text](plantseg/legacy_gui/logo.png)
 
 [![build status](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-on-conda.yml/badge.svg)](https://github.com/hci-unihd/plant-seg/actions/)
-
+[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/latest_release_date.svg)](https://anaconda.org/lcerrone/plantseg)
+[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/downloads.svg)](https://anaconda.org/lcerrone/plantseg)
+[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/license.svg)](https://anaconda.org/lcerrone/plantseg)
 # PlantSeg
 
-![alt text](./Documentation-GUI/images/main_figure_nologo.png)
+![alt text](../assets/images/main_figure_nologo.png)
 [PlantSeg](plantseg) is a tool for cell instance aware segmentation in densely packed 3D volumetric images.
 The pipeline uses a two stages segmentation strategy (Neural Network + Segmentation).
 The pipeline is tuned for plant cell tissue acquired with confocal and light sheet microscopy.
-Pre-trained models are provided.  
+Pre-trained models are provided.
 
-## News:
-* As of version 1.4.3 plantseg is natively supported on Windows!
+### New in PlanSeg version 1.5:
+* A new interactive plantseg mode using [napari](https://napari.org/stable/index.html) as a viewer!
+* build-in segmentation proofreading
+* New experimental headless mode
+* New workflows
 
 ## Getting Started
-The recommended way of installing plantseg is via the conda package, which is currently supported on Linux and Windows.
-Running plantseg.
+The recommended way of installing plantseg is via the conda package, 
+which is currently supported on Linux and Windows.
+For detailed usage documentation checkout our [**wiki**](https://github.com/hci-unihd/plant-seg/wiki) 
+[📖](https://github.com/hci-unihd/plant-seg/wiki):
+
+Or quick test PlantSeg online using Google Colab (requires a google account)  
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hci-unihd/plant-seg/blob/assets/plantseg_colab.ipynb)
 
 ### Prerequisites for conda package
-* Linux or Windows 
-* (Optional) Nvidia GPU with official Nvidia drivers installed
-
-* Native MacOS installation (not yet M1) coming soon. 
+* Linux or Windows (Might work on MacOS but it's not tested).
+* (Optional) Nvidia GPU with official Nvidia drivers installed. 
 
 ### Install on Linux
 #### Install Anaconda python
@@ -44,8 +52,8 @@ The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
 #### Install PlantSeg using conda
 The tool can be installed directly by executing in the terminal:
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.8 pytorch=1.9 pytorch-3dunet=1.3.7 plantseg
-```
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg
+
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
 ### Install on Windows
@@ -62,12 +70,50 @@ executable `.exe` for your Windows version and follow the installation instructi
 The tool can be installed directly by executing in the anaconda prompt 
 (***For installing and running plantseg this is equivalent to a linux terminal***):
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg pillow=8.4
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pillow=8.4 plantseg napari
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
+## Pipeline Usage (Napari viewer)
+PlantSeg app can also be started using napari as a viewer.
+First, activate the newly created conda environment with:
+```bash
+conda activate plant-seg
+```
 
-### Optional dependencies (not fully tested on windows)
+then, start the plantseg in napari
+```bash
+$ plantseg --viewer
+```
+A more in depth guide can be found in our [wiki](https://github.com/hci-unihd/plant-seg/wiki/Napari).
+## Pipeline Usage (GUI)
+PlantSeg app can also be started in a GUI mode, where basic user interface allows to configure and run the pipeline.
+First, activate the newly created conda environment with:
+```bash
+conda activate plant-seg
+```
+
+then, run the GUI by simply typing:
+```bash
+$ plantseg --legacy_gui
+```
+A more in depth guide can be found in our [wiki](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-GUI).
+## Pipeline Usage (command line)
+Our pipeline is completely configuration file based and does not require any coding.
+
+First, activate the newly created conda environment with:
+```bash
+conda activate plant-seg
+```
+then, one can just start the pipeline with  
+```bash
+plantseg --config CONFIG_PATH
+```
+where `CONFIG_PATH` is the path to the YAML configuration file. See [config.yaml](examples/config.yaml) for a sample configuration
+file and our [wiki](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-CLI) for a
+detailed description of the parameters.
+
+### Optional dependencies (not fully tested on Windows)
 Some types of compressed tiff files require an additional package to be read correctly (eg: Zlib, 
 ZSTD, LZMA, ...). To run plantseg on those stacks you need to install `imagecodecs`. 
 In the terminal:
@@ -82,56 +128,6 @@ after installing the SimpleITK package:
 conda activate plant-seg
 pip install SimpleITK
 ```
-
-## Pipeline Usage (GUI)
-PlantSeg app can also be started in a GUI mode, where basic user interface allows to configure and run the pipeline.
-First, activate the newly created conda environment with:
-```bash
-conda activate plant-seg
-```
-
-then, run the GUI by simply typing:
-```bash
-$ plantseg --gui
-```
-## Pipeline Usage (command line)
-Our pipeline is completely configuration file based and does not require any coding.
-
-First, activate the newly created conda environment with:
-```bash
-conda activate plant-seg
-```
-then, one can just start the pipeline with  
-```bash
-plantseg --config CONFIG_PATH
-```
-where `CONFIG_PATH` is the path to the YAML configuration file. See [config.yaml](examples/config.yaml) for a sample configuration
-file and detailed description of the parameters.
-
-### Guide to Custom Configuration File
-The configuration file defines all the operations in our pipeline together with the data to be processed.
-Please refer to [config.yaml](examples/config.yaml) for a sample configuration of the pipeline and detailed explanation
-of all of the parameters.
-
-Some key design choices:
-* `path` attribute: is used to define either the file to process or the directory containing the data.
-* `preprocessing` attribute: contains a simple set of possible operations one would need to run on their own data before calling the neural network. 
-If data is ready for neural network processing either delete the entire section or set `state: False` in order to skip this step.
-Detailed instructions can be found at [Data Processing](https://github.com/hci-unihd/plant-seg/wiki/Data-Processing).
-* `cnn_prediction` attribute: contains all parameters relevant for predicting with neural network. 
-Description of all pre-trained models provided with the package are described below.
-Detailed instructions can be found at [Predictions](https://github.com/hci-unihd/plant-seg/wiki/Predictions).
-* `segmentation` attribute: contains all parameters needed to run the partitioning algorithm (i.e. final segmentation). 
-Detailed instructions can be found at [Segmentation](https://github.com/hci-unihd/plant-seg/wiki/Segmentation.md).
-
-### Additional information
-
-The PlantSeg related files (models, configs) will be placed inside your home directory under `~/.plantseg_models`. 
-
-Our pipeline uses the PyTorch library for the CNN predictions. PlantSeg can be run on systems without GPU, however 
-for maximum performance we recommend that the application is run on a machine with a high performance GPU for deep learning.
-If `CUDA_VISIBLE_DEVICES` environment variable is not specified the prediction task will be distributed on all available GPUs.
-E.g. run: `CUDA_VISIBLE_DEVICES=0 plantseg --config CONFIG_PATH` to restrict prediction to a given GPU.
 
 ## Repository index
 The PlantSeg repository is organised as follows:
@@ -191,25 +187,9 @@ If you want your model to be part of the open-source model zoo provided with thi
 
 ## Using LiftedMulticut segmentation
 As reported in our [paper](https://elifesciences.org/articles/57613), if one has a nuclei signal imaged together with
-the boundary signal, we could leverage the fact that one cell contains only one nuclei and use the `LiftedMultict` 
-segmentation strategy and obtain improved segmentation.
-We're going to use the _Arabidopsis thaliana_ lateral root as an example. The `LiftedMulticut` strategy consist of running
-PlantSeg two times:
-1. Using PlantSeg to predict the nuclei probability maps using the `lightsheet_unet_bce_dice_nuclei_ds1x` network.
-In this case only the pre-processing and CNN prediction steps are enabled in the config, see [example config](plantseg/resources/nuclei_predictions_example.yaml).
-```bash
-plantseg --config nuclei_predictions_example.yaml 
-```
-2. Using PlantSeg to segment the input image with `LiftedMulticut` algorithm given the nuclei probability maps from the 1st step.
-See [example config](plantseg/resources/lifted_multicut_example.yaml). The notable difference is that in the `segmentation`
-part of the config we set `name: LiftedMulticut` and the `nuclei_predictions_path` as the path to the directory where the nuclei pmaps
-were saved in step 1. Also make sure that the `path` attribute points to the raw files containing the cell boundary staining (NOT THE NUCLEI).
-```bash
-plantseg --config lifted_multicut_example.yaml
-```
-
-If case when the nuclei segmentation is given, one should skip step 1., add `is_segmentation=True` flag in the [config](plantseg/resources/lifted_multicut_example.yaml)
-and directly run step 2.
+the boundary signal, we could leverage the fact that one cell contains only one nucleus and use the `LiftedMultict` 
+segmentation strategy and obtain improved segmentation. This workflow can be used from our napari gui and from our 
+[CLI](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-CLI/_edit#liftedmulticut-segmentation).
 
 ## Troubleshooting
 * If you stumble in the following error message:
@@ -263,12 +243,12 @@ If you have a standard installation of plantseg, you can remove it by executing 
 $ rm ~/.plantseg_models/configs/config_gui_last.yaml
 ```
 
-* If you use plantseg from the comand line and you receive an error similar to:
+* If you use plantseg from the command line, and you receive an error similar to:
 ```
 RuntimeError: key : 'crop_volume' is missing, plant-seg requires 'crop_volume' to run
 ```
 
-Please make sure that your configuratiuon has the correct formatting and contains all required keys. 
+Please make sure that your configuration has the correct formatting and contains all required keys. 
 An updated example can be found inside the directory `examples`, in this repository.
 
 * If when trying to execute the Lifted Multicut pipeline you receive an error like:
@@ -280,7 +260,7 @@ The solution is to re-install [elf](https://github.com/constantinpape/elf) via
 conda install -c conda-forge python-elf
 ```
 
-* PlantSeg is under active development so it may happen that the models/configuration files saved in `~/.plantseg_modes`
+* PlantSeg is under active development, so it may happen that the models/configuration files saved in `~/.plantseg_modes`
 are outdated. In case of errors related to loading the configuration file, please close the PlantSeg app, 
 remove `~/.plantseg_models` directory and try again.
 

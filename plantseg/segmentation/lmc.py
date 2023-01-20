@@ -2,18 +2,11 @@ import os
 import time
 from functools import partial
 
-import elf.segmentation.lifted_multicut as lmc
-import numpy as np
-from elf.segmentation.features import compute_rag, compute_boundary_mean_and_length
-from elf.segmentation.features import lifted_problem_from_probabilities
-from elf.segmentation.features import project_node_labels_to_pixels, lifted_problem_from_segmentation
-from elf.segmentation.multicut import transform_probabilities_to_costs
-from elf.segmentation.watershed import apply_size_filter
-
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
 from plantseg.pipeline.utils import load_paths
-from plantseg.segmentation.dtws import compute_distance_transfrom_watershed
+from plantseg.segmentation.functional.segmentation import dt_watershed, lifted_multicut_from_nuclei_pmaps, \
+    lifted_multicut_from_nuclei_segmentation
 
 
 class LiftedMulticut(AbstractSegmentationStep):
@@ -51,13 +44,13 @@ class LiftedMulticut(AbstractSegmentationStep):
         self.ws_sigma = ws_sigma
         self.ws_w_sigma = ws_w_sigma
 
-        # Post processing size threshold
+        # Postprocessing size threshold
         self.post_minsize = post_minsize
 
         # Multithread
         self.n_threads = n_threads
 
-        self.dt_watershed = partial(compute_distance_transfrom_watershed,
+        self.dt_watershed = partial(dt_watershed,
                                     threshold=ws_threshold, sigma_seeds=ws_sigma,
                                     stacked=ws_2D, sigma_weights=ws_w_sigma,
                                     min_size=ws_minsize, n_threads=n_threads)
@@ -66,25 +59,22 @@ class LiftedMulticut(AbstractSegmentationStep):
         boundary_pmaps, nuclei_pmaps = pmaps
 
         runtime = time.time()
+        gui_logger.info('Computing segmentation with dtWS...')
         ws = self.dt_watershed(boundary_pmaps)
 
         gui_logger.info('Clustering with LiftedMulticut...')
         if self.is_segmentation:
-            segmentation = segment_volume_lmc_from_seg(boundary_pmaps,
-                                                       nuclei_pmaps,
-                                                       watershed_segmentation=ws,
-                                                       beta=self.beta)
+            segmentation = lifted_multicut_from_nuclei_segmentation(boundary_pmaps,
+                                                                    nuclei_pmaps,
+                                                                    superpixels=ws,
+                                                                    beta=self.beta,
+                                                                    post_minsize=self.post_minsize)
         else:
-            segmentation = segment_volume_lmc(boundary_pmaps,
-                                              nuclei_pmaps,
-                                              watershed_segmentation=ws,
-                                              beta=self.beta)
-
-        if self.post_minsize > self.ws_minsize:
-            segmentation = segmentation.astype('uint32')
-            boundary_pmaps = boundary_pmaps.astype('float32')
-            segmentation, _ = apply_size_filter(segmentation, boundary_pmaps, self.post_minsize)
-
+            segmentation = lifted_multicut_from_nuclei_pmaps(boundary_pmaps,
+                                                             nuclei_pmaps,
+                                                             superpixels=ws,
+                                                             beta=self.beta,
+                                                             post_minsize=self.post_minsize)
         # stop real world clock timer
         runtime = time.time() - runtime
         gui_logger.info(f"Clustering took {runtime:.2f} s")
@@ -127,60 +117,3 @@ class LiftedMulticut(AbstractSegmentationStep):
         return None
 
 
-def compute_mc_costs(boundary_pmaps, rag, beta):
-    # compute the edge costs
-    features = compute_boundary_mean_and_length(rag, boundary_pmaps)
-    costs, sizes = features[:, 0], features[:, 1]
-
-    # transform the edge costs from [0, 1] to  [-inf, inf], which is
-    # necessary for the multicut. This is done by interpreting the values
-    # as probabilities for an edge being 'true' and then taking the negative log-likelihood.
-    # in addition, we weight the costs by the size of the corresponding edge
-
-    costs = transform_probabilities_to_costs(costs, edge_sizes=sizes, beta=beta)
-    return costs
-
-
-def segment_volume_lmc(boundary_pmaps, nuclei_pmaps, watershed_segmentation, beta):
-    # compute the region adjacency graph
-    rag = compute_rag(watershed_segmentation)
-
-    # compute multi cut edges costs
-    costs = compute_mc_costs(boundary_pmaps, rag, beta)
-
-    # assert nuclei pmaps are floats
-    nuclei_pmaps = nuclei_pmaps.astype('float32')
-    input_maps = [nuclei_pmaps]
-    assignment_threshold = .9
-    # compute lifted multicut features from boundary pmaps
-    lifted_uvs, lifted_costs = lifted_problem_from_probabilities(rag, watershed_segmentation,
-                                                                 input_maps, assignment_threshold,
-                                                                 graph_depth=4)
-
-    # solve the full lifted problem using the kernighan lin approximation introduced in
-    # http://openaccess.thecvf.com/content_iccv_2015/html/Keuper_Efficient_Decomposition_of_ICCV_2015_paper.html
-    node_labels = lmc.lifted_multicut_kernighan_lin(rag, costs, lifted_uvs, lifted_costs)
-    lifted_segmentation = project_node_labels_to_pixels(rag, node_labels)
-    return lifted_segmentation
-
-
-def segment_volume_lmc_from_seg(boundary_pmaps, nuclei_seg, watershed_segmentation, beta):
-    # compute the region adjacency graph
-    rag = compute_rag(watershed_segmentation)
-
-    # compute multi cut edges costs
-    costs = compute_mc_costs(boundary_pmaps, rag, beta)
-    max_cost = np.abs(np.max(costs))
-    lifted_uvs, lifted_costs = lifted_problem_from_segmentation(rag, watershed_segmentation, nuclei_seg,
-                                                                overlap_threshold=0.2,
-                                                                graph_depth=4,
-                                                                same_segment_cost=5 * max_cost,
-                                                                different_segment_cost=-5 * max_cost)
-
-    # solve the full lifted problem using the kernighan lin approximation introduced in
-    # http://openaccess.thecvf.com/content_iccv_2015/html/Keuper_Efficient_Decomposition_of_ICCV_2015_paper.html
-    lifted_costs = lifted_costs.astype('float64')
-    lifted_costs = lifted_costs[:, 0]
-    node_labels = lmc.lifted_multicut_kernighan_lin(rag, costs, lifted_uvs, lifted_costs)
-    lifted_segmentation = project_node_labels_to_pixels(rag, node_labels)
-    return lifted_segmentation

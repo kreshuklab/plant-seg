@@ -1,14 +1,9 @@
 import time
 from functools import partial
 
-import numpy as np
-from elf.segmentation import GaspFromAffinities
-from elf.segmentation.watershed import apply_size_filter
-
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
-from plantseg.segmentation.dtws import compute_distance_transfrom_watershed
-from plantseg.segmentation.utils import shift_affinities
+from plantseg.segmentation.functional.segmentation import dt_watershed, gasp
 
 
 class WSSegmentationFeeder:
@@ -55,12 +50,12 @@ class GaspFromPmaps(AbstractSegmentationStep):
         self.ws_minsize = ws_minsize
         self.ws_sigma = ws_sigma
 
-        # Post processing size threshold
+        # Postprocessing size threshold
         self.post_minsize = post_minsize
 
         self.n_threads = n_threads
 
-        self.dt_watershed = partial(compute_distance_transfrom_watershed,
+        self.dt_watershed = partial(dt_watershed,
                                     threshold=ws_threshold, sigma_seeds=ws_sigma,
                                     stacked=ws_2D, sigma_weights=ws_w_sigma,
                                     min_size=ws_minsize, n_threads=n_threads)
@@ -73,42 +68,19 @@ class GaspFromPmaps(AbstractSegmentationStep):
             # In this case the agglomeration is initialized with superpixels:
             # use additional option 'intersect_with_boundary_pixels' to break the SP along the boundaries
             # (see CREMI-experiments script for an example)
+            gui_logger.info('Computing segmentation with dtWS...')
             ws = self.dt_watershed(pmaps)
 
-            def superpixel_gen(*args, **kwargs):
-                return ws
-
         else:
-            superpixel_gen = None
+            ws = None
 
         gui_logger.info('Clustering with GASP...')
         # Run GASP
-        run_GASP_kwargs = {'linkage_criteria': self.gasp_linkage_criteria,
-                           'add_cannot_link_constraints': False,
-                           'use_efficient_implementations': False}
-
-        # pmaps are interpreted as affinities
-        affinities = np.stack([pmaps, pmaps, pmaps], axis=0)
-
-        offsets = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
-        # Shift is required to correct aligned affinities
-        affinities = shift_affinities(affinities, offsets=offsets)
-
-        # invert affinities
-        affinities = 1 - affinities
-
-        # Init and run Gasp
-        gasp_instance = GaspFromAffinities(offsets,
-                                           superpixel_generator=superpixel_gen,
-                                           run_GASP_kwargs=run_GASP_kwargs,
-                                           n_threads=self.n_threads,
-                                           beta_bias=self.beta)
-        # running gasp
-        segmentation, _ = gasp_instance(affinities)
-
-        # init and run size threshold
-        if self.post_minsize > self.ws_minsize:
-            segmentation, _ = apply_size_filter(segmentation.astype('uint32'), pmaps, self.post_minsize)
+        segmentation = gasp(pmaps, ws,
+                            gasp_linkage_criteria=self.gasp_linkage_criteria,
+                            beta=self.beta,
+                            post_minsize=self.post_minsize,
+                            n_threads=self.n_threads)
 
         # stop real world clock timer
         runtime = time.time() - runtime

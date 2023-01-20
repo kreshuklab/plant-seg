@@ -2,9 +2,10 @@ import numpy as np
 
 from plantseg.dataprocessing.dataprocessing import DataPostProcessing3D
 from plantseg.dataprocessing.dataprocessing import DataPreProcessing3D
+from plantseg.io.io import load_shape
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.config_validation import config_validation
-from plantseg.pipeline.utils import load_paths, load_shape
+from plantseg.pipeline.utils import load_paths
 from plantseg.predictions.predict import UnetPredictions
 from plantseg.segmentation.utils import configure_segmentation_step
 
@@ -28,7 +29,17 @@ def configure_preprocessing_step(input_paths, config):
 
 
 def configure_cnn_step(input_paths, config):
-    return UnetPredictions(input_paths, config)
+    model_name = config['model_name']
+    patch = config.get('patch', (80, 160, 160))
+    stride = config.get('stride', 'Accurate (slowest)')
+    device = config.get('device', 'cuda')
+    version = config.get('version', 'best')
+    state = config.get('state', True)
+    model_update = config.get('model_update', False)
+    mirror_padding = config.get('mirror_padding', (80, 160, 160))
+    return UnetPredictions(input_paths, model_name=model_name, patch=patch, stride=stride,
+                           device=device, version=version, model_update=model_update,
+                           mirror_padding=mirror_padding, state=state)
 
 
 def configure_cnn_postprocessing_step(input_paths, config):

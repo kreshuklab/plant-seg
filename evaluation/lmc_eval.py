@@ -8,7 +8,7 @@ from elf.segmentation.features import compute_rag
 from elf.segmentation.multicut import multicut_kernighan_lin, transform_probabilities_to_costs
 from elf.segmentation.watershed import distance_transform_watershed
 
-from plantseg.segmentation.lmc import segment_volume_lmc
+from plantseg.segmentation.functional.segmentation import lifted_multicut_from_nuclei_pmaps
 
 N_THREADS = 16
 
@@ -44,7 +44,7 @@ def read_segment_write(boundary_pmap_files, nuclei_pmap_files=None):
         with h5py.File(nuclei_pmap_files, 'r') as f:
             nuclei_pmaps = f['predictions'][0]
 
-        mc = segment_volume_lmc(boundary_pmaps, nuclei_pmaps)
+        mc = lifted_multicut_from_nuclei_pmaps(boundary_pmaps, nuclei_pmaps)
         output_file = os.path.splitext(boundary_pmap_files)[0] + '_mc.h5'
 
     with h5py.File(output_file, 'w') as f:
