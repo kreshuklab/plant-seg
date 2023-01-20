@@ -53,6 +53,7 @@ The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
 The tool can be installed directly by executing in the terminal:
 ```bash
 conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg
+```
 
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
