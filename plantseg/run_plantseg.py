@@ -36,7 +36,9 @@ def main():
     else:
         raise ValueError("Not enough arguments. Please use: \n"
                          " --gui for launching the graphical pipeline configurator or \n"
-                         " --config 'path_to_config.yaml' for launching the pipeline from command line")
+                         " --config 'path_to_config.yaml' for launching the pipeline from command line or \n"
+                         " --napari for launching the napari image viewer or \n"
+                         " --headless 'path_to_workflow.pkl' for launching a saved workflow \n")
 
 
 if __name__ == "__main__":
