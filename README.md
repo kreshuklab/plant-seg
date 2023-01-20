@@ -52,7 +52,7 @@ The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
 #### Install PlantSeg using conda
 The tool can be installed directly by executing in the terminal:
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg=1.5
 ```
 
 Above command will create new conda environment `plant-seg` together with all required dependencies.
@@ -71,7 +71,7 @@ executable `.exe` for your Windows version and follow the installation instructi
 The tool can be installed directly by executing in the anaconda prompt 
 (***For installing and running plantseg this is equivalent to a linux terminal***):
 ```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pillow=8.4 plantseg napari
+conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg=1.5
 ```
 Above command will create new conda environment `plant-seg` together with all required dependencies.
 
@@ -84,7 +84,7 @@ conda activate plant-seg
 
 then, start the plantseg in napari
 ```bash
-$ plantseg --viewer
+$ plantseg --napari
 ```
 A more in depth guide can be found in our [wiki](https://github.com/hci-unihd/plant-seg/wiki/Napari).
 ## Pipeline Usage (GUI)
@@ -96,7 +96,7 @@ conda activate plant-seg
 
 then, run the GUI by simply typing:
 ```bash
-$ plantseg --legacy_gui
+$ plantseg --gui
 ```
 A more in depth guide can be found in our [wiki](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-GUI).
 ## Pipeline Usage (command line)
