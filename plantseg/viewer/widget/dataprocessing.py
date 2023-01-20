@@ -1,6 +1,5 @@
 import math
 from concurrent.futures import Future
-from functools import partial
 from typing import Tuple, Union
 
 import numpy as np
@@ -34,9 +33,8 @@ def widget_gaussian_smoothing(image: Image,
     inputs_names = (image.name,)
     layer_kwargs = layer_properties(name=out_name, scale=image.scale, metadata=image.metadata)
     layer_type = 'image'
-    func = partial(image_gaussian_smoothing, **step_kwargs)
 
-    return start_threading_process(func,
+    return start_threading_process(image_gaussian_smoothing,
                                    runtime_kwargs=inputs_kwarg,
                                    statics_kwargs=step_kwargs,
                                    out_name=out_name,

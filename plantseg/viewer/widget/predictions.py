@@ -160,9 +160,7 @@ def widget_iterative_unet_predictions(image: Image,
                        stride=stride,
                        device=device)
 
-    func = partial(_compute_iterative_predictions, **step_kwargs)
-
-    return start_threading_process(func,
+    return start_threading_process(_compute_iterative_predictions,
                                    runtime_kwargs={'pmap': image.data},
                                    statics_kwargs=step_kwargs,
                                    out_name=out_name,
