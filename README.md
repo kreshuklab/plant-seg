@@ -24,8 +24,10 @@ which is currently supported on Linux and Windows.
 For detailed usage documentation checkout our [**wiki**](https://github.com/hci-unihd/plant-seg/wiki) 
 [📖](https://github.com/hci-unihd/plant-seg/wiki):
 
+<!---
 Or quick test PlantSeg online using Google Colab (requires a google account)  
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hci-unihd/plant-seg/blob/assets/plantseg_colab.ipynb)
+--->
 
 ### Prerequisites for conda package
 * Linux or Windows (Might work on MacOS but it's not tested).
