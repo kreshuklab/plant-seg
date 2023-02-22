@@ -3,6 +3,7 @@ from functools import partial
 from pathlib import Path
 from typing import Tuple, List
 
+import torch.cuda
 from magicgui import magicgui
 from napari.layers import Image
 from napari.qt.threading import thread_worker
@@ -11,9 +12,13 @@ from napari.utils.notifications import show_info
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
-from plantseg.predictions.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
+from plantseg.predictions.functional.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
 from plantseg.utils import list_models, add_custom_model
 from plantseg.viewer.widget.utils import start_threading_process, build_nice_name, layer_properties
+
+ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
+ALL_DEVICES = ALL_CUDA_DEVICES + ['cpu']
+print(torch.cuda.device_count(), torch.cuda.is_available())
 
 
 @magicgui(call_button='Run Predictions',
@@ -27,13 +32,13 @@ from plantseg.viewer.widget.utils import start_threading_process, build_nice_nam
           stride={'label': 'Stride',
                   'choices': [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
           device={'label': 'Device',
-                  'choices': ['cpu', 'cuda']}
+                  'choices': ALL_DEVICES}
           )
 def widget_unet_predictions(image: Image,
                             model_name: str,
                             patch_size: Tuple[int, int, int] = (80, 160, 160),
                             stride: str = STRIDE_ACCURATE,
-                            device: str = 'cuda', ) -> Future[LayerDataTuple]:
+                            device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
     out_name = build_nice_name(image.name, model_name)
 
     inputs_names = (image.name,)
