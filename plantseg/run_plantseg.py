@@ -2,12 +2,12 @@ import argparse
 
 
 def parser():
-    parser = argparse.ArgumentParser(description='Plant cell instance segmentation script')
-    parser.add_argument('--config', type=str, help='Path to the YAML config file', required=False)
-    parser.add_argument('--gui', action='store_true', help='Launch GUI configurator', required=False)
-    parser.add_argument('--napari', action='store_true', help='Napari Viewer', required=False)
-    parser.add_argument('--headless', type=str, help='Path to a .pkl workflow', required=False)
-    args = parser.parse_args()
+    arg_parser = argparse.ArgumentParser(description='Plant cell instance segmentation script')
+    arg_parser.add_argument('--config', type=str, help='Path to the YAML config file', required=False)
+    arg_parser.add_argument('--gui', action='store_true', help='Launch GUI configurator', required=False)
+    arg_parser.add_argument('--napari', action='store_true', help='Napari Viewer', required=False)
+    arg_parser.add_argument('--headless', type=str, help='Path to a .pkl workflow', required=False)
+    args = arg_parser.parse_args()
     return args
 
 
