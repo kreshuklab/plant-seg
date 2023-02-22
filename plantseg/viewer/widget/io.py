@@ -10,8 +10,9 @@ from napari.utils.notifications import show_info
 
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape, normalize_01
 from plantseg.dataprocessing.functional.dataprocessing import image_rescale, compute_scaling_factor
-from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, allowed_data_format
-from plantseg.io.io import load_tiff, load_h5, create_tiff
+from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, PIL_EXTENSIONS, allowed_data_format
+from plantseg.io import create_h5, create_tiff
+from plantseg.io import load_tiff, load_h5, load_pill
 from plantseg.viewer.dag_handler import dag_manager
 from plantseg.viewer.widget.utils import layer_properties
 
@@ -59,6 +60,9 @@ def napari_image_load(path, key, channel, advanced_load=False, layer_type='image
             _check_layout_string(layout)
             data = _filter_channel(data, channel=channel, layout=layout)
 
+    elif ext in PIL_EXTENSIONS:
+        data, (voxel_size, _, _, voxel_size_unit) = load_pill(path)
+
     else:
         raise NotImplementedError()
 
@@ -82,7 +86,7 @@ def unpack_load(loaded_dict, key):
 
 @magicgui(
     call_button='Open file',
-    path={'label': 'Pick a file (tiff or h5)',
+    path={'label': 'Pick a file (tiff or h5, png, jpg)',
           'tooltip': 'Select a file to be imported, the file can be a tiff or h5.'},
     name={'label': 'Layer Name',
           'tooltip': 'Define the name of the output layer, default is either image or label.'},
@@ -106,6 +110,7 @@ def open_file(path: Path = Path.home(),
               key: str = 'raw',
               channel: Tuple[int, str] = (0, 'xcxx'),
               ) -> LayerDataTuple:
+    """Open a file and return a napari layer."""
     name = layer_type if name == '' else name
     loaded_dict_name = f'{name}_loaded_dict'
 
@@ -133,7 +138,7 @@ def open_file(path: Path = Path.home(),
                           ('voxel_size_unit', f'{name}_voxel_size_unit')]:
         step_params = {'key': key}
         dag_manager.add_step(unpack_load,
-                             input_keys=(loaded_dict_name, ),
+                             input_keys=(loaded_dict_name,),
                              output_key=out_name,
                              step_name=f'Unpack {key}',
                              static_params=step_params
@@ -149,20 +154,53 @@ def open_file(path: Path = Path.home(),
     return data, layer_kwargs, layer_type
 
 
-def export_stack_as_tiff(data, name, directory,
-                         voxel_size, voxel_size_unit,
-                         suffix,
-                         scaling_factor, order,
-                         stack_type, dtype):
+def export_stack_as_tiff(data,
+                         name,
+                         directory,
+                         voxel_size,
+                         voxel_size_unit,
+                         custom_name,
+                         standard_suffix,
+                         scaling_factor,
+                         order,
+                         stack_type,
+                         dtype):
     if scaling_factor is not None:
         data = image_rescale(data, factor=scaling_factor, order=order)
 
-    stack_name = f'{name}_{suffix}'
+    stack_name = f'{name}{standard_suffix}' if custom_name is None else custom_name
+
     directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
     out_path = directory / f'{stack_name}.tiff'
     data = fix_input_shape(data)
     data = safe_typecast(data, dtype, stack_type)
     create_tiff(path=out_path, stack=data[...], voxel_size=voxel_size, voxel_size_unit=voxel_size_unit)
+    return out_path
+
+
+def export_stack_as_h5(data,
+                       name,
+                       directory,
+                       voxel_size,
+                       voxel_size_unit,
+                       custom_name,
+                       standard_suffix,
+                       scaling_factor,
+                       order,
+                       stack_type,
+                       dtype):
+    if scaling_factor is not None:
+        data = image_rescale(data, factor=scaling_factor, order=order)
+
+    key = f'export_{standard_suffix}' if custom_name is None else custom_name
+
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    out_path = directory / f'{name}.h5'
+    data = fix_input_shape(data)
+    data = safe_typecast(data, dtype, stack_type)
+    create_h5(path=out_path, stack=data[...], key=key, voxel_size=voxel_size)
     return out_path
 
 
@@ -198,10 +236,14 @@ def checkout(*args):
     call_button='Export stack',
     images={'label': 'Layers to export',
             'layout': 'vertical',
-            'tooltip': 'Select all layer to be exported, and (optional) set a suffix to append to each file name.'},
+            'tooltip': 'Select all layer to be exported, and (optional) set a custom file name.'},
     data_type={'label': 'Data Type',
                'choices': ['float32', 'uint8', 'uint16'],
                'tooltip': 'Export datatype (uint16 for segmentation) and all others for images.'},
+    export_format={'label': 'Export format',
+                   'choices': ['tiff', 'h5'],
+                   'tooltip': 'Export format, if tiff is selected, each layer will be exported as a separate file. '
+                              'If h5 is selected, all layers will be exported in a single file.'},
     directory={'label': 'Directory to export files',
                'mode': 'd',
                'tooltip': 'Select the directory where the files will be exported'},
@@ -210,14 +252,15 @@ def checkout(*args):
 )
 def export_stacks(images: List[Tuple[Layer, str]],
                   directory: Path = Path.home(),
+                  export_format: str = 'tiff',
                   rescale_to_original_resolution: bool = True,
                   data_type: str = 'float32',
                   workflow_name: str = 'workflow',
                   ) -> None:
     export_name = []
 
-    for i, (image, image_suffix) in enumerate(images):
-        # parse type and casting function to use
+    for i, (image, image_custom_name) in enumerate(images):
+        # parse and check input to the function
         if isinstance(image, Image):
             order = 1
             stack_type = 'image'
@@ -231,6 +274,13 @@ def export_stacks(images: List[Tuple[Layer, str]],
                 warn(f"{data_type} is not a valid type for Labels, please use uint8 or uint16")
         else:
             raise ValueError(f'{type(image)} cannot be exported, please use Image layers or Labels layers')
+
+        if export_format == 'tiff':
+            export_function = export_stack_as_tiff
+        elif export_format == 'h5':
+            export_function = export_stack_as_h5
+        else:
+            raise ValueError(f'{export_format} is not a valid export format, please use tiff or h5')
 
         # parse metadata in the layer
         if rescale_to_original_resolution and 'original_voxel_size' in image.metadata.keys():
@@ -247,21 +297,25 @@ def export_stacks(images: List[Tuple[Layer, str]],
         else:
             voxel_size_unit = 'um'
 
-        image_suffix = f'export_{i}' if image_suffix == '' else image_suffix
+        image_custom_name = None if image_custom_name == '' else image_custom_name
+        standard_suffix = f'_{i}' if image_custom_name is None else ''
 
+        # run step for the current export
         step_params = {'scaling_factor': scaling_factor,
                        'order': order,
                        'stack_type': stack_type,
                        'dtype': dtype,
-                       'suffix': image_suffix
+                       'custom_name': image_custom_name,
+                       'standard_suffix': standard_suffix
                        }
 
-        _ = export_stack_as_tiff(data=image.data,
-                                 name=image.name,
-                                 directory=directory,
-                                 voxel_size=output_resolution,
-                                 voxel_size_unit=voxel_size_unit, **step_params)
+        _ = export_function(data=image.data,
+                            name=image.name,
+                            directory=directory,
+                            voxel_size=output_resolution,
+                            voxel_size_unit=voxel_size_unit, **step_params)
 
+        # add step to the workflow dag
         root_name = image.metadata['root_name']
         input_keys = (image.name,
                       'out_stack_name',
@@ -271,7 +325,7 @@ def export_stacks(images: List[Tuple[Layer, str]],
                       )
 
         _export_name = f'{image.name}_export'
-        dag_manager.add_step(export_stack_as_tiff,
+        dag_manager.add_step(export_function,
                              input_keys=input_keys,
                              output_key=_export_name,
                              step_name='Export',
@@ -282,6 +336,7 @@ def export_stacks(images: List[Tuple[Layer, str]],
                   f' voxel_size: {image.scale} {voxel_size_unit}')
 
     if export_name:
+        # add checkout step to the workflow dag for batch processing
         final_export_check = 'final_export_check'
         dag_manager.add_step(checkout,
                              input_keys=export_name,
