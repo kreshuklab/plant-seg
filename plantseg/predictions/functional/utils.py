@@ -1,14 +1,13 @@
 import os
 
 import torch
-import yaml
 from pytorch3dunet.unet3d.model import get_model
 
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR, home_path
 from plantseg.utils import load_config
 from plantseg.pipeline import gui_logger
-from plantseg.predictions.array_dataset import ArrayDataset
-from plantseg.predictions.array_predictor import ArrayPredictor
+from plantseg.predictions.functional.array_dataset import ArrayDataset
+from plantseg.predictions.functional.array_predictor import ArrayPredictor
 from plantseg.utils import get_train_config, check_models
 
 # define constant values

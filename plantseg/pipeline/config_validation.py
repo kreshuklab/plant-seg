@@ -7,7 +7,7 @@ import yaml
 
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline import raw2seg_config_template
-from plantseg.predictions.utils import STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_DRAFT, get_stride_shape
+from plantseg.predictions.functional.utils import STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_DRAFT, get_stride_shape
 from plantseg.segmentation.utils import SUPPORTED_ALGORITMS
 from plantseg.utils import list_models, check_models
 

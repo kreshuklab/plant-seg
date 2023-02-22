@@ -4,7 +4,8 @@ from pytorch3dunet.unet3d.utils import get_logger
 from pytorch3dunet.unet3d.utils import remove_halo
 from torch.utils.data import DataLoader
 
-from plantseg.predictions.array_dataset import ArrayDataset
+from plantseg.predictions.functional.array_dataset import ArrayDataset
+import tqdm
 
 logger = get_logger('UNetArrayPredictor')
 
@@ -22,7 +23,7 @@ class ArrayPredictor:
         config (dict): global config dict
     """
 
-    def __init__(self, model, config, device, verbose_logging=True, **kwargs):
+    def __init__(self, model, config, device, verbose_logging=False, **kwargs):
         self.model = model
         self.config = config
         self.device = device
@@ -77,7 +78,7 @@ class ArrayPredictor:
         self.model.eval()
         # Run predictions on the entire input dataset
         with torch.no_grad():
-            for batch, indices in test_loader:
+            for batch, indices in tqdm.tqdm(test_loader):
                 # send batch to device
                 batch = batch.to(self.device)
 

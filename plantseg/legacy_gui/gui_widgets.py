@@ -4,7 +4,7 @@ from plantseg.legacy_gui import convert_rgb
 from plantseg.utils import list_models
 from plantseg.legacy_gui import stick_all, stick_new
 from plantseg.legacy_gui.gui_tools import ListEntry, SimpleEntry, FilterEntry, RescaleEntry, MenuEntry, SliderEntry
-from plantseg.predictions.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
+from plantseg.predictions.functional.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
 
 
 class ModuleFramePrototype:
