@@ -57,7 +57,7 @@ class DagHandler:
 
         for _input in self.inputs:
             if _input in inputs_dict:
-                dask_dag[_input] = inputs_dict[_input]
+                dask_dag[_input] = dask.delayed(inputs_dict[_input])
             else:
                 dask_dag[_input] = (None, None)
                 warnings.warn(f'{_input} is not in {list(inputs_dict.keys())}, this might compromise the pipeline.')

@@ -56,11 +56,14 @@ Fist step is to install mamba, which is an alternative to conda:
 ```bash
 conda install -c conda-forge mamba
 ```
-Then, install PlantSeg using mamba:
+If you have a nvidia gpu, install PlantSeg using mamba:
 ```bash
-mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg
+mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone -c awolny plantseg cudatoolkit=11.7
 ```
-
+or if you don't have a nvidia gpu, install PlantSeg using mamba:
+```bash
+mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg cpuonly
+```
 The above command will create new conda environment `plant-seg` together with all required dependencies.
 
 ### Install on Windows
@@ -80,9 +83,13 @@ Fist step is to install mamba, which is an alternative to conda:
 ```bash
 conda install -c conda-forge mamba
 ```
-Then, install PlantSeg using mamba:
+If you have a nvidia gpu, install PlantSeg using mamba:
 ```bash
-mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg
+mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone -c awolny plantseg cudatoolkit=11.7
+```
+or if you don't have a nvidia gpu, install PlantSeg using mamba:
+```bash
+mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg cpuonly
 ```
 The above command will create new conda environment `plant-seg` together with all required dependencies.
 
