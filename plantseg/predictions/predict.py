@@ -62,7 +62,7 @@ class UnetPredictions(GenericPipelineStep):
         model, model_config, model_path = get_model_config(model_name, model_update=model_update, version=version)
         utils.load_checkpoint(model_path, model)
 
-        device = set_device(device, device_id=0)
+        device = set_device(device)
         model = model.to(device)
 
         predictor, predictor_config = get_predictor_config(model_name)

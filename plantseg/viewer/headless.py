@@ -7,6 +7,11 @@ import dask
 from magicgui import magicgui
 
 from plantseg.viewer.dag_handler import DagHandler
+from plantseg.viewer.widget.predictions import ALL_DEVICES, ALL_CUDA_DEVICES
+
+all_gpus_str = f'all {len(ALL_CUDA_DEVICES)} gpus'
+ALL_GPUS = [all_gpus_str] if len(ALL_CUDA_DEVICES) > 0 else []
+ALL_DEVICES_HEADLESS = ALL_DEVICES + ALL_GPUS
 
 
 def _parse_input_paths(inputs, path_suffix='_path'):
@@ -27,6 +32,8 @@ def run_workflow_headless(path):
               out_directory={'label': 'Export directory',
                              'mode': 'd',
                              'tooltip': 'Select the directory where the files will be exported'},
+              device={'label': 'Device',
+                      'choices': ALL_DEVICES},
               num_workers={'label': '# Workers',
                            'widget_type': 'IntSlider',
                            'tooltip': 'Define the size of the gaussian smoothing kernel. '
@@ -38,12 +45,17 @@ def run_workflow_headless(path):
               )
     def run(list_inputs: input_hints,
             out_directory: Path = Path.home(),
+            device: str = ALL_DEVICES[0],
             num_workers: int = 1,
             scheduler: str = 'multiprocessing'):
         dict_of_jobs = {}
+
         for i, _inputs in enumerate(list_inputs):
+            if device == all_gpus_str:
+                device = ALL_DEVICES[i % len(ALL_CUDA_DEVICES)]
+
             input_dict = {_input_name: _input_path for _input_name, _input_path in zip(list_input_paths, _inputs)}
-            input_dict.update({'out_stack_name': _inputs[0].stem, 'out_directory': out_directory})
+            input_dict.update({'out_stack_name': _inputs[0].stem, 'out_directory': out_directory, 'device': device})
             dict_of_jobs[i] = dag.get_dag(input_dict, get_type=scheduler)
 
         timer = time.time()

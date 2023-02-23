@@ -41,15 +41,15 @@ def widget_unet_predictions(image: Image,
                             device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
     out_name = build_nice_name(image.name, model_name)
 
-    inputs_names = (image.name,)
+    inputs_names = (image.name, 'device')
     layer_kwargs = layer_properties(name=out_name,
                                     scale=image.scale,
                                     metadata=image.metadata)
     layer_type = 'image'
-    step_kwargs = dict(model_name=model_name, stride=stride, patch=patch_size, device=device)
+    step_kwargs = dict(model_name=model_name, stride=stride, patch=patch_size)
 
     return start_threading_process(unet_predictions,
-                                   runtime_kwargs={'raw': image.data},
+                                   runtime_kwargs={'raw': image.data, 'device': device},
                                    statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
