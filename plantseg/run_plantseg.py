@@ -1,19 +1,13 @@
 import argparse
 
-from plantseg.legacy_gui.plantsegapp import PlantSegApp
-from plantseg.pipeline.raw2seg import raw2seg
-from plantseg.utils import load_config
-from plantseg.viewer.headless import run_workflow_headless
-from plantseg.viewer.viewer import run_viewer
-
 
 def parser():
-    parser = argparse.ArgumentParser(description='Plant cell instance segmentation script')
-    parser.add_argument('--config', type=str, help='Path to the YAML config file', required=False)
-    parser.add_argument('--gui', action='store_true', help='Launch GUI configurator', required=False)
-    parser.add_argument('--napari', action='store_true', help='Napari Viewer', required=False)
-    parser.add_argument('--headless', type=str, help='Path to a .pkl workflow', required=False)
-    args = parser.parse_args()
+    arg_parser = argparse.ArgumentParser(description='Plant cell instance segmentation script')
+    arg_parser.add_argument('--config', type=str, help='Path to the YAML config file', required=False)
+    arg_parser.add_argument('--gui', action='store_true', help='Launch GUI configurator', required=False)
+    arg_parser.add_argument('--napari', action='store_true', help='Napari Viewer', required=False)
+    arg_parser.add_argument('--headless', type=str, help='Path to a .pkl workflow', required=False)
+    args = arg_parser.parse_args()
     return args
 
 
@@ -21,15 +15,20 @@ def main():
     args = parser()
 
     if args.gui:
+        from plantseg.legacy_gui.plantsegapp import PlantSegApp
         PlantSegApp()
 
     elif args.napari:
+        from plantseg.viewer.viewer import run_viewer
         run_viewer()
 
     elif args.headless:
+        from plantseg.viewer.headless import run_workflow_headless
         run_workflow_headless(args.headless)
 
     elif args.config is not None:
+        from plantseg.pipeline.raw2seg import raw2seg
+        from plantseg.utils import load_config
         config = load_config(args.config)
         raw2seg(config)
 

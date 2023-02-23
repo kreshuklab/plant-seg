@@ -48,17 +48,23 @@ Then install by typing:
 ```bash
 bash ./Miniconda3-latest-Linux-x86_64.sh
 ```
-Follow the instructions to complete the anaconda installation. 
+and follow the installation instructions.
 The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
 
 #### Install PlantSeg using mamba
-The tool can be installed directly by executing in the terminal:
+Fist step is to install mamba, which is an alternative to conda:
 ```bash
 conda install -c conda-forge mamba
-mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg
 ```
-
-Above command will create new conda environment `plant-seg` together with all required dependencies.
+If you have a nvidia gpu, install PlantSeg using mamba:
+```bash
+mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone -c awolny plantseg cudatoolkit=11.7
+```
+or if you don't have a nvidia gpu, install PlantSeg using mamba:
+```bash
+mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg cpuonly
+```
+The above command will create new conda environment `plant-seg` together with all required dependencies.
 
 ### Install on Windows
 #### Install Anaconda python
@@ -71,13 +77,21 @@ Miniconda can be downloaded from [miniconda](https://docs.conda.io/en/latest/min
 executable `.exe` for your Windows version and follow the installation instructions.
 
 #### Install PlantSeg using mamba
-The tool can be installed directly by executing in the anaconda prompt 
-(***For installing and running plantseg this is equivalent to a linux terminal***):
+The tool can be installed directly by executing in the anaconda prompt the following commands
+(***For installing and running plantseg this is equivalent to a linux terminal***). 
+Fist step is to install mamba, which is an alternative to conda:
 ```bash
 conda install -c conda-forge mamba
-mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg
 ```
-Above command will create new conda environment `plant-seg` together with all required dependencies.
+If you have a nvidia gpu, install PlantSeg using mamba:
+```bash
+mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone -c awolny plantseg cudatoolkit=11.7
+```
+or if you don't have a nvidia gpu, install PlantSeg using mamba:
+```bash
+mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg cpuonly
+```
+The above command will create new conda environment `plant-seg` together with all required dependencies.
 
 ## Pipeline Usage (Napari viewer)
 PlantSeg app can also be started using napari as a viewer.
@@ -88,7 +102,7 @@ conda activate plant-seg
 
 then, start the plantseg in napari
 ```bash
-$ plantseg --napari
+plantseg --napari
 ```
 A more in depth guide can be found in our [wiki](https://github.com/hci-unihd/plant-seg/wiki/Napari).
 ## Pipeline Usage (GUI)
@@ -100,7 +114,7 @@ conda activate plant-seg
 
 then, run the GUI by simply typing:
 ```bash
-$ plantseg --gui
+plantseg --gui
 ```
 A more in depth guide can be found in our [wiki](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-GUI).
 ## Pipeline Usage (command line)

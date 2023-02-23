@@ -57,7 +57,7 @@ class DagHandler:
 
         for _input in self.inputs:
             if _input in inputs_dict:
-                dask_dag[_input] = inputs_dict[_input]
+                dask_dag[_input] = dask.delayed(inputs_dict[_input])
             else:
                 dask_dag[_input] = (None, None)
                 warnings.warn(f'{_input} is not in {list(inputs_dict.keys())}, this might compromise the pipeline.')
@@ -99,6 +99,9 @@ class DagHandler:
         with open(path, 'wb') as f:
             pickle.dump(self, f)
 
+        """
+        This is a temporary solution to export the DAG in a human readable format, but does not work with the current
+        implementation of the DAG.
         path = path.parent / (path.stem + '.yaml')
         human_readable_workflow = {'plantseg_version': self.plantseg_version,
                                    'DAG': self.complete_dag,
@@ -107,6 +110,7 @@ class DagHandler:
 
         with open(path, 'w') as f:
             yaml.dump(human_readable_workflow, f)
+        """
 
 
 dag_manager = DagHandler()

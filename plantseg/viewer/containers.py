@@ -25,6 +25,7 @@ def setup_menu(container, path=None):
     container.create_menu_item(menu_name='Help',
                                item_name='Open Documentation',
                                callback=_callback)
+
     container._widget._layout.setAlignment(Qt.AlignTop)
     return container
 

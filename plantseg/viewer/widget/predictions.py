@@ -3,6 +3,7 @@ from functools import partial
 from pathlib import Path
 from typing import Tuple, List
 
+import torch.cuda
 from magicgui import magicgui
 from napari.layers import Image
 from napari.qt.threading import thread_worker
@@ -11,9 +12,21 @@ from napari.utils.notifications import show_info
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
-from plantseg.predictions.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
+from plantseg.predictions.functional.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
 from plantseg.utils import list_models, add_custom_model
 from plantseg.viewer.widget.utils import start_threading_process, build_nice_name, layer_properties
+
+ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
+MPS = ['mps'] if torch.backends.mps.is_available() else []
+ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ['cpu']
+
+
+def unet_predictions_wrapper(raw, device, **kwargs):
+    """
+    Wrapper to run unet_predictions in a thread_worker, this is needed to allow the user to select the device
+    in the headless mode.
+    """
+    return unet_predictions(raw, device=device, **kwargs)
 
 
 @magicgui(call_button='Run Predictions',
@@ -27,24 +40,24 @@ from plantseg.viewer.widget.utils import start_threading_process, build_nice_nam
           stride={'label': 'Stride',
                   'choices': [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
           device={'label': 'Device',
-                  'choices': ['cpu', 'cuda']}
+                  'choices': ALL_DEVICES}
           )
 def widget_unet_predictions(image: Image,
                             model_name: str,
                             patch_size: Tuple[int, int, int] = (80, 160, 160),
                             stride: str = STRIDE_ACCURATE,
-                            device: str = 'cuda', ) -> Future[LayerDataTuple]:
+                            device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
     out_name = build_nice_name(image.name, model_name)
 
-    inputs_names = (image.name,)
+    inputs_names = (image.name, 'device')
     layer_kwargs = layer_properties(name=out_name,
                                     scale=image.scale,
                                     metadata=image.metadata)
     layer_type = 'image'
-    step_kwargs = dict(model_name=model_name, stride=stride, patch=patch_size, device=device)
+    step_kwargs = dict(model_name=model_name, stride=stride, patch=patch_size)
 
-    return start_threading_process(unet_predictions,
-                                   runtime_kwargs={'raw': image.data},
+    return start_threading_process(unet_predictions_wrapper,
+                                   runtime_kwargs={'raw': image.data, 'device': device},
                                    statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
@@ -86,12 +99,12 @@ def _compute_multiple_predictions(image, patch_size, stride, device):
           stride={'label': 'Stride',
                   'choices': [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
           device={'label': 'Device',
-                  'choices': ['cpu', 'cuda']}
+                  'choices': ALL_DEVICES}
           )
 def widget_test_all_unet_predictions(image: Image,
                                      patch_size: Tuple[int, int, int] = (80, 160, 160),
                                      stride: str = STRIDE_ACCURATE,
-                                     device: str = 'cuda', ) -> Future[List[LayerDataTuple]]:
+                                     device: str = ALL_DEVICES[0]) -> Future[List[LayerDataTuple]]:
     func = thread_worker(partial(_compute_multiple_predictions,
                                  image=image,
                                  patch_size=patch_size,
@@ -138,7 +151,7 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
           stride={'label': 'Stride',
                   'choices': [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
           device={'label': 'Device',
-                  'choices': ['cpu', 'cuda']}
+                  'choices': ALL_DEVICES}
           )
 def widget_iterative_unet_predictions(image: Image,
                                       model_name: str,
@@ -146,7 +159,7 @@ def widget_iterative_unet_predictions(image: Image,
                                       sigma: float = 1.0,
                                       patch_size: Tuple[int, int, int] = (80, 160, 160),
                                       stride: str = STRIDE_ACCURATE,
-                                      device: str = 'cuda', ) -> Future[LayerDataTuple]:
+                                      device: str = ALL_DEVICES[0]) -> Future[LayerDataTuple]:
     out_name = build_nice_name(image.name, f'iterative-{model_name}-x{num_iterations}')
     inputs_names = (image.name,)
     layer_kwargs = layer_properties(name=out_name,

@@ -1,15 +1,14 @@
 import os
 
 import torch
-import yaml
 from pytorch3dunet.unet3d.model import get_model
 
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR, home_path
-from plantseg.utils import load_config
 from plantseg.pipeline import gui_logger
-from plantseg.predictions.array_dataset import ArrayDataset
-from plantseg.predictions.array_predictor import ArrayPredictor
+from plantseg.predictions.functional.array_dataset import ArrayDataset
+from plantseg.predictions.functional.array_predictor import ArrayPredictor
 from plantseg.utils import get_train_config, check_models
+from plantseg.utils import load_config
 
 # define constant values
 
@@ -45,16 +44,13 @@ def get_model_config(model_name, model_update=False, version='best'):
     return model, model_config, model_path
 
 
-def set_device(device, device_id=0):
-    device = device if torch.cuda.is_available() else 'cpu'
-
+def set_device(device):
     # Add correct device for inference
-    if device == 'cuda':
-        device = torch.device(f"cuda:{device_id}")
-    elif device == 'cpu':
+    try:
+        device = torch.device(device)
+    except:
+        gui_logger.warning(f"Device {device} not supported. Using CPU instead.")
         device = torch.device("cpu")
-    else:
-        raise RuntimeError(f"Unsupported device type: {device}")
     return device
 
 
