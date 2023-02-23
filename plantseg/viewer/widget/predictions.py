@@ -17,8 +17,8 @@ from plantseg.utils import list_models, add_custom_model
 from plantseg.viewer.widget.utils import start_threading_process, build_nice_name, layer_properties
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
-ALL_DEVICES = ALL_CUDA_DEVICES + ['cpu']
-print(torch.cuda.device_count(), torch.cuda.is_available())
+MPS = ['mps'] if torch.backends.mps.is_available() else []
+ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ['cpu']
 
 
 @magicgui(call_button='Run Predictions',
