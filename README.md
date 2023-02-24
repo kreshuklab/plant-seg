@@ -58,7 +58,7 @@ conda install -c conda-forge mamba
 ```
 If you have a nvidia gpu, install PlantSeg using mamba:
 ```bash
-mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone -c awolny plantseg cudatoolkit=11.7
+mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone -c awolny plantseg pytorch-cuda=11.6
 ```
 or if you don't have a nvidia gpu, install PlantSeg using mamba:
 ```bash
@@ -85,7 +85,7 @@ conda install -c conda-forge mamba
 ```
 If you have a nvidia gpu, install PlantSeg using mamba:
 ```bash
-mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone -c awolny plantseg cudatoolkit=11.7
+mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone -c awolny plantseg pytorch-cuda=11.6
 ```
 or if you don't have a nvidia gpu, install PlantSeg using mamba:
 ```bash
