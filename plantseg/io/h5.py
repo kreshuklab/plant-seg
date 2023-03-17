@@ -91,11 +91,11 @@ def create_h5(path: str,
     """
     Helper function to create a dataset inside a h5 file
     Args:
-        path: file path
-        stack: numpy array to save as dataset in the h5 file
-        key: key of the dataset in the h5 file
-        voxel_size: voxel size in micrometers
-        mode: mode to open the h5 file ['w', 'a']
+        path (str): file path
+        stack (np.array): numpy array to save as dataset in the h5 file
+        key (str): key of the dataset in the h5 file
+        voxel_size (tuple[float, float, float]: voxel size in micrometers
+        mode (str): mode to open the h5 file ['w', 'a']
 
     Returns:
         None

@@ -195,15 +195,21 @@ def fix_over_under_segmentation_from_nuclei(cell_seg: np.array,
     - To fix cell under segmentation, it will try to splitting cells with multiple nuclei
     - To fix cell over segmentation, it will try to merge cells that splits in two a nucleus
 
-    :param cell_seg: numpy array containing the cell segmentation
-    :param nuclei_seg: numpy array containing the nuclei segmentation
-    :param threshold_merge: percentage of the nucleus overlapping each cell segment. If the overlap is smaller than
-    the defined threshold, the script will not merge the two cells.
-    :param threshold_split: percentage of the nucleus overlapping each cell segment. If the overlap is smaller than
-    the defined threshold, the script will not split the two cells.
-    :param quantiles_nuclei: Remove nuclei too small or too large according to their quantiles
-    :param boundary: Optional numpy array containing the boundary signal or, better, a boundary pmap
-    :return: The new cell segmentation
+    Args:
+        cell_seg (np.array): numpy array containing the cell segmentation
+        nuclei_seg (np.array): numpy array containing the nuclei segmentation
+        threshold_merge (float, optional): percentage of the nucleus overlapping each cell segment.
+            If the overlap is smaller than the defined threshold, the script will not merge the two cells.
+            Defaults to 0.33.
+        threshold_split (float, optional): percentage of the nucleus overlapping each cell segment.
+            If the overlap is smaller than the defined threshold, the script will not split the two cells.
+            Defaults to 0.66.
+        quantiles_nuclei (tuple[float, float], optional): Remove nuclei too small or too large according to
+            their quantiles. Defaults to (0.3, 0.99).
+        boundary (Optional[np.array], optional): Optional numpy array containing the boundary signal or,
+            better, a boundary pmap. Defaults to None.
+    Returns:
+        np.array: The new cell segmentation
     """
 
     # measure the overlap between cell and nuclei 1st time

@@ -2,3 +2,6 @@ from plantseg.dataprocessing.functional.dataprocessing import image_gaussian_smo
 from plantseg.dataprocessing.functional.dataprocessing import image_rescale
 from plantseg.dataprocessing.functional.dataprocessing import image_crop
 from plantseg.dataprocessing.functional.dataprocessing import image_median
+from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape
+from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation, set_background_to_value
+from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_under_segmentation_from_nuclei

@@ -7,7 +7,6 @@ from elf.segmentation import stacked_watershed, lifted_multicut as lmc, \
 from elf.segmentation.features import compute_rag, lifted_problem_from_probabilities, lifted_problem_from_segmentation
 from elf.segmentation.multicut import multicut_kernighan_lin
 from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
-from numpy.typing import ArrayLike
 from vigra.filters import gaussianSmoothing
 
 from plantseg.segmentation.functional.utils import shift_affinities, compute_mc_costs
@@ -20,7 +19,7 @@ except ImportError:
     sitk_installed = False
 
 
-def dt_watershed(boundary_pmaps: ArrayLike,
+def dt_watershed(boundary_pmaps: np.array,
                  threshold: float = 0.5,
                  sigma_seeds: float = 1.,
                  stacked: bool = False,
@@ -30,7 +29,7 @@ def dt_watershed(boundary_pmaps: ArrayLike,
                  pixel_pitch: tuple[int, ...] = None,
                  apply_nonmax_suppression: bool = False,
                  n_threads: int = None,
-                 mask: ArrayLike = None) -> ArrayLike:
+                 mask: np.array = None) -> np.array:
     """ Wrapper around elf.distance_transform_watershed
 
     Args:
@@ -72,12 +71,28 @@ def dt_watershed(boundary_pmaps: ArrayLike,
     return ws
 
 
-def gasp(boundary_pmaps: ArrayLike,
-         superpixels: ArrayLike = None,
+def gasp(boundary_pmaps: np.array,
+         superpixels: np.array = None,
          gasp_linkage_criteria: str = 'average',
          beta: float = 0.5,
          post_minsize: int = 100,
-         n_threads: int = 6) -> ArrayLike:
+         n_threads: int = 6) -> np.array:
+    """
+    Implementation of the GASP algorithm for segmentation from affinities.
+
+    Args:
+        boundary_pmaps (np.ndarray): cell boundary predictions.
+        superpixels (np.ndarray): superpixel segmentation. If None, GASP will be run from the pixels. (default: None)
+        gasp_linkage_criteria (str): Linkage criteria for GASP. (default: 'average')
+        beta (float): beta parameter for GASP. A small value will steer the segmentation towards under-segmentation.
+        While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
+        post_minsize (int): minimal size of the segments after GASP. (default: 100)
+        n_threads (int): number of threads used for GASP. (default: 6)
+
+    Returns:
+        np.ndarray: GASP output segmentation
+
+    """
     if superpixels is not None:
         assert boundary_pmaps.shape == superpixels.shape
 
@@ -122,11 +137,27 @@ def gasp(boundary_pmaps: ArrayLike,
     return segmentation
 
 
-def mutex_ws(boundary_pmaps: ArrayLike,
-             superpixels: ArrayLike = None,
+def mutex_ws(boundary_pmaps: np.array,
+             superpixels: np.array = None,
              beta: float = 0.5,
              post_minsize: int = 100,
-             n_threads: int = 6) -> ArrayLike:
+             n_threads: int = 6) -> np.array:
+    """
+    Wrapper around gasp with mutex_watershed as linkage criteria.
+
+    Args:
+        boundary_pmaps (np.ndarray): cell boundary predictions. 3D array of shape (Z, Y, X) with values between 0 and 1.
+        superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
+            If None, GASP will be run from the pixels. (default: None)
+        beta (float): beta parameter for GASP. A small value will steer the segmentation towards under-segmentation.
+            While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
+        post_minsize (int): minimal size of the segments after GASP. (default: 100)
+        n_threads (int): number of threads used for GASP. (default: 6)
+
+    Returns:
+        np.ndarray: GASP output segmentation
+
+    """
     return gasp(boundary_pmaps=boundary_pmaps,
                 superpixels=superpixels,
                 gasp_linkage_criteria='mutex_watershed',
@@ -135,10 +166,25 @@ def mutex_ws(boundary_pmaps: ArrayLike,
                 n_threads=n_threads)
 
 
-def multicut(boundary_pmaps: ArrayLike,
-             superpixels: ArrayLike,
+def multicut(boundary_pmaps: np.array,
+             superpixels: np.array,
              beta: float = 0.5,
-             post_minsize: int = 50) -> ArrayLike:
+             post_minsize: int = 50) -> np.array:
+
+    """
+    Multicut segmentation from boundary predictions.
+
+    Args:
+        boundary_pmaps (np.ndarray): cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.
+        superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
+        beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards
+            under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
+        post_minsize (int): minimal size of the segments after Multicut. (default: 100)
+
+    Returns:
+        np.ndarray: Multicut output segmentation
+    """
+
     rag = compute_rag(superpixels)
 
     # Prob -> edge costs
@@ -161,11 +207,26 @@ def multicut(boundary_pmaps: ArrayLike,
     return segmentation
 
 
-def lifted_multicut_from_nuclei_pmaps(boundary_pmaps: ArrayLike,
-                                      nuclei_pmaps: ArrayLike,
-                                      superpixels: ArrayLike,
+def lifted_multicut_from_nuclei_pmaps(boundary_pmaps: np.array,
+                                      nuclei_pmaps: np.array,
+                                      superpixels: np.array,
                                       beta: float = 0.5,
-                                      post_minsize: int = 50) -> ArrayLike:
+                                      post_minsize: int = 50) -> np.array:
+    """
+    Lifted Multicut segmentation from boundary predictions and nuclei predictions.
+
+    Args:
+        boundary_pmaps (np.ndarray): cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.
+        nuclei_pmaps (np.array): nuclei predictions. Must have the same shape as boundary_pmaps and
+            with values between 0 and 1.
+        superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
+        beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards
+        under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
+        post_minsize (int): minimal size of the segments after Multicut. (default: 100)
+
+    Returns:
+        np.ndarray: Multicut output segmentation
+    """
     # compute the region adjacency graph
     rag = compute_rag(superpixels)
 
@@ -194,11 +255,25 @@ def lifted_multicut_from_nuclei_pmaps(boundary_pmaps: ArrayLike,
     return segmentation
 
 
-def lifted_multicut_from_nuclei_segmentation(boundary_pmaps: ArrayLike,
-                                             nuclei_seg: ArrayLike,
-                                             superpixels: ArrayLike,
+def lifted_multicut_from_nuclei_segmentation(boundary_pmaps: np.array,
+                                             nuclei_seg: np.array,
+                                             superpixels: np.array,
                                              beta: float = 0.5,
-                                             post_minsize: int = 50) -> ArrayLike:
+                                             post_minsize: int = 50) -> np.array:
+    """
+    Lifted Multicut segmentation from boundary predictions and nuclei segmentation.
+
+    Args:
+        boundary_pmaps (np.ndarray): cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.
+        nuclei_seg (np.array): Nuclei segmentation. Must have the same shape as boundary_pmaps.
+        superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
+        beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards
+        under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
+        post_minsize (int): minimal size of the segments after Multicut. (default: 100)
+
+    Returns:
+        np.ndarray: Multicut output segmentation
+    """
     # compute the region adjacency graph
     rag = compute_rag(superpixels)
 
@@ -225,10 +300,23 @@ def lifted_multicut_from_nuclei_segmentation(boundary_pmaps: ArrayLike,
     return segmentation
 
 
-def simple_itk_watershed(boundary_pmaps: ArrayLike,
-                         threshold: float,
-                         sigma: float,
-                         minsize: int):
+def simple_itk_watershed(boundary_pmaps: np.array,
+                         threshold: float = 0.5,
+                         sigma: float = 1.0,
+                         minsize: int = 100) -> np.array:
+    """
+    Simple itk watershed segmentation.
+
+    Args:
+        boundary_pmaps (np.ndarray): cell boundary predictions. 3D array of shape (Z, Y, X) with values between 0 and 1.
+        threshold (float): threshold for the watershed segmentation. (default: 0.5)
+        sigma (float): sigma for the gaussian smoothing. (default: 1.0)
+        minsize (int): minimal size of the segments after segmentation. (default: 100)
+
+    Returns:
+        np.ndarray: simple itk output segmentation
+
+    """
     if not sitk_installed:
         raise ValueError('please install sitk before running this process')
 
@@ -250,8 +338,8 @@ def simple_itk_watershed(boundary_pmaps: ArrayLike,
     return segmentation
 
 
-def simple_itk_watershed_from_markers(boundary_pmaps: ArrayLike,
-                                      seeds: ArrayLike):
+def simple_itk_watershed_from_markers(boundary_pmaps: np.array,
+                                      seeds: np.array):
     if not sitk_installed:
         raise ValueError('please install sitk before running this process')
 

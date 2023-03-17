@@ -121,11 +121,11 @@ def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.array
     """
     Load a dataset from a tiff file and returns some meta info about it.
     Args:
-        path: path to the tiff files to load
-        info_only: if true will return a tuple with infos such as voxel resolution, units and shape.
+        path (str): path to the tiff files to load
+        info_only (bool): if true will return a tuple with infos such as voxel resolution, units and shape.
 
     Returns:
-        dataset as numpy array and infos
+        Union[tuple, tuple[np.array, tuple]]: dataset as numpy array and infos
     """
     file = tifffile.imread(path)
     try:
@@ -146,12 +146,12 @@ def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.array
 def create_tiff(path: str, stack: np.array, voxel_size: list[float, float, float], voxel_size_unit: str = 'um') -> None:
     """
     Create a tiff file from a numpy array
+
     Args:
         path (str): path of the new file
         stack (np.array): numpy array to save as tiff
         voxel_size (list or tuple): tuple of the voxel size
         voxel_size_unit (str): units of the voxel size
-
     Returns:
         None
     """
