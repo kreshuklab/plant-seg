@@ -23,12 +23,13 @@ class ArrayPredictor:
         config (dict): global config dict
     """
 
-    def __init__(self, model, config, device, verbose_logging=False, **kwargs):
+    def __init__(self, model, config, device, verbose_logging=False, disable_tqdm=True, **kwargs):
         self.model = model
         self.config = config
         self.device = device
         self.predictor_config = kwargs
         self.mute_logging = verbose_logging
+        self.disable_tqdm = disable_tqdm
 
     def __call__(self, test_dataset):
         assert isinstance(test_dataset, ArrayDataset)
@@ -77,8 +78,9 @@ class ArrayPredictor:
         # It is necessary for batchnorm/dropout layers if present as well as final Sigmoid/Softmax to be applied
         self.model.eval()
         # Run predictions on the entire input dataset
+
         with torch.no_grad():
-            for batch, indices in tqdm.tqdm(test_loader):
+            for batch, indices in tqdm.tqdm(test_loader, disable=self.disable_tqdm):
                 # send batch to device
                 batch = batch.to(self.device)
 

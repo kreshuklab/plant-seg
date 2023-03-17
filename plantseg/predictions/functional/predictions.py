@@ -14,7 +14,8 @@ def unet_predictions(raw: np.array,
                      device: str = 'cuda',
                      version: str = 'best',
                      model_update: bool = False,
-                     mirror_padding: Tuple[int, int, int] = (16, 32, 32)):
+                     mirror_padding: Tuple[int, int, int] = (16, 32, 32),
+                     disable_tqdm: bool = False) -> np.array:
     """
     Predict boundaries predictions from raw data using a 3D U-Net model.
 
@@ -30,6 +31,7 @@ def unet_predictions(raw: np.array,
         version (str, optional): version of the model to use, must be either 'best' or 'last'. Defaults to 'best'.
         model_update (bool, optional): if True will update the model to the latest version. Defaults to False.
         mirror_padding (tuple[int, int, int], optional): padding to use for prediction. Defaults to (16, 32, 32).
+        disable_tqdm (bool, optional): if True will disable tqdm progress bar. Defaults to False.
 
     Returns:
         np.array: predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.
@@ -45,7 +47,9 @@ def unet_predictions(raw: np.array,
     predictor = predictor(model=model,
                           config=model_config,
                           device=device,
-                          verbose_logging=False, **predictor_config)
+                          verbose_logging=False,
+                          disable_tqdm=disable_tqdm,
+                          **predictor_config)
 
     dataset_builder, dataset_config = get_dataset_config(model_name,
                                                          patch=patch,
