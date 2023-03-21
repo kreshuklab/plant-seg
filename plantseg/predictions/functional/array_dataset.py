@@ -1,10 +1,20 @@
 import numpy as np
 import pytorch3dunet.augment.transforms as transforms
-from pytorch3dunet.datasets.utils import get_slice_builder, calculate_stats, default_prediction_collate
+from pytorch3dunet.datasets.utils import calculate_stats, default_prediction_collate, _loader_classes
 from pytorch3dunet.unet3d.utils import get_logger
 from torch.utils.data import Dataset
 
 logger = get_logger('ArrayDataset')
+
+
+def get_slice_builder(raws, labels, weight_maps, config):
+    """
+    Implementation from pytorch-3dunet AbstractHDF5Dataset stipped of the looger
+    https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/datasets/utils.py
+    """
+    assert 'name' in config
+    slice_builder_cls = _loader_classes(config['name'])
+    return slice_builder_cls(raws, labels, weight_maps, **config)
 
 
 class ArrayDataset(Dataset):
@@ -23,10 +33,13 @@ class ArrayDataset(Dataset):
                  verbose_logging=True,
                  **kwargs):
         """
-        :param raw: numpy array containing the raw image
-        :para'/home/adrian/workspace/ilastik-datasets/VolkerDeconv/train'm slice_builder_config: configuration of the SliceBuilder
-        :param transformer_config: data augmentation configuration
-        :param mirror_padding (int or tuple): number of voxels padded to each axis
+        Args:
+            raw (np.ndarray): raw data
+            slice_builder_config (dict): slice builder config dict
+            transformer_config (dict): transformer config dict
+            mirror_padding (tuple): mirror padding to apply to the raw data
+            global_normalization (bool): if True, calculate global mean and std for normalization
+            verbose_logging (bool): if True, log info messages
         """
         self.slice_builder_config = slice_builder_config
 

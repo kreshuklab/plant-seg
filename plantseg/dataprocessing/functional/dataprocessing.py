@@ -79,7 +79,7 @@ def image_crop(image: np.array, crop_str: str) -> np.array:
 
 def fix_input_shape(data: np.array) -> np.array:
     """
-    Fix array ndim to be always 3
+    fix array ndim to be always 3
     """
     if data.ndim == 2:
         return data.reshape(1, data.shape[0], data.shape[1])

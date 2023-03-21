@@ -1,5 +1,7 @@
 import os
 
+import numpy as np
+from typing import Union
 from plantseg.io.h5 import load_h5, H5_EXTENSIONS
 from plantseg.io.tiff import load_tiff, TIFF_EXTENSIONS
 from plantseg.io.pil import load_pill, PIL_EXTENSIONS
@@ -7,18 +9,17 @@ from plantseg.io.pil import load_pill, PIL_EXTENSIONS
 allowed_data_format = TIFF_EXTENSIONS + H5_EXTENSIONS + PIL_EXTENSIONS
 
 
-def smart_load(path, key=None, info_only=False, default=load_tiff):
+def smart_load(path, key=None, info_only=False, default=load_tiff) -> Union[tuple, tuple[np.array, tuple]]:
     """
     Smart load tries to load a file that can be either a h5 or a tiff file
     Args:
-        path: path to the file to load
-        key: key of the dataset to load (if h5)
-        info_only: if true will return a tuple with infos such as voxel resolution, units and shape.
-        default:
-            default loader if the type is not understood (default: load_tiff)
+        path (str): path to the file to load
+        key (str): key of the dataset to load (if h5)
+        info_only (bool): if true will return a tuple with infos such as voxel resolution, units and shape.
+        default (callable): default loader if the type is not understood (default: load_tiff)
 
     Returns:
-        loaded data as numpy array and infos
+        Union[tuple, tuple[np.array, tuple]]: loaded data as numpy array and infos
 
     """
     _, ext = os.path.splitext(path)
