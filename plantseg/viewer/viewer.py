@@ -1,4 +1,5 @@
 import napari
+import numpy as np
 from napari.utils.notifications import show_info
 
 from plantseg.viewer.containers import get_extra_seg, get_extra_pred
@@ -6,7 +7,7 @@ from plantseg.viewer.containers import get_gasp_workflow, get_preprocessing_work
 from plantseg.viewer.widget.proofreading.proofreading import default_key_binding_clean, default_key_binding_split_merge
 from plantseg.viewer.widget.proofreading.proofreading import widget_clean_scribble
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
-
+from napari.layers import Labels
 
 def run_viewer():
     viewer = napari.Viewer()
@@ -20,6 +21,21 @@ def run_viewer():
     @viewer.bind_key(default_key_binding_clean)
     def _widget_clean_scribble(viewer):
         widget_clean_scribble(viewer=viewer)
+
+    @viewer.mouse_drag_callbacks.append
+    def callback(layer, event):
+        if isinstance(layer, Labels):
+            pos = event.pos
+            if len(pos) == 2:
+                pos = [0, *pos]
+
+            idx = layer.data[tuple(pos)]
+            if idx != 0:
+                mask = np.where(layer.data == idx, 1, 0)
+                viewer.layers['corrected'].data = np.where(mask, 1, viewer.layers['corrected'].data)
+                viewer.layers['corrected'].metadata['correct_labels'].add(idx)
+                viewer.layers['corrected'].refresh()
+
 
     for _containers, name in [(get_preprocessing_workflow(), 'Data - Processing'),
                               (get_gasp_workflow(), 'UNet + Segmentation'),

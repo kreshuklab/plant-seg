@@ -67,7 +67,7 @@ def _split_from_seed(segmentation, sz, sx, sy, region_slice, all_idx, offsets, b
     return new_seg, region_slice, {'bboxes': bboxes, 'max_label': max_label}
 
 
-def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label):
+def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label, correct_labels):
     # find seeds location ad label value
     sz, sx, sy = np.nonzero(seeds)
 
@@ -78,6 +78,10 @@ def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label):
     all_idx = np.unique(all_idx)
 
     region_slice, region_bbox, offsets = get_idx_slice(all_idx, bboxes_dict=bboxes)
+
+    for idx in all_idx:
+        if idx in correct_labels:
+            return segmentation, region_slice, {'bboxes': bboxes, 'max_label': max_label}
 
     if len(seeds_idx) == 1:
         return _merge_from_seeds(segmentation,
@@ -100,32 +104,45 @@ def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label):
 
 @magicgui(call_button=f'Clean scribbles - < {default_key_binding_clean} >')
 def widget_clean_scribble(viewer: napari.Viewer):
-    if current_label_layer == '__undefined__':
+    if 'scribbles' not in viewer.layers:
         show_info('Scribble Layer not defined. Run the proofreading widget tool once first')
         return None
 
-    if current_label_layer not in viewer.layers:
-        show_info("Scribble Layer doesn't exit anymore")
+    viewer.layers['scribbles'].data = np.zeros_like(viewer.layers['scribbles'].data)
+    viewer.layers['scribbles'].refresh()
+
+
+def widget_add_label_to_corrected(viewer: napari.Viewer):
+    if 'corrected' not in viewer.layers:
+        show_info('Corrected Layer not defined. Run the proofreading widget tool once first')
         return None
 
-    viewer.layers[current_label_layer].data = np.zeros_like(viewer.layers[current_label_layer].data)
-    viewer.layers[current_label_layer].refresh()
+
+def initialize_proofreading(viewer: napari.Viewer, shapes, layers_kwargs) -> bool:
+    init_was_required = False
+    if 'scribbles' not in viewer.layers:
+        init_was_required = True
+        viewer.add_labels(np.zeros(shapes, dtype=np.uint16), name='scribbles', **layers_kwargs)
+
+    if 'corrected' not in viewer.layers:
+        init_was_required = True
+        viewer.add_labels(np.zeros(shapes, dtype=np.uint16),
+                          name='corrected',
+                          **layers_kwargs,
+                          metadata={'correct_labels': set()})
+
+    return init_was_required
 
 
 @magicgui(call_button=f'Split/Merge from scribbles - < {default_key_binding_split_merge} >',
-          scribbles={'label': 'Scribbles'},
           segmentation={'label': 'Segmentation'},
           image={'label': 'Image'})
 def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
-                                          scribbles: Labels,
                                           segmentation: Labels,
                                           image: Image) -> None:
-    if scribbles is None or segmentation is None:
-        show_info('Scribbles and segmentation must be provided to the widget')
-        return None
 
-    if scribbles.name == segmentation.name:
-        show_info('Scribbles layer and segmentation layer cannot be the same')
+    if initialize_proofreading(viewer, segmentation.data.shape, {'scale': segmentation.scale}):
+        show_info('Proofreading widget initialized')
         return None
 
     if 'bboxes' in segmentation.metadata.keys():
@@ -138,16 +155,19 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
     else:
         max_label = np.max(segmentation.data)
 
-    global current_label_layer
-    current_label_layer = scribbles.name
+    scribbles = viewer.layers['scribbles'].data
+    correct_labels = viewer.layers['corrected'].metadata['correct_labels']
 
     @thread_worker
     def func():
-        new_seg, region_slice, meta = split_merge_from_seeds(scribbles.data,
+        new_seg, region_slice, meta = split_merge_from_seeds(scribbles,
                                                              segmentation.data,
                                                              image=image.data,
                                                              bboxes=bboxes,
-                                                             max_label=max_label)
+                                                             max_label=max_label,
+                                                             correct_labels=correct_labels)
+        print(np.allclose(new_seg, segmentation.data[region_slice]))
+        print(np.sum(scribbles))
         viewer.layers[segmentation.name].data[region_slice] = new_seg
         viewer.layers[segmentation.name].metadata = meta
         viewer.layers[segmentation.name].refresh()
