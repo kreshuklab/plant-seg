@@ -9,6 +9,7 @@ from plantseg.viewer.widget.proofreading.proofreading import widget_clean_scribb
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from napari.layers import Labels
 
+
 def run_viewer():
     viewer = napari.Viewer()
     main_container = get_main()
@@ -23,18 +24,10 @@ def run_viewer():
         widget_clean_scribble(viewer=viewer)
 
     @viewer.mouse_drag_callbacks.append
-    def callback(layer, event):
-        if isinstance(layer, Labels):
-            pos = event.pos
-            if len(pos) == 2:
-                pos = [0, *pos]
-
-            idx = layer.data[tuple(pos)]
-            if idx != 0:
-                mask = np.where(layer.data == idx, 1, 0)
-                viewer.layers['corrected'].data = np.where(mask, 1, viewer.layers['corrected'].data)
-                viewer.layers['corrected'].metadata['correct_labels'].add(idx)
-                viewer.layers['corrected'].refresh()
+    def callback(_viewer, event):
+        pos = event.position
+        from plantseg.viewer.widget.proofreading.proofreading import widget_add_label_to_corrected
+        widget_add_label_to_corrected(viewer=_viewer, position=pos)
 
 
     for _containers, name in [(get_preprocessing_workflow(), 'Data - Processing'),
