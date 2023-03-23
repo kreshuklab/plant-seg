@@ -1,3 +1,4 @@
+import torch
 from pytorch3dunet.unet3d import utils
 
 from plantseg.io.io import load_shape
@@ -59,8 +60,9 @@ class UnetPredictions(GenericPipelineStep):
                          file_suffix='_predictions',
                          h5_output_key=h5_output_key)
 
-        model, model_config, model_path = get_model_config(model_name, model_update=model_update, version=version)
-        utils.load_checkpoint(model_path, model)
+        model, model_config, model_path = get_model_config(model_name, model_update=model_update)
+        state = torch.load(model_path, map_location='cpu')
+        model.load_state_dict(state)
 
         device = set_device(device)
         model = model.to(device)

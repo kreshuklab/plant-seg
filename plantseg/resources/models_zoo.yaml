@@ -7,7 +7,7 @@ generic_confocal_3d_unet:
   resolution: [0.235, 0.150, 0.150]
   description: "Unet trained on confocal images on 1/2-resolution in XY with BCEDiceLoss."
 generic_light_sheet_3d_unet:
-  path: https://oc.embl.de/index.php/s/61s67Mg5VQy7dh9/download?path=%2FLateral-Root-Primordia%2Funet_bce_dice_ds1x&files=
+  model_url: https://zenodo.org/record/7765026/files/unet3d-lateral-root-lightsheet-ds1x.pytorch
   resolution: [0.25, 0.1625, 0.1625]
   description: "Unet trained on light-sheet images on original resolution with BCEDiceLoss."
 

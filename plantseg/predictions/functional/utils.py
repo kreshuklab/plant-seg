@@ -31,16 +31,15 @@ def get_predict_template():
     return predict_template
 
 
-def get_model_config(model_name, model_update=False, version='best'):
+def get_model_config(model_name, model_update=False):
     check_models(model_name, update_files=model_update)
     config_train = get_train_config(model_name)
     model_config = config_train.pop('model')
     model = get_model(model_config)
-
     model_path = os.path.join(home_path,
                               PLANTSEG_MODELS_DIR,
                               model_name,
-                              f"{version}_checkpoint.pytorch")
+                              "best_checkpoint.pytorch")
     return model, model_config, model_path
 
 
