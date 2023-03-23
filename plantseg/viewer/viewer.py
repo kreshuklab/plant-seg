@@ -1,13 +1,13 @@
 import napari
-import numpy as np
 from napari.utils.notifications import show_info
 
 from plantseg.viewer.containers import get_extra_seg, get_extra_pred
 from plantseg.viewer.containers import get_gasp_workflow, get_preprocessing_workflow, get_main
+from plantseg.viewer.widget.proofreading.proofreading import CORRECTED_CELLS_LAYER_NAME
 from plantseg.viewer.widget.proofreading.proofreading import default_key_binding_clean, default_key_binding_split_merge
+from plantseg.viewer.widget.proofreading.proofreading import widget_add_label_to_corrected
 from plantseg.viewer.widget.proofreading.proofreading import widget_clean_scribble
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
-from napari.layers import Labels
 
 
 def run_viewer():
@@ -24,11 +24,9 @@ def run_viewer():
         widget_clean_scribble(viewer=viewer)
 
     @viewer.mouse_drag_callbacks.append
-    def callback(_viewer, event):
-        pos = event.position
-        from plantseg.viewer.widget.proofreading.proofreading import widget_add_label_to_corrected
-        widget_add_label_to_corrected(viewer=_viewer, position=pos)
-
+    def callback(_viewer: napari.Viewer, event):
+        if _viewer.layers.selection.active.name == CORRECTED_CELLS_LAYER_NAME:
+            widget_add_label_to_corrected(viewer=viewer, position=event.position)
 
     for _containers, name in [(get_preprocessing_workflow(), 'Data - Processing'),
                               (get_gasp_workflow(), 'UNet + Segmentation'),

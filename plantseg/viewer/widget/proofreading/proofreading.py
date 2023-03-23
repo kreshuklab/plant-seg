@@ -21,15 +21,15 @@ except ImportError:
     
 """
 
-current_label_layer: str = '__undefined__'
 default_key_binding_split_merge = 'n'
 default_key_binding_clean = 'b'
+SCRIBBLES_LAYER_NAME = 'Scribbles'
+CORRECTED_CELLS_LAYER_NAME = 'Correct Labels'
 
 
 class ProofreadingHandler:
     _status: bool
     _current_seg_layer_name: Union[str, None]
-    _current_label_layer_kwargs: dict
     _corrected_cells: set
     _segmentation: Union[np.ndarray, None]
     _corrected_cells_mask: Union[np.ndarray, None]
@@ -37,8 +37,9 @@ class ProofreadingHandler:
     _bboxes: Union[np.ndarray, None]
 
     _lock: bool = False
-    scribbles_layer_name = 'Scribbles'
-    corrected_cells_layer_name = 'Correct Labels'
+    scale: Union[tuple, None] = None
+    scribbles_layer_name = SCRIBBLES_LAYER_NAME
+    corrected_cells_layer_name = CORRECTED_CELLS_LAYER_NAME
     correct_cells_cmap = {0: None,
                           1: (0.76388469, 0.02003777, 0.61156412, 1.)
                           }
@@ -94,7 +95,7 @@ class ProofreadingHandler:
         self._status = True
         segmentation = segmentation_layer.data
         self._current_seg_layer_name = segmentation_layer.name
-        self._current_label_layer_kwargs = {'scale': segmentation_layer.scale}
+        self.scale = segmentation_layer.scale
 
         self._segmentation = segmentation
         self.reset_scribbles()
@@ -111,6 +112,7 @@ class ProofreadingHandler:
         self._corrected_cells_mask = None
         self._scribbles = None
         self._bboxes = None
+        self.scale = None
 
     def toggle_corrected_cell(self, cell_id: int):
         self._toggle_corrected_cell(cell_id)
@@ -128,13 +130,14 @@ class ProofreadingHandler:
         self._corrected_cells_mask[mask] += 1
         self._corrected_cells_mask = self._corrected_cells_mask % 2  # act as a toggle
 
-    def _update_to_viewer(self, viewer: napari.Viewer, data: np.ndarray, layer_name: str):
+    @staticmethod
+    def _update_to_viewer(viewer: napari.Viewer, data: np.ndarray, layer_name: str, **kwargs):
         if layer_name in viewer.layers:
             viewer.layers[layer_name].data = data
             viewer.layers[layer_name].refresh()
 
         else:
-            viewer.add_labels(data, name=layer_name, **self._current_label_layer_kwargs)
+            viewer.add_labels(data, name=layer_name, **kwargs)
 
     @staticmethod
     def _update_slice_to_viewer(viewer: napari.Viewer, data: np.ndarray, layer_name: str, region_slice):
@@ -145,7 +148,7 @@ class ProofreadingHandler:
             raise ValueError(f'Layer {layer_name} not found in viewer')
 
     def update_scribble_to_viewer(self, viewer: napari.Viewer):
-        self._update_to_viewer(viewer, self._scribbles, self.scribbles_layer_name)
+        self._update_to_viewer(viewer, self._scribbles, self.scribbles_layer_name, scale=self.scale)
 
     def update_scribbles_from_viewer(self, viewer: napari.Viewer):
         self._scribbles = viewer.layers[self.scribbles_layer_name].data
@@ -154,7 +157,11 @@ class ProofreadingHandler:
         self._scribbles = np.zeros_like(self._segmentation).astype(np.uint16)
 
     def update_corrected_cells_mask_to_viewer(self, viewer: napari.Viewer):
-        self._update_to_viewer(viewer, self.corrected_cells_mask, self.corrected_cells_layer_name)
+        self._update_to_viewer(viewer,
+                               self.corrected_cells_mask,
+                               self.corrected_cells_layer_name,
+                               scale=self.scale,
+                               color=self.correct_cells_cmap)
 
     def update_corrected_cells_mask_slice_to_viewer(self, viewer: napari.Viewer,
                                                     slice_data: np.ndarray,
@@ -231,7 +238,8 @@ def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label, correc
 
     for idx in all_idx:
         if idx in correct_labels:
-            return segmentation, region_slice, {'bboxes': bboxes, 'max_label': max_label}
+            show_info(f'Label {idx} is in the correct labels list. Cannot be modified')
+            return segmentation[region_slice], region_slice, bboxes
 
     if len(seeds_idx) == 1:
         return _merge_from_seeds(segmentation,
@@ -268,7 +276,7 @@ def widget_add_label_to_corrected(viewer: napari.Viewer, position: tuple[int, ..
     if len(position) == 2:
         position = [0, *position]
 
-    position = [int(p / s) for p, s in zip(position, segmentation_handler._current_label_layer_kwargs['scale'])]
+    position = [int(p / s) for p, s in zip(position, segmentation_handler.scale)]
     cell_id = segmentation_handler.segmentation[position[0], position[1], position[2]]
     segmentation_handler.toggle_corrected_cell(cell_id)
     segmentation_handler.update_corrected_cells_mask_to_viewer(viewer)
