@@ -265,14 +265,20 @@ def widget_simple_dt_ws(image: Image,
           cell_segmentation={'label': 'Cell Segmentation'},
           nuclei_segmentation={'label': 'Nuclei Segmentation'},
           boundary_pmaps={'label': 'Boundary Image'},
-          threshold_merge={'label': 'Threshold merge'},
-          threshold_split={'label': 'Threshold split'})
+          threshold={'label': 'Threshold',
+                     'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 0.1},
+          quantile={'label': 'Nuclei Quantile',
+                    'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 0.1})
 def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
                                                    nuclei_segmentation: Labels,
-                                                   boundary_pmaps: Union[None, Image],
-                                                   threshold_merge=0.33,
-                                                   threshold_split=0.66) -> Future[LayerDataTuple]:
+                                                   boundary_pmaps: Image = None,
+                                                   threshold=(33, 66),
+                                                   quantile=(0.1, 99.9)) -> Future[LayerDataTuple]:
     out_name = build_nice_name(cell_segmentation.name, 'NucleiSegFix')
+    threshold_merge, threshold_split = threshold
+    threshold_merge, threshold_split = threshold_merge / 100, threshold_split / 100
+    print(threshold_merge, threshold_split)
+    quantile = tuple([q / 100 for q in quantile])
 
     if boundary_pmaps is not None:
         inputs_names = (cell_segmentation.name, nuclei_segmentation.name, boundary_pmaps.name)
@@ -288,7 +294,7 @@ def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
                                     scale=cell_segmentation.scale,
                                     metadata=cell_segmentation.metadata)
     layer_type = 'labels'
-    step_kwargs = dict(threshold_merge=threshold_merge, threshold_split=threshold_split)
+    step_kwargs = dict(threshold_merge=threshold_merge, threshold_split=threshold_split, quantiles_nuclei=quantile)
 
     return start_threading_process(fix_over_under_segmentation_from_nuclei,
                                    runtime_kwargs=func_kwargs,

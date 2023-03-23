@@ -1,5 +1,5 @@
 import napari
-from napari.utils.notifications import show_info
+from plantseg.viewer.logging import formatted_logging
 
 from plantseg.viewer.containers import get_extra_seg, get_extra_pred
 from plantseg.viewer.containers import get_gasp_workflow, get_preprocessing_workflow, get_main
@@ -23,8 +23,8 @@ def run_viewer():
     def _widget_clean_scribble(viewer):
         widget_clean_scribble(viewer=viewer)
 
-    @viewer.mouse_drag_callbacks.append
-    def callback(_viewer: napari.Viewer, event):
+    @viewer.mouse_double_click_callbacks.append
+    def _add_label_to_corrected(_viewer: napari.Viewer, event):
         if _viewer.layers.selection.active.name == CORRECTED_CELLS_LAYER_NAME:
             widget_add_label_to_corrected(viewer=viewer, position=event.position)
 
@@ -36,5 +36,5 @@ def run_viewer():
         _container_w = viewer.window.add_dock_widget(_containers, name=name)
         viewer.window._qt_window.tabifyDockWidget(main_w, _container_w)
 
-    show_info('Napari - Plantseg is ready!')
+    formatted_logging('Plantseg is ready!', thread='Main', level='info')
     napari.run()

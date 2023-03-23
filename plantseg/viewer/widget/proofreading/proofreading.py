@@ -5,21 +5,10 @@ import numpy as np
 from magicgui import magicgui
 from napari.layers import Labels, Image
 from napari.qt.threading import thread_worker
-from napari.utils.notifications import show_info
-from skimage.segmentation import watershed
+from plantseg.viewer.logging import formatted_logging
 
-from plantseg.viewer.widget.proofreading.utils import get_bboxes, get_idx_slice
-
-"""
-try:
-    import SimpleITK as sitk
-    from plantseg.segmentation.functional.segmentation import simple_itk_watershed_from_markers as watershed
-
-except ImportError:
-    from skimage.segmentation import watershed as skimage_ws
-    watershed = partial(skimage_ws, compactness=0.01)
-    
-"""
+from plantseg.viewer.widget.proofreading.utils import get_bboxes
+from plantseg.viewer.widget.proofreading.split_merge_tools import split_merge_from_seeds
 
 default_key_binding_split_merge = 'n'
 default_key_binding_clean = 'b'
@@ -183,86 +172,12 @@ class ProofreadingHandler:
 segmentation_handler = ProofreadingHandler()
 
 
-def _merge_from_seeds(segmentation, region_slice, region_bbox, bboxes, all_idx):
-    region_segmentation = segmentation[region_slice]
-
-    mask = [region_segmentation == idx for idx in all_idx]
-
-    new_label = 0 if 0 in all_idx else all_idx[0]
-
-    mask = np.logical_or.reduce(mask)
-    region_segmentation[mask] = new_label
-    bboxes[new_label] = region_bbox
-    show_info('merge complete')
-    return region_segmentation, region_slice, bboxes
-
-
-def _split_from_seed(segmentation, sz, sx, sy, region_slice, all_idx, offsets, bboxes, image, seeds_values, max_label):
-    local_sz, local_sx, local_sy = sz - offsets[0], sx - offsets[1], sy - offsets[2]
-
-    region_image = image[region_slice]
-    region_segmentation = segmentation[region_slice]
-
-    region_seeds = np.zeros_like(region_segmentation)
-
-    seeds_values += max_label
-    region_seeds[local_sz, local_sx, local_sy] = seeds_values
-
-    mask = [region_segmentation == idx for idx in all_idx]
-    mask = np.logical_or.reduce(mask)
-
-    new_seg = watershed(region_image, region_seeds, mask=mask, compactness=0.001)
-    new_seg[~mask] = region_segmentation[~mask]
-
-    new_bboxes = get_bboxes(new_seg)
-    for idx in np.unique(seeds_values):
-        values = new_bboxes[idx]
-        values = values + offsets[None, :]
-        bboxes[idx] = values
-
-    show_info('split complete')
-    return new_seg, region_slice, bboxes
-
-
-def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label, correct_labels):
-    # find seeds location ad label value
-    sz, sx, sy = np.nonzero(seeds)
-
-    seeds_values = seeds[sz, sx, sy]
-    seeds_idx = np.unique(seeds_values)
-
-    all_idx = segmentation[sz, sx, sy]
-    all_idx = np.unique(all_idx)
-
-    region_slice, region_bbox, offsets = get_idx_slice(all_idx, bboxes_dict=bboxes)
-
-    for idx in all_idx:
-        if idx in correct_labels:
-            show_info(f'Label {idx} is in the correct labels list. Cannot be modified')
-            return segmentation[region_slice], region_slice, bboxes
-
-    if len(seeds_idx) == 1:
-        return _merge_from_seeds(segmentation,
-                                 region_slice,
-                                 region_bbox,
-                                 bboxes,
-                                 all_idx)
-    else:
-        return _split_from_seed(segmentation,
-                                sz, sx, sy,
-                                region_slice,
-                                all_idx,
-                                offsets,
-                                bboxes,
-                                image,
-                                seeds_values,
-                                max_label)
-
-
 @magicgui(call_button=f'Clean scribbles - < {default_key_binding_clean} >')
 def widget_clean_scribble(viewer: napari.Viewer):
     if 'Scribbles' not in viewer.layers:
-        show_info('Scribble Layer not defined. Run the proofreading widget tool once first')
+
+        formatted_logging('Scribble Layer not defined. Run the proofreading widget tool once first',
+                          thread='clean scribble')
         return None
 
     segmentation_handler.reset_scribbles()
@@ -308,7 +223,7 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
                                           segmentation: Labels,
                                           image: Image) -> None:
     if initialize_proofreading(viewer, segmentation):
-        show_info('Proofreading widget initialized correctly')
+        formatted_logging('Proofreading initialized', thread='proofreading tool')
         return None
 
     segmentation_handler.update_scribbles_from_viewer(viewer)
@@ -319,7 +234,7 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
             return None
 
         if segmentation_handler.scribbles.sum() == 0:
-            show_info('No scribbles found')
+            formatted_logging('No scribbles found', thread='proofreading tool')
             return None
 
         segmentation_handler.lock()
