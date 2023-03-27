@@ -28,7 +28,7 @@ requirements:
     - vigra
     - pytorch
     - python-elf
-    - pytorch-3dunet=1.3.9
+    - pytorch-3dunet=1.4.1
     - napari
     - python-graphviz
 
