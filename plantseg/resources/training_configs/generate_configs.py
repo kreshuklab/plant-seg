@@ -6,7 +6,6 @@ import yaml
 arch = ['unet', 'resunet']
 norm = ['bn', 'gn']
 loss = ['bce', 'dice', 'bce_dice']
-# TODO: take the best network, train with noise augs and compare scores!
 
 arch_config_values = {
     'unet': {

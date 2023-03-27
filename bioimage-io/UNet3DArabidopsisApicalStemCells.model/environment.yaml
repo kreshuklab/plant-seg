@@ -1,8 +1,0 @@
-channels:
-    - pytorch
-    - conda-forge
-    - defaults
-name:
-    unet3d-arabidopsis-stem-cells
-dependencies:
-    - pytorch>=1,<2

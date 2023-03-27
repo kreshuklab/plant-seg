@@ -8,6 +8,7 @@ from pytorch3dunet.augment.transforms import StandardLabelToBoundary
 from scipy.ndimage import zoom
 from skimage.filters import gaussian
 from sklearn.metrics import precision_score, recall_score
+from pytorch3dunet.unet3d.utils import load_checkpoint
 
 
 def blur_boundary(boundary, sigma):
