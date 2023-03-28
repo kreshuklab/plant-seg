@@ -1,5 +1,4 @@
 import torch
-from pytorch3dunet.unet3d import utils
 
 from plantseg.io.io import load_shape
 from plantseg.pipeline import gui_logger
