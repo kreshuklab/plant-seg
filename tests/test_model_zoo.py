@@ -1,13 +1,18 @@
+import pytest
 import torch
 
 from plantseg.models.model import UNet2D
 from plantseg.predictions.functional.utils import get_model_config
 
-# test one 3d and one 3d model
-MODEL_NAMES = ['confocal_2D_unet_ovules_ds2x', 'generic_confocal_3D_unet']
+# test some modes (3D and 2D)
+MODEL_NAMES = ['confocal_2D_unet_ovules_ds2x',
+               'generic_confocal_3D_unet',
+               'lightsheet_2D_unet_root_ds1x',
+               'generic_light_sheet_3D_unet']
 
 
 class TestModelZoo:
+    @pytest.mark.skip("github workflows do not allow to download models for security reason")
     def test_model_zoo(self):
         for model_name in MODEL_NAMES:
             model, _, model_path = get_model_config(model_name, model_update=True)
