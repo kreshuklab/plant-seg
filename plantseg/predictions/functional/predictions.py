@@ -1,7 +1,7 @@
 from typing import Tuple, Union
 
 import numpy as np
-from pytorch3dunet.unet3d import utils
+import torch
 
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape
 from plantseg.predictions.functional.utils import get_dataset_config, get_model_config, get_predictor_config, set_device
@@ -37,8 +37,9 @@ def unet_predictions(raw: np.array,
         np.array: predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.
 
     """
-    model, model_config, model_path = get_model_config(model_name, model_update=model_update, version=version)
-    utils.load_checkpoint(model_path, model)
+    model, model_config, model_path = get_model_config(model_name, model_update=model_update)
+    state = torch.load(model_path, map_location='cpu')
+    model.load_state_dict(state)
 
     device = set_device(device)
     model = model.to(device)

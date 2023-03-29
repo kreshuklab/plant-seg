@@ -1,15 +1,14 @@
 import numpy as np
 import pytorch3dunet.augment.transforms as transforms
 from pytorch3dunet.datasets.utils import calculate_stats, default_prediction_collate, _loader_classes
-from pytorch3dunet.unet3d.utils import get_logger
 from torch.utils.data import Dataset
 
-logger = get_logger('ArrayDataset')
+from plantseg.pipeline import gui_logger
 
 
 def get_slice_builder(raws, labels, weight_maps, config):
     """
-    Implementation from pytorch-3dunet AbstractHDF5Dataset stipped of the looger
+    Implementation from pytorch-3dunet AbstractHDF5Dataset stipped of the logger
     https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/datasets/utils.py
     """
     assert 'name' in config
@@ -84,7 +83,7 @@ class ArrayDataset(Dataset):
         self.patch_count = len(self.raw_slices)
 
         if verbose_logging:
-            logger.info(f'Number of patches: {self.patch_count}')
+            gui_logger.info(f'Number of patches: {self.patch_count}')
 
     def __getitem__(self, idx):
         if idx >= len(self):

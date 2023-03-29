@@ -10,10 +10,8 @@ import yaml
 from plantseg import model_zoo_path, custom_zoo, home_path, PLANTSEG_MODELS_DIR, plantseg_global_path
 from plantseg.pipeline import gui_logger
 
-
 CONFIG_TRAIN_YAML = "config_train.yml"
 BEST_MODEL_PYTORCH = "best_checkpoint.pytorch"
-LAST_MODEL_PYTORCH = "last_checkpoint.pytorch"
 
 
 def load_config(config_path: str) -> dict:
@@ -131,10 +129,16 @@ def get_train_config(model_name: str, model_update: bool = False) -> dict:
     return config_train
 
 
-def download_model(url: str, out_dir: str = '.') -> None:
-    for file in [CONFIG_TRAIN_YAML, BEST_MODEL_PYTORCH, LAST_MODEL_PYTORCH]:
-        with requests.get(f'{url}{file}', allow_redirects=True) as r:
-            with open(os.path.join(out_dir, file), 'wb') as f:
+def download_model(model_url: str, out_dir: str = '.') -> None:
+    model_file = model_url.split('/')[-1]
+    config_url = model_url[:-len(model_file)] + "config_train.yml"
+    urls = {
+        "best_checkpoint.pytorch": model_url,
+        "config_train.yml": config_url
+    }
+    for filename, url in urls.items():
+        with requests.get(url, allow_redirects=True) as r:
+            with open(os.path.join(out_dir, filename), 'wb') as f:
                 f.write(r.content)
 
 
@@ -155,12 +159,10 @@ def check_models(model_name: str, update_files: bool = False) -> bool:
 
     model_config_path = os.path.exists(os.path.join(model_dir, CONFIG_TRAIN_YAML))
     model_best_path = os.path.exists(os.path.join(model_dir, BEST_MODEL_PYTORCH))
-    model_last_path = os.path.exists(os.path.join(model_dir, LAST_MODEL_PYTORCH))
 
     # Check if files are there, if not download them
     if (not model_config_path or
             not model_best_path or
-            not model_last_path or
             update_files):
 
         # Read config
@@ -168,10 +170,10 @@ def check_models(model_name: str, update_files: bool = False) -> bool:
         config = load_config(model_file)
 
         if model_name in config:
-            url = config[model_name]["path"]
+            model_url = config[model_name]["model_url"]
 
-            gui_logger.info(f"Downloading model files from: '{url}' ...")
-            download_model(url, out_dir=model_dir)
+            gui_logger.info(f"Downloading model files: '{model_url}' ...")
+            download_model(model_url, out_dir=model_dir)
         else:
             raise RuntimeError(f"Custom model {model_name} corrupted. Required files not found.")
     return True

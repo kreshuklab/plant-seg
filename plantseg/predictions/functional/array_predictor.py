@@ -1,13 +1,11 @@
 import numpy as np
 import torch
-from pytorch3dunet.unet3d.utils import get_logger
-from pytorch3dunet.unet3d.utils import remove_halo
+import tqdm
 from torch.utils.data import DataLoader
 
+from plantseg.models.model import UNet2D
+from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset
-import tqdm
-
-logger = get_logger('UNetArrayPredictor')
 
 
 class ArrayPredictor:
@@ -37,19 +35,19 @@ class ArrayPredictor:
         test_loader = DataLoader(test_dataset, batch_size=1, collate_fn=test_dataset.prediction_collate)
 
         if self.mute_logging:
-            logger.info(f"Processing...")
+            gui_logger.info(f"Processing...")
 
         out_channels = self.config.get('out_channels')
 
         # prediction_channel = self.config.get('prediction_channel', None)
         prediction_channel = None
         if self.mute_logging and prediction_channel is not None:
-            logger.info(f"Saving only channel '{prediction_channel}' from the network output")
+            gui_logger.info(f"Saving only channel '{prediction_channel}' from the network output")
 
         output_heads = self.config.get('output_heads', 1)
 
         if self.mute_logging:
-            logger.info(f'Running prediction on {len(test_loader)} batches...')
+            gui_logger.info(f'Running prediction on {len(test_loader)} batches...')
 
         # dimensionality of the output predictions
         volume_shape = self.volume_shape(test_dataset)
@@ -60,17 +58,17 @@ class ArrayPredictor:
             prediction_maps_shape = (1,) + volume_shape
 
         if self.mute_logging:
-            logger.info(f'The shape of the output prediction maps (CDHW): {prediction_maps_shape}')
+            gui_logger.info(f'The shape of the output prediction maps (CDHW): {prediction_maps_shape}')
 
         patch_halo = self.predictor_config.get('patch_halo', (4, 8, 8))
         self._validate_halo(patch_halo, test_dataset.slice_builder_config)
 
         if self.mute_logging:
-            logger.info(f'Using patch_halo: {patch_halo}')
+            gui_logger.info(f'Using patch_halo: {patch_halo}')
 
         if self.mute_logging:
             # allocate prediction and normalization arrays
-            logger.info('Allocating prediction and normalization arrays...')
+            gui_logger.info('Allocating prediction and normalization arrays...')
         prediction_maps, normalization_masks = self._allocate_prediction_maps(prediction_maps_shape,
                                                                               output_heads)
 
@@ -80,12 +78,20 @@ class ArrayPredictor:
         # Run predictions on the entire input dataset
 
         with torch.no_grad():
-            for batch, indices in tqdm.tqdm(test_loader, disable=self.disable_tqdm):
+            for input, indices in tqdm.tqdm(test_loader, disable=self.disable_tqdm):
                 # send batch to device
-                batch = batch.to(self.device)
+                input = input.to(self.device)
 
-                # forward pass
-                predictions = self.model(batch)
+                if isinstance(self.model, UNet2D):
+                    # remove the singleton z-dimension from the input
+                    input = torch.squeeze(input, dim=-3)
+                    # forward pass
+                    predictions = self.model(input)
+                    # add the singleton z-dimension to the output
+                    predictions = torch.unsqueeze(predictions, dim=-3)
+                else:
+                    # forward pass
+                    predictions = self.model(input)
 
                 # wrap predictions into a list if there is only one output head from the network
                 if output_heads == 1:
@@ -110,11 +116,11 @@ class ArrayPredictor:
 
                         if self.mute_logging and prediction_channel is not None:
                             # use only the 'prediction_channel'
-                            logger.info(f"Using channel '{prediction_channel}'...")
+                            gui_logger.info(f"Using channel '{prediction_channel}'...")
                             pred = np.expand_dims(pred[prediction_channel], axis=0)
 
                         if self.mute_logging:
-                            logger.info(f'Saving predictions for slice:{index}...')
+                            gui_logger.info(f'Saving predictions for slice:{index}...')
 
                         # remove halo in order to avoid block artifacts in the output probability maps
                         u_prediction, u_index = remove_halo(pred, index, volume_shape, patch_halo)
@@ -125,7 +131,7 @@ class ArrayPredictor:
 
         # save results
         if self.mute_logging:
-            logger.info(f'Returning predictions')
+            gui_logger.info(f'Returning predictions')
         prediction_maps = self._normalize_results(prediction_maps,
                                                   normalization_masks,
                                                   test_dataset.mirror_padding,
@@ -156,7 +162,7 @@ class ArrayPredictor:
             if mirror_padding is not None:
                 z_s, y_s, x_s = [_slice_from_pad(p) for p in mirror_padding]
                 if mute_logging:
-                    logger.info(f'Dataset loaded with mirror padding: {mirror_padding}. Cropping before saving...')
+                    gui_logger.info(f'Dataset loaded with mirror padding: {mirror_padding}. Cropping before saving...')
 
                 prediction_map = prediction_map[:, z_s, y_s, x_s]
 
@@ -170,7 +176,7 @@ class ArrayPredictor:
 
         patch_overlap = np.subtract(patch, stride)
 
-        assert np.all(patch_overlap - patch_halo >= 0),\
+        assert np.all(patch_overlap - patch_halo >= 0), \
             f"Not enough patch overlap for stride: {stride} and halo: {patch_halo}"
 
     @staticmethod
@@ -180,3 +186,48 @@ class ArrayPredictor:
             return raw.shape
         else:
             return raw.shape[1:]
+
+
+def remove_halo(patch, index, shape, patch_halo):
+    """
+    Copied from: https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/unet3d/utils.py
+
+    Remove `patch_halo` voxels around the edges of a given patch.
+
+    Args:
+        patch (numpy.ndarray): the patch to remove the halo from
+        index (tuple): the position of the patch in the original image of shape `shape`
+        shape (tuple): the shape of the original image
+        patch_halo (tuple): the halo size in each dimension
+    """
+    assert len(patch_halo) == 3
+
+    def _new_slices(slicing, max_size, pad):
+        if slicing.start == 0:
+            p_start = 0
+            i_start = 0
+        else:
+            p_start = pad
+            i_start = slicing.start + pad
+
+        if slicing.stop == max_size:
+            p_stop = None
+            i_stop = max_size
+        else:
+            p_stop = -pad if pad != 0 else 1
+            i_stop = slicing.stop - pad
+
+        return slice(p_start, p_stop), slice(i_start, i_stop)
+
+    D, H, W = shape
+
+    i_c, i_z, i_y, i_x = index
+    p_c = slice(0, patch.shape[0])
+
+    p_z, i_z = _new_slices(i_z, D, patch_halo[0])
+    p_y, i_y = _new_slices(i_y, H, patch_halo[1])
+    p_x, i_x = _new_slices(i_x, W, patch_halo[2])
+
+    patch_index = (p_c, p_z, p_y, p_x)
+    index = (i_c, i_z, i_y, i_x)
+    return patch[patch_index], index

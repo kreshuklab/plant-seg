@@ -4,9 +4,9 @@ from datetime import datetime
 
 import h5py
 import numpy as np
-from pytorch3dunet.augment.transforms import StandardLabelToBoundary
 from scipy.ndimage import zoom
 from skimage.filters import gaussian
+from skimage.segmentation import find_boundaries
 from sklearn.metrics import precision_score, recall_score
 
 
@@ -97,8 +97,7 @@ def pmaps_evaluation(gt_path,
             pmap = zoom(pmap, factor)
 
         # generate gt boundaries
-        ltb = StandardLabelToBoundary(blur=True, sigma=sigma)
-        boundaries = ltb(gt)
+        boundaries = find_boundaries(gt, connectivity=2, mode='thick').astype('uint8')
 
         for threshold in thresholds:
             _pmap = np.zeros_like(pmap)
@@ -134,6 +133,7 @@ def pmaps_evaluation(gt_path,
 if __name__ == "__main__":
     import glob
     import os
+
     args = parse()
     pmaps_evaluation(args.gt,
                      args.predictions,

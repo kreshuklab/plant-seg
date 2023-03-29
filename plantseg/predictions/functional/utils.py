@@ -1,9 +1,9 @@
 import os
 
 import torch
-from pytorch3dunet.unet3d.model import get_model
 
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR, home_path
+from plantseg.models.model import get_model
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset
 from plantseg.predictions.functional.array_predictor import ArrayPredictor
@@ -31,16 +31,15 @@ def get_predict_template():
     return predict_template
 
 
-def get_model_config(model_name, model_update=False, version='best'):
+def get_model_config(model_name, model_update=False):
     check_models(model_name, update_files=model_update)
     config_train = get_train_config(model_name)
     model_config = config_train.pop('model')
     model = get_model(model_config)
-
     model_path = os.path.join(home_path,
                               PLANTSEG_MODELS_DIR,
                               model_name,
-                              f"{version}_checkpoint.pytorch")
+                              "best_checkpoint.pytorch")
     return model, model_config, model_path
 
 

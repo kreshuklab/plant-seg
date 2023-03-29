@@ -28,7 +28,7 @@ cnn_prediction:
   # enable/disable UNet prediction
   state: False
   # Trained model name, more info on available models and custom models in the README
-  model_name: "generic_confocal_3d_unet"
+  model_name: "generic_confocal_3D_unet"
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
   device: "cpu"
   # If True raw data will be mirror padded with 20 voxels in each axis
