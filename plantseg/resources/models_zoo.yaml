@@ -64,7 +64,7 @@ lightsheet_2D_unet_root_nuclei_ds1x:
 
 # PNAS
 confocal_2D_unet_apical_stem_cells:
-  model_url: https://zenodo.org/record/7772721/files/confocal_2d_unet_apical_stem.pytorch
+  model_url: https://zenodo.org/record/7781054/files/confocal_2d_unet_apical_stem.pytorch
   resolution: [1., 0.25, 0.25]
   description: "2D Unet trained on z-slices of confocal images of Arabidopsis thaliana apical stem cell: https://www.repository.cam.ac.uk/handle/1810/262530"
 confocal_3D_unet_apical_stem_cells:
