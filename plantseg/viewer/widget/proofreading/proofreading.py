@@ -5,13 +5,15 @@ import numpy as np
 from magicgui import magicgui
 from napari.layers import Labels, Image
 from napari.qt.threading import thread_worker
-from plantseg.viewer.logging import formatted_logging
+from plantseg.viewer.logging import napari_formatted_logging
 
 from plantseg.viewer.widget.proofreading.utils import get_bboxes
 from plantseg.viewer.widget.proofreading.split_merge_tools import split_merge_from_seeds
+from concurrent.futures import Future
+from napari.types import LayerDataTuple
 
-default_key_binding_split_merge = 'n'
-default_key_binding_clean = 'b'
+DEFAULT_KEY_BINDING_PROOFREAD = 'n'
+DEFAULT_KEY_BINDING_CLEAN = 'b'
 SCRIBBLES_LAYER_NAME = 'Scribbles'
 CORRECTED_CELLS_LAYER_NAME = 'Correct Labels'
 
@@ -145,17 +147,25 @@ class ProofreadingHandler:
     def reset_scribbles(self):
         self._scribbles = np.zeros_like(self._segmentation).astype(np.uint16)
 
+    def preserve_labels(self, viewer: napari.Viewer, layer_name: str):
+        viewer.layers[layer_name].preserve_labels = True
+        viewer.layers[layer_name].refresh()
+
     def update_corrected_cells_mask_to_viewer(self, viewer: napari.Viewer):
         self._update_to_viewer(viewer,
                                self.corrected_cells_mask,
                                self.corrected_cells_layer_name,
                                scale=self.scale,
-                               color=self.correct_cells_cmap)
+                               color=self.correct_cells_cmap,
+                               opacity=1,
+                               )
+        self.preserve_labels(viewer, self.corrected_cells_layer_name)
 
     def update_corrected_cells_mask_slice_to_viewer(self, viewer: napari.Viewer,
                                                     slice_data: np.ndarray,
                                                     region_slice: tuple[slice, ...]):
         self._update_slice_to_viewer(viewer, slice_data, self.corrected_cells_layer_name, region_slice)
+        self.preserve_labels(viewer, self.corrected_cells_layer_name)
 
     def update_after_proofreading(self, viewer: napari.Viewer,
                                   seg_slice: np.ndarray,
@@ -172,12 +182,15 @@ class ProofreadingHandler:
 segmentation_handler = ProofreadingHandler()
 
 
-@magicgui(call_button=f'Clean scribbles - < {default_key_binding_clean} >')
+@magicgui(call_button=f'Clean scribbles - < {DEFAULT_KEY_BINDING_CLEAN} >')
 def widget_clean_scribble(viewer: napari.Viewer):
-    if 'Scribbles' not in viewer.layers:
+    if not segmentation_handler.status:
+        napari_formatted_logging('Proofreading widget not initialized. Run the proofreading widget tool once first',
+                                 thread='Clean scribble')
 
-        formatted_logging('Scribble Layer not defined. Run the proofreading widget tool once first',
-                          thread='clean scribble')
+    if 'Scribbles' not in viewer.layers:
+        napari_formatted_logging('Scribble Layer not defined. Run the proofreading widget tool once first',
+                                 thread='Clean scribble')
         return None
 
     segmentation_handler.reset_scribbles()
@@ -198,6 +211,7 @@ def widget_add_label_to_corrected(viewer: napari.Viewer, position: tuple[int, ..
 
 
 def initialize_proofreading(viewer: napari.Viewer, segmentation_layer: Labels) -> bool:
+
     if segmentation_handler.scribbles_layer_name not in viewer.layers:
         segmentation_handler.reset()
 
@@ -216,14 +230,23 @@ def initialize_proofreading(viewer: napari.Viewer, segmentation_layer: Labels) -
     return True
 
 
-@magicgui(call_button=f'Split/Merge from scribbles - < {default_key_binding_split_merge} >',
+@magicgui(call_button=f'Init - Split/Merge from scribbles - < {DEFAULT_KEY_BINDING_PROOFREAD} >',
           segmentation={'label': 'Segmentation'},
           image={'label': 'Image'})
 def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
                                           segmentation: Labels,
                                           image: Image) -> None:
+
+    if segmentation is None:
+        napari_formatted_logging('Segmentation Layer not defined', thread='Proofreading tool', level='error')
+        return None
+
+    if image is None:
+        napari_formatted_logging('Image Layer not defined', thread='Proofreading tool', level='error')
+        return None
+
     if initialize_proofreading(viewer, segmentation):
-        formatted_logging('Proofreading initialized', thread='proofreading tool')
+        napari_formatted_logging('Proofreading initialized', thread='Proofreading tool')
         return None
 
     segmentation_handler.update_scribbles_from_viewer(viewer)
@@ -234,7 +257,7 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
             return None
 
         if segmentation_handler.scribbles.sum() == 0:
-            formatted_logging('No scribbles found', thread='proofreading tool')
+            napari_formatted_logging('No scribbles found', thread='Proofreading tool')
             return None
 
         segmentation_handler.lock()
@@ -250,3 +273,51 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
 
     worker = func()
     worker.start()
+
+
+@magicgui(call_button=f'Export correct labels')
+def widget_filter_segmentation() -> Future[LayerDataTuple]:
+    if not segmentation_handler.status:
+        napari_formatted_logging('Proofreading widget not initialized. Run the proofreading widget tool once first',
+                                 thread='Export correct labels')
+
+    future = Future()
+
+    @thread_worker
+    def func():
+        if segmentation_handler.is_locked():
+            return None
+
+        segmentation_handler.lock()
+        filtered_seg = segmentation_handler.segmentation.copy()
+        filtered_seg[segmentation_handler.corrected_cells_mask == 0] = 0
+        layers_kwargs = {'scale': segmentation_handler.scale,
+                         'name': f'Proofread_{segmentation_handler.seg_layer_name}'}
+
+        segmentation_handler.unlock()
+        return filtered_seg, layers_kwargs, 'labels'
+
+    def on_done(result):
+        return future.set_result(result)
+
+    worker = func()
+    worker.returned.connect(on_done)
+    worker.start()
+    return future
+
+
+def setup_proofreading_keybindings(viewer):
+    @viewer.bind_key(DEFAULT_KEY_BINDING_PROOFREAD)
+    def _widget_split_and_merge_from_scribbles(_viewer: napari.Viewer):
+        widget_split_and_merge_from_scribbles(viewer=_viewer)
+
+    @viewer.bind_key(DEFAULT_KEY_BINDING_CLEAN)
+    def _widget_clean_scribble(_viewer: napari.Viewer):
+        widget_clean_scribble(viewer=_viewer)
+
+    @viewer.mouse_double_click_callbacks.append
+    def _add_label_to_corrected(_viewer: napari.Viewer, event):
+        # Maybe it would be better to run this callback only if the layer is active
+        # if _viewer.layers.selection.active.name == CORRECTED_CELLS_LAYER_NAME:
+        if CORRECTED_CELLS_LAYER_NAME in _viewer.layers:
+            widget_add_label_to_corrected(viewer=viewer, position=event.position)

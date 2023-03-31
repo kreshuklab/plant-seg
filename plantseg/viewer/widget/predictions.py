@@ -8,7 +8,7 @@ from magicgui import magicgui
 from napari.layers import Image
 from napari.qt.threading import thread_worker
 from napari.types import LayerDataTuple
-from plantseg.viewer.logging import formatted_logging
+from plantseg.viewer.logging import napari_formatted_logging
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
@@ -71,8 +71,8 @@ def _compute_multiple_predictions(image, patch_size, stride, device):
     out_layers = []
     for i, model_name in enumerate(list_models()):
 
-        formatted_logging(f'Running UNet Predictions: {model_name} {i}/{len(list_models())}',
-                          thread='UNet Grid Predictions')
+        napari_formatted_logging(f'Running UNet Predictions: {model_name} {i}/{len(list_models())}',
+                                 thread='UNet Grid Predictions')
 
         out_name = build_nice_name(image.name, model_name)
         layer_kwargs = layer_properties(name=out_name,

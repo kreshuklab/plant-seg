@@ -6,7 +6,7 @@ import numpy as np
 from magicgui import magicgui
 from napari.layers import Layer, Image, Labels
 from napari.types import LayerDataTuple
-from plantseg.viewer.logging import formatted_logging
+from plantseg.viewer.logging import napari_formatted_logging
 
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape, normalize_01
 from plantseg.dataprocessing.functional.dataprocessing import image_rescale, compute_scaling_factor
@@ -146,8 +146,8 @@ def open_file(path: Path = Path.home(),
 
     # return layer
 
-    formatted_logging(f'{name} Correctly imported, voxel_size: {voxel_size} {voxel_size_unit}',
-                      thread='Open file')
+    napari_formatted_logging(f'{name} Correctly imported, voxel_size: {voxel_size} {voxel_size_unit}',
+                             thread='Open file')
     layer_kwargs = layer_properties(name=name,
                                     scale=voxel_size,
                                     metadata={'original_voxel_size': voxel_size,
@@ -334,8 +334,8 @@ def export_stacks(images: List[Tuple[Layer, str]],
                              static_params=step_params)
         export_name.append(_export_name)
 
-        formatted_logging(f'{image.name} Correctly exported, voxel_size: {image.scale} {voxel_size_unit}',
-                          thread='Export stack')
+        napari_formatted_logging(f'{image.name} Correctly exported, voxel_size: {image.scale} {voxel_size_unit}',
+                                 thread='Export stack')
 
     if export_name:
         # add checkout step to the workflow dag for batch processing
@@ -348,4 +348,4 @@ def export_stacks(images: List[Tuple[Layer, str]],
 
         out_path = directory / f'{workflow_name}.pkl'
         dag_manager.export_dag(out_path, final_export_check)
-        formatted_logging(f'Workflow correctly exported', thread='Export stack')
+        napari_formatted_logging(f'Workflow correctly exported', thread='Export stack')

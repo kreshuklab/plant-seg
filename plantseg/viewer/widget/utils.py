@@ -3,7 +3,7 @@ from functools import partial
 from typing import Callable, Tuple
 
 from napari.qt.threading import thread_worker
-from plantseg.viewer.logging import formatted_logging
+from plantseg.viewer.logging import napari_formatted_logging
 
 from plantseg.viewer.dag_handler import dag_manager
 
@@ -36,7 +36,7 @@ def start_threading_process(func: Callable,
     future = Future()
 
     def on_done(result):
-        formatted_logging(f'Widget {step_name} computation complete', thread=step_name)
+        napari_formatted_logging(f'Widget {step_name} computation complete', thread=step_name)
         _func = func if not skip_dag else identity
         dag_manager.add_step(_func, input_keys=input_keys,
                              output_key=out_name,
@@ -48,7 +48,7 @@ def start_threading_process(func: Callable,
     worker = thread_func()
     worker.returned.connect(on_done)
     worker.start()
-    formatted_logging(f'Widget {step_name} computation started', thread=step_name)
+    napari_formatted_logging(f'Widget {step_name} computation started', thread=step_name)
     return future
 
 

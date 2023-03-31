@@ -1,5 +1,5 @@
 import numpy as np
-from plantseg.viewer.logging import formatted_logging
+from plantseg.viewer.logging import napari_formatted_logging
 from skimage.segmentation import watershed
 
 from plantseg.viewer.widget.proofreading.utils import get_bboxes, get_idx_slice
@@ -25,7 +25,7 @@ def _merge_from_seeds(segmentation, region_slice, region_bbox, bboxes, all_idx):
     mask = np.logical_or.reduce(mask)
     region_segmentation[mask] = new_label
     bboxes[new_label] = region_bbox
-    formatted_logging('Merge complete', thread='Proofreading tool')
+    napari_formatted_logging('Merge complete', thread='Proofreading tool')
     return region_segmentation, region_slice, bboxes
 
 
@@ -52,7 +52,7 @@ def _split_from_seed(segmentation, sz, sx, sy, region_slice, all_idx, offsets, b
         values = values + offsets[None, :]
         bboxes[idx] = values
 
-    formatted_logging('Split complete', thread='Proofreading tool')
+    napari_formatted_logging('Split complete', thread='Proofreading tool')
     return new_seg, region_slice, bboxes
 
 
@@ -70,8 +70,8 @@ def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label, correc
 
     correct_cell_idx = [idx for idx in all_idx if idx in correct_labels]
     if correct_cell_idx:
-        formatted_logging(f'Label {correct_cell_idx} is in the correct labels list. Cannot be modified',
-                          thread='Proofreading tool')
+        napari_formatted_logging(f'Label {correct_cell_idx} is in the correct labels list. Cannot be modified',
+                                 thread='Proofreading tool')
         return segmentation[region_slice], region_slice, bboxes
 
     if len(seeds_idx) == 1:

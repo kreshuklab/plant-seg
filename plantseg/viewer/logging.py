@@ -7,7 +7,7 @@ napari_notifications = {'info': show_info,
                         'console': show_console_notification}
 
 
-def formatted_logging(message: str, thread: str, level: str = 'info'):
+def napari_formatted_logging(message: str, thread: str, level: str = 'info'):
     assert level in napari_notifications.keys(), f'Invalid notification type: {level}, ' \
                                                 f'valid types are: {napari_notifications.keys()}'
     # time_stamp = datetime.now().strftime("%d_%m_%y_%H%M%S")
