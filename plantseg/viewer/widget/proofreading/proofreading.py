@@ -23,6 +23,7 @@ class ProofreadingHandler:
     _current_seg_layer_name: Union[str, None]
     _corrected_cells: set
     _segmentation: Union[np.ndarray, None]
+    _current_seg_metadata: Union[dict, None]
     _corrected_cells_mask: Union[np.ndarray, None]
     _scribbles: Union[np.ndarray, None]
     _bboxes: Union[np.ndarray, None]
@@ -45,6 +46,10 @@ class ProofreadingHandler:
     @property
     def seg_layer_name(self):
         return self._current_seg_layer_name
+
+    @property
+    def seg_metadata(self):
+        return self._current_seg_metadata
 
     @property
     def segmentation(self):
@@ -86,6 +91,7 @@ class ProofreadingHandler:
         self._status = True
         segmentation = segmentation_layer.data
         self._current_seg_layer_name = segmentation_layer.name
+        self._current_seg_metadata = segmentation_layer.metadata
         self.scale = segmentation_layer.scale
 
         self._segmentation = segmentation
@@ -230,7 +236,7 @@ def initialize_proofreading(viewer: napari.Viewer, segmentation_layer: Labels) -
     return True
 
 
-@magicgui(call_button=f'Init - Split/Merge from scribbles - < {DEFAULT_KEY_BINDING_PROOFREAD} >',
+@magicgui(call_button=f'Initialize/Split/Merge from scribbles - < {DEFAULT_KEY_BINDING_PROOFREAD} >',
           segmentation={'label': 'Segmentation'},
           image={'label': 'Image'})
 def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
@@ -275,7 +281,7 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
     worker.start()
 
 
-@magicgui(call_button=f'Export correct labels')
+@magicgui(call_button=f'Extract correct labels')
 def widget_filter_segmentation() -> Future[LayerDataTuple]:
     if not segmentation_handler.status:
         napari_formatted_logging('Proofreading widget not initialized. Run the proofreading widget tool once first',
@@ -292,7 +298,9 @@ def widget_filter_segmentation() -> Future[LayerDataTuple]:
         filtered_seg = segmentation_handler.segmentation.copy()
         filtered_seg[segmentation_handler.corrected_cells_mask == 0] = 0
         layers_kwargs = {'scale': segmentation_handler.scale,
-                         'name': f'Proofread_{segmentation_handler.seg_layer_name}'}
+                         'name': f'Proofread_{segmentation_handler.seg_layer_name}',
+                         'metadata': segmentation_handler.seg_metadata
+                         }
 
         segmentation_handler.unlock()
         return filtered_seg, layers_kwargs, 'labels'
