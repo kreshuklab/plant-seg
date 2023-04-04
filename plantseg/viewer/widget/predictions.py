@@ -8,13 +8,13 @@ from magicgui import magicgui
 from napari.layers import Image
 from napari.qt.threading import thread_worker
 from napari.types import LayerDataTuple
-from plantseg.viewer.logging import formatted_logging
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
 from plantseg.predictions.functional.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
 from plantseg.utils import list_models, add_custom_model
-from plantseg.viewer.widget.utils import start_threading_process, build_nice_name, layer_properties
+from plantseg.viewer.logging import formatted_logging
+from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
@@ -47,7 +47,7 @@ def widget_unet_predictions(image: Image,
                             patch_size: Tuple[int, int, int] = (80, 160, 160),
                             stride: str = STRIDE_ACCURATE,
                             device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
-    out_name = build_nice_name(image.name, model_name)
+    out_name = create_layer_name(image.name, model_name)
 
     inputs_names = (image.name, 'device')
     layer_kwargs = layer_properties(name=out_name,
@@ -74,7 +74,7 @@ def _compute_multiple_predictions(image, patch_size, stride, device):
         formatted_logging(f'Running UNet Predictions: {model_name} {i}/{len(list_models())}',
                           thread='UNet Grid Predictions')
 
-        out_name = build_nice_name(image.name, model_name)
+        out_name = create_layer_name(image.name, model_name)
         layer_kwargs = layer_properties(name=out_name,
                                         scale=image.scale,
                                         metadata=image.metadata)
@@ -162,7 +162,7 @@ def widget_iterative_unet_predictions(image: Image,
                                       patch_size: Tuple[int, int, int] = (80, 160, 160),
                                       stride: str = STRIDE_ACCURATE,
                                       device: str = ALL_DEVICES[0]) -> Future[LayerDataTuple]:
-    out_name = build_nice_name(image.name, f'iterative-{model_name}-x{num_iterations}')
+    out_name = create_layer_name(image.name, f'iterative-{model_name}-x{num_iterations}')
     inputs_names = (image.name,)
     layer_kwargs = layer_properties(name=out_name,
                                     scale=image.scale,

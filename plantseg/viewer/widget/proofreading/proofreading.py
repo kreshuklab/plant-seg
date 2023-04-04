@@ -5,10 +5,10 @@ import numpy as np
 from magicgui import magicgui
 from napari.layers import Labels, Image
 from napari.qt.threading import thread_worker
-from plantseg.viewer.logging import formatted_logging
 
-from plantseg.viewer.widget.proofreading.utils import get_bboxes
+from plantseg.viewer.logging import formatted_logging
 from plantseg.viewer.widget.proofreading.split_merge_tools import split_merge_from_seeds
+from plantseg.viewer.widget.proofreading.utils import get_bboxes
 
 default_key_binding_split_merge = 'n'
 default_key_binding_clean = 'b'
@@ -175,7 +175,6 @@ segmentation_handler = ProofreadingHandler()
 @magicgui(call_button=f'Clean scribbles - < {default_key_binding_clean} >')
 def widget_clean_scribble(viewer: napari.Viewer):
     if 'Scribbles' not in viewer.layers:
-
         formatted_logging('Scribble Layer not defined. Run the proofreading widget tool once first',
                           thread='clean scribble')
         return None

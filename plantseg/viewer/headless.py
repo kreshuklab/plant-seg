@@ -3,7 +3,6 @@ import time
 from pathlib import Path
 from typing import List, Tuple
 
-import dask
 import distributed
 from magicgui import magicgui
 from tqdm import tqdm

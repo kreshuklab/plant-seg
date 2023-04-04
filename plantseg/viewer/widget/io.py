@@ -6,7 +6,6 @@ import numpy as np
 from magicgui import magicgui
 from napari.layers import Layer, Image, Labels
 from napari.types import LayerDataTuple
-from plantseg.viewer.logging import formatted_logging
 
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape, normalize_01
 from plantseg.dataprocessing.functional.dataprocessing import image_rescale, compute_scaling_factor
@@ -14,6 +13,7 @@ from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, PIL_EXTENSIONS, allowed_
 from plantseg.io import create_h5, create_tiff
 from plantseg.io import load_tiff, load_h5, load_pill
 from plantseg.viewer.dag_handler import dag_manager
+from plantseg.viewer.logging import formatted_logging
 from plantseg.viewer.widget.utils import layer_properties
 
 

@@ -1,18 +1,8 @@
 import numpy as np
-from plantseg.viewer.logging import formatted_logging
 from skimage.segmentation import watershed
 
+from plantseg.viewer.logging import formatted_logging
 from plantseg.viewer.widget.proofreading.utils import get_bboxes, get_idx_slice
-
-"""
-try:
-    import SimpleITK as sitk
-    from plantseg.segmentation.functional.segmentation import simple_itk_watershed_from_markers as watershed
-
-except ImportError:
-    from skimage.segmentation import watershed as skimage_ws
-    watershed = partial(skimage_ws, compactness=0.01)
-"""
 
 
 def _merge_from_seeds(segmentation, region_slice, region_bbox, bboxes, all_idx):

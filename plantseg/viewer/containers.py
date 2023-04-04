@@ -42,7 +42,6 @@ def get_main():
 
 
 def get_preprocessing_workflow():
-
     container = MainWindow(widgets=[widget_gaussian_smoothing,
                                     widget_rescaling,
                                     widget_cropping,

@@ -1,8 +1,8 @@
 import napari
-from plantseg.viewer.logging import formatted_logging
 
 from plantseg.viewer.containers import get_extra_seg, get_extra_pred
 from plantseg.viewer.containers import get_gasp_workflow, get_preprocessing_workflow, get_main
+from plantseg.viewer.logging import formatted_logging
 from plantseg.viewer.widget.proofreading.proofreading import CORRECTED_CELLS_LAYER_NAME
 from plantseg.viewer.widget.proofreading.proofreading import default_key_binding_clean, default_key_binding_split_merge
 from plantseg.viewer.widget.proofreading.proofreading import widget_add_label_to_corrected
