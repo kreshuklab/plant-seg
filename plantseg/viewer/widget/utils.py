@@ -3,9 +3,9 @@ from functools import partial
 from typing import Callable, Tuple
 
 from napari.qt.threading import thread_worker
-from plantseg.viewer.logging import napari_formatted_logging
 
 from plantseg.viewer.dag_handler import dag_manager
+from plantseg.viewer.logging import napari_formatted_logging
 
 
 def identity(*args, **kwargs):
@@ -30,7 +30,6 @@ def start_threading_process(func: Callable,
                             layer_type: str = 'image',
                             step_name: str = '',
                             skip_dag: bool = False) -> Future:
-
     runtime_kwargs.update(statics_kwargs)
     thread_func = thread_worker(partial(func, **runtime_kwargs))
     future = Future()
@@ -75,7 +74,7 @@ def _find_version(old_suffix, new_suffix):
     return f'{old_suffix}_{new_suffix}', ''
 
 
-def build_nice_name(base, new_suffix):
+def create_layer_name(base, new_suffix):
     if base.find('_') == -1:
         return f'{base}_{new_suffix}'
 

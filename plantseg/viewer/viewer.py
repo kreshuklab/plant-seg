@@ -1,8 +1,8 @@
 import napari
-from plantseg.viewer.logging import napari_formatted_logging
 
 from plantseg.viewer.containers import get_extra_seg, get_extra_pred
 from plantseg.viewer.containers import get_gasp_workflow, get_preprocessing_workflow, get_main
+from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.proofreading.proofreading import setup_proofreading_keybindings
 
 

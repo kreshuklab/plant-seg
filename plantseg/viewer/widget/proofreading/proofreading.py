@@ -1,3 +1,4 @@
+from concurrent.futures import Future
 from typing import Union
 
 import napari
@@ -5,12 +6,11 @@ import numpy as np
 from magicgui import magicgui
 from napari.layers import Labels, Image
 from napari.qt.threading import thread_worker
-from plantseg.viewer.logging import napari_formatted_logging
-
-from plantseg.viewer.widget.proofreading.utils import get_bboxes
-from plantseg.viewer.widget.proofreading.split_merge_tools import split_merge_from_seeds
-from concurrent.futures import Future
 from napari.types import LayerDataTuple
+
+from plantseg.viewer.logging import napari_formatted_logging
+from plantseg.viewer.widget.proofreading.split_merge_tools import split_merge_from_seeds
+from plantseg.viewer.widget.proofreading.utils import get_bboxes
 
 DEFAULT_KEY_BINDING_PROOFREAD = 'n'
 DEFAULT_KEY_BINDING_CLEAN = 'b'
@@ -217,7 +217,6 @@ def widget_add_label_to_corrected(viewer: napari.Viewer, position: tuple[int, ..
 
 
 def initialize_proofreading(viewer: napari.Viewer, segmentation_layer: Labels) -> bool:
-
     if segmentation_handler.scribbles_layer_name not in viewer.layers:
         segmentation_handler.reset()
 
@@ -242,7 +241,6 @@ def initialize_proofreading(viewer: napari.Viewer, segmentation_layer: Labels) -
 def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
                                           segmentation: Labels,
                                           image: Image) -> None:
-
     if segmentation is None:
         napari_formatted_logging('Segmentation Layer not defined', thread='Proofreading tool', level='error')
         return None

@@ -6,7 +6,6 @@ import numpy as np
 from magicgui import magicgui
 from napari.layers import Layer, Image, Labels
 from napari.types import LayerDataTuple
-from plantseg.viewer.logging import napari_formatted_logging
 
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape, normalize_01
 from plantseg.dataprocessing.functional.dataprocessing import image_rescale, compute_scaling_factor
@@ -14,6 +13,7 @@ from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, PIL_EXTENSIONS, allowed_
 from plantseg.io import create_h5, create_tiff
 from plantseg.io import load_tiff, load_h5, load_pill
 from plantseg.viewer.dag_handler import dag_manager
+from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.utils import layer_properties
 
 
@@ -294,10 +294,8 @@ def export_stacks(images: List[Tuple[Layer, str]],
             output_resolution = image.scale
             scaling_factor = None
 
-        if 'voxel_size_unit' in image.metadata.keys():
-            voxel_size_unit = image.metadata['voxel_size_unit']
-        else:
-            voxel_size_unit = 'um'
+        voxel_size_unit = image.metadata.get('voxel_size_unit', 'um')
+        root_name = image.metadata.get('root_name', 'unknown')
 
         image_custom_name = None if image_custom_name == '' else image_custom_name
         standard_suffix = f'_{i}' if image_custom_name is None else ''
@@ -318,7 +316,6 @@ def export_stacks(images: List[Tuple[Layer, str]],
                             voxel_size_unit=voxel_size_unit, **step_params)
 
         # add step to the workflow dag
-        root_name = image.metadata['root_name']
         input_keys = (image.name,
                       'out_stack_name',
                       'out_directory',
