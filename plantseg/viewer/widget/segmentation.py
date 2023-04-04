@@ -271,13 +271,12 @@ def widget_simple_dt_ws(image: Image,
                     'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 0.1})
 def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
                                                    nuclei_segmentation: Labels,
-                                                   boundary_pmaps: Image = None,
+                                                   boundary_pmaps: Image,
                                                    threshold=(33, 66),
                                                    quantile=(0.1, 99.9)) -> Future[LayerDataTuple]:
     out_name = create_layer_name(cell_segmentation.name, 'NucleiSegFix')
     threshold_merge, threshold_split = threshold
     threshold_merge, threshold_split = threshold_merge / 100, threshold_split / 100
-    print(threshold_merge, threshold_split)
     quantile = tuple([q / 100 for q in quantile])
 
     if boundary_pmaps is not None:

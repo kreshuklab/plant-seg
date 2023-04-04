@@ -9,7 +9,7 @@ from plantseg.viewer.widget.dataprocessing import widget_rescaling, widget_gauss
 from plantseg.viewer.widget.io import open_file, export_stacks
 from plantseg.viewer.widget.predictions import widget_iterative_unet_predictions, widget_add_custom_model
 from plantseg.viewer.widget.predictions import widget_unet_predictions, widget_test_all_unet_predictions
-from plantseg.viewer.widget.proofreading.proofreading import widget_clean_scribble
+from plantseg.viewer.widget.proofreading.proofreading import widget_clean_scribble, widget_filter_segmentation
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.widget.segmentation import widget_dt_ws, widget_agglomeration
 from plantseg.viewer.widget.segmentation import widget_fix_over_under_segmentation_from_nuclei
@@ -34,7 +34,8 @@ def get_main():
     container = MainWindow(widgets=[open_file,
                                     export_stacks,
                                     widget_split_and_merge_from_scribbles,
-                                    widget_clean_scribble
+                                    widget_clean_scribble,
+                                    widget_filter_segmentation,
                                     ],
                            labels=False)
     container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/Napari-Main')
