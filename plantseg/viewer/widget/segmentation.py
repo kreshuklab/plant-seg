@@ -45,7 +45,7 @@ def _generic_clustering(image: Image, labels: Labels,
 
 
 @magicgui(call_button='Run Clustering',
-          image={'label': 'Image',
+          image={'label': 'Pmap/Image',
                  'tooltip': 'Raw or boundary image to use as input for clustering.'},
           _labels={'label': 'Over-segmentation',
                    'tooltip': 'Over-segmentation labels layer to use as input for clustering.'},
@@ -76,7 +76,7 @@ def widget_agglomeration(image: Image, _labels: Labels,
 
 
 @magicgui(call_button='Run Lifted MultiCut',
-          image={'label': 'Image',
+          image={'label': 'Pmap/Image',
                  'tooltip': 'Raw or boundary image to use as input for clustering.'},
           nuclei={'label': 'Nuclei',
                   'tooltip': 'Nuclei binary predictions or Nuclei segmentation.'},
@@ -154,7 +154,7 @@ def dtws_wrapper(boundary_pmaps,
 
 
 @magicgui(call_button='Run Watershed',
-          image={'label': 'Image',
+          image={'label': 'Pmap/Image',
                  'tooltip': 'Raw or boundary image to use as input for Watershed.'},
           stacked={'label': 'Stacked',
                    'tooltip': 'Define if the Watershed will run slice by slice (faster) '
@@ -218,7 +218,7 @@ def widget_dt_ws(image: Image,
 
 
 @magicgui(call_button='Run Watershed',
-          image={'label': 'Image',
+          image={'label': 'Pmap/Image',
                  'tooltip': 'Raw or boundary image to use as input for Watershed.'},
           stacked={'label': 'Stacked',
                    'tooltip': 'Define if the Watershed will run slice by slice (faster) '
@@ -264,7 +264,7 @@ def widget_simple_dt_ws(image: Image,
 @magicgui(call_button='Run Segmentation Fix from Nuclei',
           cell_segmentation={'label': 'Cell Segmentation'},
           nuclei_segmentation={'label': 'Nuclei Segmentation'},
-          boundary_pmaps={'label': 'Boundary Image'},
+          boundary_pmaps={'label': 'Boundary Pmap/Image'},
           threshold={'label': 'Threshold',
                      'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 0.1},
           quantile={'label': 'Nuclei Quantile',

@@ -237,7 +237,7 @@ def initialize_proofreading(viewer: napari.Viewer, segmentation_layer: Labels) -
 
 @magicgui(call_button=f'Initialize/Split/Merge from scribbles - < {DEFAULT_KEY_BINDING_PROOFREAD} >',
           segmentation={'label': 'Segmentation'},
-          image={'label': 'Image'})
+          image={'label': 'Pmap/Image'})
 def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
                                           segmentation: Labels,
                                           image: Image) -> None:
