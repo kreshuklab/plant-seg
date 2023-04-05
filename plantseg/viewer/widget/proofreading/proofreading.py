@@ -248,6 +248,11 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
     if image is None:
         napari_formatted_logging('Image Layer not defined', thread='Proofreading tool', level='error')
         return None
+    elif 'pmap' not in image.metadata:
+        napari_formatted_logging('Pmap/Image layer appears to be a raw image and not a pmap. For the best proofreading '
+                                 'results, try to use a boundaries probability layer '
+                                 '(e.g. from the Run Prediction widget)',
+                                 thread='Proofreading tool', level='warning')
 
     if initialize_proofreading(viewer, segmentation):
         napari_formatted_logging('Proofreading initialized', thread='Proofreading tool')
