@@ -5,7 +5,6 @@ from functools import partial
 from typing import List, Callable, Tuple, Union, Set
 
 import dask
-import yaml
 from dask.multiprocessing import get as mpget
 from dask.threaded import get as tget
 

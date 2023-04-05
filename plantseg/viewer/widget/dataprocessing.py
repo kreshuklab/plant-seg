@@ -12,7 +12,7 @@ from plantseg.dataprocessing.functional.dataprocessing import compute_scaling_fa
 from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation as _relabel_segmentation
 from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
 from plantseg.utils import list_models, get_model_resolution
-from plantseg.viewer.widget.utils import start_threading_process, build_nice_name, layer_properties
+from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 
 
 @magicgui(call_button='Run Gaussian Smoothing',
@@ -27,7 +27,7 @@ from plantseg.viewer.widget.utils import start_threading_process, build_nice_nam
 def widget_gaussian_smoothing(image: Image,
                               sigma: float = 1.,
                               ) -> Future[LayerDataTuple]:
-    out_name = build_nice_name(image.name, 'GaussianSmoothing')
+    out_name = create_layer_name(image.name, 'GaussianSmoothing')
     inputs_kwarg = {'image': image.data}
     step_kwargs = {'sigma': sigma}
     inputs_names = (image.name,)
@@ -102,7 +102,7 @@ def widget_rescaling(image: Layer,
     else:
         out_voxel_size = compute_scaling_voxelsize(current_resolution, scaling_factor=rescaling_factor)
 
-    out_name = build_nice_name(image.name, 'Rescaled')
+    out_name = create_layer_name(image.name, 'Rescaled')
     inputs_kwarg = {'image': image.data}
     inputs_names = (image.name,)
     step_kwargs = {'factor': rescaling_factor, 'order': order}
@@ -166,7 +166,7 @@ def widget_cropping(image: Layer,
     else:
         raise ValueError(f'{type(image)} cannot be cropped, please use Image layers or Labels layers')
 
-    out_name = build_nice_name(image.name, 'cropped')
+    out_name = create_layer_name(image.name, 'cropped')
     inputs_names = (image.name,)
     layer_kwargs = layer_properties(name=out_name,
                                     scale=image.scale,
@@ -215,7 +215,7 @@ def widget_add_layers(image1: Image,
                       operation: str = 'Maximum',
                       weights: float = 0.5,
                       ) -> Future[LayerDataTuple]:
-    out_name = build_nice_name(f'{image1.name}-{image2.name}', operation)
+    out_name = create_layer_name(f'{image1.name}-{image2.name}', operation)
     inputs_names = (image1.name, image2.name)
     layer_kwargs = layer_properties(name=out_name,
                                     scale=image1.scale,
@@ -260,7 +260,7 @@ def widget_label_processing(segmentation: Labels,
     if relabel_segmentation and 'bboxes' in segmentation.metadata.keys():
         del segmentation.metadata['bboxes']
 
-    out_name = build_nice_name(segmentation.name, 'Processed')
+    out_name = create_layer_name(segmentation.name, 'Processed')
     inputs_kwarg = {'segmentation': segmentation.data}
     inputs_names = (segmentation.name,)
     layer_kwargs = layer_properties(name=out_name,
