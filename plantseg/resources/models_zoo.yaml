@@ -3,7 +3,7 @@
 
 ## Aliases for best performing networks for confocal and light-sheet
 generic_confocal_3D_unet:
-  model_url: https://zenodo.org/record/7768223/files/unet3d-arabidopsis-ovules-confocal-ds2x.pytorch
+  model_url: https://zenodo.org/record/7805434/files/unet3d-arabidopsis-ovules-confocal-ds2x.pytorch
   resolution: [0.235, 0.150, 0.150]
   description: "Unet trained on confocal images of Arabidopsis Ovules on 1/2-resolution in XY with BCEDiceLoss."
 generic_light_sheet_3D_unet:
@@ -17,7 +17,7 @@ confocal_3D_unet_ovules_ds1x:
   resolution: [0.235, 0.075, 0.075]
   description: "Unet trained on confocal images of Arabidopsis Ovules on original resolution with BCEDiceLoss."
 confocal_3D_unet_ovules_ds2x:
-  model_url: https://zenodo.org/record/7768223/files/unet3d-arabidopsis-ovules-confocal-ds2x.pytorch
+  model_url: https://zenodo.org/record/7805434/files/unet3d-arabidopsis-ovules-confocal-ds2x.pytorch
   resolution: [0.235, 0.150, 0.150]
   description: "Unet trained on confocal images of Arabidopsis Ovules on 1/2-resolution in XY with BCEDiceLoss."
 confocal_3D_unet_ovules_ds3x:
