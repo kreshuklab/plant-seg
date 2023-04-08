@@ -58,11 +58,11 @@ conda install -c conda-forge mamba
 ```
 If you have a nvidia gpu, install PlantSeg using mamba:
 ```bash
-mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone -c awolny plantseg pytorch-cuda=11.7
+mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone plantseg pytorch-cuda=11.7
 ```
 or if you don't have a nvidia gpu, install PlantSeg using mamba:
 ```bash
-mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg cpuonly
+mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone plantseg cpuonly
 ```
 The above command will create new conda environment `plant-seg` together with all required dependencies.
 
@@ -85,11 +85,11 @@ conda install -c conda-forge mamba
 ```
 If you have a nvidia gpu, install PlantSeg using mamba:
 ```bash
-mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone -c awolny plantseg pytorch-cuda=11.7
+mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone plantseg pytorch-cuda=11.7
 ```
 or if you don't have a nvidia gpu, install PlantSeg using mamba:
 ```bash
-mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny plantseg cpuonly
+mamba create -n plant-seg -c pytorch -c conda-forge -c lcerrone plantseg cpuonly
 ```
 The above command will create new conda environment `plant-seg` together with all required dependencies.
 
@@ -246,7 +246,7 @@ conda install -c pytorch torchvision cudatoolkit=9.2 pytorch
 
 Alternatively one can create the `plant-seg` environment from scratch and ensuring the correct version of cuda/pytorch, by:
 ```
-conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c awolny -c conda-forge cudatoolkit=<YOU_CUDA_VERSION> plantseg
+conda create -n plant-seg -c lcerrone -c abailoni -c cpape -c conda-forge cudatoolkit=<YOU_CUDA_VERSION> plantseg
 ```
 
 * If you use plantseg from the GUI and you receive an error similar to:

@@ -80,11 +80,7 @@ def _compute_multiple_predictions(image, patch_size, stride, device):
                                         metadata=image.metadata)
         layer_type = 'image'
         try:
-            pmap = unet_predictions(raw=image.data,
-                                    model_name=model_name,
-                                    stride=stride,
-                                    patch=patch_size,
-                                    device=device)
+            pmap = unet_predictions(raw=image.data, model_name=model_name, patch=patch_size, device=device)
             out_layers.append((pmap, layer_kwargs, layer_type))
 
         except Exception as e:
@@ -125,7 +121,7 @@ def widget_test_all_unet_predictions(image: Image,
 
 
 def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patch_size, stride, device):
-    func = partial(unet_predictions, model_name=model_name, stride=stride, patch=patch_size, device=device)
+    func = partial(unet_predictions, model_name=model_name, patch=patch_size, device=device)
     for i in range(num_iterations - 1):
         pmap = func(pmap)
         pmap = image_gaussian_smoothing(image=pmap, sigma=sigma)

@@ -20,17 +20,14 @@ model:
 predictor:
   # standard in memory predictor
   name: 'StandardPredictor'
-  # padding to be removed from each axis in a given patch in order to avoid checkerboard artifacts
-  patch_halo: [8, 16, 16]
-
+  # padding to be added to each axis in a given patch
+  patch_halo: [2, 4, 4]
 # specify the test datasets
 loaders:
   # how many subprocesses to use for data loading
   num_workers: 8
   # path to the raw data within the H5
   raw_internal_path: raw
-  # (int or tuple) mirror pad the raw image in each axis for best prediction berformance
-  mirror_padding: [16, 32, 32]
   # Define test datasets
   test:
     # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch

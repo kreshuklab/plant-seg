@@ -229,10 +229,10 @@ def check_patch_and_stride(config):
     This function check if patch and stride are large enough, if not the case will raise a warning and the predictions
     will have empty slices.
     """
-    _stride = config["cnn_prediction"]["stride"]
+    _stride = config["cnn_prediction"].get("stride_ratio", 0.75)
     patch = config["cnn_prediction"]["patch"]
     axis = ['z', 'x', 'y']
-    stride = get_stride_shape(patch, _stride) if isinstance(_stride, str) else _stride
+    stride = get_stride_shape(patch, _stride) if isinstance(_stride, float) else _stride
     for _ax, _patch, _stride in zip(axis, patch, stride):
         test_z = _ax == 'z' and 1 < _patch - _stride <= 8
         test_x = _ax == 'x' and _patch - _stride <= 16
@@ -240,8 +240,7 @@ def check_patch_and_stride(config):
         if test_z or test_x or test_y:
             gui_logger.warning(f"Stride along {_ax} axis (axis order zxy) is too large, "
                                f"this might lead to empty strides artifacts in the cnn predictions. "
-                               f"Please try to reduce eider reduce the stride "
-                               f"(equivalently, select the 'Accurate' mode in the gui) or to increase the patch size.")
+                               f"Please try to either reduce the stride or to increase the patch size.")
     return config
 
 

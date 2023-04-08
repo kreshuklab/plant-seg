@@ -1,9 +1,11 @@
 import torch
+from torch import nn
 
 from plantseg.io.io import load_shape
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep
-from plantseg.predictions.functional.utils import get_dataset_config, get_model_config, get_predictor_config, set_device
+from plantseg.predictions.functional.array_predictor import ArrayPredictor
+from plantseg.predictions.functional.utils import get_array_dataset, get_model_config, get_patch_halo, set_device
 
 
 def _check_patch_size(paths, patch_size):
@@ -33,21 +35,12 @@ def _check_patch_size(paths, patch_size):
 
 
 class UnetPredictions(GenericPipelineStep):
-    def __init__(self,
-                 input_paths,
-                 model_name: str,
-                 patch=(80, 160, 160),
-                 stride='Accurate (slowest)',
-                 device='cuda',
-                 version='best',
-                 model_update=False,
-                 mirror_padding=(16, 32, 32),
-                 input_type="data_float32",
-                 output_type="data_float32",
-                 out_ext=".h5",
-                 state=True):
-        h5_output_key = "predictions"
+    def __init__(self, input_paths, model_name: str, patch=(80, 160, 160), device='cuda', model_update=False,
+                 input_type="data_float32", output_type="data_float32", out_ext=".h5", state=True):
+        self.patch = patch
+        self.model_name = model_name
 
+        h5_output_key = "predictions"
         valid_paths = _check_patch_size(input_paths, patch_size=patch) if state else input_paths
 
         super().__init__(valid_paths,
@@ -63,18 +56,17 @@ class UnetPredictions(GenericPipelineStep):
         state = torch.load(model_path, map_location='cpu')
         model.load_state_dict(state)
 
-        device = set_device(device)
-        model = model.to(device)
+        if torch.cuda.device_count() > 1 and device != 'cpu':
+            model = nn.DataParallel(model)
+            gui_logger.info(f'Using {torch.cuda.device_count()} GPUs for prediction')
 
-        predictor, predictor_config = get_predictor_config(model_name)
-        self.predictor = predictor(model=model, config=model_config, device=device, **predictor_config)
+        if device != 'cpu':
+            model = model.cuda()
 
-        self.dataset_builder, self.dataset_config = get_dataset_config(model_name,
-                                                                       patch=patch,
-                                                                       stride=stride,
-                                                                       mirror_padding=mirror_padding)
+        patch_halo = get_patch_halo(model_name)
+        self.predictor = ArrayPredictor(model=model, config=model_config, device=device, patch_halo=patch_halo)
 
     def process(self, raw):
-        dataset = self.dataset_builder(raw, **self.dataset_config)
+        dataset = get_array_dataset(raw, self.model_name, patch=self.patch)
         pmaps = self.predictor(dataset)
         return pmaps[0]
