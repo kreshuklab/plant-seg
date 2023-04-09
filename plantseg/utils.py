@@ -111,14 +111,19 @@ def add_custom_model(new_model_name: str,
     return True, None
 
 
-def get_train_config(model_name: str, model_update: bool = False) -> dict:
+def get_train_config(model_name: str, model_update: bool = False, config_only: bool = False) -> dict:
     """
     Load the training configuration of a model in the model zoo
-    :param model_name: name of the model in the model zoo
-    :param model_update: if true force the re-download of the model
-    :return: the training config
+
+    Args:
+        model_name: name of the model in the model zoo
+        model_update: if true force the re-download of the model
+        config_only: if true only downloads the config file and skips the model file
+
+    Returns:
+        the training config
     """
-    check_models(model_name, update_files=model_update)
+    check_models(model_name, update_files=model_update, config_only=config_only)
     # Load train config and add missing info
     train_config_path = os.path.join(home_path,
                                      PLANTSEG_MODELS_DIR,
@@ -129,24 +134,38 @@ def get_train_config(model_name: str, model_update: bool = False) -> dict:
     return config_train
 
 
-def download_model(model_url: str, out_dir: str = '.') -> None:
+def download_model_files(model_url: str, out_dir: str) -> None:
     model_file = model_url.split('/')[-1]
     config_url = model_url[:-len(model_file)] + "config_train.yml"
     urls = {
         "best_checkpoint.pytorch": model_url,
         "config_train.yml": config_url
     }
+    download_files(urls, out_dir)
+
+
+def download_model_config(model_url: str, out_dir: str) -> None:
+    model_file = model_url.split('/')[-1]
+    config_url = model_url[:-len(model_file)] + "config_train.yml"
+    urls = {
+        "config_train.yml": config_url
+    }
+    download_files(urls, out_dir)
+
+
+def download_files(urls: dict, out_dir: str) -> None:
     for filename, url in urls.items():
         with requests.get(url, allow_redirects=True) as r:
             with open(os.path.join(out_dir, filename), 'wb') as f:
                 f.write(r.content)
 
 
-def check_models(model_name: str, update_files: bool = False) -> bool:
+def check_models(model_name: str, update_files: bool = False, config_only: bool = False) -> bool:
     """
     Simple script to check and download trained modules
     :param model_name: name of the model in the model zoo
     :param update_files: if true force the re-download of the model
+    :param config_only: if true only downloads the config file and skips the model file
     """
 
     if os.path.isdir(model_name):
@@ -171,9 +190,12 @@ def check_models(model_name: str, update_files: bool = False) -> bool:
 
         if model_name in config:
             model_url = config[model_name]["model_url"]
-
-            gui_logger.info(f"Downloading model files: '{model_url}' ...")
-            download_model(model_url, out_dir=model_dir)
+            if config_only:
+                gui_logger.info(f"Downloading model config...")
+                download_model_config(model_url, out_dir=model_dir)
+            else:
+                gui_logger.info(f"Downloading model files: '{model_url}' ...")
+                download_model_files(model_url, out_dir=model_dir)
         else:
             raise RuntimeError(f"Custom model {model_name} corrupted. Required files not found.")
     return True

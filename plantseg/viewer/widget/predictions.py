@@ -11,7 +11,7 @@ from napari.types import LayerDataTuple
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
-from plantseg.utils import list_models, add_custom_model
+from plantseg.utils import list_models, add_custom_model, get_train_config
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 
@@ -61,6 +61,13 @@ def widget_unet_predictions(image: Image,
                                    layer_type=layer_type,
                                    step_name='UNet Predictions',
                                    )
+
+
+@widget_unet_predictions.model_name.changed.connect
+def _on_model_name_changed(model_name: str):
+    train_config = get_train_config(model_name, config_only=True)
+    patch_size = train_config['loaders']['train']['slice_builder']['patch_shape']
+    widget_unet_predictions.patch_size.value = tuple(patch_size)
 
 
 def _compute_multiple_predictions(image, patch_size, device):
@@ -168,6 +175,13 @@ def widget_iterative_unet_predictions(image: Image,
                                    layer_type=layer_type,
                                    step_name='UNet Iterative Predictions',
                                    )
+
+
+@widget_iterative_unet_predictions.model_name.changed.connect
+def _on_model_name_changed_iterative(model_name: str):
+    train_config = get_train_config(model_name, config_only=True)
+    patch_size = train_config['loaders']['train']['slice_builder']['patch_shape']
+    widget_iterative_unet_predictions.patch_size.value = tuple(patch_size)
 
 
 @magicgui(call_button='Add Custom Model',
