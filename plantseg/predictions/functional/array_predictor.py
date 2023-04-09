@@ -1,28 +1,30 @@
+from typing import Tuple
+
 import numpy as np
 import torch
 import tqdm
 from torch import nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 from plantseg.models.model import UNet2D
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset, default_prediction_collate
 
 
-def _is_2d_model(model):
+def _is_2d_model(model: nn.Module) -> bool:
     if isinstance(model, nn.DataParallel):
         model = model.module
     return isinstance(model, UNet2D)
 
 
-def _pad(m, patch_halo):
+def _pad(m: torch.Tensor, patch_halo: Tuple[int, int, int]) -> torch.Tensor:
     if patch_halo is not None:
         z, y, x = patch_halo
         return nn.functional.pad(m, (x, x, y, y, z, z), mode='reflect')
     return m
 
 
-def _unpad(m, patch_halo):
+def _unpad(m: torch.Tensor, patch_halo: Tuple[int, int, int]) -> torch.Tensor:
     if patch_halo is not None:
         z, y, x = patch_halo
         if z == 0:
@@ -32,7 +34,7 @@ def _unpad(m, patch_halo):
     return m
 
 
-def get_batch_size(model):
+def get_batch_size(model: nn.Module) -> int:
     # TODO: implement
     return 1
 
@@ -47,20 +49,22 @@ class ArrayPredictor:
     use `LazyPredictor` instead.
     Args:
         model (Unet3D): trained 3D UNet model used for prediction
-        config (dict): global config dict
+        out_channels (int): number of output channels from the model
         device (str): device to use for prediction
         patch_halo (tuple): mirror padding around the patch
     """
 
-    def __init__(self, model, config, device, patch_halo, verbose_logging=False, disable_tqdm=False):
+    def __init__(self, model: nn.Module, out_channels: int, device: str, patch_halo: Tuple[int, int, int],
+                 verbose_logging: bool = False,
+                 disable_tqdm: bool = False):
         self.model = model
-        self.config = config
+        self.out_channels = out_channels
         self.device = device
         self.patch_halo = patch_halo
         self.verbose_logging = verbose_logging
         self.disable_tqdm = disable_tqdm
 
-    def __call__(self, test_dataset):
+    def __call__(self, test_dataset: Dataset) -> np.ndarray:
         assert isinstance(test_dataset, ArrayDataset)
         batch_size = get_batch_size(self.model)
         if torch.cuda.device_count() > 1 and self.device != 'cpu':
@@ -76,8 +80,7 @@ class ArrayPredictor:
 
         # dimensionality of the output predictions
         volume_shape = self.volume_shape(test_dataset)
-        out_channels = self.config['out_channels']
-        prediction_maps_shape = (out_channels,) + volume_shape
+        prediction_maps_shape = (self.out_channels,) + volume_shape
         if self.verbose_logging:
             gui_logger.info(f'The shape of the output prediction maps (CDHW): {prediction_maps_shape}')
             gui_logger.info(f'Using patch_halo: {self.patch_halo}')
@@ -118,7 +121,7 @@ class ArrayPredictor:
                 prediction = _unpad(prediction, self.patch_halo)
                 # convert to numpy array
                 prediction = prediction.cpu().numpy()
-                channel_slice = slice(0, out_channels)
+                channel_slice = slice(0, self.out_channels)
                 # for each batch sample
                 for pred, index in zip(prediction, indices):
                     # add channel dimension to the index

@@ -5,7 +5,7 @@ from plantseg.io.io import load_shape
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep
 from plantseg.predictions.functional.array_predictor import ArrayPredictor
-from plantseg.predictions.functional.utils import get_array_dataset, get_model_config, get_patch_halo, set_device
+from plantseg.predictions.functional.utils import get_array_dataset, get_model_config, get_patch_halo
 
 
 def _check_patch_size(paths, patch_size):
@@ -64,7 +64,8 @@ class UnetPredictions(GenericPipelineStep):
             model = model.cuda()
 
         patch_halo = get_patch_halo(model_name)
-        self.predictor = ArrayPredictor(model=model, config=model_config, device=device, patch_halo=patch_halo)
+        self.predictor = ArrayPredictor(model=model, out_channels=model_config['out_channels'], device=device,
+                                        patch_halo=patch_halo)
 
     def process(self, raw):
         dataset = get_array_dataset(raw, self.model_name, patch=self.patch)

@@ -42,8 +42,8 @@ def unet_predictions(raw: np.array, model_name: str, patch: Tuple[int, int, int]
         model = model.cuda()
 
     patch_halo = get_patch_halo(model_name)
-    predictor = ArrayPredictor(model=model, config=model_config, device=device, patch_halo=patch_halo,
-                               verbose_logging=False, disable_tqdm=disable_tqdm)
+    predictor = ArrayPredictor(model=model, out_channels=model_config['out_channels'], device=device,
+                               patch_halo=patch_halo, verbose_logging=False, disable_tqdm=disable_tqdm)
 
     raw = fix_input_shape(raw)
     raw = raw.astype('float32')

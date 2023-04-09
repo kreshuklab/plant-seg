@@ -1,10 +1,12 @@
 import collections
+from typing import Callable
 
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 
 from plantseg.pipeline import gui_logger
+from plantseg.predictions.functional.slice_builder import SliceBuilder
 
 
 class ArrayDataset(Dataset):
@@ -15,7 +17,8 @@ class ArrayDataset(Dataset):
     Inference only implementation of torch.utils.data.Dataset
     """
 
-    def __init__(self, raw, slice_builder, augs, verbose_logging=True):
+    def __init__(self, raw: np.ndarray, slice_builder: SliceBuilder, augs: Callable[[np.ndarray], torch.Tensor],
+                 verbose_logging: bool = True):
         """
         Args:
             raw (np.ndarray): raw data
@@ -25,12 +28,10 @@ class ArrayDataset(Dataset):
         """
         self.raw = raw
         self.augs = augs
-
         self.raw_slices = slice_builder.raw_slices
-        self.patch_count = len(self.raw_slices)
 
         if verbose_logging:
-            gui_logger.info(f'Number of patches: {self.patch_count}')
+            gui_logger.info(f'Number of patches: {len(self.raw_slices)}')
 
     def __getitem__(self, idx):
         if idx >= len(self):
@@ -38,7 +39,7 @@ class ArrayDataset(Dataset):
 
         # get the slice for a given index 'idx'
         raw_idx = self.raw_slices[idx]
-        # get the raw data patch for a given slice
+        # get the raw data patch for a given slice and augment
         raw_patch_transformed = self.augs(self.raw[raw_idx])
         # discard the channel dimension in the slices: predictor requires only the spatial dimensions of the volume
         if len(raw_idx) == 4:
@@ -46,7 +47,7 @@ class ArrayDataset(Dataset):
         return raw_patch_transformed, raw_idx
 
     def __len__(self):
-        return self.patch_count
+        return len(self.raw_slices)
 
 
 def default_prediction_collate(batch):

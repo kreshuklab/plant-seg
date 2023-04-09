@@ -1,13 +1,10 @@
 import os
 
-import torch
-
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR, home_path
 from plantseg.augment.transforms import get_test_augmentations
 from plantseg.models.model import get_model
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset
-from plantseg.predictions.functional.array_predictor import ArrayPredictor
 from plantseg.predictions.functional.slice_builder import SliceBuilder
 from plantseg.utils import get_train_config, check_models
 from plantseg.utils import load_config
