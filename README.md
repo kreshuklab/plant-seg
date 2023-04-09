@@ -132,6 +132,13 @@ where `CONFIG_PATH` is the path to the YAML configuration file. See [config.yaml
 file and our [wiki](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-CLI) for a
 detailed description of the parameters.
 
+## Data Parallelism
+By default, if multiple GPUs are available the prediction step will be run on all the GPUs using [DataParallel](https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html).
+If prediction on all available GPUs is not desirable, restrict the number of GPUs using `CUDA_VISIBLE_DEVICES`, e.g.
+```bash
+CUDA_VISIBLE_DEVICES=0,1 plantseg --config CONFIG_PATH
+``` 
+
 ### Optional dependencies (not fully tested on Windows)
 Some types of compressed tiff files require an additional package to be read correctly (eg: Zlib, 
 ZSTD, LZMA, ...). To run plantseg on those stacks you need to install `imagecodecs`. 

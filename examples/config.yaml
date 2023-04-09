@@ -34,11 +34,10 @@ cnn_prediction:
   # how many subprocesses to use for data loading
   num_workers: 8
   # patch size given to the network (adapt to fit in your GPU mem)
-  patch: [32, 128, 128]
-  # stride between patches (make sure the the patches overlap in order to get smoother prediction maps)
-  stride: [20, 100, 100]
-  # "best" refers to best performing on the val set (recommended), alternatively "last" refers to the last version before interruption
-  version: best
+  patch: [100, 160, 160]
+  # stride between patches will be computed as `stride_ratio * patch`
+  # recommended values are in range `[0.5, 0.75]` to make sure the patches have enough overlap to get smooth prediction maps
+  stride_ratio: 0.75
   # If "True" forces downloading networks from the online repos
   model_update: False
 
