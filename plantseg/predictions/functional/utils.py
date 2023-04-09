@@ -1,25 +1,18 @@
 import os
+from typing import Tuple
+
+import torch
+from torch import nn
 
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR, home_path
 from plantseg.augment.transforms import get_test_augmentations
-from plantseg.models.model import get_model
+from plantseg.models.model import get_model, UNet2D
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset
+from plantseg.predictions.functional.array_predictor import _pad
 from plantseg.predictions.functional.slice_builder import SliceBuilder
 from plantseg.utils import get_train_config, check_models
 from plantseg.utils import load_config
-
-# define constant values
-
-STRIDE_ACCURATE = "Accurate (slowest)"
-STRIDE_BALANCED = "Balanced"
-STRIDE_DRAFT = "Draft (fastest)"
-
-STRIDE_MENU = {
-    STRIDE_ACCURATE: 0.5,
-    STRIDE_BALANCED: 0.75,
-    STRIDE_DRAFT: 0.9
-}
 
 
 def get_predict_template():
@@ -42,20 +35,20 @@ def get_model_config(model_name, model_update=False):
     return model, model_config, model_path
 
 
-def get_array_dataset(raw, model_name, patch, global_normalization=True):
+def get_array_dataset(raw, model_name, patch, stride_ratio, global_normalization=True):
     if model_name == 'UNet2D':
         if patch[0] != 1:
             gui_logger.warning(f"Incorrect z-dimension in the patch_shape for the 2D UNet prediction. {patch[0]}"
                                f" was given, but has to be 1. Setting to  1")
             patch = (1, patch[1], patch[2])
 
-    stride = get_stride_shape(patch)
     if global_normalization:
         augs = get_test_augmentations(raw)
     else:
         # normalize with per patch statistics
         augs = get_test_augmentations(None)
 
+    stride = get_stride_shape(patch, stride_ratio)
     slice_builder = SliceBuilder(raw, label_dataset=None, weight_dataset=None, patch_shape=patch, stride_shape=stride)
     return ArrayDataset(raw, slice_builder, augs, verbose_logging=False)
 
@@ -74,3 +67,31 @@ def get_patch_halo(model_name):
 def get_stride_shape(patch_shape, stride_ratio=0.75):
     # striding MUST be >=1
     return [max(int(p * stride_ratio), 1) for p in patch_shape]
+
+
+def find_batch_size(model: nn.Module, in_channels: int, patch_shape: Tuple[int, int, int],
+                    patch_halo: Tuple[int, int, int], device: str) -> int:
+    if device == 'cpu':
+        return 1
+
+    if isinstance(model, UNet2D):
+        patch_shape = patch_shape[1:]
+
+    patch_shape = tuple(patch_shape)
+    model = model.cuda()
+    model.eval()
+    with torch.no_grad():
+        batch_size = 1
+        while True:
+            try:
+                x = torch.randn((batch_size, in_channels) + patch_shape).cuda()
+                x = _pad(x, patch_halo)
+                _ = model(x)
+                batch_size += 1
+            except RuntimeError as e:
+                batch_size -= 1
+                break
+
+        del model
+        torch.cuda.empty_cache()
+        return batch_size

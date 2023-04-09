@@ -34,11 +34,6 @@ def _unpad(m: torch.Tensor, patch_halo: Tuple[int, int, int]) -> torch.Tensor:
     return m
 
 
-def get_batch_size(model: nn.Module) -> int:
-    # TODO: implement
-    return 1
-
-
 class ArrayPredictor:
     """
     Based on pytorch-3dunet StandardPredictor
@@ -54,10 +49,10 @@ class ArrayPredictor:
         patch_halo (tuple): mirror padding around the patch
     """
 
-    def __init__(self, model: nn.Module, out_channels: int, device: str, patch_halo: Tuple[int, int, int],
-                 verbose_logging: bool = False,
-                 disable_tqdm: bool = False):
+    def __init__(self, model: nn.Module, batch_size: int, out_channels: int, device: str,
+                 patch_halo: Tuple[int, int, int], verbose_logging: bool = False, disable_tqdm: bool = False):
         self.model = model
+        self.batch_size = batch_size
         self.out_channels = out_channels
         self.device = device
         self.patch_halo = patch_halo
@@ -66,11 +61,12 @@ class ArrayPredictor:
 
     def __call__(self, test_dataset: Dataset) -> np.ndarray:
         assert isinstance(test_dataset, ArrayDataset)
-        batch_size = get_batch_size(self.model)
+
+        batch_size = self.batch_size
         if torch.cuda.device_count() > 1 and self.device != 'cpu':
             gui_logger.info(f'{torch.cuda.device_count()} GPUs available. '
                             f'Using batch_size = {torch.cuda.device_count()} * {batch_size}')
-            batch_size = batch_size * torch.cuda.device_count()
+            batch_size = self.batch_size * torch.cuda.device_count()
 
         test_loader = DataLoader(test_dataset, batch_size=batch_size, pin_memory=True,
                                  collate_fn=default_prediction_collate)

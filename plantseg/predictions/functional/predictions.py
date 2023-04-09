@@ -10,7 +10,7 @@ from plantseg.predictions.functional.array_dataset import ArrayDataset
 from plantseg.predictions.functional.array_predictor import ArrayPredictor
 from plantseg.predictions.functional.slice_builder import SliceBuilder
 from plantseg.predictions.functional.utils import get_model_config, get_patch_halo, \
-    get_stride_shape
+    get_stride_shape, find_batch_size
 
 
 def unet_predictions(raw: np.array, model_name: str, patch: Tuple[int, int, int] = (80, 160, 160), device: str = 'cuda',
@@ -35,15 +35,17 @@ def unet_predictions(raw: np.array, model_name: str, patch: Tuple[int, int, int]
     state = torch.load(model_path, map_location='cpu')
     model.load_state_dict(state)
 
+    patch_halo = get_patch_halo(model_name)
+    batch_size = find_batch_size(model, model_config['in_channels'], patch, patch_halo, device)
+
     if torch.cuda.device_count() > 1 and device != 'cpu':
         model = nn.DataParallel(model)
 
     if device != 'cpu':
         model = model.cuda()
 
-    patch_halo = get_patch_halo(model_name)
-    predictor = ArrayPredictor(model=model, out_channels=model_config['out_channels'], device=device,
-                               patch_halo=patch_halo, verbose_logging=False, disable_tqdm=disable_tqdm)
+    predictor = ArrayPredictor(model=model, batch_size=batch_size, out_channels=model_config['out_channels'],
+                               device=device, patch_halo=patch_halo, verbose_logging=False, disable_tqdm=disable_tqdm)
 
     raw = fix_input_shape(raw)
     raw = raw.astype('float32')

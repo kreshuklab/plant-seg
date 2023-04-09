@@ -1,3 +1,6 @@
+import gc
+
+import numpy as np
 import torch
 from torch import nn
 
@@ -5,7 +8,7 @@ from plantseg.io.io import load_shape
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep
 from plantseg.predictions.functional.array_predictor import ArrayPredictor
-from plantseg.predictions.functional.utils import get_array_dataset, get_model_config, get_patch_halo
+from plantseg.predictions.functional.utils import get_array_dataset, get_model_config, get_patch_halo, find_batch_size
 
 
 def _check_patch_size(paths, patch_size):
@@ -35,10 +38,11 @@ def _check_patch_size(paths, patch_size):
 
 
 class UnetPredictions(GenericPipelineStep):
-    def __init__(self, input_paths, model_name: str, patch=(80, 160, 160), device='cuda', model_update=False,
-                 input_type="data_float32", output_type="data_float32", out_ext=".h5", state=True):
+    def __init__(self, input_paths, model_name, patch=(80, 160, 160), stride_ratio=0.75, device='cuda',
+                 model_update=False, input_type="data_float32", output_type="data_float32", out_ext=".h5", state=True):
         self.patch = patch
         self.model_name = model_name
+        self.stride_ratio = stride_ratio
 
         h5_output_key = "predictions"
         valid_paths = _check_patch_size(input_paths, patch_size=patch) if state else input_paths
@@ -56,6 +60,10 @@ class UnetPredictions(GenericPipelineStep):
         state = torch.load(model_path, map_location='cpu')
         model.load_state_dict(state)
 
+        patch_halo = get_patch_halo(model_name)
+        batch_size = find_batch_size(model, model_config['in_channels'], patch, patch_halo, device)
+        gui_logger.info(f'Using batch size of {batch_size} for prediction')
+
         if torch.cuda.device_count() > 1 and device != 'cpu':
             model = nn.DataParallel(model)
             gui_logger.info(f'Using {torch.cuda.device_count()} GPUs for prediction')
@@ -63,11 +71,17 @@ class UnetPredictions(GenericPipelineStep):
         if device != 'cpu':
             model = model.cuda()
 
-        patch_halo = get_patch_halo(model_name)
-        self.predictor = ArrayPredictor(model=model, out_channels=model_config['out_channels'], device=device,
-                                        patch_halo=patch_halo)
+        self.predictor = ArrayPredictor(model=model, batch_size=batch_size, out_channels=model_config['out_channels'],
+                                        device=device, patch_halo=patch_halo)
 
-    def process(self, raw):
-        dataset = get_array_dataset(raw, self.model_name, patch=self.patch)
-        pmaps = self.predictor(dataset)
+    def process(self, raw: np.ndarray) -> np.ndarray:
+        dataset = get_array_dataset(raw, self.model_name, patch=self.patch, stride_ratio=self.stride_ratio)
+        try:
+            pmaps = self.predictor(dataset)
+        except torch.cuda.OutOfMemoryError as e:
+            # try to recover the memory
+            del self.predictor.model
+            gc.collect()
+            torch.cuda.empty_cache()
+            raise e
         return pmaps[0]

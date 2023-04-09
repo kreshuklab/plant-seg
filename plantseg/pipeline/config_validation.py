@@ -7,7 +7,7 @@ import yaml
 
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline import raw2seg_config_template
-from plantseg.predictions.functional.utils import STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_DRAFT, get_stride_shape
+from plantseg.predictions.functional.utils import get_stride_shape
 from plantseg.segmentation.utils import SUPPORTED_ALGORITMS
 from plantseg.utils import list_models, check_models
 
@@ -67,21 +67,6 @@ def iterative_is_float(key, value, fallback=None):
 
 def iterative_is_int(key, value, fallback=None):
     return [is_int(key, v, f) for v, f in zip(value, fallback)]
-
-
-def is_stride(key, value, fallback):
-    _options = [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]
-    if isinstance(value, (tuple, list)):
-        value = is_length3(key, value, fallback)
-        value = iterative_is_int(key, value, fallback)
-        return value
-
-    elif value not in _options:
-        _error_message(f"value must be one of {_options} or a length 3 list of integers", key, value, fallback)
-        return fallback
-
-    else:
-        return value
 
 
 def filter_name(key, value, fallback=None):
@@ -206,7 +191,7 @@ def check_scaling_factor(config):
     pre_rescaling = config["preprocessing"]["factor"]
     post_pred_rescaling = config["cnn_postprocessing"]["factor"]
     post_seg_rescaling = config["segmentation_postprocessing"]["factor"]
-    pre_inverse_rescaling = [1.0/f for f in pre_rescaling]
+    pre_inverse_rescaling = [1.0 / f for f in pre_rescaling]
     if not np.allclose(pre_inverse_rescaling, post_pred_rescaling):
         gui_logger.warning(f"Prediction post processing scaling is not set up correctly. "
                            f"To avoid shape mismatch between input and output the "

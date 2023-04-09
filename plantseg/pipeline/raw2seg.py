@@ -31,11 +31,12 @@ def configure_preprocessing_step(input_paths, config):
 def configure_cnn_step(input_paths, config):
     model_name = config['model_name']
     patch = config.get('patch', (80, 160, 160))
+    stride_ratio = config.get('stride_ratio', 0.75)
     device = config.get('device', 'cuda')
     state = config.get('state', True)
     model_update = config.get('model_update', False)
-    return UnetPredictions(input_paths, model_name=model_name, patch=patch, device=device, model_update=model_update,
-                           state=state)
+    return UnetPredictions(input_paths, model_name=model_name, patch=patch, stride_ratio=stride_ratio,
+                           device=device, model_update=model_update, state=state)
 
 
 def configure_cnn_postprocessing_step(input_paths, config):
