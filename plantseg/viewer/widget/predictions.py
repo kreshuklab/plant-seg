@@ -65,7 +65,7 @@ def widget_unet_predictions(image: Image,
 
 @widget_unet_predictions.model_name.changed.connect
 def _on_model_name_changed(model_name: str):
-    train_config = get_train_config(model_name, config_only=True)
+    train_config = get_train_config(model_name)
     patch_size = train_config['loaders']['train']['slice_builder']['patch_shape']
     widget_unet_predictions.patch_size.value = tuple(patch_size)
 
@@ -179,7 +179,7 @@ def widget_iterative_unet_predictions(image: Image,
 
 @widget_iterative_unet_predictions.model_name.changed.connect
 def _on_model_name_changed_iterative(model_name: str):
-    train_config = get_train_config(model_name, config_only=True)
+    train_config = get_train_config(model_name)
     patch_size = train_config['loaders']['train']['slice_builder']['patch_shape']
     widget_iterative_unet_predictions.patch_size.value = tuple(patch_size)
 

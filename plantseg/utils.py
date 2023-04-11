@@ -111,19 +111,17 @@ def add_custom_model(new_model_name: str,
     return True, None
 
 
-def get_train_config(model_name: str, model_update: bool = False, config_only: bool = False) -> dict:
+def get_train_config(model_name: str) -> dict:
     """
     Load the training configuration of a model in the model zoo
 
     Args:
         model_name: name of the model in the model zoo
-        model_update: if true force the re-download of the model
-        config_only: if true only downloads the config file and skips the model file
 
     Returns:
         the training config
     """
-    check_models(model_name, update_files=model_update, config_only=config_only)
+    check_models(model_name, config_only=True)
     # Load train config and add missing info
     train_config_path = os.path.join(home_path,
                                      PLANTSEG_MODELS_DIR,
