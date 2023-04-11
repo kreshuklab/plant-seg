@@ -68,20 +68,12 @@ class UnetPredictions(GenericPipelineStep):
             model = nn.DataParallel(model)
             gui_logger.info(f'Using {torch.cuda.device_count()} GPUs for prediction')
 
-        if device != 'cpu':
-            model = model.cuda()
+        model = model.to(device)
 
         self.predictor = ArrayPredictor(model=model, batch_size=batch_size, out_channels=model_config['out_channels'],
                                         device=device, patch_halo=patch_halo)
 
     def process(self, raw: np.ndarray) -> np.ndarray:
         dataset = get_array_dataset(raw, self.model_name, patch=self.patch, stride_ratio=self.stride_ratio)
-        try:
-            pmaps = self.predictor(dataset)
-        except torch.cuda.OutOfMemoryError as e:
-            # try to recover the memory
-            del self.predictor.model
-            gc.collect()
-            torch.cuda.empty_cache()
-            raise e
+        pmaps = self.predictor(dataset)
         return pmaps[0]

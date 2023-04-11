@@ -41,8 +41,7 @@ def unet_predictions(raw: np.array, model_name: str, patch: Tuple[int, int, int]
     if torch.cuda.device_count() > 1 and device != 'cpu':
         model = nn.DataParallel(model)
 
-    if device != 'cpu':
-        model = model.cuda()
+    model = model.to(device)
 
     predictor = ArrayPredictor(model=model, batch_size=batch_size, out_channels=model_config['out_channels'],
                                device=device, patch_halo=patch_halo, verbose_logging=False, disable_tqdm=disable_tqdm)

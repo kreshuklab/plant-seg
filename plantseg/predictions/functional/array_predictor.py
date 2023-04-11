@@ -96,10 +96,7 @@ class ArrayPredictor:
 
         with torch.no_grad():
             for input, indices in tqdm.tqdm(test_loader, disable=self.disable_tqdm):
-                # send batch to gpu
-                if torch.cuda.is_available() and self.device != 'cpu':
-                    input = input.cuda(non_blocking=True)
-
+                input = input.to(self.device)
                 input = _pad(input, self.patch_halo)
 
                 if _is_2d_model(self.model):
