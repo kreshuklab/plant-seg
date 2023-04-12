@@ -73,12 +73,12 @@ confocal_3D_unet_apical_stem_cells:
   description: "3D Unet trained on confocal images of Arabidopsis thaliana apical stem cell: https://www.repository.cam.ac.uk/handle/1810/262530"
 
 # Mouse embryo ex vivo
-lightsheet_3d_unet_mouse_embryo_cells:
+lightsheet_3D_unet_mouse_embryo_cells:
   model_url: https://zenodo.org/record/7774490/files/unet-bce-dice-cell-boundary-311021.pytorch
   resolution: [1.0, 0.2, 0.2]
   description: "A a variant of 3D U-Net trained to predict the cell boundaries in live light-sheet images of ex-vivo developing mouse embryo. Voxel size: (0.2×0.2×1 µm^3) (XYZ)"
 
-confocal_3d_unet_mouse_embryo_nuclei:
+confocal_3D_unet_mouse_embryo_nuclei:
   model_url: https://zenodo.org/record/7774505/files/unet-bce-dice-ab-nuclei-boundary-090121.pytorch
   resolution: [1.0, 0.2, 0.2]
   description: "A 3D U-Net trained to predict the nuclei and their boundaries in fixed confocal images of developing mouse embryo. Voxel size: (0.2×0.2×1 µm^3) (XYZ)"
