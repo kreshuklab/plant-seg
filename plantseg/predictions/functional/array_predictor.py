@@ -1,11 +1,37 @@
+from typing import Tuple
+
 import numpy as np
 import torch
 import tqdm
-from torch.utils.data import DataLoader
+from torch import nn
+from torch.utils.data import DataLoader, Dataset
 
 from plantseg.models.model import UNet2D
 from plantseg.pipeline import gui_logger
-from plantseg.predictions.functional.array_dataset import ArrayDataset
+from plantseg.predictions.functional.array_dataset import ArrayDataset, default_prediction_collate
+
+
+def _is_2d_model(model: nn.Module) -> bool:
+    if isinstance(model, nn.DataParallel):
+        model = model.module
+    return isinstance(model, UNet2D)
+
+
+def _pad(m: torch.Tensor, patch_halo: Tuple[int, int, int]) -> torch.Tensor:
+    if patch_halo is not None:
+        z, y, x = patch_halo
+        return nn.functional.pad(m, (x, x, y, y, z, z), mode='reflect')
+    return m
+
+
+def _unpad(m: torch.Tensor, patch_halo: Tuple[int, int, int]) -> torch.Tensor:
+    if patch_halo is not None:
+        z, y, x = patch_halo
+        if z == 0:
+            return m[..., y:-y, x:-x]
+        else:
+            return m[..., z:-z, y:-y, x:-x]
+    return m
 
 
 class ArrayPredictor:
@@ -18,60 +44,51 @@ class ArrayPredictor:
     use `LazyPredictor` instead.
     Args:
         model (Unet3D): trained 3D UNet model used for prediction
-        config (dict): global config dict
+        out_channels (int): number of output channels from the model
+        device (str): device to use for prediction
+        patch_halo (tuple): mirror padding around the patch
     """
 
-    def __init__(self, model, config, device, verbose_logging=False, disable_tqdm=True, **kwargs):
+    def __init__(self, model: nn.Module, batch_size: int, out_channels: int, device: str,
+                 patch_halo: Tuple[int, int, int], verbose_logging: bool = False, disable_tqdm: bool = False):
         self.model = model
-        self.config = config
+        self.batch_size = batch_size
+        self.out_channels = out_channels
         self.device = device
-        self.predictor_config = kwargs
-        self.mute_logging = verbose_logging
+        self.patch_halo = patch_halo
+        self.verbose_logging = verbose_logging
         self.disable_tqdm = disable_tqdm
 
-    def __call__(self, test_dataset):
+    def __call__(self, test_dataset: Dataset) -> np.ndarray:
         assert isinstance(test_dataset, ArrayDataset)
 
-        test_loader = DataLoader(test_dataset, batch_size=1, collate_fn=test_dataset.prediction_collate)
+        batch_size = self.batch_size
+        if torch.cuda.device_count() > 1 and self.device != 'cpu':
+            gui_logger.info(f'{torch.cuda.device_count()} GPUs available. '
+                            f'Using batch_size = {torch.cuda.device_count()} * {batch_size}')
+            batch_size = self.batch_size * torch.cuda.device_count()
 
-        if self.mute_logging:
-            gui_logger.info(f"Processing...")
+        test_loader = DataLoader(test_dataset, batch_size=batch_size, pin_memory=True,
+                                 collate_fn=default_prediction_collate)
 
-        out_channels = self.config.get('out_channels')
-
-        # prediction_channel = self.config.get('prediction_channel', None)
-        prediction_channel = None
-        if self.mute_logging and prediction_channel is not None:
-            gui_logger.info(f"Saving only channel '{prediction_channel}' from the network output")
-
-        output_heads = self.config.get('output_heads', 1)
-
-        if self.mute_logging:
-            gui_logger.info(f'Running prediction on {len(test_loader)} batches...')
+        if self.verbose_logging:
+            gui_logger.info(f'Running prediction on {len(test_loader)} batches')
 
         # dimensionality of the output predictions
         volume_shape = self.volume_shape(test_dataset)
-        if prediction_channel is None:
-            prediction_maps_shape = (out_channels,) + volume_shape
-        else:
-            # single channel prediction map
-            prediction_maps_shape = (1,) + volume_shape
-
-        if self.mute_logging:
+        prediction_maps_shape = (self.out_channels,) + volume_shape
+        if self.verbose_logging:
             gui_logger.info(f'The shape of the output prediction maps (CDHW): {prediction_maps_shape}')
-
-        patch_halo = self.predictor_config.get('patch_halo', (4, 8, 8))
-        self._validate_halo(patch_halo, test_dataset.slice_builder_config)
-
-        if self.mute_logging:
-            gui_logger.info(f'Using patch_halo: {patch_halo}')
-
-        if self.mute_logging:
+            gui_logger.info(f'Using patch_halo: {self.patch_halo}')
             # allocate prediction and normalization arrays
             gui_logger.info('Allocating prediction and normalization arrays...')
-        prediction_maps, normalization_masks = self._allocate_prediction_maps(prediction_maps_shape,
-                                                                              output_heads)
 
+        # initialize the output prediction arrays
+        prediction_map = np.zeros(prediction_maps_shape, dtype='float32')
+        # initialize normalization mask in order to average out probabilities of overlapping patches
+        normalization_mask = np.zeros(prediction_maps_shape, dtype='uint8')
+
+        # run prediction
         # Sets the module in evaluation mode explicitly
         # It is necessary for batchnorm/dropout layers if present as well as final Sigmoid/Softmax to be applied
         self.model.eval()
@@ -79,105 +96,39 @@ class ArrayPredictor:
 
         with torch.no_grad():
             for input, indices in tqdm.tqdm(test_loader, disable=self.disable_tqdm):
-                # send batch to device
                 input = input.to(self.device)
+                input = _pad(input, self.patch_halo)
 
-                if isinstance(self.model, UNet2D):
+                if _is_2d_model(self.model):
                     # remove the singleton z-dimension from the input
                     input = torch.squeeze(input, dim=-3)
                     # forward pass
-                    predictions = self.model(input)
+                    prediction = self.model(input)
                     # add the singleton z-dimension to the output
-                    predictions = torch.unsqueeze(predictions, dim=-3)
+                    prediction = torch.unsqueeze(prediction, dim=-3)
                 else:
                     # forward pass
-                    predictions = self.model(input)
+                    prediction = self.model(input)
 
-                # wrap predictions into a list if there is only one output head from the network
-                if output_heads == 1:
-                    predictions = [predictions]
+                # unpad
+                prediction = _unpad(prediction, self.patch_halo)
+                # convert to numpy array
+                prediction = prediction.cpu().numpy()
+                channel_slice = slice(0, self.out_channels)
+                # for each batch sample
+                for pred, index in zip(prediction, indices):
+                    # add channel dimension to the index
+                    index = (channel_slice,) + tuple(index)
+                    # accumulate probabilities into the output prediction array
+                    prediction_map[index] += pred
+                    # count voxel visits for normalization
+                    normalization_mask[index] += 1
 
-                # for each output head
-                for prediction, prediction_map, normalization_mask in zip(predictions,
-                                                                          prediction_maps,
-                                                                          normalization_masks):
+        if self.verbose_logging:
+            gui_logger.info(f'Prediction finished')
 
-                    # convert to numpy array
-                    prediction = prediction.cpu().numpy()
-
-                    # for each batch sample
-                    for pred, index in zip(prediction, indices):
-                        # save patch index: (C,D,H,W)
-                        if prediction_channel is None:
-                            channel_slice = slice(0, out_channels)
-                        else:
-                            channel_slice = slice(0, 1)
-                        index = (channel_slice,) + index
-
-                        if self.mute_logging and prediction_channel is not None:
-                            # use only the 'prediction_channel'
-                            gui_logger.info(f"Using channel '{prediction_channel}'...")
-                            pred = np.expand_dims(pred[prediction_channel], axis=0)
-
-                        if self.mute_logging:
-                            gui_logger.info(f'Saving predictions for slice:{index}...')
-
-                        # remove halo in order to avoid block artifacts in the output probability maps
-                        u_prediction, u_index = remove_halo(pred, index, volume_shape, patch_halo)
-                        # accumulate probabilities into the output prediction array
-                        prediction_map[u_index] += u_prediction
-                        # count voxel visits for normalization
-                        normalization_mask[u_index] += 1
-
-        # save results
-        if self.mute_logging:
-            gui_logger.info(f'Returning predictions')
-        prediction_maps = self._normalize_results(prediction_maps,
-                                                  normalization_masks,
-                                                  test_dataset.mirror_padding,
-                                                  mute_logging=self.mute_logging)
-        return prediction_maps
-
-    @staticmethod
-    def _allocate_prediction_maps(output_shape, output_heads):
-        # initialize the output prediction arrays
-        prediction_maps = [np.zeros(output_shape, dtype='float32') for _ in range(output_heads)]
-        # initialize normalization mask in order to average out probabilities of overlapping patches
-        normalization_masks = [np.zeros(output_shape, dtype='uint8') for _ in range(output_heads)]
-        return prediction_maps, normalization_masks
-
-    @staticmethod
-    def _normalize_results(prediction_maps, normalization_masks, mirror_padding, mute_logging=False):
-        def _slice_from_pad(pad):
-            if pad == 0:
-                return slice(None, None)
-            else:
-                return slice(pad, -pad)
-
-        # save probability maps
-        out_prediction_maps = []
-        for prediction_map, normalization_mask in zip(prediction_maps, normalization_masks):
-            prediction_map = prediction_map / normalization_mask
-
-            if mirror_padding is not None:
-                z_s, y_s, x_s = [_slice_from_pad(p) for p in mirror_padding]
-                if mute_logging:
-                    gui_logger.info(f'Dataset loaded with mirror padding: {mirror_padding}. Cropping before saving...')
-
-                prediction_map = prediction_map[:, z_s, y_s, x_s]
-
-            out_prediction_maps.append(prediction_map)
-        return out_prediction_maps
-
-    @staticmethod
-    def _validate_halo(patch_halo, slice_builder_config):
-        patch = slice_builder_config['patch_shape']
-        stride = slice_builder_config['stride_shape']
-
-        patch_overlap = np.subtract(patch, stride)
-
-        assert np.all(patch_overlap - patch_halo >= 0), \
-            f"Not enough patch overlap for stride: {stride} and halo: {patch_halo}"
+        # normalize results and return
+        return prediction_map / normalization_mask
 
     @staticmethod
     def volume_shape(dataset):

@@ -4,7 +4,6 @@ from plantseg.legacy_gui import convert_rgb
 from plantseg.utils import list_models
 from plantseg.legacy_gui import stick_all, stick_new
 from plantseg.legacy_gui.gui_tools import ListEntry, SimpleEntry, FilterEntry, RescaleEntry, MenuEntry, SliderEntry
-from plantseg.predictions.functional.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
 
 
 class ModuleFramePrototype:
@@ -223,13 +222,6 @@ class UnetPredictionFrame(ModuleFramePrototype):
                                               column=0,
                                               type=int,
                                               font=font),
-                           "stride": MenuEntry(self.prediction_frame,
-                                               text="Stride: ",
-                                               row=3,
-                                               column=0,
-                                               menu=[STRIDE_ACCURATE, STRIDE_BALANCED, STRIDE_DRAFT],
-                                               default=config[self.module]["stride"],
-                                               font=font),
                            "device": MenuEntry(self.prediction_frame,
                                                text="Device Type: ",
                                                row=4,

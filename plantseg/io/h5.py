@@ -102,6 +102,8 @@ def create_h5(path: str,
     """
 
     with h5py.File(path, mode) as f:
+        if key in f:
+            del f[key]
         f.create_dataset(key, data=stack, compression='gzip')
         # save voxel_size
         f[key].attrs['element_size_um'] = voxel_size

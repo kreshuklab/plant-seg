@@ -15,7 +15,7 @@ class DistanceTransformWatershed(AbstractSegmentationStep):
                  ws_minsize=50,
                  ws_sigma=0.3,
                  ws_w_sigma=0,
-                 n_threads=8,
+                 n_threads=None,
                  state=True,
                  **kwargs):
         super().__init__(input_paths=predictions_paths,

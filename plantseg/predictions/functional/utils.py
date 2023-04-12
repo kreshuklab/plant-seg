@@ -1,26 +1,18 @@
 import os
+from typing import Tuple
 
 import torch
+from torch import nn
 
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR, home_path
-from plantseg.models.model import get_model
+from plantseg.augment.transforms import get_test_augmentations
+from plantseg.models.model import get_model, UNet2D
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset
-from plantseg.predictions.functional.array_predictor import ArrayPredictor
+from plantseg.predictions.functional.array_predictor import _pad
+from plantseg.predictions.functional.slice_builder import SliceBuilder
 from plantseg.utils import get_train_config, check_models
 from plantseg.utils import load_config
-
-# define constant values
-
-STRIDE_ACCURATE = "Accurate (slowest)"
-STRIDE_BALANCED = "Balanced"
-STRIDE_DRAFT = "Draft (fastest)"
-
-STRIDE_MENU = {
-    STRIDE_ACCURATE: 0.5,
-    STRIDE_BALANCED: 0.75,
-    STRIDE_DRAFT: 0.9
-}
 
 
 def get_predict_template():
@@ -43,68 +35,25 @@ def get_model_config(model_name, model_update=False):
     return model, model_config, model_path
 
 
-def set_device(device):
-    # Add correct device for inference
-    try:
-        device = torch.device(device)
-    except:
-        gui_logger.warning(f"Device {device} not supported. Using CPU instead.")
-        device = torch.device("cpu")
-    return device
+def get_array_dataset(raw, model_name, patch, stride_ratio, global_normalization=True):
+    if model_name == 'UNet2D':
+        if patch[0] != 1:
+            gui_logger.warning(f"Incorrect z-dimension in the patch_shape for the 2D UNet prediction. {patch[0]}"
+                               f" was given, but has to be 1. Setting to  1")
+            patch = (1, patch[1], patch[2])
 
-
-def get_dataset_config(model_name, patch, stride, mirror_padding, num_workers=8, global_normalization=True):
-    predict_template = get_predict_template()
-    dataset_config = predict_template.pop('loaders')
-
-    dataset_config["num_workers"] = num_workers
-    dataset_config["mirror_padding"] = mirror_padding
-    # Add patch and stride to the config
-    dataset_config["test"]["slice_builder"]["patch_shape"] = patch
-    stride_key, stride_shape = stride, get_stride_shape(patch, "Balanced")
-
-    if type(stride_key) is list:
-        dataset_config["test"]["slice_builder"]["stride_shape"] = stride_key
-    elif type(stride_key) is str:
-        stride_shape = get_stride_shape(patch, stride_key)
-        dataset_config["test"]["slice_builder"]["stride_shape"] = stride_shape
+    if global_normalization:
+        augs = get_test_augmentations(raw)
     else:
-        raise RuntimeError(f"Unsupported stride type: {type(stride_key)}")
+        # normalize with per patch statistics
+        augs = get_test_augmentations(None)
 
-    # Set paths to None
-    dataset_config["test"]["file_paths"] = None
-
-    config_train = get_train_config(model_name)
-    if config_train["model"]["name"] == "UNet2D":
-        # make sure that z-pad is 0 for 2d UNet
-        dataset_config["mirror_padding"] = [0, mirror_padding[1], mirror_padding[2]]
-        # make sure to skip the patch size validation for 2d unet
-        dataset_config["test"]["slice_builder"]["skip_shape_check"] = True
-
-        # z-dim of patch and stride has to be one
-        patch_shape = dataset_config["test"]["slice_builder"]["patch_shape"]
-        stride_shape = dataset_config["test"]["slice_builder"]["stride_shape"]
-
-        if patch_shape[0] != 1:
-            gui_logger.warning(f"Incorrect z-dimension in the patch_shape for the 2D UNet prediction. {patch_shape[0]}"
-                               f" was given, but has to be 1. Defaulting default value: 1")
-            dataset_config["test"]["slice_builder"]["patch_shape"] = (1, patch_shape[1], patch_shape[2])
-
-        if stride_shape[0] != 1:
-            gui_logger.warning(f"Incorrect z-dimension in the stride_shape for the 2D UNet prediction. "
-                               f"{stride_shape[0]} was given, but has to be 1. Defaulting default value: 1")
-            dataset_config["test"]["slice_builder"]["stride_shape"] = (1, stride_shape[1], stride_shape[2])
-
-    dataset_config = {'slice_builder_config': dataset_config['test']['slice_builder'],
-                      'transformer_config': dataset_config['test']['transformer'],
-                      'mirror_padding': dataset_config['mirror_padding'],
-                      'global_normalization': global_normalization
-                      }
-
-    return ArrayDataset, dataset_config
+    stride = get_stride_shape(patch, stride_ratio)
+    slice_builder = SliceBuilder(raw, label_dataset=None, weight_dataset=None, patch_shape=patch, stride_shape=stride)
+    return ArrayDataset(raw, slice_builder, augs, verbose_logging=False)
 
 
-def get_predictor_config(model_name):
+def get_patch_halo(model_name):
     predict_template = get_predict_template()
     patch_halo = predict_template['predictor']['patch_halo']
 
@@ -112,9 +61,37 @@ def get_predictor_config(model_name):
     if config_train["model"]["name"] == "UNet2D":
         patch_halo[0] = 0
 
-    return ArrayPredictor, {'patch_halo': patch_halo}
+    return patch_halo
 
 
-def get_stride_shape(patch_shape, stride_key):
+def get_stride_shape(patch_shape, stride_ratio=0.75):
     # striding MUST be >=1
-    return [max(int(p * STRIDE_MENU[stride_key]), 1) for p in patch_shape]
+    return [max(int(p * stride_ratio), 1) for p in patch_shape]
+
+
+def find_batch_size(model: nn.Module, in_channels: int, patch_shape: Tuple[int, int, int],
+                    patch_halo: Tuple[int, int, int], device: str) -> int:
+    if device == 'cpu':
+        return 1
+
+    if isinstance(model, UNet2D):
+        patch_shape = patch_shape[1:]
+
+    patch_shape = tuple(patch_shape)
+    model = model.cuda()
+    model.eval()
+    with torch.no_grad():
+        batch_size = 1
+        while True:
+            try:
+                x = torch.randn((batch_size, in_channels) + patch_shape).cuda()
+                x = _pad(x, patch_halo)
+                _ = model(x)
+                batch_size += 1
+            except RuntimeError as e:
+                batch_size -= 1
+                break
+
+        del model
+        torch.cuda.empty_cache()
+        return batch_size

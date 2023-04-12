@@ -1,21 +1,20 @@
-from typing import Tuple, Union
+from typing import Tuple
 
 import numpy as np
 import torch
+from torch import nn
 
+from plantseg.augment.transforms import get_test_augmentations
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape
-from plantseg.predictions.functional.utils import get_dataset_config, get_model_config, get_predictor_config, set_device
+from plantseg.predictions.functional.array_dataset import ArrayDataset
+from plantseg.predictions.functional.array_predictor import ArrayPredictor
+from plantseg.predictions.functional.slice_builder import SliceBuilder
+from plantseg.predictions.functional.utils import get_model_config, get_patch_halo, \
+    get_stride_shape, find_batch_size
 
 
-def unet_predictions(raw: np.array,
-                     model_name: str,
-                     patch: Tuple[int, int, int] = (80, 160, 160),
-                     stride: Union[str, Tuple[int, int, int]] = 'Accurate (slowest)',
-                     device: str = 'cuda',
-                     version: str = 'best',
-                     model_update: bool = False,
-                     mirror_padding: Tuple[int, int, int] = (16, 32, 32),
-                     disable_tqdm: bool = False) -> np.array:
+def unet_predictions(raw: np.array, model_name: str, patch: Tuple[int, int, int] = (80, 160, 160), device: str = 'cuda',
+                     model_update: bool = False, disable_tqdm: bool = False, **kwargs) -> np.array:
     """
     Predict boundaries predictions from raw data using a 3D U-Net model.
 
@@ -23,14 +22,9 @@ def unet_predictions(raw: np.array,
         raw (np.array): raw data, must be a 3D array of shape (Z, Y, X) normalized between 0 and 1.
         model_name (str): name of the model to use. A complete list of available models can be found here:
         patch (tuple[int, int, int], optional): patch size to use for prediction. Defaults to (80, 160, 160).
-        stride (Union[str, tuple[int, int, int]], optional): stride to use for prediction.
-            If stride is defined as a string must be one of ['Accurate (slowest)', 'Balanced', 'Draft (fastest)'].
-            Defaults to 'Accurate (slowest)'.
         device: (str, optional): device to use for prediction. Must be one of ['cpu', 'cuda', 'cuda:1', etc.].
             Defaults to 'cuda'.
-        version (str, optional): version of the model to use, must be either 'best' or 'last'. Defaults to 'best'.
         model_update (bool, optional): if True will update the model to the latest version. Defaults to False.
-        mirror_padding (tuple[int, int, int], optional): padding to use for prediction. Defaults to (16, 32, 32).
         disable_tqdm (bool, optional): if True will disable tqdm progress bar. Defaults to False.
 
     Returns:
@@ -41,26 +35,24 @@ def unet_predictions(raw: np.array,
     state = torch.load(model_path, map_location='cpu')
     model.load_state_dict(state)
 
-    device = set_device(device)
+    patch_halo = get_patch_halo(model_name)
+    batch_size = find_batch_size(model, model_config['in_channels'], patch, patch_halo, device)
+
+    if torch.cuda.device_count() > 1 and device != 'cpu':
+        model = nn.DataParallel(model)
+
     model = model.to(device)
 
-    predictor, predictor_config = get_predictor_config(model_name)
-    predictor = predictor(model=model,
-                          config=model_config,
-                          device=device,
-                          verbose_logging=False,
-                          disable_tqdm=disable_tqdm,
-                          **predictor_config)
-
-    dataset_builder, dataset_config = get_dataset_config(model_name,
-                                                         patch=patch,
-                                                         stride=stride,
-                                                         mirror_padding=mirror_padding)
+    predictor = ArrayPredictor(model=model, batch_size=batch_size, out_channels=model_config['out_channels'],
+                               device=device, patch_halo=patch_halo, verbose_logging=False, disable_tqdm=disable_tqdm)
 
     raw = fix_input_shape(raw)
     raw = raw.astype('float32')
+    stride = get_stride_shape(patch)
+    augs = get_test_augmentations(raw)
+    slice_builder = SliceBuilder(raw, label_dataset=None, weight_dataset=None, patch_shape=patch, stride_shape=stride)
+    test_dataset = ArrayDataset(raw, slice_builder, augs, verbose_logging=False)
 
-    raw_loader = dataset_builder(raw, verbose_logging=False, **dataset_config)
-    pmaps = predictor(raw_loader)
+    pmaps = predictor(test_dataset)
     pmaps = fix_input_shape(pmaps[0])
     return pmaps

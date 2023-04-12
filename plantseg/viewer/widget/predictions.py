@@ -11,8 +11,7 @@ from napari.types import LayerDataTuple
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
-from plantseg.predictions.functional.utils import STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE
-from plantseg.utils import list_models, add_custom_model
+from plantseg.utils import list_models, add_custom_model, get_train_config
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 
@@ -37,15 +36,12 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                       'choices': list_models()},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
-          stride={'label': 'Stride',
-                  'choices': [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
           device={'label': 'Device',
                   'choices': ALL_DEVICES}
           )
 def widget_unet_predictions(image: Image,
                             model_name: str,
                             patch_size: Tuple[int, int, int] = (80, 160, 160),
-                            stride: str = STRIDE_ACCURATE,
                             device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, model_name)
 
@@ -58,7 +54,7 @@ def widget_unet_predictions(image: Image,
     layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
 
     layer_type = 'image'
-    step_kwargs = dict(model_name=model_name, stride=stride, patch=patch_size)
+    step_kwargs = dict(model_name=model_name, patch=patch_size)
 
     return start_threading_process(unet_predictions_wrapper,
                                    runtime_kwargs={'raw': image.data, 'device': device},
@@ -71,7 +67,14 @@ def widget_unet_predictions(image: Image,
                                    )
 
 
-def _compute_multiple_predictions(image, patch_size, stride, device):
+@widget_unet_predictions.model_name.changed.connect
+def _on_model_name_changed(model_name: str):
+    train_config = get_train_config(model_name)
+    patch_size = train_config['loaders']['train']['slice_builder']['patch_shape']
+    widget_unet_predictions.patch_size.value = tuple(patch_size)
+
+
+def _compute_multiple_predictions(image, patch_size, device):
     out_layers = []
     for i, model_name in enumerate(list_models()):
 
@@ -85,11 +88,7 @@ def _compute_multiple_predictions(image, patch_size, stride, device):
         layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
         layer_type = 'image'
         try:
-            pmap = unet_predictions(raw=image.data,
-                                    model_name=model_name,
-                                    stride=stride,
-                                    patch=patch_size,
-                                    device=device)
+            pmap = unet_predictions(raw=image.data, model_name=model_name, patch=patch_size, device=device)
             out_layers.append((pmap, layer_kwargs, layer_type))
 
         except Exception as e:
@@ -103,19 +102,15 @@ def _compute_multiple_predictions(image, patch_size, stride, device):
                  'tooltip': 'Raw image to be processed with a neural network.'},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
-          stride={'label': 'Stride',
-                  'choices': [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
           device={'label': 'Device',
                   'choices': ALL_DEVICES}
           )
 def widget_test_all_unet_predictions(image: Image,
                                      patch_size: Tuple[int, int, int] = (80, 160, 160),
-                                     stride: str = STRIDE_ACCURATE,
                                      device: str = ALL_DEVICES[0]) -> Future[List[LayerDataTuple]]:
     func = thread_worker(partial(_compute_multiple_predictions,
                                  image=image,
                                  patch_size=patch_size,
-                                 stride=stride,
                                  device=device))
 
     future = Future()
@@ -129,8 +124,8 @@ def widget_test_all_unet_predictions(image: Image,
     return future
 
 
-def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patch_size, stride, device):
-    func = partial(unet_predictions, model_name=model_name, stride=stride, patch=patch_size, device=device)
+def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patch_size, device):
+    func = partial(unet_predictions, model_name=model_name, patch=patch_size, device=device)
     for i in range(num_iterations - 1):
         pmap = func(pmap)
         pmap = image_gaussian_smoothing(image=pmap, sigma=sigma)
@@ -155,8 +150,6 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
                  'min': 0.},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
-          stride={'label': 'Stride',
-                  'choices': [STRIDE_DRAFT, STRIDE_BALANCED, STRIDE_ACCURATE]},
           device={'label': 'Device',
                   'choices': ALL_DEVICES}
           )
@@ -165,7 +158,6 @@ def widget_iterative_unet_predictions(image: Image,
                                       num_iterations: int = 2,
                                       sigma: float = 1.0,
                                       patch_size: Tuple[int, int, int] = (80, 160, 160),
-                                      stride: str = STRIDE_ACCURATE,
                                       device: str = ALL_DEVICES[0]) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, f'iterative-{model_name}-x{num_iterations}')
     inputs_names = (image.name,)
@@ -178,7 +170,6 @@ def widget_iterative_unet_predictions(image: Image,
                        num_iterations=num_iterations,
                        sigma=sigma,
                        patch_size=patch_size,
-                       stride=stride,
                        device=device)
 
     return start_threading_process(_compute_iterative_predictions,
@@ -190,6 +181,13 @@ def widget_iterative_unet_predictions(image: Image,
                                    layer_type=layer_type,
                                    step_name='UNet Iterative Predictions',
                                    )
+
+
+@widget_iterative_unet_predictions.model_name.changed.connect
+def _on_model_name_changed_iterative(model_name: str):
+    train_config = get_train_config(model_name)
+    patch_size = train_config['loaders']['train']['slice_builder']['patch_shape']
+    widget_iterative_unet_predictions.patch_size.value = tuple(patch_size)
 
 
 @magicgui(call_button='Add Custom Model',
