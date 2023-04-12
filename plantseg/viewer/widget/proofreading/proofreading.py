@@ -237,7 +237,7 @@ def initialize_proofreading(viewer: napari.Viewer, segmentation_layer: Labels) -
 
 @magicgui(call_button=f'Initialize/Split/Merge from scribbles - < {DEFAULT_KEY_BINDING_PROOFREAD} >',
           segmentation={'label': 'Segmentation'},
-          image={'label': 'Image'})
+          image={'label': 'Pmap/Image'})
 def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
                                           segmentation: Labels,
                                           image: Image) -> None:
@@ -248,6 +248,11 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
     if image is None:
         napari_formatted_logging('Image Layer not defined', thread='Proofreading tool', level='error')
         return None
+    elif 'pmap' not in image.metadata:
+        napari_formatted_logging('Pmap/Image layer appears to be a raw image and not a boundary probability map. '
+                                 'For the best proofreading results, try to use a boundaries probability layer '
+                                 '(e.g. from the Run Prediction widget)',
+                                 thread='Proofreading tool', level='warning')
 
     if initialize_proofreading(viewer, segmentation):
         napari_formatted_logging('Proofreading initialized', thread='Proofreading tool')

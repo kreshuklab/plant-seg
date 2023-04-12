@@ -50,9 +50,13 @@ def widget_unet_predictions(image: Image,
     out_name = create_layer_name(image.name, model_name)
 
     inputs_names = (image.name, 'device')
+
     layer_kwargs = layer_properties(name=out_name,
                                     scale=image.scale,
                                     metadata=image.metadata)
+
+    layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
+
     layer_type = 'image'
     step_kwargs = dict(model_name=model_name, stride=stride, patch=patch_size)
 
@@ -78,6 +82,7 @@ def _compute_multiple_predictions(image, patch_size, stride, device):
         layer_kwargs = layer_properties(name=out_name,
                                         scale=image.scale,
                                         metadata=image.metadata)
+        layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
         layer_type = 'image'
         try:
             pmap = unet_predictions(raw=image.data,
@@ -167,6 +172,7 @@ def widget_iterative_unet_predictions(image: Image,
     layer_kwargs = layer_properties(name=out_name,
                                     scale=image.scale,
                                     metadata=image.metadata)
+    layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
     layer_type = 'image'
     step_kwargs = dict(model_name=model_name,
                        num_iterations=num_iterations,

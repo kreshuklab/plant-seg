@@ -7,10 +7,18 @@ from napari.layers import Labels, Image, Layer
 from napari.types import LayerDataTuple
 
 from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_under_segmentation_from_nuclei
+from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.dataprocessing.functional.dataprocessing import normalize_01
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed, mutex_ws
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
+
+
+def _pmap_warn(thread: str):
+    napari_formatted_logging('Pmap/Image layer appears to be a raw image and not a pmap. For the best segmentation '
+                             'results, try to use a boundaries probability layer '
+                             '(e.g. from the Run Prediction widget)',
+                             thread=thread, level='warning')
 
 
 class ClusteringOptions(Enum):
@@ -24,6 +32,10 @@ def _generic_clustering(image: Image, labels: Labels,
                         minsize: int = 100,
                         name: str = 'GASP',
                         agg_func: Callable = gasp) -> Future[LayerDataTuple]:
+
+    if 'pmap' not in image.metadata:
+        _pmap_warn(f'{name} Clustering Widget')
+
     out_name = create_layer_name(image.name, name)
     inputs_names = (image.name, labels.name)
     layer_kwargs = layer_properties(name=out_name,
@@ -45,7 +57,7 @@ def _generic_clustering(image: Image, labels: Labels,
 
 
 @magicgui(call_button='Run Clustering',
-          image={'label': 'Image',
+          image={'label': 'Pmap/Image',
                  'tooltip': 'Raw or boundary image to use as input for clustering.'},
           _labels={'label': 'Over-segmentation',
                    'tooltip': 'Over-segmentation labels layer to use as input for clustering.'},
@@ -76,7 +88,7 @@ def widget_agglomeration(image: Image, _labels: Labels,
 
 
 @magicgui(call_button='Run Lifted MultiCut',
-          image={'label': 'Image',
+          image={'label': 'Pmap/Image',
                  'tooltip': 'Raw or boundary image to use as input for clustering.'},
           nuclei={'label': 'Nuclei',
                   'tooltip': 'Nuclei binary predictions or Nuclei segmentation.'},
@@ -93,6 +105,10 @@ def widget_lifted_multicut(image: Image,
                            _labels: Labels,
                            beta: float = 0.5,
                            minsize: int = 100) -> Future[LayerDataTuple]:
+
+    if 'pmap' not in image.metadata:
+        _pmap_warn('Lifted MultiCut Widget')
+
     if isinstance(nuclei, Image):
         lmc = lifted_multicut_from_nuclei_pmaps
         extra_key = 'nuclei_pmaps'
@@ -154,7 +170,7 @@ def dtws_wrapper(boundary_pmaps,
 
 
 @magicgui(call_button='Run Watershed',
-          image={'label': 'Image',
+          image={'label': 'Pmap/Image',
                  'tooltip': 'Raw or boundary image to use as input for Watershed.'},
           stacked={'label': 'Stacked',
                    'tooltip': 'Define if the Watershed will run slice by slice (faster) '
@@ -187,6 +203,10 @@ def widget_dt_ws(image: Image,
                  pixel_pitch: Tuple[int, int, int] = (1, 1, 1),
                  apply_nonmax_suppression: bool = False,
                  nuclei: bool = False) -> Future[LayerDataTuple]:
+
+    if 'pmap' not in image.metadata:
+        _pmap_warn("Watershed Widget")
+
     out_name = create_layer_name(image.name, 'dtWS')
     inputs_names = (image.name,)
     layer_kwargs = layer_properties(name=out_name,
@@ -218,7 +238,7 @@ def widget_dt_ws(image: Image,
 
 
 @magicgui(call_button='Run Watershed',
-          image={'label': 'Image',
+          image={'label': 'Pmap/Image',
                  'tooltip': 'Raw or boundary image to use as input for Watershed.'},
           stacked={'label': 'Stacked',
                    'tooltip': 'Define if the Watershed will run slice by slice (faster) '
@@ -237,6 +257,10 @@ def widget_simple_dt_ws(image: Image,
                         stacked: str = '2D',
                         threshold: float = 0.5,
                         min_size: int = 100) -> Future[LayerDataTuple]:
+
+    if 'pmap' not in image.metadata:
+        _pmap_warn("Watershed Widget")
+
     out_name = create_layer_name(image.name, 'dtWS')
     inputs_names = (image.name,)
     layer_kwargs = layer_properties(name=out_name,
@@ -264,7 +288,7 @@ def widget_simple_dt_ws(image: Image,
 @magicgui(call_button='Run Segmentation Fix from Nuclei',
           cell_segmentation={'label': 'Cell Segmentation'},
           nuclei_segmentation={'label': 'Nuclei Segmentation'},
-          boundary_pmaps={'label': 'Boundary Image'},
+          boundary_pmaps={'label': 'Boundary Pmap/Image'},
           threshold={'label': 'Threshold',
                      'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 0.1},
           quantile={'label': 'Nuclei Quantile',
@@ -280,6 +304,8 @@ def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
     quantile = tuple([q / 100 for q in quantile])
 
     if boundary_pmaps is not None:
+        if 'pmap' not in boundary_pmaps.metadata:
+            _pmap_warn("Fix Over/Under Segmentation from Nuclei Widget")
         inputs_names = (cell_segmentation.name, nuclei_segmentation.name, boundary_pmaps.name)
         func_kwargs = {'cell_seg': cell_segmentation.data,
                        'nuclei_seg': nuclei_segmentation.data,
