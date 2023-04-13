@@ -266,7 +266,7 @@ def _on_model_name_changed_iterative(model_name: str):
                                      'Any 2D model can be used for 3D data.',
                           'widget_type': 'ComboBox',
                           'choices': list_all_dimensionality()},
-          modality={'label': 'Microscopy Modality',
+          modality={'label': 'Microscopy modality',
                     'tooltip': 'Modality of the model (e.g. confocal, light-sheet ...).',
                     'widget_type': 'ComboBox',
                     'choices': list_all_modality()},
