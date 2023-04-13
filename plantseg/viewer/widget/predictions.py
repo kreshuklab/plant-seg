@@ -66,7 +66,7 @@ def widget_unet_predictions(image: Image,
                             dimensionality: str = 'All',
                             modality: str = 'All',
                             output_type: str = 'All',
-                            patch_size: Tuple[int, int, int] = (80, 160, 160),
+                            patch_size: Tuple[int, int, int] = (80, 170, 170),
                             single_patch: bool = True,
                             device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, model_name)
