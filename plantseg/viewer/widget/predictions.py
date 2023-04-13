@@ -51,8 +51,6 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                        'tooltip': 'Type of prediction (e.g. cell boundaries predictions or nuclei...).'
                                   ' If unsure, select "All".',
                        'choices': LIST_ALL_OUTPUT_TYPE},
-          patch_size={'label': 'Patch size',
-                      'tooltip': 'Patch size use to processed the data.'},
           model_name={'label': 'Select model',
                       'tooltip': 'Select a pretrained model.',
                       'choices': list_models()},
