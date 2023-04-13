@@ -8,6 +8,7 @@ from typing import Tuple, Optional
 import requests
 import yaml
 
+from plantseg.__version__ import __version__ as current_version
 from plantseg import model_zoo_path, custom_zoo, home_path, PLANTSEG_MODELS_DIR, plantseg_global_path
 from plantseg.pipeline import gui_logger
 
@@ -276,3 +277,14 @@ def clean_models():
 
         else:
             print("Invalid input, please type 'y' or 'n'.")
+
+
+def check_version():
+    plantseg_url = ' https://api.github.com/repos/hci-unihd/plant-seg/releases/latest'
+    response = requests.get(plantseg_url).json()
+    latest_version = response['tag_name']
+    latest_version_numeric = int(latest_version.replace('.', ''))
+    plantseg_version_numeric = int(current_version.replace('.', ''))
+    if latest_version_numeric > plantseg_version_numeric:
+        print(f"New version of PlantSeg available: {latest_version}.\n"
+              f"Please update your version to the latest one!")

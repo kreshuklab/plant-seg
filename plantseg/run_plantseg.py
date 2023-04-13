@@ -15,6 +15,8 @@ def parser():
 
 
 def main():
+    from plantseg.utils import check_version
+    check_version()
     args = parser()
 
     if args.gui:
