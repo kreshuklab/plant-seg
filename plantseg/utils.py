@@ -1,5 +1,6 @@
 import glob
 import os
+import shutil
 from pathlib import Path
 from shutil import copy2
 from typing import Tuple, Optional
@@ -49,13 +50,56 @@ def get_model_zoo() -> dict:
     return zoo_config
 
 
-def list_models() -> list[str]:
+def list_models(dimensionality_filter: list[str] = None,
+                modality_filter: list[str] = None,
+                output_type_filter: list[str] = None) -> list[str]:
     """
     return a list of models in the model zoo by name
     """
     zoo_config = get_model_zoo()
     models = list(zoo_config.keys())
+
+    if dimensionality_filter is not None:
+        models = [model for model in models if zoo_config[model].get('dimensionality', None) in dimensionality_filter]
+
+    if modality_filter is not None:
+        models = [model for model in models if zoo_config[model].get('modality', None) in modality_filter]
+
+    if output_type_filter is not None:
+        models = [model for model in models if zoo_config[model].get('output_type', None) in output_type_filter]
+
     return models
+
+
+def _list_all_metadata(metadata_key: str) -> list[str]:
+    """
+    return a list of all properties in the model zoo
+    """
+    zoo_config = get_model_zoo()
+    properties = list(set([zoo_config[model].get(metadata_key, None) for model in zoo_config]))
+    properties = [prop for prop in properties if prop is not None]
+    return sorted(properties)
+
+
+def list_all_dimensionality() -> list[str]:
+    """
+    return a list of all dimensionality in the model zoo
+    """
+    return _list_all_metadata('dimensionality')
+
+
+def list_all_modality() -> list[str]:
+    """
+    return a list of all modality in the model zoo
+    """
+    return _list_all_metadata('modality')
+
+
+def list_all_output_type() -> list[str]:
+    """
+    return a list of all output_type in the model zoo
+    """
+    return _list_all_metadata('output_type')
 
 
 def get_model_resolution(model: str) -> list[float, float, float]:
@@ -70,13 +114,19 @@ def get_model_resolution(model: str) -> list[float, float, float]:
 def add_custom_model(new_model_name: str,
                      location: Path = Path.home(),
                      resolution: Tuple[float, float, float] = (1., 1., 1.),
-                     description: str = '') -> Tuple[bool, Optional[str]]:
+                     description: str = '',
+                     dimensionality: str = '',
+                     modality: str = '',
+                     output_type: str = '') -> Tuple[bool, Optional[str]]:
     """
     Add a custom trained model in the model zoo
     :param new_model_name: name of the new model
     :param location: location of the directory containing the custom trained model
     :param resolution: reference resolution of the custom trained model
     :param description: description of the trained model
+    :param dimensionality: dimensionality of the trained model
+    :param modality: modality of the trained model
+    :param output_type: output type of the trained model
     :return:
     """
 
@@ -86,7 +136,13 @@ def add_custom_model(new_model_name: str,
     all_expected_files = ['config_train.yml',
                           'last_checkpoint.pytorch',
                           'best_checkpoint.pytorch']
+
+    recommended_patch_size = [80, 170, 170]
     for file in all_files:
+        if os.path.basename(file) == 'config_train.yaml':
+            config_train = load_config(file)
+            recommended_patch_size = list(config_train['loaders']['train']['slice_builder']['patch_shape'])
+
         if os.path.basename(file) in all_expected_files:
             copy2(file, dest_dir)
             all_expected_files.remove(os.path.basename(file))
@@ -104,6 +160,10 @@ def add_custom_model(new_model_name: str,
     custom_zoo_dict[new_model_name]["path"] = str(location)
     custom_zoo_dict[new_model_name]["resolution"] = resolution
     custom_zoo_dict[new_model_name]["description"] = description
+    custom_zoo_dict[new_model_name]["recommended_patch_size"] = recommended_patch_size
+    custom_zoo_dict[new_model_name]["dimensionality"] = dimensionality
+    custom_zoo_dict[new_model_name]["modality"] = modality
+    custom_zoo_dict[new_model_name]["output_type"] = output_type
 
     with open(custom_zoo, 'w') as f:
         yaml.dump(custom_zoo_dict, f)
@@ -197,3 +257,22 @@ def check_models(model_name: str, update_files: bool = False, config_only: bool 
         else:
             raise RuntimeError(f"Custom model {model_name} corrupted. Required files not found.")
     return True
+
+
+def clean_models():
+    for _ in range(3):
+        answer = input("This will delete all models in the model zoo, "
+                       "make sure to copy all custom models you want to preserve before continuing.\n"
+                       "Are you sure you want to continue? (y/n) ")
+        if answer == 'y':
+            ps_models_dir = os.path.join(home_path, PLANTSEG_MODELS_DIR)
+            shutil.rmtree(ps_models_dir)
+            print("All models deleted... PlantSeg will now close")
+            return None
+
+        elif answer == 'n':
+            print("Nothing was deleted.")
+            return None
+
+        else:
+            print("Invalid input, please type 'y' or 'n'.")
