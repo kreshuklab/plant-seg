@@ -166,7 +166,7 @@ def _compute_multiple_predictions(image, patch_size, device):
                   'choices': ALL_DEVICES}
           )
 def widget_test_all_unet_predictions(image: Image,
-                                     patch_size: Tuple[int, int, int] = (80, 160, 160),
+                                     patch_size: Tuple[int, int, int] = (80, 170, 170),
                                      device: str = ALL_DEVICES[0]) -> Future[List[LayerDataTuple]]:
     func = thread_worker(partial(_compute_multiple_predictions,
                                  image=image,
@@ -220,7 +220,7 @@ def widget_iterative_unet_predictions(image: Image,
                                       model_name: str,
                                       num_iterations: int = 2,
                                       sigma: float = 1.0,
-                                      patch_size: Tuple[int, int, int] = (80, 160, 160),
+                                      patch_size: Tuple[int, int, int] = (80, 170, 170),
                                       single_patch: bool = True,
                                       device: str = ALL_DEVICES[0]) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, f'iterative-{model_name}-x{num_iterations}')
