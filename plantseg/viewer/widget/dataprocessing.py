@@ -22,7 +22,7 @@ from plantseg.viewer.widget.utils import start_threading_process, create_layer_n
                  'widget_type': 'FloatSlider',
                  'tooltip': 'Define the size of the gaussian smoothing kernel. '
                             'The larger the more blurred will be the output image.',
-                 'max': 5.,
+                 'max': 10.,
                  'min': 0.})
 def widget_gaussian_smoothing(image: Image,
                               sigma: float = 1.,
@@ -48,14 +48,6 @@ def widget_gaussian_smoothing(image: Image,
 @magicgui(call_button='Run Image Rescaling',
           image={'label': 'Image or Label',
                  'tooltip': 'Layer to apply the rescaling.'},
-          type_of_refactor={'label': 'Type of refactor',
-                            'tooltip': 'Select the mode of finding the right rescaling factor.',
-                            'widget_type': 'RadioButtons',
-                            'orientation': 'vertical',
-                            'choices': ['Rescaling factor',
-                                        'Voxel size',
-                                        'Same as Reference Layer',
-                                        'Same as Reference Model']},
           rescaling_factor={'label': 'Rescaling factor',
                             'tooltip': 'Define the scaling factor to use for resizing the input image.'},
           out_voxel_size={'label': 'Out voxel size',
@@ -67,10 +59,11 @@ def widget_gaussian_smoothing(image: Image,
                            'tooltip': 'Rescale to same voxel size as selected model.',
                            'choices': list_models()},
           order={'label': 'Interpolation order',
+                 'widget_type': 'ComboBox',
+                 'choices': [0, 1, 2],
                  'tooltip': '0 for nearest neighbours (default for labels), 1 for linear, 2 for bilinear.',
                  })
 def widget_rescaling(image: Layer,
-                     type_of_refactor: str = 'Rescaling factor',
                      rescaling_factor: Tuple[float, float, float] = (1., 1., 1.),
                      out_voxel_size: Tuple[float, float, float] = (1., 1., 1.),
                      reference_layer: Union[None, Layer] = None,
@@ -88,19 +81,12 @@ def widget_rescaling(image: Layer,
         raise ValueError(f'{type(image)} cannot be rescaled, please use Image layers or Labels layers')
 
     current_resolution = image.scale
-    if type_of_refactor == 'Voxel size (um)':
-        rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
+    rescaling_factor = [float(x) for x in rescaling_factor]
 
-    elif type_of_refactor == 'Same as Reference Layer':
-        out_voxel_size = reference_layer.scale
-        rescaling_factor = compute_scaling_factor(current_resolution, reference_layer.scale)
+    if image.data.ndim == 2:
+        rescaling_factor[0] = 1.
 
-    elif type_of_refactor == 'Same as Reference Model':
-        out_voxel_size = get_model_resolution(reference_model)
-        rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
-
-    else:
-        out_voxel_size = compute_scaling_voxelsize(current_resolution, scaling_factor=rescaling_factor)
+    out_voxel_size = compute_scaling_voxelsize(current_resolution, scaling_factor=rescaling_factor)
 
     out_name = create_layer_name(image.name, 'Rescaled')
     inputs_kwarg = {'image': image.data}
@@ -120,6 +106,32 @@ def widget_rescaling(image: Layer,
                                    step_name='Rescaling',
                                    layer_type=layer_type,
                                    )
+
+
+@widget_rescaling.image.changed.connect
+def _on_image_changed(image: Layer):
+    widget_rescaling.out_voxel_size.value = image.scale
+
+
+@widget_rescaling.out_voxel_size.changed.connect
+def _on_voxel_size_changed(voxel_size: Tuple[float, float, float]):
+    rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, voxel_size)
+    widget_rescaling.rescaling_factor.value = rescaling_factor
+
+
+@widget_rescaling.reference_layer.changed.connect
+def _on_reference_layer_changed(reference_layer: Layer):
+    rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, reference_layer.scale)
+    widget_rescaling.rescaling_factor.value = rescaling_factor
+    widget_rescaling.out_voxel_size.value = reference_layer.scale
+
+
+@widget_rescaling.reference_model.changed.connect
+def _on_reference_model_changed(reference_model: str):
+    out_voxel_size = get_model_resolution(reference_model)
+    rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, out_voxel_size)
+    widget_rescaling.rescaling_factor.value = rescaling_factor
+    widget_rescaling.out_voxel_size.value = out_voxel_size
 
 
 def _compute_slices(rectangle, crop_z, shape):
