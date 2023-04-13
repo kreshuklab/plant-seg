@@ -1,15 +1,10 @@
 import os
-from typing import Tuple
-
-import torch
-from torch import nn
 
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR, home_path
 from plantseg.augment.transforms import get_test_augmentations
-from plantseg.models.model import get_model, UNet2D
+from plantseg.models.model import get_model
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset
-from plantseg.predictions.functional.array_predictor import _pad
 from plantseg.predictions.functional.slice_builder import SliceBuilder
 from plantseg.utils import get_train_config, check_models
 from plantseg.utils import load_config
@@ -67,31 +62,3 @@ def get_patch_halo(model_name):
 def get_stride_shape(patch_shape, stride_ratio=0.75):
     # striding MUST be >=1
     return [max(int(p * stride_ratio), 1) for p in patch_shape]
-
-
-def find_batch_size(model: nn.Module, in_channels: int, patch_shape: Tuple[int, int, int],
-                    patch_halo: Tuple[int, int, int], device: str) -> int:
-    if device == 'cpu':
-        return 1
-
-    if isinstance(model, UNet2D):
-        patch_shape = patch_shape[1:]
-
-    patch_shape = tuple(patch_shape)
-    model = model.cuda()
-    model.eval()
-    with torch.no_grad():
-        batch_size = 1
-        while True:
-            try:
-                x = torch.randn((batch_size, in_channels) + patch_shape).cuda()
-                x = _pad(x, patch_halo)
-                _ = model(x)
-                batch_size += 1
-            except RuntimeError as e:
-                batch_size -= 1
-                break
-
-        del model
-        torch.cuda.empty_cache()
-        return batch_size

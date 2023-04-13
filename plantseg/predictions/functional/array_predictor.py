@@ -34,6 +34,32 @@ def _unpad(m: torch.Tensor, patch_halo: Tuple[int, int, int]) -> torch.Tensor:
     return m
 
 
+def find_batch_size(model: nn.Module, in_channels: int, patch_shape: Tuple[int, int, int],
+                    patch_halo: Tuple[int, int, int], device: str) -> int:
+    if device == 'cpu':
+        return 1
+
+    if isinstance(model, UNet2D):
+        patch_shape = patch_shape[1:]
+
+    patch_shape = tuple(patch_shape)
+    model = model.to(device)
+    model.eval()
+    with torch.no_grad():
+        for batch_size in [2, 4, 8, 16, 32, 64, 128]:
+            try:
+                x = torch.randn((batch_size, in_channels) + patch_shape).to(device)
+                x = _pad(x, patch_halo)
+                _ = model(x)
+            except RuntimeError as e:
+                batch_size //= 2
+                break
+
+        del model
+        torch.cuda.empty_cache()
+        return batch_size
+
+
 class ArrayPredictor:
     """
     Based on pytorch-3dunet StandardPredictor
@@ -44,17 +70,34 @@ class ArrayPredictor:
     use `LazyPredictor` instead.
     Args:
         model (Unet3D): trained 3D UNet model used for prediction
+        in_channels (int): number of input channels to the model
         out_channels (int): number of output channels from the model
         device (str): device to use for prediction
+        patch (tuple): patch size to use for prediction
         patch_halo (tuple): mirror padding around the patch
+        single_batch_mode (bool): if True, the batch size will be set to 1
+        headless (bool): if True, DataParallel will be used if multiple GPUs are available
     """
 
-    def __init__(self, model: nn.Module, batch_size: int, out_channels: int, device: str,
-                 patch_halo: Tuple[int, int, int], verbose_logging: bool = False, disable_tqdm: bool = False):
-        self.model = model
-        self.batch_size = batch_size
-        self.out_channels = out_channels
+    def __init__(self, model: nn.Module, in_channels: int, out_channels: int, device: str, patch: Tuple[int, int, int],
+                 patch_halo: Tuple[int, int, int], single_batch_mode: bool, headless: bool,
+                 verbose_logging: bool = False, disable_tqdm: bool = False):
         self.device = device
+        if single_batch_mode:
+            self.batch_size = 1
+        else:
+            self.batch_size = find_batch_size(model, in_channels, patch, patch_halo, device)
+        gui_logger.info(f'Using batch size of {self.batch_size} for prediction')
+
+        if torch.cuda.device_count() > 1 and device != 'cpu' and headless:
+            model = nn.DataParallel(model)
+            gui_logger.info(f'Using {torch.cuda.device_count()} GPUs for prediction. '
+                            f'Increasing batch size to {torch.cuda.device_count()} * {self.batch_size}')
+            self.batch_size *= torch.cuda.device_count()
+            self.device = 'cuda'
+
+        self.model = model.to(self.device)
+        self.out_channels = out_channels
         self.patch_halo = patch_halo
         self.verbose_logging = verbose_logging
         self.disable_tqdm = disable_tqdm
@@ -62,13 +105,7 @@ class ArrayPredictor:
     def __call__(self, test_dataset: Dataset) -> np.ndarray:
         assert isinstance(test_dataset, ArrayDataset)
 
-        batch_size = self.batch_size
-        if torch.cuda.device_count() > 1 and self.device != 'cpu':
-            gui_logger.info(f'{torch.cuda.device_count()} GPUs available. '
-                            f'Using batch_size = {torch.cuda.device_count()} * {batch_size}')
-            batch_size = self.batch_size * torch.cuda.device_count()
-
-        test_loader = DataLoader(test_dataset, batch_size=batch_size, pin_memory=True,
+        test_loader = DataLoader(test_dataset, batch_size=self.batch_size, pin_memory=True,
                                  collate_fn=default_prediction_collate)
 
         if self.verbose_logging:
@@ -97,20 +134,18 @@ class ArrayPredictor:
         with torch.no_grad():
             for input, indices in tqdm.tqdm(test_loader, disable=self.disable_tqdm):
                 input = input.to(self.device)
+                # pad input patch
                 input = _pad(input, self.patch_halo)
-
+                # forward pass
                 if _is_2d_model(self.model):
                     # remove the singleton z-dimension from the input
                     input = torch.squeeze(input, dim=-3)
-                    # forward pass
                     prediction = self.model(input)
                     # add the singleton z-dimension to the output
                     prediction = torch.unsqueeze(prediction, dim=-3)
                 else:
-                    # forward pass
                     prediction = self.model(input)
-
-                # unpad
+                # unpad the prediction
                 prediction = _unpad(prediction, self.patch_halo)
                 # convert to numpy array
                 prediction = prediction.cpu().numpy()
@@ -137,48 +172,3 @@ class ArrayPredictor:
             return raw.shape
         else:
             return raw.shape[1:]
-
-
-def remove_halo(patch, index, shape, patch_halo):
-    """
-    Copied from: https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/unet3d/utils.py
-
-    Remove `patch_halo` voxels around the edges of a given patch.
-
-    Args:
-        patch (numpy.ndarray): the patch to remove the halo from
-        index (tuple): the position of the patch in the original image of shape `shape`
-        shape (tuple): the shape of the original image
-        patch_halo (tuple): the halo size in each dimension
-    """
-    assert len(patch_halo) == 3
-
-    def _new_slices(slicing, max_size, pad):
-        if slicing.start == 0:
-            p_start = 0
-            i_start = 0
-        else:
-            p_start = pad
-            i_start = slicing.start + pad
-
-        if slicing.stop == max_size:
-            p_stop = None
-            i_stop = max_size
-        else:
-            p_stop = -pad if pad != 0 else 1
-            i_stop = slicing.stop - pad
-
-        return slice(p_start, p_stop), slice(i_start, i_stop)
-
-    D, H, W = shape
-
-    i_c, i_z, i_y, i_x = index
-    p_c = slice(0, patch.shape[0])
-
-    p_z, i_z = _new_slices(i_z, D, patch_halo[0])
-    p_y, i_y = _new_slices(i_y, H, patch_halo[1])
-    p_x, i_x = _new_slices(i_x, W, patch_halo[2])
-
-    patch_index = (p_c, p_z, p_y, p_x)
-    index = (i_c, i_z, i_y, i_x)
-    return patch[patch_index], index
