@@ -133,7 +133,7 @@ file and our [wiki](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic
 detailed description of the parameters.
 
 ## Data Parallelism
-By default, if multiple GPUs are available the prediction step will be run on all the GPUs using [DataParallel](https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html).
+In the headless mode (i.e. when invoked with `plantseg --config CONFIG_PATH`) the prediction step will run on all the GPUs using [DataParallel](https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html).
 If prediction on all available GPUs is not desirable, restrict the number of GPUs using `CUDA_VISIBLE_DEVICES`, e.g.
 ```bash
 CUDA_VISIBLE_DEVICES=0,1 plantseg --config CONFIG_PATH
