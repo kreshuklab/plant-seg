@@ -176,7 +176,7 @@ def export_stack_as_tiff(data,
     if scaling_factor is not None:
         data = image_rescale(data, factor=scaling_factor, order=order)
 
-    stack_name = f'{name}{standard_suffix}' if custom_name is None else custom_name
+    stack_name = f'{name}_{standard_suffix}' if custom_name is None else f'{name}_{custom_name}'
 
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
@@ -244,7 +244,8 @@ def checkout(*args):
     call_button='Export stack',
     images={'label': 'Layers to export',
             'layout': 'vertical',
-            'tooltip': 'Select all layer to be exported, and (optional) set a custom file name.'},
+            'tooltip': 'Select all layer to be exported, and (optional) set a custom file name suffix that will be '
+                       'appended at end of the layer name.'},
     data_type={'label': 'Data Type',
                'choices': ['float32', 'uint8', 'uint16'],
                'tooltip': 'Export datatype (uint16 for segmentation) and all others for images.'},
@@ -276,6 +277,7 @@ def export_stacks(images: List[Tuple[Layer, str]],
 
         elif isinstance(image, Labels):
             order = 0
+
             stack_type = 'labels'
             dtype = 'uint16'
             if data_type != 'uint16':
@@ -304,7 +306,7 @@ def export_stacks(images: List[Tuple[Layer, str]],
         root_name = image.metadata.get('root_name', 'unknown')
 
         image_custom_name = None if image_custom_name == '' else image_custom_name
-        standard_suffix = f'_{i}' if image_custom_name is None else ''
+        standard_suffix = f'{i}' if image_custom_name is None else ''
 
         # run step for the current export
         step_params = {'scaling_factor': scaling_factor,
