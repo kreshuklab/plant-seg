@@ -31,7 +31,7 @@ cnn_prediction:
   device: "cuda"
   # patch size given to the network (adapt to fit in your GPU mem)
   patch: [64, 128, 128]
-  # stride between patches (make sure the the patches overlap in order to get smoother prediction maps)
+  # stride between patches (make sure the patches overlap in order to get smoother prediction maps)
   stride: "Balanced"
   # "best" refers to best performing on the val set (recommended), alternatively "last" refers to the last version before interruption
   version: best

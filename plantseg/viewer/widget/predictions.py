@@ -274,14 +274,21 @@ def widget_add_custom_model(new_model_name: str = 'custom_model',
                             dimensionality: str = list_all_dimensionality()[0],
                             modality: str = list_all_modality()[0],
                             output_type: str = list_all_output_type()[0]) -> None:
-    add_custom_model(new_model_name=new_model_name,
-                     location=model_location,
-                     resolution=resolution,
-                     description=description,
-                     dimensionality=dimensionality,
-                     modality=modality,
-                     output_type=output_type)
-    napari_formatted_logging(f'New model {new_model_name} added to the list of available models.',
-                             level='info',
-                             thread='Add Custom Model')
-    widget_unet_predictions.model_name.choices = list_models()
+    finished, error_msg = add_custom_model(new_model_name=new_model_name,
+                                           location=model_location,
+                                           resolution=resolution,
+                                           description=description,
+                                           dimensionality=dimensionality,
+                                           modality=modality,
+                                           output_type=output_type)
+
+    if finished:
+        napari_formatted_logging(f'New model {new_model_name} added to the list of available models.',
+                                 level='info',
+                                 thread='Add Custom Model')
+        widget_unet_predictions.model_name.choices = list_models()
+    else:
+        napari_formatted_logging(f'Error adding new model {new_model_name} to the list of available models: '
+                                 f'{error_msg}',
+                                 level='error',
+                                 thread='Add Custom Model')

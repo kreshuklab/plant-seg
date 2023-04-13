@@ -8,6 +8,8 @@ def parser():
     arg_parser.add_argument('--napari', action='store_true', help='Napari Viewer', required=False)
     arg_parser.add_argument('--headless', type=str, help='Path to a .pkl workflow', required=False)
     arg_parser.add_argument('--version', action='store_true', help='PlantSeg version', required=False)
+    arg_parser.add_argument('--clean', action='store_true',
+                            help='Remove all models from "~/.plantseg_models"', required=False)
     args = arg_parser.parse_args()
     return args
 
@@ -36,6 +38,10 @@ def main():
     elif args.version:
         from plantseg.__version__ import __version__
         print(__version__)
+
+    elif args.clean:
+        from plantseg.utils import clean_models
+        clean_models()
 
     else:
         raise ValueError("Not enough arguments. Please use: \n"

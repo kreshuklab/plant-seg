@@ -1,5 +1,6 @@
 import glob
 import os
+import shutil
 from pathlib import Path
 from shutil import copy2
 from typing import Tuple, Optional
@@ -136,8 +137,7 @@ def add_custom_model(new_model_name: str,
                           'last_checkpoint.pytorch',
                           'best_checkpoint.pytorch']
 
-
-    recommended_patch_size = [ 80, 170, 170 ]
+    recommended_patch_size = [80, 170, 170]
     for file in all_files:
         if os.path.basename(file) == 'config_train.yaml':
             config_train = load_config(file)
@@ -146,8 +146,6 @@ def add_custom_model(new_model_name: str,
         if os.path.basename(file) in all_expected_files:
             copy2(file, dest_dir)
             all_expected_files.remove(os.path.basename(file))
-
-
 
     if len(all_expected_files) != 0:
         msg = f'It was not possible to find in the directory specified {all_expected_files}, ' \
@@ -259,3 +257,22 @@ def check_models(model_name: str, update_files: bool = False, config_only: bool 
         else:
             raise RuntimeError(f"Custom model {model_name} corrupted. Required files not found.")
     return True
+
+
+def clean_models():
+    for _ in range(3):
+        answer = input("This will delete all models in the model zoo, "
+                       "make sure to copy all custom models you want to preserve before continuing.\n"
+                       "Are you sure you want to continue? (y/n) ")
+        if answer == 'y':
+            ps_models_dir = os.path.join(home_path, PLANTSEG_MODELS_DIR)
+            shutil.rmtree(ps_models_dir)
+            print("All models deleted... PlantSeg will now close")
+            return None
+
+        elif answer == 'n':
+            print("Nothing was deleted.")
+            return None
+
+        else:
+            print("Invalid input, please type 'y' or 'n'.")
