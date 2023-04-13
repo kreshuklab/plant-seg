@@ -99,7 +99,7 @@ lightsheet_2D_unet_root_ds1x:
   model_url: https://zenodo.org/record/7774537/files/unet2d-lateral-root-lightsheet.pytorch
   resolution: [0.25, 0.1625, 0.1625]
   description: "2D Unet trained on z-slices of light-sheet images of Lateral Root Primordia on original resolution with BCEDiceLoss."
-  dimensionality: "3D"
+  dimensionality: "2D"
   modality: "light-sheet"
   recommended_patch_size: [ 80, 170, 170 ]
   output_type: "boundaries"
