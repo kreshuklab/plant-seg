@@ -36,12 +36,15 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                       'choices': list_models()},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
+          single_patch={'label': 'Single Patch',
+                        'tooltip': 'If True, a single patch will be processed at a time to save memory.'},
           device={'label': 'Device',
                   'choices': ALL_DEVICES}
           )
 def widget_unet_predictions(image: Image,
                             model_name: str,
                             patch_size: Tuple[int, int, int] = (80, 160, 160),
+                            single_patch: bool = True,
                             device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, model_name)
 
@@ -54,7 +57,7 @@ def widget_unet_predictions(image: Image,
     layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
 
     layer_type = 'image'
-    step_kwargs = dict(model_name=model_name, patch=patch_size)
+    step_kwargs = dict(model_name=model_name, patch=patch_size, single_batch_mode=single_patch)
 
     return start_threading_process(unet_predictions_wrapper,
                                    runtime_kwargs={'raw': image.data, 'device': device},
@@ -88,7 +91,8 @@ def _compute_multiple_predictions(image, patch_size, device):
         layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
         layer_type = 'image'
         try:
-            pmap = unet_predictions(raw=image.data, model_name=model_name, patch=patch_size, device=device)
+            pmap = unet_predictions(raw=image.data, model_name=model_name, patch=patch_size, single_batch_mode=True,
+                                    device=device)
             out_layers.append((pmap, layer_kwargs, layer_type))
 
         except Exception as e:
@@ -124,8 +128,9 @@ def widget_test_all_unet_predictions(image: Image,
     return future
 
 
-def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patch_size, device):
-    func = partial(unet_predictions, model_name=model_name, patch=patch_size, device=device)
+def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patch_size, single_batch_mode, device):
+    func = partial(unet_predictions, model_name=model_name, patch=patch_size, single_batch_mode=single_batch_mode,
+                   device=device)
     for i in range(num_iterations - 1):
         pmap = func(pmap)
         pmap = image_gaussian_smoothing(image=pmap, sigma=sigma)
@@ -150,6 +155,8 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
                  'min': 0.},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
+          single_patch={'label': 'Single Patch',
+                        'tooltip': 'If True, a single patch will be processed at a time to save memory.'},
           device={'label': 'Device',
                   'choices': ALL_DEVICES}
           )
@@ -158,6 +165,7 @@ def widget_iterative_unet_predictions(image: Image,
                                       num_iterations: int = 2,
                                       sigma: float = 1.0,
                                       patch_size: Tuple[int, int, int] = (80, 160, 160),
+                                      single_patch: bool = True,
                                       device: str = ALL_DEVICES[0]) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, f'iterative-{model_name}-x{num_iterations}')
     inputs_names = (image.name,)
@@ -170,6 +178,7 @@ def widget_iterative_unet_predictions(image: Image,
                        num_iterations=num_iterations,
                        sigma=sigma,
                        patch_size=patch_size,
+                       single_batch_mode=single_patch,
                        device=device)
 
     return start_threading_process(_compute_iterative_predictions,

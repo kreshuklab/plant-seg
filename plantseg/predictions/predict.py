@@ -1,14 +1,11 @@
-import gc
-
 import numpy as np
 import torch
-from torch import nn
 
 from plantseg.io.io import load_shape
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep
 from plantseg.predictions.functional.array_predictor import ArrayPredictor
-from plantseg.predictions.functional.utils import get_array_dataset, get_model_config, get_patch_halo, find_batch_size
+from plantseg.predictions.functional.utils import get_array_dataset, get_model_config, get_patch_halo
 
 
 def _check_patch_size(paths, patch_size):
@@ -61,17 +58,9 @@ class UnetPredictions(GenericPipelineStep):
         model.load_state_dict(state)
 
         patch_halo = get_patch_halo(model_name)
-        batch_size = find_batch_size(model, model_config['in_channels'], patch, patch_halo, device)
-        gui_logger.info(f'Using batch size of {batch_size} for prediction')
-
-        if torch.cuda.device_count() > 1 and device != 'cpu':
-            model = nn.DataParallel(model)
-            gui_logger.info(f'Using {torch.cuda.device_count()} GPUs for prediction')
-
-        model = model.to(device)
-
-        self.predictor = ArrayPredictor(model=model, batch_size=batch_size, out_channels=model_config['out_channels'],
-                                        device=device, patch_halo=patch_halo)
+        self.predictor = ArrayPredictor(model=model, in_channels=model_config['in_channels'],
+                                        out_channels=model_config['out_channels'], device=device, patch=self.patch,
+                                        patch_halo=patch_halo, single_batch_mode=False, headless=True)
 
     def process(self, raw: np.ndarray) -> np.ndarray:
         dataset = get_array_dataset(raw, self.model_name, patch=self.patch, stride_ratio=self.stride_ratio)
