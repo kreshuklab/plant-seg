@@ -1,4 +1,3 @@
-import math
 from concurrent.futures import Future
 from typing import Tuple, Union
 
@@ -135,9 +134,12 @@ def _on_reference_model_changed(reference_model: str):
 
 
 def _compute_slices(rectangle, crop_z, shape):
-    z_start = max(rectangle[0, 0] - crop_z // 2, 0)
-    z_end = min(rectangle[0, 0] + math.ceil(crop_z / 2), shape[0])
+    z_start = int(crop_z[0])
+    z_end = int(crop_z[1])
     z_slice = slice(z_start, z_end)
+
+    if rectangle is None:
+        return z_slice, slice(0, shape[1]), slice(0, shape[2])
 
     x_start = max(rectangle[0, 1], 0)
     x_end = min(rectangle[2, 1], shape[1])
@@ -146,7 +148,6 @@ def _compute_slices(rectangle, crop_z, shape):
     y_start = max(rectangle[0, 2], 0)
     y_end = min(rectangle[2, 2], shape[2])
     y_slice = slice(y_start, y_end)
-
     return z_slice, x_slice, y_slice
 
 
@@ -160,14 +161,16 @@ def _cropping(data, crop_slices):
           crop_roi={'label': 'Crop ROI',
                     'tooltip': 'This must be a shape layer with a rectangle XY overlaying the area to crop.'},
           crop_z={'label': 'Z slices',
-                  'tooltip': 'Numer of z slices to take next to the current selection.'},
+                  'tooltip': 'Numer of z slices to take next to the current selection.',
+                  'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 1},
           )
 def widget_cropping(image: Layer,
                     crop_roi: Union[Shapes, None] = None,
-                    crop_z: int = 1,
+                    crop_z: tuple[int, int] = (0, 100),
                     ) -> Future[LayerDataTuple]:
-    assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
-    assert crop_roi.shape_type[0] == 'rectangle', "Only a rectangle shape should be used for cropping"
+    if crop_roi is not None:
+        assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
+        assert crop_roi.shape_type[0] == 'rectangle', "Only a rectangle shape should be used for cropping"
 
     if isinstance(image, Image):
         layer_type = 'image'
@@ -184,7 +187,10 @@ def widget_cropping(image: Layer,
                                     scale=image.scale,
                                     metadata=image.metadata)
 
-    rectangle = crop_roi.data[0].astype('int64')
+    if crop_roi is not None:
+        rectangle = crop_roi.data[0].astype('int64')
+    else:
+        rectangle = None
 
     crop_slices = _compute_slices(rectangle, crop_z, image.data.shape)
 
@@ -198,6 +204,14 @@ def widget_cropping(image: Layer,
                                    step_name='Cropping',
                                    skip_dag=True,
                                    )
+
+
+@widget_cropping.image.changed.connect
+def _on_image_changed(image: Layer):
+    widget_cropping.crop_z.max = int(image.data.shape[0])
+    widget_cropping.crop_z.step = 1
+    if widget_cropping.crop_z.value[1] > image.data.shape[0]:
+        widget_cropping.crop_z.value[1] = int(image.data.shape[0])
 
 
 def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
