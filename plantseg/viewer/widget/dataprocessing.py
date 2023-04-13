@@ -160,6 +160,8 @@ def _cropping(data, crop_slices):
                  'tooltip': 'Layer to apply the rescaling.'},
           crop_roi={'label': 'Crop ROI',
                     'tooltip': 'This must be a shape layer with a rectangle XY overlaying the area to crop.'},
+          # FloatRangeSlider and RangeSlider are not working very nicely with napari, they are usable but not very
+          # nice. maybe we should use a custom widget for this.
           crop_z={'label': 'Z slices',
                   'tooltip': 'Numer of z slices to take next to the current selection.',
                   'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 1},
