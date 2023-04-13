@@ -281,3 +281,7 @@ def widget_add_custom_model(new_model_name: str = 'custom_model',
                      dimensionality=dimensionality,
                      modality=modality,
                      output_type=output_type)
+    napari_formatted_logging(f'New model {new_model_name} added to the list of available models.',
+                             level='info',
+                             thread='Add Custom Model')
+    widget_unet_predictions.model_name.choices = list_models()
