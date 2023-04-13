@@ -88,8 +88,8 @@ def unpack_load(loaded_dict, key):
     call_button='Open file',
     path={'label': 'Pick a file (tiff or h5, png, jpg)',
           'tooltip': 'Select a file to be imported, the file can be a tiff or h5.'},
-    name={'label': 'Layer Name',
-          'tooltip': 'Define the name of the output layer, default is either image or label.'},
+    new_layer_name={'label': 'Layer Name',
+                    'tooltip': 'Define the name of the output layer, default is either image or label.'},
     layer_type={
         'label': 'Layer type',
         'tooltip': 'Select if the image is a normal image or a segmentation',
@@ -105,14 +105,14 @@ def unpack_load(loaded_dict, key):
              'tooltip': 'Channel to select and channels layout'})
 def open_file(path: Path = Path.home(),
               layer_type: str = 'image',
-              name: str = '',
+              new_layer_name: str = '',
               advanced_load: bool = False,
               key: str = 'raw',
               channel: Tuple[int, str] = (0, 'xcxx'),
               ) -> LayerDataTuple:
     """Open a file and return a napari layer."""
-    name = layer_type if name == '' else name
-    loaded_dict_name = f'{name}_loaded_dict'
+    new_layer_name = layer_type if new_layer_name == '' else new_layer_name
+    loaded_dict_name = f'{new_layer_name}_loaded_dict'
 
     # wrap load routine and add it to the dag
     step_params = {'key': key,
@@ -121,7 +121,7 @@ def open_file(path: Path = Path.home(),
                    'layer_type': layer_type}
 
     dag_manager.add_step(napari_image_load,
-                         input_keys=(f'{name}_path',),
+                         input_keys=(f'{new_layer_name}_path',),
                          output_key=loaded_dict_name,
                          step_name='Load stack',
                          static_params=step_params)
@@ -133,9 +133,9 @@ def open_file(path: Path = Path.home(),
     voxel_size_unit = load_dict['voxel_size_unit']
 
     # add the key unwrapping to the dag
-    for key, out_name in [('data', name),
-                          ('voxel_size', f'{name}_voxel_size'),
-                          ('voxel_size_unit', f'{name}_voxel_size_unit')]:
+    for key, out_name in [('data', new_layer_name),
+                          ('voxel_size', f'{new_layer_name}_voxel_size'),
+                          ('voxel_size_unit', f'{new_layer_name}_voxel_size_unit')]:
         step_params = {'key': key}
         dag_manager.add_step(unpack_load,
                              input_keys=(loaded_dict_name,),
@@ -146,14 +146,20 @@ def open_file(path: Path = Path.home(),
 
     # return layer
 
-    napari_formatted_logging(f'{name} Correctly imported, voxel_size: {voxel_size} {voxel_size_unit}',
+    napari_formatted_logging(f'{new_layer_name} Correctly imported, voxel_size: {voxel_size} {voxel_size_unit}',
                              thread='Open file')
-    layer_kwargs = layer_properties(name=name,
+    layer_kwargs = layer_properties(name=new_layer_name,
                                     scale=voxel_size,
                                     metadata={'original_voxel_size': voxel_size,
                                               'voxel_size_unit': voxel_size_unit,
-                                              'root_name': name})
+                                              'root_name': new_layer_name})
     return data, layer_kwargs, layer_type
+
+
+@open_file.path.changed.connect
+def _on_path_changed(path: Path):
+    open_file.new_layer_name.value = path.stem
+
 
 
 def export_stack_as_tiff(data,
