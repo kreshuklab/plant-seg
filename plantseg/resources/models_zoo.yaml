@@ -55,7 +55,7 @@ confocal_2D_unet_ovules_ds2x:
   description: "2D Unet trained on z-slices of confocal images of Arabidopsis Ovules (1/2-resolution in XY) with BCEDiceLoss."
   dimensionality: "2D"
   modality: "confocal"
-  recommended_patch_size: [ 80, 170, 170 ]
+  recommended_patch_size: [ 1, 170, 170 ]
   output_type: "boundaries"
 
 confocal_3D_unet_ovules_nuclei_ds1x:
@@ -101,7 +101,7 @@ lightsheet_2D_unet_root_ds1x:
   description: "2D Unet trained on z-slices of light-sheet images of Lateral Root Primordia on original resolution with BCEDiceLoss."
   dimensionality: "2D"
   modality: "light-sheet"
-  recommended_patch_size: [ 80, 170, 170 ]
+  recommended_patch_size: [ 1, 170, 170 ]
   output_type: "boundaries"
 
 lightsheet_3D_unet_root_nuclei_ds1x:
@@ -119,7 +119,7 @@ lightsheet_2D_unet_root_nuclei_ds1x:
   description: "2D Unet trained on z-slices of light-sheet images of Lateral Root Primordia nuclei on original resolution with BCEDiceLoss. The network predicts 2 channels: nuclei mask in the 1st channel, nuclei boundaries in the 2nd channel"
   dimensionality: "2D"
   modality: "light-sheet"
-  recommended_patch_size: [ 80, 170, 170 ]
+  recommended_patch_size: [ 1, 170, 170 ]
   output_type: "nuclei"
 
 # PNAS

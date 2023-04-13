@@ -1,8 +1,10 @@
 from concurrent.futures import Future
+from enum import Enum
 from typing import Tuple, Union
 
 import numpy as np
 from magicgui import magicgui
+from napari import Viewer
 from napari.layers import Image, Labels, Shapes, Layer
 from napari.types import LayerDataTuple
 
@@ -11,6 +13,8 @@ from plantseg.dataprocessing.functional.dataprocessing import compute_scaling_fa
 from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation as _relabel_segmentation
 from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
 from plantseg.utils import list_models, get_model_resolution
+from plantseg.viewer.widget.predictions import widget_unet_predictions
+from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 
 
@@ -22,8 +26,9 @@ from plantseg.viewer.widget.utils import start_threading_process, create_layer_n
                  'tooltip': 'Define the size of the gaussian smoothing kernel. '
                             'The larger the more blurred will be the output image.',
                  'max': 10.,
-                 'min': 0.})
-def widget_gaussian_smoothing(image: Image,
+                 'min': 0.1})
+def widget_gaussian_smoothing(viewer: Viewer,
+                              image: Image,
                               sigma: float = 1.,
                               ) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, 'GaussianSmoothing')
@@ -41,7 +46,20 @@ def widget_gaussian_smoothing(image: Image,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    step_name='Gaussian Smoothing',
+                                   viewer=viewer,
+                                   widgets_to_update=[widget_unet_predictions.image,
+                                                      widget_agglomeration.image,
+                                                      widget_lifted_multicut.image,
+                                                      widget_simple_dt_ws.image,
+                                                      widget_rescaling.image,
+                                                      widget_cropping.image]
                                    )
+
+
+class RescaleType(Enum):
+    nearest = 0
+    linear = 1
+    bilinear = 2
 
 
 @magicgui(call_button='Run Image Rescaling',
@@ -59,18 +77,20 @@ def widget_gaussian_smoothing(image: Image,
                            'choices': list_models()},
           order={'label': 'Interpolation order',
                  'widget_type': 'ComboBox',
-                 'choices': [0, 1, 2],
+                 'choices': RescaleType,
                  'tooltip': '0 for nearest neighbours (default for labels), 1 for linear, 2 for bilinear.',
                  })
-def widget_rescaling(image: Layer,
+def widget_rescaling(viewer: Viewer,
+                     image: Layer,
                      rescaling_factor: Tuple[float, float, float] = (1., 1., 1.),
                      out_voxel_size: Tuple[float, float, float] = (1., 1., 1.),
                      reference_layer: Union[None, Layer] = None,
                      reference_model: str = list_models()[0],
-                     order: int = 1,
+                     order=RescaleType.linear,
                      ) -> Future[LayerDataTuple]:
     if isinstance(image, Image):
         layer_type = 'image'
+        order = order.value
 
     elif isinstance(image, Labels):
         layer_type = 'labels'
@@ -104,6 +124,13 @@ def widget_rescaling(image: Layer,
                                    layer_kwarg=layer_kwargs,
                                    step_name='Rescaling',
                                    layer_type=layer_type,
+                                   viewer=viewer,
+                                   widgets_to_update=[widget_unet_predictions.image,
+                                                      widget_agglomeration.image,
+                                                      widget_lifted_multicut.image,
+                                                      widget_simple_dt_ws.image,
+                                                      widget_cropping.image,
+                                                      widget_gaussian_smoothing.image]
                                    )
 
 
@@ -168,7 +195,8 @@ def _cropping(data, crop_slices):
                   'readout': False,
                   'tracking': False},
           )
-def widget_cropping(image: Layer,
+def widget_cropping(viewer: Viewer,
+                    image: Layer,
                     crop_roi: Union[Shapes, None] = None,
                     crop_z: tuple[int, int] = (0, 100),
                     ) -> Future[LayerDataTuple]:
@@ -207,6 +235,13 @@ def widget_cropping(image: Layer,
                                    layer_type=layer_type,
                                    step_name='Cropping',
                                    skip_dag=True,
+                                   viewer=viewer,
+                                   widgets_to_update=[widget_unet_predictions.image,
+                                                      widget_agglomeration.image,
+                                                      widget_lifted_multicut.image,
+                                                      widget_simple_dt_ws.image,
+                                                      widget_rescaling.image,
+                                                      widget_gaussian_smoothing.image]
                                    )
 
 
@@ -240,7 +275,8 @@ def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
           weights={'label': 'Mean weights',
                    'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
           )
-def widget_add_layers(image1: Image,
+def widget_add_layers(viewer: Viewer,
+                      image1: Image,
                       image2: Image,
                       operation: str = 'Maximum',
                       weights: float = 0.5,
@@ -262,6 +298,11 @@ def widget_add_layers(image1: Image,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    step_name='Merge Layers',
+                                   viewer=viewer,
+                                   widgets_to_update=[widget_unet_predictions.image,
+                                                      widget_agglomeration.image,
+                                                      widget_lifted_multicut.image,
+                                                      widget_simple_dt_ws.image]
                                    )
 
 
