@@ -164,7 +164,9 @@ def _cropping(data, crop_slices):
           # nice. maybe we should use a custom widget for this.
           crop_z={'label': 'Z slices',
                   'tooltip': 'Numer of z slices to take next to the current selection.',
-                  'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 1},
+                  'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 1,
+                  'readout': False,
+                  'tracking': False},
           )
 def widget_cropping(image: Layer,
                     crop_roi: Union[Shapes, None] = None,
