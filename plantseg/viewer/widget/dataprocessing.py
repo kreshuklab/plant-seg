@@ -247,10 +247,18 @@ def widget_cropping(viewer: Viewer,
 
 @widget_cropping.image.changed.connect
 def _on_image_changed(image: Layer):
-    widget_cropping.crop_z.max = int(image.data.shape[0])
+    image_shape = image.data.shape
+
+    if image_shape[0] == 1:
+        widget_cropping.crop_z.hide()
+        return None
+
+    widget_cropping.crop_z.show()
+
+    widget_cropping.crop_z.max = int(image_shape[0])
     widget_cropping.crop_z.step = 1
-    if widget_cropping.crop_z.value[1] > image.data.shape[0]:
-        widget_cropping.crop_z.value[1] = int(image.data.shape[0])
+    if widget_cropping.crop_z.value[1] > image_shape[0]:
+        widget_cropping.crop_z.value[1] = int(image_shape[0])
 
 
 def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
@@ -304,6 +312,14 @@ def widget_add_layers(viewer: Viewer,
                                                       widget_lifted_multicut.image,
                                                       widget_simple_dt_ws.image]
                                    )
+
+
+@widget_add_layers.operation.changed.connect
+def _on_operation_changed(operation: str):
+    if operation == 'Mean':
+        widget_add_layers.weights.show()
+    else:
+        widget_add_layers.weights.hide()
 
 
 def _label_processing(segmentation, set_bg_to_0, relabel_segmentation):
