@@ -13,6 +13,7 @@ TEST_FILES = os.path.join(
 
 VOXEL_SIZE = (0.235, 0.15, 0.15)
 
+
 # common fixtures aimed to reduce the boilerplate in tests
 
 @pytest.fixture
@@ -23,6 +24,16 @@ def input_path(tmpdir):
         f['raw'].attrs['element_size_um'] = VOXEL_SIZE
         f.create_dataset('segmentation', data=np.random.randint(low=0, high=256, size=(32, 128, 128)))
         f['segmentation'].attrs['element_size_um'] = VOXEL_SIZE
+    return path
+
+
+@pytest.fixture
+def input_path_zarr(tmpdir):
+    import zarr
+    path = os.path.join(tmpdir, 'test.zarr')
+    with zarr.open(path, 'w') as f:
+        f.create_dataset('volumes/raw', data=np.random.rand(32, 128, 128))
+        f['volumes/raw'].attrs['element_size_um'] = VOXEL_SIZE
     return path
 
 
