@@ -119,12 +119,12 @@ def list_keys(path: str) -> list[str]:
     """
 
     f = zarr.open(path, 'r')
-    keys_ = (f.name,)  # named such as not to overwrite keyword
+    keys_ = (f.name,)  # named as such to not to overwrite keyword
 
     if isinstance(f, zarr.Group):
         for key, value in f.items():
             if isinstance(value, zarr.Group):
-                keys = keys_ + all_keys(value)
+                keys_ = keys_ + all_keys(value)
             else:
                 keys_ = keys_ + (value.name,)
 
