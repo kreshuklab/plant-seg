@@ -6,11 +6,13 @@ from magicgui import magicgui
 from napari.layers import Labels, Image, Layer
 from napari.types import LayerDataTuple
 
+from napari import Viewer
 from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_under_segmentation_from_nuclei
-from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.dataprocessing.functional.dataprocessing import normalize_01
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed, mutex_ws
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
+from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
+from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 
 
@@ -31,8 +33,8 @@ def _generic_clustering(image: Image, labels: Labels,
                         beta: float = 0.5,
                         minsize: int = 100,
                         name: str = 'GASP',
-                        agg_func: Callable = gasp) -> Future[LayerDataTuple]:
-
+                        agg_func: Callable = gasp,
+                        viewer: Viewer = None) -> Future[LayerDataTuple]:
     if 'pmap' not in image.metadata:
         _pmap_warn(f'{name} Clustering Widget')
 
@@ -53,6 +55,8 @@ def _generic_clustering(image: Image, labels: Labels,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    step_name=f'{name} Clustering',
+                                   viewer=viewer,
+                                   widgets_to_update=[widget_split_and_merge_from_scribbles.segmentation]
                                    )
 
 
@@ -71,7 +75,8 @@ def _generic_clustering(image: Image, labels: Labels,
                 'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
           minsize={'label': 'Min-size',
                    'tooltip': 'Minimum segment size allowed in voxels.'})
-def widget_agglomeration(image: Image, _labels: Labels,
+def widget_agglomeration(viewer: Viewer,
+                         image: Image, _labels: Labels,
                          mode: str = "GASP",
                          beta: float = 0.6,
                          minsize: int = 100) -> Future[LayerDataTuple]:
@@ -84,7 +89,7 @@ def widget_agglomeration(image: Image, _labels: Labels,
     else:
         func = multicut
 
-    return _generic_clustering(image, _labels, beta=beta, minsize=minsize, name=mode, agg_func=func)
+    return _generic_clustering(image, _labels, beta=beta, minsize=minsize, name=mode, agg_func=func, viewer=viewer)
 
 
 @magicgui(call_button='Run Lifted MultiCut',
@@ -105,7 +110,6 @@ def widget_lifted_multicut(image: Image,
                            _labels: Labels,
                            beta: float = 0.5,
                            minsize: int = 100) -> Future[LayerDataTuple]:
-
     if 'pmap' not in image.metadata:
         _pmap_warn('Lifted MultiCut Widget')
 
@@ -203,7 +207,6 @@ def widget_dt_ws(image: Image,
                  pixel_pitch: Tuple[int, int, int] = (1, 1, 1),
                  apply_nonmax_suppression: bool = False,
                  nuclei: bool = False) -> Future[LayerDataTuple]:
-
     if 'pmap' not in image.metadata:
         _pmap_warn("Watershed Widget")
 
@@ -257,7 +260,6 @@ def widget_simple_dt_ws(image: Image,
                         stacked: str = '2D',
                         threshold: float = 0.5,
                         min_size: int = 100) -> Future[LayerDataTuple]:
-
     if 'pmap' not in image.metadata:
         _pmap_warn("Watershed Widget")
 

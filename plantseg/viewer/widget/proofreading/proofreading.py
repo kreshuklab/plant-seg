@@ -285,10 +285,12 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
 
 
 @magicgui(call_button=f'Extract correct labels')
-def widget_filter_segmentation() -> Future[LayerDataTuple]:
+def widget_filter_segmentation() -> Union[Future[LayerDataTuple], None]:
+    print(segmentation_handler.status)
     if not segmentation_handler.status:
         napari_formatted_logging('Proofreading widget not initialized. Run the proofreading widget tool once first',
                                  thread='Export correct labels')
+        return None
 
     future = Future()
 

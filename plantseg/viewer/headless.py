@@ -10,9 +10,11 @@ from tqdm import tqdm
 from plantseg.viewer.dag_handler import DagHandler
 from plantseg.viewer.widget.predictions import ALL_DEVICES, ALL_CUDA_DEVICES
 
-all_gpus_str = f'all {len(ALL_CUDA_DEVICES)} gpus'
+all_gpus_str = f'all gpus: {len(ALL_CUDA_DEVICES)}'
 ALL_GPUS = [all_gpus_str] if len(ALL_CUDA_DEVICES) > 0 else []
 ALL_DEVICES_HEADLESS = ALL_DEVICES + ALL_GPUS
+
+MAX_WORKERS = len(ALL_CUDA_DEVICES) if len(ALL_CUDA_DEVICES) > 0 else multiprocessing.cpu_count()
 
 
 def _parse_input_paths(inputs, path_suffix='_path'):
@@ -39,7 +41,7 @@ def run_workflow_headless(path):
                            'widget_type': 'IntSlider',
                            'tooltip': 'Define the size of the gaussian smoothing kernel. '
                                       'The larger the more blurred will be the output image.',
-                           'max': multiprocessing.cpu_count(), 'min': 1},
+                           'max': MAX_WORKERS, 'min': 1},
               scheduler={'label': 'Scheduler',
                          'choices': ['multiprocessing', 'threaded']
                          },
@@ -48,7 +50,7 @@ def run_workflow_headless(path):
     def run(list_inputs: input_hints,
             out_directory: Path = Path.home(),
             device: str = ALL_DEVICES_HEADLESS[0],
-            num_workers: int = 1,
+            num_workers: int = MAX_WORKERS,
             scheduler: str = 'multiprocessing'):
         dict_of_jobs = {}
         cluster = distributed.LocalCluster(n_workers=num_workers, threads_per_worker=1)

@@ -1,9 +1,10 @@
-import math
 from concurrent.futures import Future
+from enum import Enum
 from typing import Tuple, Union
 
 import numpy as np
 from magicgui import magicgui
+from napari import Viewer
 from napari.layers import Image, Labels, Shapes, Layer
 from napari.types import LayerDataTuple
 
@@ -12,6 +13,8 @@ from plantseg.dataprocessing.functional.dataprocessing import compute_scaling_fa
 from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation as _relabel_segmentation
 from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
 from plantseg.utils import list_models, get_model_resolution
+from plantseg.viewer.widget.predictions import widget_unet_predictions
+from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 
 
@@ -22,9 +25,10 @@ from plantseg.viewer.widget.utils import start_threading_process, create_layer_n
                  'widget_type': 'FloatSlider',
                  'tooltip': 'Define the size of the gaussian smoothing kernel. '
                             'The larger the more blurred will be the output image.',
-                 'max': 5.,
-                 'min': 0.})
-def widget_gaussian_smoothing(image: Image,
+                 'max': 10.,
+                 'min': 0.1})
+def widget_gaussian_smoothing(viewer: Viewer,
+                              image: Image,
                               sigma: float = 1.,
                               ) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, 'GaussianSmoothing')
@@ -42,20 +46,25 @@ def widget_gaussian_smoothing(image: Image,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    step_name='Gaussian Smoothing',
+                                   viewer=viewer,
+                                   widgets_to_update=[widget_unet_predictions.image,
+                                                      widget_agglomeration.image,
+                                                      widget_lifted_multicut.image,
+                                                      widget_simple_dt_ws.image,
+                                                      widget_rescaling.image,
+                                                      widget_cropping.image]
                                    )
+
+
+class RescaleType(Enum):
+    nearest = 0
+    linear = 1
+    bilinear = 2
 
 
 @magicgui(call_button='Run Image Rescaling',
           image={'label': 'Image or Label',
                  'tooltip': 'Layer to apply the rescaling.'},
-          type_of_refactor={'label': 'Type of refactor',
-                            'tooltip': 'Select the mode of finding the right rescaling factor.',
-                            'widget_type': 'RadioButtons',
-                            'orientation': 'vertical',
-                            'choices': ['Rescaling factor',
-                                        'Voxel size',
-                                        'Same as Reference Layer',
-                                        'Same as Reference Model']},
           rescaling_factor={'label': 'Rescaling factor',
                             'tooltip': 'Define the scaling factor to use for resizing the input image.'},
           out_voxel_size={'label': 'Out voxel size',
@@ -67,18 +76,21 @@ def widget_gaussian_smoothing(image: Image,
                            'tooltip': 'Rescale to same voxel size as selected model.',
                            'choices': list_models()},
           order={'label': 'Interpolation order',
+                 'widget_type': 'ComboBox',
+                 'choices': RescaleType,
                  'tooltip': '0 for nearest neighbours (default for labels), 1 for linear, 2 for bilinear.',
                  })
-def widget_rescaling(image: Layer,
-                     type_of_refactor: str = 'Rescaling factor',
+def widget_rescaling(viewer: Viewer,
+                     image: Layer,
                      rescaling_factor: Tuple[float, float, float] = (1., 1., 1.),
                      out_voxel_size: Tuple[float, float, float] = (1., 1., 1.),
                      reference_layer: Union[None, Layer] = None,
                      reference_model: str = list_models()[0],
-                     order: int = 1,
+                     order=RescaleType.linear,
                      ) -> Future[LayerDataTuple]:
     if isinstance(image, Image):
         layer_type = 'image'
+        order = order.value
 
     elif isinstance(image, Labels):
         layer_type = 'labels'
@@ -88,19 +100,12 @@ def widget_rescaling(image: Layer,
         raise ValueError(f'{type(image)} cannot be rescaled, please use Image layers or Labels layers')
 
     current_resolution = image.scale
-    if type_of_refactor == 'Voxel size (um)':
-        rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
+    rescaling_factor = [float(x) for x in rescaling_factor]
 
-    elif type_of_refactor == 'Same as Reference Layer':
-        out_voxel_size = reference_layer.scale
-        rescaling_factor = compute_scaling_factor(current_resolution, reference_layer.scale)
+    if image.data.ndim == 2:
+        rescaling_factor[0] = 1.
 
-    elif type_of_refactor == 'Same as Reference Model':
-        out_voxel_size = get_model_resolution(reference_model)
-        rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
-
-    else:
-        out_voxel_size = compute_scaling_voxelsize(current_resolution, scaling_factor=rescaling_factor)
+    out_voxel_size = compute_scaling_voxelsize(current_resolution, scaling_factor=rescaling_factor)
 
     out_name = create_layer_name(image.name, 'Rescaled')
     inputs_kwarg = {'image': image.data}
@@ -119,13 +124,49 @@ def widget_rescaling(image: Layer,
                                    layer_kwarg=layer_kwargs,
                                    step_name='Rescaling',
                                    layer_type=layer_type,
+                                   viewer=viewer,
+                                   widgets_to_update=[widget_unet_predictions.image,
+                                                      widget_agglomeration.image,
+                                                      widget_lifted_multicut.image,
+                                                      widget_simple_dt_ws.image,
+                                                      widget_cropping.image,
+                                                      widget_gaussian_smoothing.image]
                                    )
 
 
+@widget_rescaling.image.changed.connect
+def _on_image_changed(image: Layer):
+    widget_rescaling.out_voxel_size.value = image.scale
+
+
+@widget_rescaling.out_voxel_size.changed.connect
+def _on_voxel_size_changed(voxel_size: Tuple[float, float, float]):
+    rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, voxel_size)
+    widget_rescaling.rescaling_factor.value = rescaling_factor
+
+
+@widget_rescaling.reference_layer.changed.connect
+def _on_reference_layer_changed(reference_layer: Layer):
+    rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, reference_layer.scale)
+    widget_rescaling.rescaling_factor.value = rescaling_factor
+    widget_rescaling.out_voxel_size.value = reference_layer.scale
+
+
+@widget_rescaling.reference_model.changed.connect
+def _on_reference_model_changed(reference_model: str):
+    out_voxel_size = get_model_resolution(reference_model)
+    rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, out_voxel_size)
+    widget_rescaling.rescaling_factor.value = rescaling_factor
+    widget_rescaling.out_voxel_size.value = out_voxel_size
+
+
 def _compute_slices(rectangle, crop_z, shape):
-    z_start = max(rectangle[0, 0] - crop_z // 2, 0)
-    z_end = min(rectangle[0, 0] + math.ceil(crop_z / 2), shape[0])
+    z_start = int(crop_z[0])
+    z_end = int(crop_z[1])
     z_slice = slice(z_start, z_end)
+
+    if rectangle is None:
+        return z_slice, slice(0, shape[1]), slice(0, shape[2])
 
     x_start = max(rectangle[0, 1], 0)
     x_end = min(rectangle[2, 1], shape[1])
@@ -134,7 +175,6 @@ def _compute_slices(rectangle, crop_z, shape):
     y_start = max(rectangle[0, 2], 0)
     y_end = min(rectangle[2, 2], shape[2])
     y_slice = slice(y_start, y_end)
-
     return z_slice, x_slice, y_slice
 
 
@@ -147,15 +187,22 @@ def _cropping(data, crop_slices):
                  'tooltip': 'Layer to apply the rescaling.'},
           crop_roi={'label': 'Crop ROI',
                     'tooltip': 'This must be a shape layer with a rectangle XY overlaying the area to crop.'},
+          # FloatRangeSlider and RangeSlider are not working very nicely with napari, they are usable but not very
+          # nice. maybe we should use a custom widget for this.
           crop_z={'label': 'Z slices',
-                  'tooltip': 'Numer of z slices to take next to the current selection.'},
+                  'tooltip': 'Numer of z slices to take next to the current selection.',
+                  'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 1,
+                  'readout': False,
+                  'tracking': False},
           )
-def widget_cropping(image: Layer,
+def widget_cropping(viewer: Viewer,
+                    image: Layer,
                     crop_roi: Union[Shapes, None] = None,
-                    crop_z: int = 1,
+                    crop_z: tuple[int, int] = (0, 100),
                     ) -> Future[LayerDataTuple]:
-    assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
-    assert crop_roi.shape_type[0] == 'rectangle', "Only a rectangle shape should be used for cropping"
+    if crop_roi is not None:
+        assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
+        assert crop_roi.shape_type[0] == 'rectangle', "Only a rectangle shape should be used for cropping"
 
     if isinstance(image, Image):
         layer_type = 'image'
@@ -172,7 +219,10 @@ def widget_cropping(image: Layer,
                                     scale=image.scale,
                                     metadata=image.metadata)
 
-    rectangle = crop_roi.data[0].astype('int64')
+    if crop_roi is not None:
+        rectangle = crop_roi.data[0].astype('int64')
+    else:
+        rectangle = None
 
     crop_slices = _compute_slices(rectangle, crop_z, image.data.shape)
 
@@ -185,7 +235,22 @@ def widget_cropping(image: Layer,
                                    layer_type=layer_type,
                                    step_name='Cropping',
                                    skip_dag=True,
+                                   viewer=viewer,
+                                   widgets_to_update=[widget_unet_predictions.image,
+                                                      widget_agglomeration.image,
+                                                      widget_lifted_multicut.image,
+                                                      widget_simple_dt_ws.image,
+                                                      widget_rescaling.image,
+                                                      widget_gaussian_smoothing.image]
                                    )
+
+
+@widget_cropping.image.changed.connect
+def _on_image_changed(image: Layer):
+    widget_cropping.crop_z.max = int(image.data.shape[0])
+    widget_cropping.crop_z.step = 1
+    if widget_cropping.crop_z.value[1] > image.data.shape[0]:
+        widget_cropping.crop_z.value[1] = int(image.data.shape[0])
 
 
 def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
@@ -210,7 +275,8 @@ def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
           weights={'label': 'Mean weights',
                    'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
           )
-def widget_add_layers(image1: Image,
+def widget_add_layers(viewer: Viewer,
+                      image1: Image,
                       image2: Image,
                       operation: str = 'Maximum',
                       weights: float = 0.5,
@@ -232,6 +298,11 @@ def widget_add_layers(image1: Image,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    step_name='Merge Layers',
+                                   viewer=viewer,
+                                   widgets_to_update=[widget_unet_predictions.image,
+                                                      widget_agglomeration.image,
+                                                      widget_lifted_multicut.image,
+                                                      widget_simple_dt_ws.image]
                                    )
 
 

@@ -4,11 +4,13 @@ import shutil
 from pathlib import Path
 from shutil import copy2
 from typing import Tuple, Optional
+from warnings import warn
 
 import requests
 import yaml
 
 from plantseg import model_zoo_path, custom_zoo, home_path, PLANTSEG_MODELS_DIR, plantseg_global_path
+from plantseg.__version__ import __version__ as current_version
 from plantseg.pipeline import gui_logger
 
 CONFIG_TRAIN_YAML = "config_train.yml"
@@ -276,3 +278,36 @@ def clean_models():
 
         else:
             print("Invalid input, please type 'y' or 'n'.")
+
+
+def check_version(plantseg_url=' https://api.github.com/repos/hci-unihd/plant-seg/releases/latest'):
+    try:
+        response = requests.get(plantseg_url).json()
+        latest_version = response['tag_name']
+
+    except requests.exceptions.ConnectionError:
+        warn("Connection error, could not check for new version.")
+        return None
+    except requests.exceptions.Timeout:
+        warn("Connection timeout, could not check for new version.")
+        return None
+    except requests.exceptions.TooManyRedirects:
+        warn("Too many redirects, could not check for new version.")
+        return None
+    except Exception as e:
+        warn(f"Unknown error, could not check for new version. Error: {e}")
+        return None
+
+    latest_version_numeric = [int(x) for x in latest_version.split(".")]
+    plantseg_version_numeric = [int(x) for x in current_version.split(".")]
+
+    if len(latest_version_numeric) != len(plantseg_version_numeric):
+        warn(f"Could not check for new version, version number not in the correct format.\n"
+             f"Current version: {current_version}, latest version: {latest_version}")
+        return None
+
+    for l_v, p_v in zip(latest_version_numeric, plantseg_version_numeric):
+        if l_v > p_v:
+            print(f"New version of PlantSeg available: {latest_version}.\n"
+                  f"Please update your version to the latest one!")
+            return None

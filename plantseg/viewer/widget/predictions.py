@@ -5,6 +5,7 @@ from typing import Tuple, List
 
 import torch.cuda
 from magicgui import magicgui
+from napari import Viewer
 from napari.layers import Image
 from napari.qt.threading import thread_worker
 from napari.types import LayerDataTuple
@@ -14,6 +15,8 @@ from plantseg.predictions.functional import unet_predictions
 from plantseg.utils import list_all_modality, list_all_dimensionality, list_all_output_type
 from plantseg.utils import list_models, add_custom_model, get_train_config, get_model_zoo
 from plantseg.viewer.logging import napari_formatted_logging
+from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
+from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
@@ -61,7 +64,8 @@ def unet_predictions_wrapper(raw, device, **kwargs):
           device={'label': 'Device',
                   'choices': ALL_DEVICES}
           )
-def widget_unet_predictions(image: Image,
+def widget_unet_predictions(viewer: Viewer,
+                            image: Image,
                             model_name: str,
                             dimensionality: str = 'All',
                             modality: str = 'All',
@@ -89,6 +93,11 @@ def widget_unet_predictions(image: Image,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
                                    step_name='UNet Predictions',
+                                   viewer=viewer,
+                                   widgets_to_update=[widget_agglomeration.image,
+                                                      widget_lifted_multicut.image,
+                                                      widget_simple_dt_ws.image,
+                                                      widget_split_and_merge_from_scribbles.image]
                                    )
 
 

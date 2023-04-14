@@ -6,6 +6,8 @@ from napari.qt.threading import thread_worker
 
 from plantseg.viewer.dag_handler import dag_manager
 from plantseg.viewer.logging import napari_formatted_logging
+import timeit
+from napari import Viewer
 
 
 def identity(*args, **kwargs):
@@ -21,6 +23,15 @@ def identity(*args, **kwargs):
     raise ValueError('identity should have at least one positional argument')
 
 
+def setup_layers_suggestions(viewer: Viewer, out_name: str, widgets: list):
+    if out_name not in viewer.layers:
+        return None
+
+    out_layer = viewer.layers[out_name]
+    for widget in widgets:
+        widget.value = out_layer
+
+
 def start_threading_process(func: Callable,
                             runtime_kwargs: dict,
                             statics_kwargs: dict,
@@ -29,13 +40,17 @@ def start_threading_process(func: Callable,
                             layer_kwarg: dict,
                             layer_type: str = 'image',
                             step_name: str = '',
-                            skip_dag: bool = False) -> Future:
+                            skip_dag: bool = False,
+                            viewer: Viewer = None,
+                            widgets_to_update: list = None) -> Future:
     runtime_kwargs.update(statics_kwargs)
     thread_func = thread_worker(partial(func, **runtime_kwargs))
     future = Future()
+    timer_start = timeit.default_timer()
 
     def on_done(result):
-        napari_formatted_logging(f'Widget {step_name} computation complete', thread=step_name)
+        timer = timeit.default_timer() - timer_start
+        napari_formatted_logging(f'Widget {step_name} computation complete in {timer:.2f}s', thread=step_name)
         _func = func if not skip_dag else identity
         dag_manager.add_step(_func, input_keys=input_keys,
                              output_key=out_name,
@@ -43,6 +58,9 @@ def start_threading_process(func: Callable,
                              step_name=step_name)
         result = result, layer_kwarg, layer_type
         future.set_result(result)
+
+        if viewer is not None and widgets_to_update is not None:
+            setup_layers_suggestions(viewer, out_name, widgets_to_update)
 
     worker = thread_func()
     worker.returned.connect(on_done)
