@@ -114,24 +114,28 @@ def create_zarr(path: str,
         f[key].attrs['element_size_um'] = voxel_size
 
 
-def list_keys(path: str) -> list[str]:
+def list_keys(path):
     """
-    returns all datasets in a zarr file
+    List all keys in a zarr file
+    Args:
+        path: path to the zarr file
+
+    Returns:
+        list of keys
     """
+    def recursive_find_keys(f, base='/'):
+        _list_keys = []
+        for key, dataset in f.items():
+            if isinstance(dataset, zarr.Group):
+                new_base = f"{base}{key}/"
+                _list_keys += recursive_find_keys(dataset, new_base)
 
-    def all_keys(f):
-        keys_ = (f.name,)  # named as such to not to overwrite keyword
+            elif isinstance(dataset, zarr.Array):
+                _list_keys.append(f'{base}{key}')
+        return _list_keys
 
-        if isinstance(f, zarr.Group):
-            for key, value in f.items():
-                if isinstance(value, zarr.Group):
-                    keys_ = keys_ + all_keys(value)
-                else:
-                    keys_ = keys_ + (value.name,)
-        return keys_
-
-    f = zarr.open(path, 'r')
-    return all_keys(f)
+    with zarr.open(path, 'r') as f:
+        return recursive_find_keys(f)
 
 
 def del_zarr_key(path: str, key: str, mode: str = 'a') -> None:

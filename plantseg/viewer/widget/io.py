@@ -9,9 +9,11 @@ from napari.types import LayerDataTuple
 
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape, normalize_01
 from plantseg.dataprocessing.functional.dataprocessing import image_rescale, compute_scaling_factor
-from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, PIL_EXTENSIONS, allowed_data_format
-from plantseg.io import create_h5, create_tiff
-from plantseg.io import load_tiff, load_h5, load_pill
+from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, PIL_EXTENSIONS, allowed_data_format, ZARR_EXTENSIONS
+from plantseg.io import create_h5, create_tiff, create_zarr
+from plantseg.io import load_tiff, load_h5, load_pill, load_zarr
+from plantseg.io.h5 import list_keys as list_h5_keys
+from plantseg.io.zarr import list_keys as list_zarr_keys
 from plantseg.viewer.dag_handler import dag_manager
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.utils import layer_properties
@@ -63,6 +65,9 @@ def napari_image_load(path, key, channel, advanced_load=False, layer_type='image
     elif ext in PIL_EXTENSIONS:
         data, (voxel_size, _, _, voxel_size_unit) = load_pill(path)
 
+    elif ext in ZARR_EXTENSIONS:
+        data, (voxel_size, _, _, voxel_size_unit) = load_zarr(path, key=key)
+
     else:
         raise NotImplementedError()
 
@@ -86,8 +91,13 @@ def unpack_load(loaded_dict, key):
 
 @magicgui(
     call_button='Open file',
-    path={'label': 'Pick a file (tiff or h5, png, jpg)',
-          'tooltip': 'Select a file to be imported, the file can be a tiff or h5.'},
+    path={'label': 'Pick a file (tiff, h5, png, jpg)',
+          'mode': 'r',
+          'tooltip': 'Select a file to be imported, the file can be a tiff, h5, png, jpg.'},
+    path_mode={'label': 'File type',
+               'choices': ['tiff, h5', 'zarr'],
+               'widget_type': 'RadioButtons',
+               'orientation': 'horizontal'},
     new_layer_name={'label': 'Layer Name',
                     'tooltip': 'Define the name of the output layer, default is either image or label.'},
     layer_type={
@@ -99,15 +109,17 @@ def unpack_load(loaded_dict, key):
     advanced_load={'label': 'Advanced load a specific h5-key / tiff-channel',
                    'tooltip': 'If specified allows to select specific h5 dataset in a file,'
                               ' or specific channels in a tiff.'},
-    key={'label': 'Key/layout (h5 only)',
+    key={'label': 'Key (h5/zarr only)',
+         'choices': [''],
          'tooltip': 'Key to be loaded from h5'},
     channel={'label': 'Channel/layout (tiff only)',
              'tooltip': 'Channel to select and channels layout'})
 def open_file(path: Path = Path.home(),
+              path_mode: str = 'tiff, h5',
               layer_type: str = 'image',
               new_layer_name: str = '',
               advanced_load: bool = False,
-              key: str = 'raw',
+              key: str = '',
               channel: Tuple[int, str] = (0, 'xcxx'),
               ) -> LayerDataTuple:
     """Open a file and return a napari layer."""
@@ -156,10 +168,59 @@ def open_file(path: Path = Path.home(),
     return data, layer_kwargs, layer_type
 
 
+open_file.key.hide()
+open_file.channel.hide()
+
+
+@open_file.path_mode.changed.connect
+def _on_path_mode_changed(path_mode: str):
+    if path_mode == 'tiff, h5':
+        open_file.path.mode = 'r'
+        open_file.path.label = 'Pick a file (.tiff, .h5, .png, .jpg)'
+    elif path_mode == 'zarr':
+        open_file.path.mode = 'd'
+        open_file.path.label = 'Pick a folder (.zarr)'
+
+
 @open_file.path.changed.connect
 def _on_path_changed(path: Path):
     open_file.new_layer_name.value = path.stem
+    ext = path.suffix
 
+    if ext in H5_EXTENSIONS:
+        keys = list_h5_keys(path)
+        open_file.key.choices = keys
+        open_file.key.value = keys[0]
+
+    elif ext in ZARR_EXTENSIONS:
+        keys = list_zarr_keys(path)
+        open_file.key.choices = keys
+        open_file.key.value = keys[0]
+
+
+@open_file.advanced_load.changed.connect
+def _on_advanced_load_changed(advanced_load: bool):
+    if advanced_load:
+        open_file.key.show()
+        open_file.channel.show()
+
+        ext = open_file.path.value.suffix
+        if ext in H5_EXTENSIONS:
+            keys = list_h5_keys(open_file.path.value)
+            open_file.key.choices = keys
+            open_file.key.value = keys[0]
+        elif ext in ZARR_EXTENSIONS:
+            keys = list_zarr_keys(open_file.path.value)
+            open_file.key.choices = keys
+            open_file.key.value = keys[0]
+    else:
+        open_file.key.hide()
+        open_file.channel.hide()
+
+
+@open_file.call_button.clicked.connect
+def _on_call_button_clicked():
+    open_file.advanced_load.value = False
 
 
 def export_stack_as_tiff(data,
@@ -212,6 +273,31 @@ def export_stack_as_h5(data,
     return out_path
 
 
+def export_stack_as_zarr(data,
+                         name,
+                         directory,
+                         voxel_size,
+                         voxel_size_unit,
+                         custom_name,
+                         standard_suffix,
+                         scaling_factor,
+                         order,
+                         stack_type,
+                         dtype):
+    if scaling_factor is not None:
+        data = image_rescale(data, factor=scaling_factor, order=order)
+
+    key = f'export_{standard_suffix}' if custom_name is None else custom_name
+
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    out_path = directory / f'{name}.zarr'
+    data = fix_input_shape(data)
+    data = safe_typecast(data, dtype, stack_type)
+    create_zarr(path=out_path, stack=data[...], key=key, voxel_size=voxel_size)
+    return out_path
+
+
 def _image_typecast(data, dtype):
     data = normalize_01(data)
     if dtype != 'float32':
@@ -250,7 +336,7 @@ def checkout(*args):
                'choices': ['float32', 'uint8', 'uint16'],
                'tooltip': 'Export datatype (uint16 for segmentation) and all others for images.'},
     export_format={'label': 'Export format',
-                   'choices': ['tiff', 'h5'],
+                   'choices': ['tiff', 'h5', 'zarr'],
                    'tooltip': 'Export format, if tiff is selected, each layer will be exported as a separate file. '
                               'If h5 is selected, all layers will be exported in a single file.'},
     directory={'label': 'Directory to export files',
@@ -289,6 +375,8 @@ def export_stacks(images: List[Tuple[Layer, str]],
             export_function = export_stack_as_tiff
         elif export_format == 'h5':
             export_function = export_stack_as_h5
+        elif export_format == 'zarr':
+            export_function = export_stack_as_zarr
         else:
             raise ValueError(f'{export_format} is not a valid export format, please use tiff or h5')
 
@@ -354,3 +442,26 @@ def export_stacks(images: List[Tuple[Layer, str]],
         out_path = directory / f'{workflow_name}.pkl'
         dag_manager.export_dag(out_path, final_export_check)
         napari_formatted_logging(f'Workflow correctly exported', thread='Export stack')
+
+
+export_stacks.directory.hide()
+export_stacks.export_format.hide()
+export_stacks.rescale_to_original_resolution.hide()
+export_stacks.data_type.hide()
+export_stacks.workflow_name.hide()
+
+
+@export_stacks.images.changed.connect
+def _on_images_changed(images_list):
+    if len(images_list) > 0:
+        export_stacks.directory.show()
+        export_stacks.export_format.show()
+        export_stacks.rescale_to_original_resolution.show()
+        export_stacks.data_type.show()
+        export_stacks.workflow_name.show()
+    else:
+        export_stacks.directory.hide()
+        export_stacks.export_format.hide()
+        export_stacks.rescale_to_original_resolution.hide()
+        export_stacks.data_type.hide()
+        export_stacks.workflow_name.hide()
