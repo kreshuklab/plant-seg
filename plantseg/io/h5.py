@@ -118,19 +118,19 @@ def list_keys(path):
     Returns:
         list of keys
     """
-    def recursive_find_keys(f, base='/'):
+    def _recursive_find_keys(f, base='/'):
         _list_keys = []
         for key, dataset in f.items():
             if isinstance(dataset, h5py.Group):
                 new_base = f"{base}{key}/"
-                _list_keys += recursive_find_keys(dataset, new_base)
+                _list_keys += _recursive_find_keys(dataset, new_base)
 
             elif isinstance(dataset, h5py.Dataset):
                 _list_keys.append(f'{base}{key}')
         return _list_keys
 
     with h5py.File(path, 'r') as f:
-        return recursive_find_keys(f)
+        return _recursive_find_keys(f)
 
 
 def del_h5_key(path: str, key: str, mode: str = 'a') -> None:

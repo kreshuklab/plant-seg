@@ -8,6 +8,7 @@ from typing import Optional, Union
 
 import zarr
 import numpy as np
+from pathlib import Path
 
 # allowed zarr keys
 ZARR_EXTENSIONS = [".zarr"]
@@ -123,19 +124,20 @@ def list_keys(path):
     Returns:
         list of keys
     """
-    def recursive_find_keys(f, base='/'):
+    def _recursive_find_keys(f, base: Path = Path('/')):
         _list_keys = []
         for key, dataset in f.items():
             if isinstance(dataset, zarr.Group):
-                new_base = f"{base}{key}/"
-                _list_keys += recursive_find_keys(dataset, new_base)
+                new_base = base / key
+                _list_keys += _recursive_find_keys(dataset, new_base)
 
             elif isinstance(dataset, zarr.Array):
-                _list_keys.append(f'{base}{key}')
+                new_key = str(base / key)
+                _list_keys.append(new_key)
         return _list_keys
 
     with zarr.open(path, 'r') as f:
-        return recursive_find_keys(f)
+        return _recursive_find_keys(f)
 
 
 def del_zarr_key(path: str, key: str, mode: str = 'a') -> None:
