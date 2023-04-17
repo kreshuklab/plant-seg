@@ -13,10 +13,10 @@ from napari.types import LayerDataTuple
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
 from plantseg.utils import list_all_modality, list_all_dimensionality, list_all_output_type
-from plantseg.utils import list_models, add_custom_model, get_train_config, get_model_zoo
+from plantseg.utils import list_models, add_custom_model, get_train_config, get_model_zoo, get_model_description
 from plantseg.viewer.logging import napari_formatted_logging
-from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
+from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
@@ -55,8 +55,9 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                                   ' If unsure, select "All".',
                        'choices': LIST_ALL_OUTPUT_TYPE},
           model_name={'label': 'Select model',
-                      'tooltip': 'Select a pretrained model.',
-                      'choices': list_models()},
+                      'tooltip': f'Select a pretrained model. '
+                                 f'Current model description: {get_model_description(LIST_ALL_MODELS[0])}',
+                      'choices': LIST_ALL_MODELS},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
           single_patch={'label': 'Single Patch',
@@ -66,7 +67,7 @@ def unet_predictions_wrapper(raw, device, **kwargs):
           )
 def widget_unet_predictions(viewer: Viewer,
                             image: Image,
-                            model_name: str,
+                            model_name: str = LIST_ALL_MODELS[0],
                             dimensionality: str = 'All',
                             modality: str = 'All',
                             output_type: str = 'All',
@@ -105,7 +106,6 @@ def _on_any_metadata_changed(dimensionality, modality, output_type):
     dimensionality = [dimensionality] if dimensionality != 'All' else None
     modality = [modality] if modality != 'All' else None
     output_type = [output_type] if output_type != 'All' else None
-
     widget_unet_predictions.model_name.choices = list_models(dimensionality_filter=dimensionality,
                                                              modality_filter=modality,
                                                              output_type_filter=output_type)
@@ -140,6 +140,9 @@ def _on_model_name_changed(model_name: str):
         napari_formatted_logging(f'No recommended patch size for {model_name}',
                                  thread='UNet Predictions',
                                  level='warning')
+
+    description = model_metadata.get('description', 'No description available for this model.')
+    widget_unet_predictions.model_name.tooltip = f'Select a pretrained model. Current model description: {description}'
 
 
 def _compute_multiple_predictions(image, patch_size, device):
@@ -208,7 +211,7 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
           image={'label': 'Image',
                  'tooltip': 'Raw image to be processed with a neural network.'},
           model_name={'label': 'Select model',
-                      'tooltip': 'Select a pretrained model.',
+                      'tooltip': f'Select a pretrained model. {list_models()[0]}',
                       'choices': list_models()},
           num_iterations={'label': 'Num. of iterations',
                           'tooltip': 'Nuber of iterations the model will run.'},

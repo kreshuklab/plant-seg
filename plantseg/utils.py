@@ -73,6 +73,21 @@ def list_models(dimensionality_filter: list[str] = None,
     return models
 
 
+def get_model_description(model_name: str) -> str:
+    """
+    return the description of a model
+    """
+    zoo_config = get_model_zoo()
+    if model_name not in zoo_config:
+        raise ValueError(f'Model {model_name} not found in the model zoo.')
+
+    description = zoo_config[model_name].get('description', None)
+    if description is None or description == '':
+        return 'No description available for this model.'
+
+    return description
+
+
 def _list_all_metadata(metadata_key: str) -> list[str]:
     """
     return a list of all properties in the model zoo
