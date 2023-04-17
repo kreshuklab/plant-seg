@@ -136,8 +136,8 @@ def list_keys(path):
                 _list_keys.append(new_key)
         return _list_keys
 
-    with zarr.open(path, 'r') as f:
-        return _recursive_find_keys(f)
+    with zarr.open(path, 'r') as zarr_f:
+        return _recursive_find_keys(zarr_f)
 
 
 def del_zarr_key(path: str, key: str, mode: str = 'a') -> None:

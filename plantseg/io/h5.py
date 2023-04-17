@@ -129,8 +129,8 @@ def list_keys(path):
                 _list_keys.append(f'{base}{key}')
         return _list_keys
 
-    with h5py.File(path, 'r') as f:
-        return _recursive_find_keys(f)
+    with h5py.File(path, 'r') as h5_f:
+        return _recursive_find_keys(h5_f)
 
 
 def del_h5_key(path: str, key: str, mode: str = 'a') -> None:
