@@ -16,7 +16,7 @@ from plantseg.io.h5 import list_keys as list_h5_keys
 from plantseg.io.zarr import list_keys as list_zarr_keys
 from plantseg.viewer.dag_handler import dag_manager
 from plantseg.viewer.logging import napari_formatted_logging
-from plantseg.viewer.widget.utils import layer_properties
+from plantseg.viewer.widget.utils import layer_properties, return_value_if_widget
 
 
 def _check_layout_string(layout):
@@ -174,6 +174,7 @@ open_file.channel.hide()
 
 @open_file.path_mode.changed.connect
 def _on_path_mode_changed(path_mode: str):
+    path_mode = return_value_if_widget(path_mode)
     if path_mode == 'tiff, h5':
         open_file.path.mode = 'r'
         open_file.path.label = 'Pick a file (.tiff, .h5, .png, .jpg)'
@@ -184,6 +185,7 @@ def _on_path_mode_changed(path_mode: str):
 
 @open_file.path.changed.connect
 def _on_path_changed(path: Path):
+    path = return_value_if_widget(path)
     open_file.new_layer_name.value = path.stem
     ext = path.suffix
 
@@ -200,6 +202,7 @@ def _on_path_changed(path: Path):
 
 @open_file.advanced_load.changed.connect
 def _on_advanced_load_changed(advanced_load: bool):
+    advanced_load = return_value_if_widget(advanced_load)
     if advanced_load:
         open_file.key.show()
         open_file.channel.show()
@@ -452,7 +455,8 @@ export_stacks.workflow_name.hide()
 
 
 @export_stacks.images.changed.connect
-def _on_images_changed(images_list):
+def _on_images_changed(images_list: List[Tuple[Layer, str]]):
+    images_list = return_value_if_widget(images_list)
     if len(images_list) > 0:
         export_stacks.directory.show()
         export_stacks.export_format.show()

@@ -17,6 +17,7 @@ from plantseg.utils import list_models, add_custom_model, get_train_config, get_
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
+from plantseg.viewer.widget.utils import return_value_if_widget
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
@@ -113,24 +114,28 @@ def _on_any_metadata_changed(dimensionality, modality, output_type):
 
 @widget_unet_predictions.dimensionality.changed.connect
 def _on_dimensionality_changed(dimensionality: str):
+    dimensionality = return_value_if_widget(dimensionality)
     _on_any_metadata_changed(dimensionality, widget_unet_predictions.modality.value,
                              widget_unet_predictions.output_type.value)
 
 
 @widget_unet_predictions.modality.changed.connect
 def _on_modality_changed(modality: str):
+    modality = return_value_if_widget(modality)
     _on_any_metadata_changed(widget_unet_predictions.dimensionality.value, modality,
                              widget_unet_predictions.output_type.value)
 
 
 @widget_unet_predictions.output_type.changed.connect
 def _on_output_type_changed(output_type: str):
+    output_type = return_value_if_widget(output_type)
     _on_any_metadata_changed(widget_unet_predictions.dimensionality.value,
                              widget_unet_predictions.modality.value, output_type)
 
 
 @widget_unet_predictions.model_name.changed.connect
 def _on_model_name_changed(model_name: str):
+    model_name = return_value_if_widget(model_name)
     model_zoo = get_model_zoo()
     model_metadata = model_zoo[model_name]
     if 'recommended_patch_size' in model_metadata:
@@ -262,6 +267,7 @@ def widget_iterative_unet_predictions(image: Image,
 
 @widget_iterative_unet_predictions.model_name.changed.connect
 def _on_model_name_changed_iterative(model_name: str):
+    model_name = return_value_if_widget(model_name)
     train_config = get_train_config(model_name)
     patch_size = train_config['loaders']['train']['slice_builder']['patch_shape']
     widget_iterative_unet_predictions.patch_size.value = tuple(patch_size)
