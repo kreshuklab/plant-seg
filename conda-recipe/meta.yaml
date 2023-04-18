@@ -21,6 +21,7 @@ requirements:
   run:
     - python
     - h5py
+    - zarr
     - requests
     - pyyaml
     - scikit-image

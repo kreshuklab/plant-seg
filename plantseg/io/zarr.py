@@ -8,6 +8,7 @@ from typing import Optional, Union
 
 import zarr
 import numpy as np
+from pathlib import Path
 
 # allowed zarr keys
 ZARR_EXTENSIONS = [".zarr"]
@@ -114,24 +115,29 @@ def create_zarr(path: str,
         f[key].attrs['element_size_um'] = voxel_size
 
 
-def list_keys(path: str) -> list[str]:
+def list_keys(path):
     """
-    returns all datasets in a zarr file
+    List all keys in a zarr file
+    Args:
+        path: path to the zarr file
+
+    Returns:
+        list of keys
     """
+    def _recursive_find_keys(f, base: Path = Path('/')):
+        _list_keys = []
+        for key, dataset in f.items():
+            if isinstance(dataset, zarr.Group):
+                new_base = base / key
+                _list_keys += _recursive_find_keys(dataset, new_base)
 
-    def all_keys(f):
-        keys_ = (f.name,)  # named as such to not to overwrite keyword
+            elif isinstance(dataset, zarr.Array):
+                new_key = str(base / key)
+                _list_keys.append(new_key)
+        return _list_keys
 
-        if isinstance(f, zarr.Group):
-            for key, value in f.items():
-                if isinstance(value, zarr.Group):
-                    keys_ = keys_ + all_keys(value)
-                else:
-                    keys_ = keys_ + (value.name,)
-        return keys_
-
-    f = zarr.open(path, 'r')
-    return all_keys(f)
+    with zarr.open(path, 'r') as zarr_f:
+        return _recursive_find_keys(zarr_f)
 
 
 def del_zarr_key(path: str, key: str, mode: str = 'a') -> None:

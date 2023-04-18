@@ -203,6 +203,9 @@ def widget_clean_scribble(viewer: napari.Viewer):
     segmentation_handler.update_scribble_to_viewer(viewer)
 
 
+widget_clean_scribble.hide()
+
+
 def widget_add_label_to_corrected(viewer: napari.Viewer, position: tuple[int, ...]):
     if segmentation_handler.corrected_cells_layer_name not in viewer.layers:
         return None
@@ -235,7 +238,7 @@ def initialize_proofreading(viewer: napari.Viewer, segmentation_layer: Labels) -
     return True
 
 
-@magicgui(call_button=f'Initialize/Split/Merge from scribbles - < {DEFAULT_KEY_BINDING_PROOFREAD} >',
+@magicgui(call_button=f'Initialize Proofreading',
           segmentation={'label': 'Segmentation'},
           image={'label': 'Pmap/Image'})
 def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
@@ -256,6 +259,9 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
 
     if initialize_proofreading(viewer, segmentation):
         napari_formatted_logging('Proofreading initialized', thread='Proofreading tool')
+        widget_clean_scribble.show()
+        widget_filter_segmentation.show()
+        widget_split_and_merge_from_scribbles.call_button.text = f'Split / Merge - < {DEFAULT_KEY_BINDING_PROOFREAD} >'
         return None
 
     segmentation_handler.update_scribbles_from_viewer(viewer)
@@ -285,19 +291,18 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
 
 
 @magicgui(call_button=f'Extract correct labels')
-def widget_filter_segmentation() -> Union[Future[LayerDataTuple], None]:
-    print(segmentation_handler.status)
+def widget_filter_segmentation() -> Future[LayerDataTuple]:
     if not segmentation_handler.status:
         napari_formatted_logging('Proofreading widget not initialized. Run the proofreading widget tool once first',
-                                 thread='Export correct labels')
-        return None
+                                 thread='Export correct labels', level='error')
+        raise ValueError('Proofreading widget not initialized. Run the proofreading widget tool once first')
 
     future = Future()
 
     @thread_worker
     def func():
         if segmentation_handler.is_locked():
-            return None
+            raise ValueError('Segmentation is locked.')
 
         segmentation_handler.lock()
         filtered_seg = segmentation_handler.segmentation.copy()
@@ -311,12 +316,15 @@ def widget_filter_segmentation() -> Union[Future[LayerDataTuple], None]:
         return filtered_seg, layers_kwargs, 'labels'
 
     def on_done(result):
-        return future.set_result(result)
+        future.set_result(result)
 
     worker = func()
     worker.returned.connect(on_done)
     worker.start()
     return future
+
+
+widget_filter_segmentation.hide()
 
 
 def setup_proofreading_keybindings(viewer):

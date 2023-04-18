@@ -12,10 +12,14 @@ loggers = {}
 SUPPORTED_TYPES = ["labels", "data_float32", "data_uint8"]
 
 
+def check_if_files_is_zarr(path):
+    return path.endswith(".zarr")
+
+
 def load_paths(base_path):
     assert os.path.exists(base_path), f'File not found: {base_path}'
 
-    if os.path.isdir(base_path):
+    if os.path.isdir(base_path) and not check_if_files_is_zarr(base_path):
         path = os.path.join(base_path, "*")
         paths = glob.glob(path)
         only_file = []
