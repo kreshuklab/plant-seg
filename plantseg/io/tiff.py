@@ -157,7 +157,7 @@ def create_tiff(path: str, stack: np.array, voxel_size: list[float, float, float
     """
     # taken from: https://pypi.org/project/tifffile docs
     z, y, x = stack.shape
-    stack.shape = 1, z, 1, y, x, 1  # dimensions in TZCYXS order
+    stack = stack.reshape(1, z, 1, y, x, 1) # dimensions in TZCYXS order
     spacing, y, x = voxel_size
     resolution = (1. / x, 1. / y)
     # Save output results as tiff
