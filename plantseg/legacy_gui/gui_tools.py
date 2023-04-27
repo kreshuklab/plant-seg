@@ -7,7 +7,7 @@ import yaml
 
 from plantseg import custom_zoo, home_path, PLANTSEG_MODELS_DIR, model_zoo_path
 from plantseg.__version__ import __version__
-from plantseg.io import read_tiff_voxel_size, read_h5_voxel_size, TIFF_EXTENSIONS, H5_EXTENSIONS
+from plantseg.io import read_tiff_voxel_size, TIFF_EXTENSIONS
 from plantseg.legacy_gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
 from plantseg.pipeline import gui_logger
 from plantseg.utils import add_custom_model, load_config
@@ -481,7 +481,7 @@ class RescaleEntry:
         """ This method open a popup windows that automatically set the scaling
          factor from the resolution given by the user"""
         global current_model
-        
+
         model_config = load_config(model_zoo_path)
 
         net_resolution = model_config[current_model]["resolution"]
@@ -726,9 +726,8 @@ class AutoResPopup:
         file_dialog.browse_for_file()
         path = file_dialog.config["path"]
         _, ext = os.path.splitext(path)
-        if ext in H5_EXTENSIONS:
-            file_resolution = read_h5_voxel_size(file_dialog.config["path"])
-        elif ext in TIFF_EXTENSIONS:
+
+        if ext in TIFF_EXTENSIONS:
             file_resolution, _ = read_tiff_voxel_size(file_dialog.config["path"])
         else:
             raise NotImplementedError
@@ -853,7 +852,8 @@ class LoadModelPopup:
         description = str(self.simple_entry2.tk_value.get())
 
         success = add_custom_model(new_model_name=model_name, location=path, resolution=resolution,
-                                   description=description)
+                                   description=description, dimensionality='unknown',
+                                   modality='unknown', output_type='unknown')
         if not success[0]:
             gui_logger.error(success[1])
             self.popup.destroy()

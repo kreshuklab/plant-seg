@@ -1,13 +1,14 @@
+import timeit
 from concurrent.futures import Future
 from functools import partial
 from typing import Callable, Tuple
 
+from magicgui.widgets import Widget
+from napari import Viewer
 from napari.qt.threading import thread_worker
 
 from plantseg.viewer.dag_handler import dag_manager
 from plantseg.viewer.logging import napari_formatted_logging
-import timeit
-from napari import Viewer
 
 
 def identity(*args, **kwargs):
@@ -101,3 +102,9 @@ def create_layer_name(base, new_suffix):
 
     new_suffix, version = _find_version(old_suffix, new_suffix)
     return f'{base_without_suffix}_{new_suffix}{version}'
+
+
+def return_value_if_widget(x):
+    if isinstance(x, Widget):
+        return x.value
+    return x

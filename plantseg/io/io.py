@@ -5,8 +5,9 @@ from typing import Union
 from plantseg.io.h5 import load_h5, H5_EXTENSIONS
 from plantseg.io.tiff import load_tiff, TIFF_EXTENSIONS
 from plantseg.io.pil import load_pill, PIL_EXTENSIONS
+from plantseg.io.zarr import load_zarr, ZARR_EXTENSIONS
 
-allowed_data_format = TIFF_EXTENSIONS + H5_EXTENSIONS + PIL_EXTENSIONS
+allowed_data_format = TIFF_EXTENSIONS + H5_EXTENSIONS + PIL_EXTENSIONS + ZARR_EXTENSIONS
 
 
 def smart_load(path, key=None, info_only=False, default=load_tiff) -> Union[tuple, tuple[np.array, tuple]]:
@@ -31,6 +32,9 @@ def smart_load(path, key=None, info_only=False, default=load_tiff) -> Union[tupl
 
     elif ext in PIL_EXTENSIONS:
         return load_pill(path, info_only=info_only)
+
+    elif ext in ZARR_EXTENSIONS:
+        return load_zarr(path, key, info_only=info_only)
 
     else:
         print(f"No default found for {ext}, reverting to default loader")

@@ -4,8 +4,9 @@ channels:
   - pytorch
   - conda-forge
 dependencies:
-  - python =3.9
+  - python
   - h5py
+  - zarr
   - requests
   - pyyaml
   - scikit-image
@@ -13,3 +14,5 @@ dependencies:
   - vigra
   - pytorch
   - python-elf
+  - napari
+  - python-graphviz

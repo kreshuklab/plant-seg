@@ -109,12 +109,28 @@ def create_h5(path: str,
         f[key].attrs['element_size_um'] = voxel_size
 
 
-def list_keys(path: str) -> list[str]:
+def list_keys(path):
     """
-    returns all datasets in a h5 file
+    List all keys in a h5 file
+    Args:
+        path: path to the h5 file
+
+    Returns:
+        list of keys
     """
-    with h5py.File(path, 'r') as f:
-        return [key for key in f.keys() if isinstance(f[key], h5py.Dataset)]
+    def _recursive_find_keys(f, base='/'):
+        _list_keys = []
+        for key, dataset in f.items():
+            if isinstance(dataset, h5py.Group):
+                new_base = f"{base}{key}/"
+                _list_keys += _recursive_find_keys(dataset, new_base)
+
+            elif isinstance(dataset, h5py.Dataset):
+                _list_keys.append(f'{base}{key}')
+        return _list_keys
+
+    with h5py.File(path, 'r') as h5_f:
+        return _recursive_find_keys(h5_f)
 
 
 def del_h5_key(path: str, key: str, mode: str = 'a') -> None:

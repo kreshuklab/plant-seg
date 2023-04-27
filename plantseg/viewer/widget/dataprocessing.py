@@ -15,6 +15,7 @@ from plantseg.dataprocessing.functional.labelprocessing import set_background_to
 from plantseg.utils import list_models, get_model_resolution
 from plantseg.viewer.widget.predictions import widget_unet_predictions
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
+from plantseg.viewer.widget.utils import return_value_if_widget
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 
 
@@ -136,17 +137,20 @@ def widget_rescaling(viewer: Viewer,
 
 @widget_rescaling.image.changed.connect
 def _on_image_changed(image: Layer):
+    image = return_value_if_widget(image)
     widget_rescaling.out_voxel_size.value = image.scale
 
 
 @widget_rescaling.out_voxel_size.changed.connect
 def _on_voxel_size_changed(voxel_size: Tuple[float, float, float]):
+    voxel_size = return_value_if_widget(voxel_size)
     rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, voxel_size)
     widget_rescaling.rescaling_factor.value = rescaling_factor
 
 
 @widget_rescaling.reference_layer.changed.connect
 def _on_reference_layer_changed(reference_layer: Layer):
+    reference_layer = return_value_if_widget(reference_layer)
     rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, reference_layer.scale)
     widget_rescaling.rescaling_factor.value = rescaling_factor
     widget_rescaling.out_voxel_size.value = reference_layer.scale
@@ -154,6 +158,7 @@ def _on_reference_layer_changed(reference_layer: Layer):
 
 @widget_rescaling.reference_model.changed.connect
 def _on_reference_model_changed(reference_model: str):
+    reference_model = return_value_if_widget(reference_model)
     out_voxel_size = get_model_resolution(reference_model)
     rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, out_voxel_size)
     widget_rescaling.rescaling_factor.value = rescaling_factor
@@ -247,10 +252,19 @@ def widget_cropping(viewer: Viewer,
 
 @widget_cropping.image.changed.connect
 def _on_image_changed(image: Layer):
-    widget_cropping.crop_z.max = int(image.data.shape[0])
+    image = return_value_if_widget(image)
+    image_shape = image.data.shape
+
+    if image_shape[0] == 1:
+        widget_cropping.crop_z.hide()
+        return None
+
+    widget_cropping.crop_z.show()
+
+    widget_cropping.crop_z.max = int(image_shape[0])
     widget_cropping.crop_z.step = 1
-    if widget_cropping.crop_z.value[1] > image.data.shape[0]:
-        widget_cropping.crop_z.value[1] = int(image.data.shape[0])
+    if widget_cropping.crop_z.value[1] > image_shape[0]:
+        widget_cropping.crop_z.value[1] = int(image_shape[0])
 
 
 def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
@@ -304,6 +318,15 @@ def widget_add_layers(viewer: Viewer,
                                                       widget_lifted_multicut.image,
                                                       widget_simple_dt_ws.image]
                                    )
+
+
+@widget_add_layers.operation.changed.connect
+def _on_operation_changed(operation: str):
+    operation = return_value_if_widget(operation)
+    if operation == 'Mean':
+        widget_add_layers.weights.show()
+    else:
+        widget_add_layers.weights.hide()
 
 
 def _label_processing(segmentation, set_bg_to_0, relabel_segmentation):
