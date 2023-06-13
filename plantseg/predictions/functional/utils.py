@@ -2,7 +2,7 @@ import os
 
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR, home_path
 from plantseg.augment.transforms import get_test_augmentations
-from plantseg.models.model import get_model
+from plantseg.training.model import get_model
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset
 from plantseg.predictions.functional.slice_builder import SliceBuilder

@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from plantseg.models.model import UNet2D
+from plantseg.training.model import UNet2D
 from plantseg.predictions.functional.utils import get_model_config
 
 # test some modes (3D and 2D)

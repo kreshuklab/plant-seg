@@ -6,7 +6,7 @@ import tqdm
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
-from plantseg.models.model import UNet2D
+from plantseg.training.model import UNet2D
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset, default_prediction_collate
 
