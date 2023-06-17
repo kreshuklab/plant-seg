@@ -169,7 +169,8 @@ class ArrayPredictor:
                         offsets = [[-1, 0, 0], [0, -1, 0], [0, 0, -1]]
                     # convert embeddings to affinities
                     prediction = embeddings_to_affinities(prediction, offsets, delta=0.5)
-                    # TODO: invert affinities and get the mean across the affinity channels
+                    # average across channels (i.e. 1-affinities) and invert
+                    prediction = 1 - prediction.mean(dim=1)
                 # unpad the prediction
                 prediction = _unpad(prediction, self.patch_halo)
                 # convert to numpy array
