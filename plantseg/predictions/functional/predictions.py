@@ -47,7 +47,7 @@ def unet_predictions(raw: np.array, model_name: str, patch: Tuple[int, int, int]
     raw = raw.astype('float32')
     stride = get_stride_shape(patch)
     augs = get_test_augmentations(raw)
-    slice_builder = SliceBuilder(raw, label_dataset=None, weight_dataset=None, patch_shape=patch, stride_shape=stride)
+    slice_builder = SliceBuilder(raw, label_dataset=None, patch_shape=patch, stride_shape=stride)
     test_dataset = ArrayDataset(raw, slice_builder, augs, verbose_logging=False)
 
     pmaps = predictor(test_dataset)

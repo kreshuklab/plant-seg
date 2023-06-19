@@ -12,12 +12,14 @@ from plantseg.viewer.widget.predictions import ALL_DEVICES
 from plantseg.viewer.widget.utils import create_layer_name, start_threading_process, return_value_if_widget
 
 
-def unet_training_wrapper(dataset_dir, model_name, patch_size, dimensionality, sparse, device, **kwargs):
+def unet_training_wrapper(dataset_dir, model_name, in_channels, out_channels, patch_size, dimensionality, sparse,
+                          device, **kwargs):
     """
     Wrapper to run unet_training in a thread_worker, this is needed to allow the user to select the device
     in the headless mode.
     """
-    return unet_training(dataset_dir, model_name, patch_size, dimensionality, sparse, device, **kwargs)
+    return unet_training(dataset_dir, model_name, in_channels, out_channels, patch_size, dimensionality, sparse, device,
+                         **kwargs)
 
 
 @magicgui(call_button='Run Training',
@@ -26,10 +28,16 @@ def unet_training_wrapper(dataset_dir, model_name, patch_size, dimensionality, s
                        'tooltip': 'Select a directory containing train and val subfolders'},
           model_name={'label': 'Trained model name',
                       'tooltip': f'Model files will be saved in f{PLANTSEG_MODELS_DIR}/model_name'},
+          in_channels={'label': 'Input channels',
+                       'tooltip': 'Number of input channels', },
+          out_channels={'label': 'Output channels',
+                        'tooltip': 'Number of output channels', },
           dimensionality={'label': 'Dimensionality',
                           'tooltip': 'Dimensionality of the data (2D or 3D). ',
                           'widget_type': 'ComboBox',
                           'choices': list_all_dimensionality()},
+          patch_size={'label': 'Patch size',
+                      'tooltip': 'Patch size use to processed the data.'},
           sparse={'label': 'Sparse',
                   'tooltip': 'If True, SPOCO spare training algorithm will be used',
                   'widget_type': 'CheckBox'},
@@ -38,6 +46,8 @@ def unet_training_wrapper(dataset_dir, model_name, patch_size, dimensionality, s
           )
 def widget_unet_training(dataset_dir: Path = Path.home(),
                          model_name: str = 'my-model',
+                         in_channels: int = 1,
+                         out_channels: int = 1,
                          dimensionality: str = '3D',
                          patch_size: Tuple[int, int, int] = (80, 160, 160),
                          sparse: bool = False,
@@ -48,6 +58,8 @@ def widget_unet_training(dataset_dir: Path = Path.home(),
                                    runtime_kwargs={
                                        'dataset_dir': dataset_dir,
                                        'model_name': model_name,
+                                       'in_channels': in_channels,
+                                       'out_channels': out_channels,
                                        'patch_size': patch_size,
                                        'dimensionality': dimensionality,
                                        'sparse': sparse,
@@ -72,3 +84,12 @@ def _on_dimensionality_changed(dimensionality: str):
         patch_size = (80, 160, 160)
 
     widget_unet_training.patch_size.value = patch_size
+
+
+@widget_unet_training.sparse.changed.connect
+def _on_sparse_change(sparse: bool):
+    sparse = return_value_if_widget(sparse)
+    if sparse:
+        widget_unet_training.out_channels.value = 8
+    else:
+        widget_unet_training.out_channels.value = 1

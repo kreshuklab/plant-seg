@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class SliceBuilder:
     """
     Builds the position of the patches in a given raw/label/weight ndarray based on the patch and stride shape.
@@ -5,12 +8,11 @@ class SliceBuilder:
     Args:
         raw_dataset (ndarray): raw data
         label_dataset (ndarray): ground truth labels
-        weight_dataset (ndarray): weights for the labels
         patch_shape (tuple): the shape of the patch DxHxW
         stride_shape (tuple): the shape of the stride DxHxW
     """
 
-    def __init__(self, raw_dataset, label_dataset, weight_dataset, patch_shape, stride_shape):
+    def __init__(self, raw_dataset, label_dataset, patch_shape, stride_shape):
         patch_shape = tuple(patch_shape)
         stride_shape = tuple(stride_shape)
         self._check_patch_shape(patch_shape)
@@ -22,11 +24,6 @@ class SliceBuilder:
             # take the first element in the label_dataset to build slices
             self._label_slices = self._build_slices(label_dataset, patch_shape, stride_shape)
             assert len(self._raw_slices) == len(self._label_slices)
-        if weight_dataset is None:
-            self._weight_slices = None
-        else:
-            self._weight_slices = self._build_slices(weight_dataset, patch_shape, stride_shape)
-            assert len(self.raw_slices) == len(self._weight_slices)
 
     @property
     def raw_slices(self):
@@ -35,10 +32,6 @@ class SliceBuilder:
     @property
     def label_slices(self):
         return self._label_slices
-
-    @property
-    def weight_slices(self):
-        return self._weight_slices
 
     @staticmethod
     def _build_slices(dataset, patch_shape, stride_shape):
@@ -86,3 +79,34 @@ class SliceBuilder:
     def _check_patch_shape(patch_shape):
         assert len(patch_shape) == 3, 'patch_shape must be a 3D tuple'
         assert patch_shape[1] >= 64 and patch_shape[2] >= 64, 'Height and Width must be greater or equal 64'
+
+
+class FilterSliceBuilder(SliceBuilder):
+    """
+    Filter patches containing less than `threshold` non-zero labels.
+    """
+
+    def __init__(self, raw_dataset, label_dataset, patch_shape, stride_shape, ignore_index=(0,),
+                 threshold=0.1, slack_acceptance=0.01):
+        super().__init__(raw_dataset, label_dataset, patch_shape, stride_shape)
+        if label_dataset is None:
+            return
+
+        rand_state = np.random.RandomState(47)
+
+        def ignore_predicate(raw_label_idx):
+            label_idx = raw_label_idx[1]
+            patch = np.copy(label_dataset[label_idx])
+            for ii in ignore_index:
+                patch[patch == ii] = 0
+            non_ignore_counts = np.count_nonzero(patch != 0)
+            non_ignore_counts = non_ignore_counts / patch.size
+            return non_ignore_counts > threshold or rand_state.rand() < slack_acceptance
+
+        zipped_slices = zip(self.raw_slices, self.label_slices)
+        # ignore slices containing too much ignore_index
+        filtered_slices = list(filter(ignore_predicate, zipped_slices))
+        # unzip and save slices
+        raw_slices, label_slices = zip(*filtered_slices)
+        self._raw_slices = list(raw_slices)
+        self._label_slices = list(label_slices)

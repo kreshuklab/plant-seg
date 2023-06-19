@@ -13,6 +13,7 @@ from plantseg.training.model import UNet2D
 from plantseg.training.utils import RunningAverage
 
 
+# copied from https://github.com/wolny/pytorch-3dunet
 class UNetTrainer:
     """UNet trainer.
 

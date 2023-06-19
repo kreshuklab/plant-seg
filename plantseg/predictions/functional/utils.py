@@ -44,7 +44,7 @@ def get_array_dataset(raw, model_name, patch, stride_ratio, global_normalization
         augs = get_test_augmentations(None)
 
     stride = get_stride_shape(patch, stride_ratio)
-    slice_builder = SliceBuilder(raw, label_dataset=None, weight_dataset=None, patch_shape=patch, stride_shape=stride)
+    slice_builder = SliceBuilder(raw, label_dataset=None, patch_shape=patch, stride_shape=stride)
     return ArrayDataset(raw, slice_builder, augs, verbose_logging=False)
 
 
