@@ -15,6 +15,7 @@ from plantseg.viewer.widget.segmentation import widget_dt_ws, widget_agglomerati
 from plantseg.viewer.widget.segmentation import widget_fix_over_under_segmentation_from_nuclei
 from plantseg.viewer.widget.segmentation import widget_lifted_multicut
 from plantseg.viewer.widget.segmentation import widget_simple_dt_ws
+from plantseg.viewer.widget.training import widget_unet_training
 
 
 def setup_menu(container, path=None):
@@ -59,6 +60,13 @@ def get_gasp_workflow():
                                     widget_agglomeration],
                            labels=False)
     container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/UNet-GASP-Workflow')
+    return container
+
+
+def get_training_workflow():
+    container = MainWindow(widgets=[widget_unet_training],
+                           labels=False)
+    container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/UNet-Training')
     return container
 
 

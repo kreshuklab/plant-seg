@@ -1,8 +1,10 @@
 import os
 import shutil
+from typing import Tuple
 
 import torch
 from torch import nn
+import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from tqdm import tqdm
 
@@ -17,23 +19,20 @@ class UNetTrainer:
     Args:
         model (Unet3D): UNet 3D model to be trained
         optimizer (nn.optim.Optimizer): optimizer used for training
-        lr_scheduler (torch.optim.lr_scheduler._LRScheduler): learning rate scheduler
-            WARN: bear in mind that lr_scheduler.step() is invoked after every validation step
-            (i.e. validate_after_iters) not after every epoch. So e.g. if one uses StepLR with step_size=30
-            the learning rate will be adjusted after every 30 * validate_after_iters iterations.
-        loss_criterion (callable): loss function
+        lr_scheduler (torch.optim.lr_scheduler.LRScheduler): learning rate scheduler
+        loss_criterion (nn.Module): loss function
         loaders (dict): 'train' and 'val' loaders
         checkpoint_dir (string): dir for saving checkpoints and tensorboard logs
         max_num_epochs (int): maximum number of epochs
         max_num_iterations (int): maximum number of iterations
-        validate_after_iters (int): validate after that many iterations
+        device (str): device to use for training
         log_after_iters (int): number of iterations before logging to tensorboard
         pre_trained(str): path to the pre-trained model
     """
 
-    def __init__(self, model, optimizer, lr_scheduler, loss_criterion, loaders, checkpoint_dir,
-                 max_num_epochs, max_num_iterations, validate_after_iters=500, log_after_iters=100,
-                 pre_trained=None):
+    def __init__(self, model: nn.Module, optimizer: optim.Optimizer, lr_scheduler: optim.lr_scheduler.LRScheduler,
+                 loss_criterion: nn.Module, loaders: dict, checkpoint_dir: str, max_num_epochs: int,
+                 max_num_iterations: int, device: str = 'cuda', log_after_iters: int = 100, pre_trained: int = None):
 
         self.model = model
         self.optimizer = optimizer
@@ -43,7 +42,7 @@ class UNetTrainer:
         self.checkpoint_dir = checkpoint_dir
         self.max_num_epochs = max_num_epochs
         self.max_num_iterations = max_num_iterations
-        self.validate_after_iters = validate_after_iters
+        self.device = device
         self.log_after_iters = log_after_iters
         self.best_eval_loss = float('+inf')
 
@@ -57,7 +56,7 @@ class UNetTrainer:
         for epoch in range(self.max_num_epochs):
             print(f'Epoch [{epoch}/{self.max_num_epochs}]')
             # train for one epoch
-            should_terminate = self.train_epoch(epoch)
+            should_terminate = self.train_epoch()
 
             if should_terminate:
                 gui_logger.info('Stopping criterion is satisfied. Finishing training')
@@ -98,10 +97,9 @@ class UNetTrainer:
         # sets the model in training mode
         self.model.train()
 
-        for t in tqdm(self.loaders['train']):
-            input, target, weight = self._split_training_batch(t)
-
-            output, loss = self._forward_pass(input, target, weight)
+        for input, target in tqdm(self.loaders['train']):
+            input, target = input.to(self.device), target.to(self.device)
+            output, loss = self._forward_pass(input, target)
 
             train_losses.update(loss.item(), self._batch_size(input))
 
@@ -142,32 +140,15 @@ class UNetTrainer:
         val_losses = RunningAverage()
 
         with torch.no_grad():
-            for t in tqdm(self.loaders['val']):
-                input, target, weight = self._split_training_batch(t)
+            for input, target in tqdm(self.loaders['val']):
+                input, target = input.to(self.device), target.to(self.device)
 
-                output, loss = self._forward_pass(input, target, weight)
+                output, loss = self._forward_pass(input, target)
                 val_losses.update(loss.item(), self._batch_size(input))
 
             return val_losses.avg
 
-    def _split_training_batch(self, t):
-        def _move_to_gpu(input):
-            if isinstance(input, tuple) or isinstance(input, list):
-                return tuple([_move_to_gpu(x) for x in input])
-            else:
-                if torch.cuda.is_available():
-                    input = input.cuda(non_blocking=True)
-                return input
-
-        t = _move_to_gpu(t)
-        weight = None
-        if len(t) == 2:
-            input, target = t
-        else:
-            input, target, weight = t
-        return input, target, weight
-
-    def _forward_pass(self, input, target):
+    def _forward_pass(self, input: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         if isinstance(self.model, UNet2D):
             # remove the singleton z-dimension from the input
             input = torch.squeeze(input, dim=-3)
