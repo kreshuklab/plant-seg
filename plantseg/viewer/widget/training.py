@@ -59,8 +59,6 @@ def widget_unet_training(viewer: Viewer,
                          device: str = ALL_DEVICES[0]) -> Future[LayerDataTuple]:
     out_name = create_layer_name(model_name, 'training')
     step_kwargs = dict(model_name=model_name, sparse=sparse, dimensionality=dimensionality)
-    layer_kwargs = layer_properties(name=out_name,
-                                    scale=[1, 1, 1])
     return start_threading_process(unet_training_wrapper,
                                    runtime_kwargs={
                                        'dataset_dir': dataset_dir,
@@ -77,7 +75,7 @@ def widget_unet_training(viewer: Viewer,
                                    widgets_to_update=[],
                                    input_keys=(model_name, 'training'),
                                    out_name=out_name,
-                                   layer_kwarg=layer_kwargs,
+                                   layer_kwarg={'name': out_name, 'scale': None},
                                    layer_type='image',
                                    viewer=viewer,
                                    statics_kwargs=step_kwargs
