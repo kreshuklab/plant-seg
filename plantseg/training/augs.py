@@ -344,7 +344,7 @@ class Standardize:
     Apply Z-score normalization to a given input tensor, i.e. re-scaling the values to be 0-mean and 1-std.
     """
 
-    def __init__(self, eps=1e-10, mean=None, std=None, channelwise=False, **kwargs):
+    def __init__(self, mean=None, std=None, channelwise=False, eps=1e-10, **kwargs):
         if mean is not None or std is not None:
             assert mean is not None and std is not None
         self.mean = mean
@@ -533,7 +533,7 @@ class Augmenter:
 
     def raw_transform(self, stats):
         return Compose([
-            Standardize(stats['mean'], stats['std']),
+            Standardize(mean=stats['mean'], std=stats['std']),
             RandomFlip(np.random.RandomState(self.seed)),
             RandomRotate90(np.random.RandomState(self.seed)),
             RandomRotate(np.random.RandomState(self.seed), axes=[[2, 1]], angle_spectrum=45, mode='reflect'),
