@@ -125,11 +125,8 @@ class ArrayPredictor:
         else:
             out_channels = self.out_channels
 
-        if self.is_embedding:
-            # embeddings will be converted to affinities
-            prediction_maps_shape = (out_channels,) + volume_shape
-        else:
-            prediction_maps_shape = (out_channels,) + volume_shape
+        prediction_maps_shape = (out_channels,) + volume_shape
+
         if self.verbose_logging:
             gui_logger.info(f'The shape of the output prediction maps (CDHW): {prediction_maps_shape}')
             gui_logger.info(f'Using patch_halo: {self.patch_halo}')
