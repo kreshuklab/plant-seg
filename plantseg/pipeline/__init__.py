@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 
-from plantseg import plantseg_global_path
+from plantseg import PLANTSEG_GLOBAL_PATH
 
 gui_logger = logging.getLogger("PlantSeg")
 # hardcode the log-level for now
@@ -17,4 +17,4 @@ gui_logger.addHandler(stream_handler)
 
 # Resources directory
 RESOURCES_DIR = "resources"
-raw2seg_config_template = os.path.join(plantseg_global_path, RESOURCES_DIR, "raw2seg_template.yaml")
+raw2seg_config_template = os.path.join(PLANTSEG_GLOBAL_PATH, RESOURCES_DIR, "raw2seg_template.yaml")

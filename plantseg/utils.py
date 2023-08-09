@@ -9,7 +9,7 @@ from warnings import warn
 import requests
 import yaml
 
-from plantseg import model_zoo_path, custom_zoo, home_path, PLANTSEG_MODELS_DIR, plantseg_global_path
+from plantseg import MODEL_ZOO_PATH, USER_MODEL_ZOO_CONFIG, USER_HOME_PATH, PLANTSEG_MODELS_DIR, PLANTSEG_GLOBAL_PATH
 from plantseg.__version__ import __version__ as current_version
 from plantseg.pipeline import gui_logger
 
@@ -39,11 +39,11 @@ def get_model_zoo() -> dict:
         ...
         }
     """
-    zoo_config = os.path.join(model_zoo_path)
+    zoo_config = os.path.join(MODEL_ZOO_PATH)
 
     zoo_config = load_config(zoo_config)
 
-    custom_zoo_config = load_config(custom_zoo)
+    custom_zoo_config = load_config(USER_MODEL_ZOO_CONFIG)
 
     if custom_zoo_config is None:
         custom_zoo_config = {}
@@ -147,7 +147,7 @@ def add_custom_model(new_model_name: str,
     :return:
     """
 
-    dest_dir = os.path.join(home_path, PLANTSEG_MODELS_DIR, new_model_name)
+    dest_dir = os.path.join(USER_HOME_PATH, PLANTSEG_MODELS_DIR, new_model_name)
     os.makedirs(dest_dir, exist_ok=True)
     all_files = glob.glob(os.path.join(location, "*"))
     all_expected_files = ['config_train.yml',
@@ -169,7 +169,7 @@ def add_custom_model(new_model_name: str,
               f'the model can not be loaded.'
         return False, msg
 
-    custom_zoo_dict = load_config(custom_zoo)
+    custom_zoo_dict = load_config(USER_MODEL_ZOO_CONFIG)
     if custom_zoo_dict is None:
         custom_zoo_dict = {}
 
@@ -182,7 +182,7 @@ def add_custom_model(new_model_name: str,
     custom_zoo_dict[new_model_name]["modality"] = modality
     custom_zoo_dict[new_model_name]["output_type"] = output_type
 
-    with open(custom_zoo, 'w') as f:
+    with open(USER_MODEL_ZOO_CONFIG, 'w') as f:
         yaml.dump(custom_zoo_dict, f)
 
     return True, None
@@ -200,7 +200,7 @@ def get_train_config(model_name: str) -> dict:
     """
     check_models(model_name, config_only=True)
     # Load train config and add missing info
-    train_config_path = os.path.join(home_path,
+    train_config_path = os.path.join(USER_HOME_PATH,
                                      PLANTSEG_MODELS_DIR,
                                      model_name,
                                      CONFIG_TRAIN_YAML)
@@ -260,7 +260,7 @@ def check_models(model_name: str, update_files: bool = False, config_only: bool 
             update_files):
 
         # Read config
-        model_file = os.path.join(plantseg_global_path, "resources", "models_zoo.yaml")
+        model_file = os.path.join(PLANTSEG_GLOBAL_PATH, "resources", "models_zoo.yaml")
         config = load_config(model_file)
 
         if model_name in config:
@@ -282,7 +282,7 @@ def clean_models():
                        "make sure to copy all custom models you want to preserve before continuing.\n"
                        "Are you sure you want to continue? (y/n) ")
         if answer == 'y':
-            ps_models_dir = os.path.join(home_path, PLANTSEG_MODELS_DIR)
+            ps_models_dir = os.path.join(USER_HOME_PATH, PLANTSEG_MODELS_DIR)
             shutil.rmtree(ps_models_dir)
             print("All models deleted... PlantSeg will now close")
             return None

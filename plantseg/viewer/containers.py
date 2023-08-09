@@ -15,7 +15,8 @@ from plantseg.viewer.widget.segmentation import widget_dt_ws, widget_agglomerati
 from plantseg.viewer.widget.segmentation import widget_fix_over_under_segmentation_from_nuclei
 from plantseg.viewer.widget.segmentation import widget_lifted_multicut
 from plantseg.viewer.widget.segmentation import widget_simple_dt_ws
-from plantseg.viewer.widget.training import widget_unet_training
+from plantseg.viewer.widget.train_dataset import widget_create_dataset, widget_print_dataset
+from plantseg.viewer.widget.train_dataset import widget_add_stack, widget_delete_dataset
 
 
 def setup_menu(container, path=None):
@@ -63,10 +64,13 @@ def get_gasp_workflow():
     return container
 
 
-def get_training_workflow():
-    container = MainWindow(widgets=[widget_unet_training],
+def get_dataset_workflow():
+    container = MainWindow(widgets=[widget_create_dataset,
+                                    widget_print_dataset,
+                                    widget_add_stack,
+                                    widget_delete_dataset],
                            labels=False)
-    container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/UNet-Training')
+    container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/Dataset-Managment')
     return container
 
 

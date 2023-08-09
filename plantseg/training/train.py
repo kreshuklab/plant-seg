@@ -12,7 +12,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader, ConcatDataset
 import matplotlib.pyplot as plt
 
-from plantseg import PLANTSEG_MODELS_DIR, plantseg_global_path
+from plantseg import PLANTSEG_MODELS_DIR, PLANTSEG_GLOBAL_PATH
 from plantseg.pipeline import gui_logger
 from plantseg.training.augs import Augmenter
 from plantseg.training.h5dataset import HDF5Dataset
@@ -23,7 +23,7 @@ from plantseg.training.trainer import UNetTrainer
 
 def create_model_config(checkpoint_dir, in_channels, out_channels, patch_size, dimensionality, sparse, f_maps):
     os.makedirs(checkpoint_dir, exist_ok=True)
-    train_template_path = os.path.join(plantseg_global_path,
+    train_template_path = os.path.join(PLANTSEG_GLOBAL_PATH,
                                        "resources",
                                        "config_train_template.yaml")
     with open(train_template_path, 'r') as f:
