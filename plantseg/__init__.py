@@ -1,26 +1,34 @@
-import os
 from pathlib import Path
 
 import yaml
 
 # Find the global path of  plantseg
-plantseg_global_path = Path(__file__).parent.absolute()
+PLANTSEG_GLOBAL_PATH = Path(__file__).parent.absolute()
 
 # Create configs directory at startup
-home_path = os.path.expanduser("~")
-PLANTSEG_MODELS_DIR = ".plantseg_models"
+USER_HOME_PATH = Path.home()
 
-configs_path = os.path.join(home_path, PLANTSEG_MODELS_DIR, "configs")
-os.makedirs(configs_path, exist_ok=True)
+PLANTSEG_LOCAL_DIR = USER_HOME_PATH / '.plantseg'
+PLANTSEG_MODELS_DIR = PLANTSEG_LOCAL_DIR / 'models'
 
-# create custom zoo if does not exist
-custom_zoo = os.path.join(home_path, PLANTSEG_MODELS_DIR, 'custom_zoo.yaml')
+CONFIGS_PATH = USER_HOME_PATH / PLANTSEG_MODELS_DIR / 'configs'
+CONFIGS_PATH.mkdir(parents=True, exist_ok=True)
 
-if not os.path.exists(custom_zoo):
-    with open(custom_zoo, 'w') as f:
+# create a user zoo config if does not exist
+USER_MODEL_ZOO_CONFIG = USER_HOME_PATH / PLANTSEG_MODELS_DIR / 'user_model_zoo.yaml'
+
+if not USER_MODEL_ZOO_CONFIG.exists():
+    with open(USER_MODEL_ZOO_CONFIG, 'w') as f:
+        yaml.dump({}, f)
+
+# create a custom datasets config if does not exist
+USER_DATASETS_CONFIG = USER_HOME_PATH / PLANTSEG_MODELS_DIR / 'user_datasets.yaml'
+
+if not USER_DATASETS_CONFIG.exists():
+    with open(USER_DATASETS_CONFIG, 'w') as f:
         yaml.dump({}, f)
 
 # Resources directory
-RESOURCES_DIR = "resources"
-model_zoo_path = os.path.join(plantseg_global_path, RESOURCES_DIR, "models_zoo.yaml")
-standard_config_template = os.path.join(plantseg_global_path, RESOURCES_DIR, "config_gui_template.yaml")
+RESOURCES_DIR = 'resources'
+MODEL_ZOO_PATH = PLANTSEG_GLOBAL_PATH / RESOURCES_DIR / 'models_zoo.yaml'
+STANDARD_CONFIG_TEMPLATE = PLANTSEG_GLOBAL_PATH / RESOURCES_DIR / 'config_gui_template.yaml'
