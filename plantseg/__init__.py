@@ -10,19 +10,20 @@ USER_HOME_PATH = Path.home()
 
 PLANTSEG_LOCAL_DIR = USER_HOME_PATH / '.plantseg'
 PLANTSEG_MODELS_DIR = PLANTSEG_LOCAL_DIR / 'models'
-
-CONFIGS_PATH = USER_HOME_PATH / PLANTSEG_MODELS_DIR / 'configs'
-CONFIGS_PATH.mkdir(parents=True, exist_ok=True)
+PLANTSEG_MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
 # create a user zoo config if does not exist
-USER_MODEL_ZOO_CONFIG = USER_HOME_PATH / PLANTSEG_MODELS_DIR / 'user_model_zoo.yaml'
+USER_MODEL_ZOO_CONFIG = PLANTSEG_MODELS_DIR / 'user_model_zoo.yaml'
 
 if not USER_MODEL_ZOO_CONFIG.exists():
     with open(USER_MODEL_ZOO_CONFIG, 'w') as f:
         yaml.dump({}, f)
 
+CONFIGS_PATH = PLANTSEG_LOCAL_DIR / 'configs'
+CONFIGS_PATH.mkdir(parents=True, exist_ok=True)
+
 # create a custom datasets config if does not exist
-USER_DATASETS_CONFIG = USER_HOME_PATH / PLANTSEG_MODELS_DIR / 'user_datasets.yaml'
+USER_DATASETS_CONFIG = PLANTSEG_LOCAL_DIR / 'user_datasets.yaml'
 
 if not USER_DATASETS_CONFIG.exists():
     with open(USER_DATASETS_CONFIG, 'w') as f:
