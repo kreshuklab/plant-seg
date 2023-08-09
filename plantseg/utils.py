@@ -1,15 +1,14 @@
-import glob
-import os
 import shutil
 from pathlib import Path
 from shutil import copy2
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union
 from warnings import warn
 
 import requests
 import yaml
 
-from plantseg import MODEL_ZOO_PATH, USER_MODEL_ZOO_CONFIG, USER_HOME_PATH, PLANTSEG_MODELS_DIR, PLANTSEG_GLOBAL_PATH
+from plantseg import MODEL_ZOO_PATH, USER_MODEL_ZOO_CONFIG, PLANTSEG_MODELS_DIR, PLANTSEG_LOCAL_DIR
+from plantseg import USER_DATASETS_CONFIG
 from plantseg.__version__ import __version__ as current_version
 from plantseg.pipeline import gui_logger
 
@@ -17,7 +16,7 @@ CONFIG_TRAIN_YAML = "config_train.yml"
 BEST_MODEL_PYTORCH = "best_checkpoint.pytorch"
 
 
-def load_config(config_path: str) -> dict:
+def load_config(config_path: Union[str, Path]) -> dict:
     """
     load a yaml config in a dictionary
     """
@@ -39,9 +38,7 @@ def get_model_zoo() -> dict:
         ...
         }
     """
-    zoo_config = os.path.join(MODEL_ZOO_PATH)
-
-    zoo_config = load_config(zoo_config)
+    zoo_config = load_config(MODEL_ZOO_PATH)
 
     custom_zoo_config = load_config(USER_MODEL_ZOO_CONFIG)
 
@@ -147,40 +144,43 @@ def add_custom_model(new_model_name: str,
     :return:
     """
 
-    dest_dir = os.path.join(USER_HOME_PATH, PLANTSEG_MODELS_DIR, new_model_name)
-    os.makedirs(dest_dir, exist_ok=True)
-    all_files = glob.glob(os.path.join(location, "*"))
-    all_expected_files = ['config_train.yml',
-                          'last_checkpoint.pytorch',
-                          'best_checkpoint.pytorch']
+    # check if all the required files are present
+    location = Path(location)
+    all_files = location.glob('*')
+    all_expected_files = [CONFIG_TRAIN_YAML, BEST_MODEL_PYTORCH]
 
-    recommended_patch_size = [80, 170, 170]
+    to_copy = []
     for file in all_files:
-        if os.path.basename(file) == 'config_train.yaml':
-            config_train = load_config(file)
-            recommended_patch_size = list(config_train['loaders']['train']['slice_builder']['patch_shape'])
+        if file.name in all_expected_files:
+            to_copy.append(file)
 
-        if os.path.basename(file) in all_expected_files:
-            copy2(file, dest_dir)
-            all_expected_files.remove(os.path.basename(file))
-
-    if len(all_expected_files) != 0:
+    if len(to_copy) != len(all_expected_files):
         msg = f'It was not possible to find in the directory specified {all_expected_files}, ' \
               f'the model can not be loaded.'
         return False, msg
 
+    # copy model files to the model zoo
+    dest_dir = PLANTSEG_MODELS_DIR / new_model_name
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    for file in to_copy:
+        copy2(file, dest_dir)
+
+    _config = load_config(location / CONFIG_TRAIN_YAML)
+    recommended_patch_size = list(_config['loaders']['train']['slice_builder']['patch_shape'])
+
+    new_model_dict = {'path': str(location),
+                      'resolution': resolution,
+                      'description': description,
+                      'recommended_patch_size': recommended_patch_size,
+                      'dimensionality': dimensionality,
+                      'modality': modality,
+                      'output_type': output_type}
+
+    # add model to the user model zoo
     custom_zoo_dict = load_config(USER_MODEL_ZOO_CONFIG)
     if custom_zoo_dict is None:
         custom_zoo_dict = {}
-
-    custom_zoo_dict[new_model_name] = {}
-    custom_zoo_dict[new_model_name]["path"] = str(location)
-    custom_zoo_dict[new_model_name]["resolution"] = resolution
-    custom_zoo_dict[new_model_name]["description"] = description
-    custom_zoo_dict[new_model_name]["recommended_patch_size"] = recommended_patch_size
-    custom_zoo_dict[new_model_name]["dimensionality"] = dimensionality
-    custom_zoo_dict[new_model_name]["modality"] = modality
-    custom_zoo_dict[new_model_name]["output_type"] = output_type
+    custom_zoo_dict[new_model_name] = new_model_dict
 
     with open(USER_MODEL_ZOO_CONFIG, 'w') as f:
         yaml.dump(custom_zoo_dict, f)
@@ -200,10 +200,7 @@ def get_train_config(model_name: str) -> dict:
     """
     check_models(model_name, config_only=True)
     # Load train config and add missing info
-    train_config_path = os.path.join(USER_HOME_PATH,
-                                     PLANTSEG_MODELS_DIR,
-                                     model_name,
-                                     CONFIG_TRAIN_YAML)
+    train_config_path = PLANTSEG_MODELS_DIR / model_name / CONFIG_TRAIN_YAML
 
     config_train = load_config(train_config_path)
     return config_train
@@ -229,9 +226,10 @@ def download_model_config(model_url: str, out_dir: str) -> None:
 
 
 def download_files(urls: dict, out_dir: str) -> None:
+    out_dir = Path(out_dir)
     for filename, url in urls.items():
         with requests.get(url, allow_redirects=True) as r:
-            with open(os.path.join(out_dir, filename), 'wb') as f:
+            with open(out_dir / filename, 'wb') as f:
                 f.write(r.content)
 
 
@@ -242,17 +240,19 @@ def check_models(model_name: str, update_files: bool = False, config_only: bool 
     :param update_files: if true force the re-download of the model
     :param config_only: if true only downloads the config file and skips the model file
     """
+    assert isinstance(model_name, str), "model_name must be a string"
 
-    if os.path.isdir(model_name):
-        model_dir = model_name
+    if Path(model_name).is_dir():
+        model_dir = Path(model_name)
+
     else:
-        model_dir = os.path.join(os.path.expanduser("~"), PLANTSEG_MODELS_DIR, model_name)
+        model_dir = PLANTSEG_MODELS_DIR / model_name
         # Check if model directory exist if not create it
-        if ~os.path.exists(model_dir):
-            os.makedirs(model_dir, exist_ok=True)
+        if not model_dir.exists():
+            model_dir.mkdir(parents=True, exist_ok=True)
 
-    model_config_path = os.path.exists(os.path.join(model_dir, CONFIG_TRAIN_YAML))
-    model_best_path = os.path.exists(os.path.join(model_dir, BEST_MODEL_PYTORCH))
+    model_config_path = (model_dir / CONFIG_TRAIN_YAML).exists()
+    model_best_path = (model_dir / BEST_MODEL_PYTORCH).exists()
 
     # Check if files are there, if not download them
     if (not model_config_path or
@@ -260,8 +260,7 @@ def check_models(model_name: str, update_files: bool = False, config_only: bool 
             update_files):
 
         # Read config
-        model_file = os.path.join(PLANTSEG_GLOBAL_PATH, "resources", "models_zoo.yaml")
-        config = load_config(model_file)
+        config = load_config(MODEL_ZOO_PATH)
 
         if model_name in config:
             model_url = config[model_name]["model_url"]
@@ -282,8 +281,7 @@ def clean_models():
                        "make sure to copy all custom models you want to preserve before continuing.\n"
                        "Are you sure you want to continue? (y/n) ")
         if answer == 'y':
-            ps_models_dir = os.path.join(USER_HOME_PATH, PLANTSEG_MODELS_DIR)
-            shutil.rmtree(ps_models_dir)
+            shutil.rmtree(PLANTSEG_LOCAL_DIR)
             print("All models deleted... PlantSeg will now close")
             return None
 
@@ -326,3 +324,44 @@ def check_version(plantseg_url=' https://api.github.com/repos/hci-unihd/plant-se
             print(f"New version of PlantSeg available: {latest_version}.\n"
                   f"Please update your version to the latest one!")
             return None
+
+
+def list_datasets():
+    """
+    List all available datasets created by the user
+    """
+    datasets = load_config(USER_DATASETS_CONFIG)
+    return list(datasets.keys())
+
+
+def get_dataset(key: str):
+    """
+    Get a dataset from the user dataset config file
+    """
+    datasets = load_config(USER_DATASETS_CONFIG)
+    if key not in datasets:
+        raise ValueError(f"Dataset {key} not found. Please check the spelling. Available datasets: {list_datasets()}")
+    return datasets[key]
+
+
+def save_dataset(key: str, dataset: dict):
+    """
+    Save a dataset to the user dataset config file, if the dataset already exists it will be overwritten
+    """
+    datasets = load_config(USER_DATASETS_CONFIG)
+    datasets[key] = dataset
+
+    with open(USER_DATASETS_CONFIG, 'w') as f:
+        yaml.dump(datasets, f)
+
+
+def delete_dataset(key: str):
+    """
+    Delete a dataset from the user dataset config file
+    """
+    datasets = load_config(USER_DATASETS_CONFIG)
+    if key not in datasets:
+        raise ValueError(f"Dataset {key} not found. Please check the spelling. Available datasets: {list_datasets()}")
+    del datasets[key]
+    with open(USER_DATASETS_CONFIG, 'w') as f:
+        yaml.dump(datasets, f)

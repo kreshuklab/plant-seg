@@ -30,6 +30,6 @@ if not USER_DATASETS_CONFIG.exists():
         yaml.dump({}, f)
 
 # Resources directory
-RESOURCES_DIR = 'resources'
-MODEL_ZOO_PATH = PLANTSEG_GLOBAL_PATH / RESOURCES_DIR / 'models_zoo.yaml'
-STANDARD_CONFIG_TEMPLATE = PLANTSEG_GLOBAL_PATH / RESOURCES_DIR / 'config_gui_template.yaml'
+RESOURCES_DIR = PLANTSEG_GLOBAL_PATH / 'resources'
+MODEL_ZOO_PATH = RESOURCES_DIR / 'models_zoo.yaml'
+STANDARD_CONFIG_TEMPLATE = RESOURCES_DIR / 'config_gui_template.yaml'

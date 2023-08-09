@@ -319,3 +319,9 @@ def widget_add_custom_model(new_model_name: str = 'custom_model',
                                  f'{error_msg}',
                                  level='error',
                                  thread='Add Custom Model')
+
+
+@widget_add_custom_model.called.connect
+def _on_add_custom_model_called():
+    widget_unet_predictions.model_name.choices = list_models()
+    widget_iterative_unet_predictions.model_name.choices = list_models()
