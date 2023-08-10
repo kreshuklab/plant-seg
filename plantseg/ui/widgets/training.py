@@ -9,8 +9,8 @@ from napari.types import LayerDataTuple
 from plantseg import PLANTSEG_MODELS_DIR
 from plantseg.training.train import unet_training
 from plantseg.utils import list_all_dimensionality
-from plantseg.viewer.widget.predictions import ALL_DEVICES
-from plantseg.viewer.widget.utils import create_layer_name, start_threading_process, return_value_if_widget, \
+from plantseg.ui.widgets.predictions import ALL_DEVICES
+from plantseg.ui.widgets.utils import create_layer_name, start_threading_process, return_value_if_widget, \
     layer_properties
 
 

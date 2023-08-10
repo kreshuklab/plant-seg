@@ -5,8 +5,8 @@ from napari.layers import Labels, Image
 
 from plantseg import PLANTSEG_MODELS_DIR
 from plantseg.io import create_h5
-from plantseg.utils import list_datasets, save_dataset, get_dataset, delete_dataset
-from plantseg.viewer.logging import napari_formatted_logging
+from plantseg.utils import list_datasets, dump_dataset_dict, get_dataset_dict, delist_dataset
+from plantseg.ui.logging import napari_formatted_logging
 
 empty_dataset = ['none']
 startup_list_datasets = list_datasets() or empty_dataset
@@ -38,7 +38,7 @@ def widget_create_dataset(dataset_name: str = 'my-dataset', dataset_dir: Path = 
                    }
 
     if dataset_name not in list_datasets():
-        save_dataset(dataset_name, new_dataset)
+        dump_dataset_dict(dataset_name, new_dataset)
         return new_dataset
 
     raise ValueError(f'Dataset {dataset_name} already exists.')
@@ -59,7 +59,7 @@ def widget_add_stack(dataset_name: str = startup_list_datasets[0],
                      labels: Labels = None,
                      phase: str = 'train',
                      is_sparse: bool = False):
-    dataset_config = get_dataset(dataset_name)
+    dataset_config = get_dataset_dict(dataset_name)
 
     if image is None or labels is None:
         napari_formatted_logging(message=f'To add a stack to the dataset, please select an image and a labels layer.',
@@ -130,7 +130,7 @@ def widget_add_stack(dataset_name: str = startup_list_datasets[0],
     image_path = str(dataset_dir / f'{stack_name}.h5')
     create_h5(image_path, image_data, key=dataset_config['image_key'])
     create_h5(image_path, labels_data, key=dataset_config['labels_key'])
-    save_dataset(dataset_name, dataset_config)
+    dump_dataset_dict(dataset_name, dataset_config)
     napari_formatted_logging(message=f'Stack {stack_name} added to dataset {dataset_name}.',
                              thread='widget_add_stack',
                              level='info')
@@ -142,7 +142,7 @@ def widget_add_stack(dataset_name: str = startup_list_datasets[0],
                         'tooltip': f'Name of the dataset to be validated'},
           )
 def widget_validata_dataset(dataset_name: str = startup_list_datasets[0]):
-    dataset_config = get_dataset(dataset_name)
+    dataset_config = get_dataset_dict(dataset_name)
 
     # check all stacks are present
     dataset_dir = Path(dataset_config['dataset_dir'])
@@ -171,7 +171,7 @@ def widget_validata_dataset(dataset_name: str = startup_list_datasets[0]):
                         'tooltip': f'Name of the dataset to be deleted'},
           )
 def widget_delete_dataset(dataset_name: str = startup_list_datasets[0]):
-    delete_dataset(dataset_name)
+    delist_dataset(dataset_name)
 
 
 @widget_create_dataset.called.connect

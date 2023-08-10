@@ -7,8 +7,8 @@ import distributed
 from magicgui import magicgui
 from tqdm import tqdm
 
-from plantseg.viewer.dag_handler import DagHandler
-from plantseg.viewer.widget.predictions import ALL_DEVICES, ALL_CUDA_DEVICES
+from plantseg.ui.dag_handler import DagHandler
+from plantseg.ui.widgets.predictions import ALL_DEVICES, ALL_CUDA_DEVICES
 
 all_gpus_str = f'all gpus: {len(ALL_CUDA_DEVICES)}'
 ALL_GPUS = [all_gpus_str] if len(ALL_CUDA_DEVICES) > 0 else []

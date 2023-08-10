@@ -420,7 +420,7 @@ class PlantSegApp:
         webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Classic-Data-Processing")
 
     def size_up(self):
-        """ adjust font size in the main widget"""
+        """ adjust font size in the main widgets"""
         self.font_size += 2
         self.font_size = min(100, self.font_size)
         self.update_font(self.font_size)
@@ -429,7 +429,7 @@ class PlantSegApp:
         self.build_all()
 
     def size_down(self):
-        """ adjust font size in the main widget"""
+        """ adjust font size in the main widgets"""
         self.font_size -= 2
         self.font_size = max(0, self.font_size)
         self.update_font(self.font_size)

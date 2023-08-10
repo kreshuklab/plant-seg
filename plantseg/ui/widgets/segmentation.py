@@ -11,15 +11,15 @@ from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_
 from plantseg.dataprocessing.functional.dataprocessing import normalize_01
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed, mutex_ws
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
-from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
-from plantseg.viewer.logging import napari_formatted_logging
-from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
+from plantseg.ui.widgets.proofreading.proofreading import widget_split_and_merge_from_scribbles
+from plantseg.ui.logging import napari_formatted_logging
+from plantseg.ui.widgets.utils import start_threading_process, create_layer_name, layer_properties
 
 
 def _pmap_warn(thread: str):
     napari_formatted_logging('Pmap/Image layer appears to be a raw image and not a pmap. For the best segmentation '
                              'results, try to use a boundaries probability layer '
-                             '(e.g. from the Run Prediction widget)',
+                             '(e.g. from the Run Prediction widgets)',
                              thread=thread, level='warning')
 
 

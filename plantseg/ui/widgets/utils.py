@@ -7,8 +7,8 @@ from magicgui.widgets import Widget
 from napari import Viewer
 from napari.qt.threading import thread_worker
 
-from plantseg.viewer.dag_handler import dag_manager
-from plantseg.viewer.logging import napari_formatted_logging
+from plantseg.ui.dag_handler import dag_manager
+from plantseg.ui.logging import napari_formatted_logging
 
 
 def identity(*args, **kwargs):

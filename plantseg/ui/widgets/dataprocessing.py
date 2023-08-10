@@ -13,10 +13,10 @@ from plantseg.dataprocessing.functional.dataprocessing import compute_scaling_fa
 from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation as _relabel_segmentation
 from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
 from plantseg.utils import list_models, get_model_resolution
-from plantseg.viewer.widget.predictions import widget_unet_predictions
-from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
-from plantseg.viewer.widget.utils import return_value_if_widget
-from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
+from plantseg.ui.widgets.predictions import widget_unet_predictions
+from plantseg.ui.widgets.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
+from plantseg.ui.widgets.utils import return_value_if_widget
+from plantseg.ui.widgets.utils import start_threading_process, create_layer_name, layer_properties
 
 
 @magicgui(call_button='Run Gaussian Smoothing',
@@ -193,7 +193,7 @@ def _cropping(data, crop_slices):
           crop_roi={'label': 'Crop ROI',
                     'tooltip': 'This must be a shape layer with a rectangle XY overlaying the area to crop.'},
           # FloatRangeSlider and RangeSlider are not working very nicely with napari, they are usable but not very
-          # nice. maybe we should use a custom widget for this.
+          # nice. maybe we should use a custom widgets for this.
           crop_z={'label': 'Z slices',
                   'tooltip': 'Numer of z slices to take next to the current selection.',
                   'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 1,

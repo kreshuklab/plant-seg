@@ -25,15 +25,15 @@ def main():
         PlantSegApp()
 
     elif args.napari:
-        from plantseg.viewer.viewer import run_viewer
+        from plantseg.ui.viewer import run_viewer
         run_viewer()
 
     elif args.training:
-        from plantseg.viewer.training import run_training_headless
+        from plantseg.ui.training import run_training_headless
         run_training_headless()
 
     elif args.headless:
-        from plantseg.viewer.headless import run_workflow_headless
+        from plantseg.ui.headless import run_workflow_headless
         run_workflow_headless(args.headless)
 
     elif args.config is not None:
@@ -52,7 +52,7 @@ def main():
 
     else:
         raise ValueError("Not enough arguments. Please use: \n"
-                         " --napari for launching the napari image viewer or \n"
+                         " --napari for launching the napari image ui or \n"
                          " --training for launching the training configurator or \n"
                          " --headless 'path_to_workflow.pkl' for launching a saved workflow or \n"
                          " --gui for launching the graphical pipeline configurator or \n"

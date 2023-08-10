@@ -1,4 +1,4 @@
-from plantseg.viewer.widget.training import widget_unet_training
+from plantseg.ui.widgets.training import widget_unet_training
 
 
 def run_training_headless():

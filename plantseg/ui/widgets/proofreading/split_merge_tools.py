@@ -1,8 +1,8 @@
 import numpy as np
 from skimage.segmentation import watershed
 
-from plantseg.viewer.logging import napari_formatted_logging
-from plantseg.viewer.widget.proofreading.utils import get_bboxes, get_idx_slice
+from plantseg.ui.logging import napari_formatted_logging
+from plantseg.ui.widgets.proofreading.utils import get_bboxes, get_idx_slice
 
 
 def _merge_from_seeds(segmentation, region_slice, region_bbox, bboxes, all_idx):

@@ -14,9 +14,9 @@ from plantseg.io import create_h5, create_tiff, create_zarr
 from plantseg.io import load_tiff, load_h5, load_pill, load_zarr
 from plantseg.io.h5 import list_keys as list_h5_keys
 from plantseg.io.zarr import list_keys as list_zarr_keys
-from plantseg.viewer.dag_handler import dag_manager
-from plantseg.viewer.logging import napari_formatted_logging
-from plantseg.viewer.widget.utils import layer_properties, return_value_if_widget
+from plantseg.ui.dag_handler import dag_manager
+from plantseg.ui.logging import napari_formatted_logging
+from plantseg.ui.widgets.utils import layer_properties, return_value_if_widget
 
 
 def _check_layout_string(layout):

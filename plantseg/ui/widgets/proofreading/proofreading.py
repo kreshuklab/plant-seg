@@ -8,9 +8,9 @@ from napari.layers import Labels, Image
 from napari.qt.threading import thread_worker
 from napari.types import LayerDataTuple
 
-from plantseg.viewer.logging import napari_formatted_logging
-from plantseg.viewer.widget.proofreading.split_merge_tools import split_merge_from_seeds
-from plantseg.viewer.widget.proofreading.utils import get_bboxes
+from plantseg.ui.logging import napari_formatted_logging
+from plantseg.ui.widgets.proofreading.split_merge_tools import split_merge_from_seeds
+from plantseg.ui.widgets.proofreading.utils import get_bboxes
 
 DEFAULT_KEY_BINDING_PROOFREAD = 'n'
 DEFAULT_KEY_BINDING_CLEAN = 'b'
@@ -191,11 +191,11 @@ segmentation_handler = ProofreadingHandler()
 @magicgui(call_button=f'Clean scribbles - < {DEFAULT_KEY_BINDING_CLEAN} >')
 def widget_clean_scribble(viewer: napari.Viewer):
     if not segmentation_handler.status:
-        napari_formatted_logging('Proofreading widget not initialized. Run the proofreading widget tool once first',
+        napari_formatted_logging('Proofreading widgets not initialized. Run the proofreading widgets tool once first',
                                  thread='Clean scribble')
 
     if 'Scribbles' not in viewer.layers:
-        napari_formatted_logging('Scribble Layer not defined. Run the proofreading widget tool once first',
+        napari_formatted_logging('Scribble Layer not defined. Run the proofreading widgets tool once first',
                                  thread='Clean scribble')
         return None
 
@@ -254,7 +254,7 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
     elif 'pmap' not in image.metadata:
         napari_formatted_logging('Pmap/Image layer appears to be a raw image and not a boundary probability map. '
                                  'For the best proofreading results, try to use a boundaries probability layer '
-                                 '(e.g. from the Run Prediction widget)',
+                                 '(e.g. from the Run Prediction widgets)',
                                  thread='Proofreading tool', level='warning')
 
     if initialize_proofreading(viewer, segmentation):
@@ -293,9 +293,9 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
 @magicgui(call_button=f'Extract correct labels')
 def widget_filter_segmentation() -> Future[LayerDataTuple]:
     if not segmentation_handler.status:
-        napari_formatted_logging('Proofreading widget not initialized. Run the proofreading widget tool once first',
+        napari_formatted_logging('Proofreading widgets not initialized. Run the proofreading widgets tool once first',
                                  thread='Export correct labels', level='error')
-        raise ValueError('Proofreading widget not initialized. Run the proofreading widget tool once first')
+        raise ValueError('Proofreading widgets not initialized. Run the proofreading widgets tool once first')
 
     future = Future()
 

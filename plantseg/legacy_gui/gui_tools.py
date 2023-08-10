@@ -24,7 +24,7 @@ current_segmentation = None
 
 
 class SimpleEntry:
-    """ Standard open entry widget """
+    """ Standard open entry widgets """
 
     def __init__(self, frame, text="Text", large_bar=False, row=0, column=0, _type=str, _font=None):
         self.frame = tkinter.Frame(frame)
@@ -77,7 +77,7 @@ class SimpleEntry:
 
 
 class SliderEntry:
-    """ Standard open entry widget """
+    """ Standard open entry widgets """
 
     def __init__(self,
                  frame, text="Text", row=0, column=0, data_range=(0.01, 0.99, 0.01),
@@ -135,7 +135,7 @@ class SliderEntry:
 
 
 class MenuEntry:
-    """ Standard menu widget """
+    """ Standard menu widgets """
 
     def __init__(self, frame, text="Text", row=0, column=0, menu=(),
                  is_model=False, is_segmentation=False, default=None, font=None):
@@ -216,7 +216,7 @@ class MenuEntry:
 
 
 class BoolEntry:
-    """ Standard boolean widget """
+    """ Standard boolean widgets """
 
     def __init__(self, frame, text="Text", row=0, column=0, font=None):
         self.frame = tkinter.Frame(frame)
@@ -263,7 +263,7 @@ class BoolEntry:
 
 
 class FilterEntry:
-    """ Special widget for filter """
+    """ Special widgets for filter """
 
     def __init__(self, frame, text="Text", row=0, column=0, font=None):
         self.frame = tkinter.Frame(frame)
@@ -333,7 +333,7 @@ class FilterEntry:
 
 
 class MenuEntryStride:
-    """ Standard menu widget """
+    """ Standard menu widgets """
 
     def __init__(self, frame, text="Text", row=0, column=0, menu=(), is_model=False, default=None, font=None):
         self.frame = tkinter.Frame(frame)
@@ -401,7 +401,7 @@ class MenuEntryStride:
 
 
 class RescaleEntry:
-    """ Special widget for rescale """
+    """ Special widgets for rescale """
 
     def __init__(self, frame, text="Text", row=0, column=0, type=float, font=None):
         self.frame = tkinter.Frame(frame)
@@ -489,7 +489,7 @@ class RescaleEntry:
 
 
 class ListEntry:
-    """ Standard triplet list widget """
+    """ Standard triplet list widgets """
 
     def __init__(self, frame, text="Text", row=0, column=0, type=float, font=None):
         self.frame = tkinter.Frame(frame)

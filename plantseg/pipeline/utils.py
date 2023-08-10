@@ -40,7 +40,7 @@ def load_paths(base_path):
 class QueueHandler(logging.Handler):
     """Class to send logging records to a queue
     It can be used from different threads
-    The ConsoleUi class polls this queue to display records in a ScrolledText widget
+    The ConsoleUi class polls this queue to display records in a ScrolledText widgets
     """
 
     def __init__(self, log_queue):

@@ -1,10 +1,10 @@
 import napari
 
-from plantseg.viewer.containers import get_extra_seg, get_extra_pred
-from plantseg.viewer.containers import get_gasp_workflow, get_preprocessing_workflow, get_main
-from plantseg.viewer.containers import get_dataset_workflow
-from plantseg.viewer.logging import napari_formatted_logging
-from plantseg.viewer.widget.proofreading.proofreading import setup_proofreading_keybindings
+from plantseg.ui.containers import get_extra_seg, get_extra_pred
+from plantseg.ui.containers import get_gasp_workflow, get_preprocessing_workflow, get_main
+from plantseg.ui.containers import get_dataset_workflow
+from plantseg.ui.logging import napari_formatted_logging
+from plantseg.ui.widgets.proofreading.proofreading import setup_proofreading_keybindings
 
 
 def run_viewer():

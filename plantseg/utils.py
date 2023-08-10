@@ -278,7 +278,8 @@ def check_models(model_name: str, update_files: bool = False, config_only: bool 
 def clean_models():
     for _ in range(3):
         answer = input("This will delete all models in the model zoo, "
-                       "make sure to copy all custom models you want to preserve before continuing.\n"
+                       "dataset, and config files in the PlantSeg local directory.\n"
+                       "Make sure to copy all files you want to preserve before continuing.\n"
                        "Are you sure you want to continue? (y/n) ")
         if answer == 'y':
             shutil.rmtree(PLANTSEG_LOCAL_DIR)
@@ -291,6 +292,8 @@ def clean_models():
 
         else:
             print("Invalid input, please type 'y' or 'n'.")
+
+    print("Too many invalid inputs, PlantSeg will now close.")
 
 
 def check_version(plantseg_url=' https://api.github.com/repos/hci-unihd/plant-seg/releases/latest'):
@@ -334,7 +337,7 @@ def list_datasets():
     return list(datasets.keys())
 
 
-def get_dataset(key: str):
+def get_dataset_dict(key: str):
     """
     Get a dataset from the user dataset config file
     """
@@ -344,7 +347,7 @@ def get_dataset(key: str):
     return datasets[key]
 
 
-def save_dataset(key: str, dataset: dict):
+def dump_dataset_dict(key: str, dataset: dict):
     """
     Save a dataset to the user dataset config file, if the dataset already exists it will be overwritten
     """
@@ -355,9 +358,9 @@ def save_dataset(key: str, dataset: dict):
         yaml.dump(datasets, f)
 
 
-def delete_dataset(key: str):
+def delist_dataset(key: str):
     """
-    Delete a dataset from the user dataset config file
+    Delete a dataset from the user dataset config file but keep the files
     """
     datasets = load_config(USER_DATASETS_CONFIG)
     if key not in datasets:

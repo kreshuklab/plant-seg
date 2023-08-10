@@ -14,11 +14,11 @@ from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
 from plantseg.utils import list_all_modality, list_all_dimensionality, list_all_output_type
 from plantseg.utils import list_models, add_custom_model, get_train_config, get_model_zoo, get_model_description
-from plantseg.viewer.logging import napari_formatted_logging
-from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
-from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
-from plantseg.viewer.widget.utils import return_value_if_widget
-from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
+from plantseg.ui.logging import napari_formatted_logging
+from plantseg.ui.widgets.proofreading.proofreading import widget_split_and_merge_from_scribbles
+from plantseg.ui.widgets.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
+from plantseg.ui.widgets.utils import return_value_if_widget
+from plantseg.ui.widgets.utils import start_threading_process, create_layer_name, layer_properties
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
