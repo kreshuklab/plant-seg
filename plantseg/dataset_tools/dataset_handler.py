@@ -3,7 +3,7 @@ from shutil import rmtree
 from typing import Union, Protocol
 from warnings import warn
 
-from plantseg.dataset_tools.images import Stack
+from plantseg.dataset_tools.images import Stack, StackSpecs
 from plantseg.io.h5 import H5_EXTENSIONS
 from plantseg.utils import dump_dataset_dict, get_dataset_dict, delist_dataset, list_datasets
 
@@ -13,14 +13,6 @@ class DatasetValidator(Protocol):
         ...
 
     def __call__(self, dataset: object) -> tuple[bool, str]:
-        ...
-
-
-class StackValidator(Protocol):
-    def __init__(self, dataset: object):
-        ...
-
-    def __call__(self, stack_path: Union[str, Path]) -> tuple[bool, str]:
         ...
 
 
@@ -67,91 +59,41 @@ class ComposeDatasetValidators:
         return True, self.success_msg
 
 
-class ComposeStackValidators:
-    """
-    Compose multiple stack validators into a single one.
-    """
-    success_msg = 'All tests passed.'
-
-    def __init__(self, *validators: StackValidator):
-        self.validators = validators
-
-    def __call__(self, stack_path: Union[str, Path]) -> tuple[bool, str]:
-        return self.apply(stack_path)
-
-    def apply(self, stack_path: Union[str, Path]) -> tuple[bool, str]:
-        """
-        Apply all the validators to the stack.
-        Args:
-            stack_path: path to the stack to validate
-
-        Returns:
-            tuple[bool, str]: (valid, msg) where valid is True if all the tests passed, False otherwise.
-
-        """
-        for validator in self.validators:
-            valid, msg = validator(stack_path)
-            if not valid:
-                return valid, msg
-        return True, self.success_msg
-
-    def batch_apply(self, list_stack_path: list[Union[str, Path]]) -> tuple[bool, str]:
-        """
-        Apply all the validators to a list of stacks.
-        Args:
-            list_stack_path: list of paths to the stacks to validate
-
-        Returns:
-            tuple[bool, str]: (valid, msg) where valid is True if all the tests passed, False otherwise.
-
-        """
-        for stack_path in list_stack_path:
-            valid, msg = self.apply(stack_path)
-            if not valid:
-                msg = f'Validation failed for {stack_path}.\nWith msg: {msg}'
-                return False, msg
-
-        return True, self.success_msg
-
-
 class DatasetHandler:
     """
     DatasetHandler is a class that contains all the information about a dataset.
     It is used to create a dataset from a directory, to save a dataset to a directory and manage the dataset.
     """
-    name: str
-    keys: tuple[str, ...]
-    default_phases: tuple[str, ...]
-    default_file_formats: tuple[str, ...]
     default_phases: tuple[str, ...] = ('train', 'val', 'test')
     train: list[str]
     val: list[str]
     test: list[str]
+    default_file_formats = H5_EXTENSIONS
 
-    _default_keys = {'task': None,
-                     'dimensionality': None,  # 2D or 3D
-                     'image_channels': None,
-                     'keys': ('raw', 'labels'),  # keys of the h5 file (raw, labels, etc. )
-                     'is_sparse': False,
-                     'default_file_formats': H5_EXTENSIONS
-                     }
+    def __init__(self,
+                 name: str,
+                 dataset_dir: Union[str, Path],
+                 expected_stack_specs: StackSpecs):
 
-    def __init__(self, name: str, dataset_dir: Union[str, Path], **kwargs):
+        assert isinstance(name, str), 'name must be a string'
         self.name = name
+
+        assert isinstance(dataset_dir, (str, Path)), 'dataset_dir must be a string or a Path'
         self.dataset_dir = Path(dataset_dir)
-        self.dataset_dir.mkdir(parents=True, exist_ok=True)
+
         self.train = []
         self.val = []
         self.test = []
 
-        for atr, default in self._default_keys.items():
-            setattr(self, atr, default)
+        self.expected_stack_specs = expected_stack_specs
+        self.init_datastructure()
+        self.update_stack_from_disk()
+        self.is_sparse = self._is_sparse()
 
-        for atr, value in kwargs.items():
-            if atr in self._default_keys.keys():
-                setattr(self, atr, value)
-            else:
-                raise ValueError(f'Attribute {atr} does not exists for {self.__class__.__name__}.')
+    def init_datastructure(self):
+        self.dataset_dir.mkdir(parents=True, exist_ok=True)
+        for phase in self.default_phases:
+            (self.dataset_dir / phase).mkdir(exist_ok=True)
 
     @classmethod
     def from_dict(cls, dataset_dict: dict):
@@ -160,26 +102,29 @@ class DatasetHandler:
         """
         assert 'name' in dataset_dict.keys(), 'Dataset name not found'
         assert 'dataset_dir' in dataset_dict.keys(), 'Dataset directory not found'
-        dataset = cls(name=dataset_dict['name'], dataset_dir=dataset_dict['dataset_dir'])
+        assert 'stack_specs' in dataset_dict.keys(), 'Dataset stack_specs not found'
+        assert 'list_specs' in dataset_dict['stack_specs'].keys(), 'Dataset list_specs not found'
 
-        for atr, default in cls._default_keys.items():
-            if atr in dataset_dict.keys():
-                setattr(dataset, atr, dataset_dict.get(atr))
-            else:
-                warn(f'Attribute {atr} not found in dataset {dataset.name}. Setting to default value {default}')
-                setattr(dataset, atr, default)
-
-        dataset.update_stack_from_disk()
-        return dataset
+        name = dataset_dict['name']
+        dataset_dir = dataset_dict['dataset_dir']
+        stack_specs = StackSpecs.from_dict(dataset_dict['stack_specs'])
+        return cls(name=name, dataset_dir=dataset_dir, expected_stack_specs=stack_specs)
 
     def to_dict(self) -> dict:
         """
         Convert a DatasetHandler to a dictionary for serialization.
         """
-        dataset_dict = {'name': self.name, 'dataset_dir': str(self.dataset_dir)}
-        for atr in self._default_keys.keys():
-            dataset_dict[atr] = getattr(self, atr)
+        dataset_dict = {
+            'name': self.name,
+            'dataset_dir': str(self.dataset_dir),
+            'stack_specs': self.expected_stack_specs.to_dict()
+        }
         return dataset_dict
+
+    def _is_sparse(self, stacks: list[Stack] = None) -> bool:
+        if stacks is None:
+            stacks = self.get_stacks()
+        return all([stack.is_sparse for stack in stacks])
 
     def __repr__(self) -> str:
         return f'DatasetHandler {self.name}, location: {self.dataset_dir}'
@@ -189,11 +134,9 @@ class DatasetHandler:
         Nice print of the dataset information.
         """
         info = f'{self.__repr__()}:\n'
-        for atr in self._default_keys.keys():
-            if atr in self.default_phases:
-                info += f'    {atr}: #{len(getattr(self, atr))} stacks\n'
-            else:
-                info += f'    {atr}: {getattr(self, atr)}\n'
+        info += f'Dimensionality: {self.expected_stack_specs.dimensionality}\n'
+        info += f'Is sparse: {self.is_sparse}\n'
+        info += f'Number of stacks: {len(self.find_stacks_names())}\n'
         return info
 
     def validate(self, *dataset_validators: DatasetValidator) -> tuple[bool, str]:
@@ -204,16 +147,17 @@ class DatasetHandler:
         """
         return ComposeDatasetValidators(*dataset_validators)(self)
 
-    def validate_stack(self, *stack_validators: StackValidator) -> tuple[bool, str]:
+    def get_stack(self, path: Union[str, Path]) -> tuple[Stack, bool, str]:
         """
-        Validate all the stacks in the dataset using the stack validators.
+        Get a stack from the dataset.
+        Args:
+            path: path to the stack
         Returns:
-            (bool, str): a boolean (True for success) and a message with the result of the validation
+            Stack: the stack
         """
-        files = self.find_stored_files()
-        return ComposeStackValidators(*stack_validators).batch_apply(files)
+        return Stack.from_h5(path=path, expected_stack_specs=self.expected_stack_specs)
 
-    def update_stack_from_disk(self, *validators: StackValidator, phase: str = None):
+    def update_stack_from_disk(self, phase: str = None):
         """
         Update the stacks in the dataset from the disk.
         """
@@ -222,14 +166,13 @@ class DatasetHandler:
         else:
             phases = [phase]
 
+        is_sparse_phase = []
         for phase in phases:
-            stacks = self.find_stored_files(phase=phase)
-            result, msg = ComposeStackValidators(*validators).batch_apply(stacks)
-            if result:
-                stacks = [stack.name for stack in stacks]
-                setattr(self, phase, stacks)
-            else:
-                warn(f'Update failed for {phase} phase. {msg}')
+            stacks_found = self.get_stacks(phase=phase)
+            setattr(self, phase, stacks_found)
+            is_sparse_phase.append(self._is_sparse(stacks_found))
+
+        self.is_sparse = all(is_sparse_phase)
 
     def find_stored_files(self, phase: str = None, ignore_default_file_format: bool = False) -> list[Path]:
         """
@@ -262,23 +205,38 @@ class DatasetHandler:
 
         return found_files
 
-    def find_stacks(self, phase: str = None) -> list[str]:
+    def find_stacks_names(self, phase: str = None) -> list[str]:
         """
         Find the name of the stacks in the dataset directory.
         """
         stacks = self.find_stored_files(phase=phase)
         return [stack.stem for stack in stacks]
 
+    def get_stacks(self, phase: str = None) -> list[Stack]:
+        """
+        Get the stacks in the dataset directory.
+        """
+        stacks = self.find_stored_files(phase=phase)
+        all_stacks = []
+        for stack in stacks:
+            stack, result, msg = self.get_stack(stack)
+            if result:
+                all_stacks.append(stack)
+            else:
+                warn(f'Stack {stack} seems to not be compatible with the dataset specs. Error {msg}, skipping it.')
+
+        return all_stacks
+
     def add_stack(self, stack_name: str,
                   phase: str,
-                  data: Stack,
+                  stack: Stack,
                   unique_name=True):
         """
         Add a stack to the dataset.
         Args:
             stack_name: string with the name of the stack
             phase: string with the phase of the dataset (train, val, test)
-            data: dictionary with the data to be saved in the stack
+            stack: dictionary with the data to be saved in the stack
                 {'raw': raw_data, 'labels': labels_data, etc...}
             unique_name: if True, the stack name will be changed to a unique name if already exists,
                 otherwise it will error out.
@@ -293,7 +251,12 @@ class DatasetHandler:
             stack_path = phase_dir / f'{stack_name}.h5'
             idx += 1
 
-        data.dump_to_h5(stack_path)
+        result, msg = stack.check_compatibility(self.expected_stack_specs)
+        if result:
+            stack.dump_to_h5(stack_path)
+            return None
+
+        raise ValueError(f'Could not add stack to dataset. {msg}')
 
     def remove_stack(self, stack_name: str):
         """
@@ -304,7 +267,7 @@ class DatasetHandler:
         Returns: None
         """
         for phase in self.default_phases:
-            stacks = self.find_stacks(phase=phase)
+            stacks = self.find_stacks_names(phase=phase)
             if stack_name in stacks:
                 stack_path = self.dataset_dir / phase / f'{stack_name}.h5'
                 if stack_path.exists():
@@ -326,7 +289,7 @@ class DatasetHandler:
         Returns: None
         """
         for phase in self.default_phases:
-            stacks = self.find_stacks(phase=phase)
+            stacks = self.find_stacks_names(phase=phase)
             if stack_name in stacks:
                 stack_path = self.dataset_dir / phase / f'{stack_name}.h5'
                 if stack_path.exists():
@@ -368,13 +331,35 @@ def save_dataset(dataset: DatasetHandler):
     dump_dataset_dict(dataset.name, dataset.to_dict())
 
 
-def delete_dataset(dataset: DatasetHandler):
+def delete_dataset(dataset_name: str, dataset_dir: Union[str, Path]):
     """
     Delete a dataset from the user dataset config file and delete all the files
     Args:
-        dataset: a DatasetHandler object
+        dataset_name: string with the name of the dataset
+        dataset_dir: path to the dataset directory
 
     Returns: None
     """
-    delist_dataset(dataset.name)
-    rmtree(dataset.dataset_dir)
+    delist_dataset(dataset_name)
+    rmtree(dataset_dir)
+
+
+def change_dataset_location(dataset_name: str, new_location: Union[str, Path]):
+    """
+    Change the location of a dataset in the user dataset config file and move all the files
+    Args:
+        dataset_name: string with the name of the dataset
+        new_location: new location of the dataset
+
+    Returns:
+        None
+    """
+    new_location = Path(new_location)
+    if not new_location.exists():
+        raise ValueError(f'New location {new_location} does not exist.')
+
+    assert new_location.is_dir(), f'New location {new_location} is not a directory.'
+    dataset_dict = get_dataset_dict(dataset_name)
+    dataset_dict['dataset_dir'] = str(new_location)
+    dataset = DatasetHandler.from_dict(dataset_dict)
+    save_dataset(dataset)

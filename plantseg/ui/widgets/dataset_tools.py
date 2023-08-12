@@ -1,15 +1,25 @@
+from enum import Enum
 from pathlib import Path
+from typing import Optional
 
 from magicgui import magicgui
-from napari.layers import Labels, Image
+from napari.layers import Labels, Image, Layer
 
 from plantseg import PLANTSEG_MODELS_DIR
-from plantseg.io import create_h5
-from plantseg.utils import list_datasets, dump_dataset_dict, get_dataset_dict, delist_dataset
+from plantseg.dataset_tools.dataset_handler import DatasetHandler, save_dataset, load_dataset
+from plantseg.dataset_tools.images import Image as PlantSegImage
+from plantseg.dataset_tools.images import Labels as PlantSegLabels
+from plantseg.dataset_tools.images import Stack, ImageSpecs, StackSpecs
 from plantseg.ui.logging import napari_formatted_logging
+from plantseg.utils import list_datasets
 
 empty_dataset = ['none']
 startup_list_datasets = list_datasets() or empty_dataset
+
+
+class ImageType(Enum):
+    IMAGE: str = 'image'
+    LABELS: str = 'labels'
 
 
 @magicgui(call_button='Initialize Dataset',
@@ -18,33 +28,108 @@ startup_list_datasets = list_datasets() or empty_dataset
           dataset_dir={'label': 'Path to the dataset directory',
                        'mode': 'd',
                        'tooltip': 'Select a directory containing where the dataset will be created, '
-                                  '{dataset_dir}/model_name/.'}
+                                  '{dataset_dir}/model_name/.'},
+          dimensionality={'label': 'Dimensionality',
+                          'choices': ['2D', '3D'],
+                          'tooltip': f'Initialize an empty dataset with name model_name'},
+          images_format={'label': 'Expected images format \n (Name, Channel, Type)',
+                         'layout': 'vertical',
+                         'tooltip': f'Initialize an empty dataset with name model_name'},
+          is_sparse={'label': 'Sparse dataset',
+                     'tooltip': 'If checked, the dataset will be saved in sparse format.'},
           )
-def widget_create_dataset(dataset_name: str = 'my-dataset', dataset_dir: Path = Path.home()):
+def widget_create_dataset(dataset_name: str = 'my-dataset',
+                          dataset_dir: Path = Path.home(),
+                          dimensionality: str = '2D',
+                          images_format: list[tuple[str, int, ImageType]] = (('raw', 1, ImageType.IMAGE),
+                                                                             ('labels', 1, ImageType.LABELS)),
+                          is_sparse: bool = False):
+    if dataset_name in list_datasets():
+        napari_formatted_logging(message='Dataset already exists.', thread='widget_create_dataset', level='warning')
+        return None
+
+    list_images = []
+    for key, num_channels, im_format in images_format:
+
+        if im_format == ImageType.IMAGE:
+            image_spec = ImageSpecs(key=key,
+                                    num_channels=num_channels,
+                                    dimensionality=dimensionality,
+                                    data_type='image')
+            list_images.append(image_spec)
+        elif im_format == ImageType.LABELS:
+            assert num_channels == 1, 'Labels must have only one channel.'
+            labels_spec = ImageSpecs(key=key,
+                                     num_channels=1,
+                                     dimensionality=dimensionality,
+                                     data_type='labels',
+                                     is_sparse=is_sparse)
+            list_images.append(labels_spec)
+
+        else:
+            raise ValueError(f'Image format {im_format} not supported.')
+
     dataset_dir = dataset_dir / dataset_name
-    dataset_dir.mkdir(parents=True, exist_ok=True)
 
-    new_dataset = {'name': dataset_name,
-                   'dataset_dir': str(dataset_dir),
-                   'task': None,
-                   'dimensionality': None,  # 2D or 3D
-                   'image_channels': None,
-                   'image_key': 'raw',
-                   'labels_key': 'labels',
-                   'is_sparse': False,
-                   'train': [],
-                   'val': [],
-                   'test': [],
-                   }
+    stack_specs = StackSpecs(dimensionality=dimensionality,
+                             list_specs=list_images)
 
-    if dataset_name not in list_datasets():
-        dump_dataset_dict(dataset_name, new_dataset)
-        return new_dataset
+    dataset = DatasetHandler(name=dataset_name,
+                             dataset_dir=dataset_dir,
+                             expected_stack_specs=stack_specs)
 
-    raise ValueError(f'Dataset {dataset_name} already exists.')
+    save_dataset(dataset)
+    return dataset
 
 
-@magicgui(call_button='Create Dataset',
+def _add_stack(dataset_name: str = startup_list_datasets[0],
+               images: list[tuple[str, Optional[Layer]]] = (),
+               phase: str = 'train',
+               is_sparse: bool = False,
+               **kwargs):
+    dataset = load_dataset(dataset_name)
+    image_specs = dataset.expected_stack_specs.list_specs
+    stack_specs = dataset.expected_stack_specs
+
+    list_images = []
+    for image_name, layer in images:
+        reference_spec = [spec for spec in image_specs if spec.key == image_name][0]
+        if isinstance(layer, Image) and reference_spec.data_type == 'image':
+            image_data = layer.data
+            image = PlantSegImage(image_data, spec=reference_spec)
+        elif isinstance(layer, Labels) and reference_spec.data_type == 'labels':
+            labels_data = layer.data
+            reference_spec.is_sparse = is_sparse
+            image = PlantSegLabels(labels_data, spec=reference_spec)
+        else:
+            raise ValueError(f'Layer type {type(layer)} not supported.')
+
+        list_images.append(image)
+
+    stack_name = images[0][1].name
+    stack = Stack(*list_images, spec=stack_specs)
+    dataset.add_stack(stack_name=stack_name, stack=stack, phase=phase)
+
+
+def _remove_stack(dataset_name, stack_name: str, **kwargs):
+    dataset = load_dataset(dataset_name)
+    dataset.remove_stack(stack_name)
+
+
+available_modes = {
+    'Add stack to dataset': _add_stack,
+    'Remove stack from dataset': _remove_stack,
+    'Remove dataset': None,
+    'De-list dataset': None,
+    'Move dataset': None,
+    'Rename dataset': None
+}
+
+
+@magicgui(call_button='Edit Dataset',
+          action={'label': 'Action',
+                  'choices': list(available_modes.keys()),
+                  'tooltip': f'Define if the stack will be added or removed from the dataset'},
           dataset_name={'label': 'Dataset name',
                         'choices': startup_list_datasets,
                         'tooltip': f'Model files will be saved in f{PLANTSEG_MODELS_DIR}/model_name'},
@@ -52,150 +137,112 @@ def widget_create_dataset(dataset_name: str = 'my-dataset', dataset_dir: Path = 
                  'choices': ['train', 'val', 'test'],
                  'tooltip': f'Define if the stack will be used for training, validation or testing'},
           is_sparse={'label': 'Sparse dataset',
-                     'tooltip': 'If checked, the dataset will be saved in sparse format.'}
+                     'tooltip': 'If checked, the dataset will be saved in sparse format.'},
+          stack_name={'label': 'Stack name',
+                      'tooltip': f'Name of the stack to be added to be edited',
+                      'choices': ['', ]},
           )
-def widget_add_stack(dataset_name: str = startup_list_datasets[0],
-                     image: Image = None,
-                     labels: Labels = None,
-                     phase: str = 'train',
-                     is_sparse: bool = False):
-    dataset_config = get_dataset_dict(dataset_name)
-
-    if image is None or labels is None:
-        napari_formatted_logging(message=f'To add a stack to the dataset, please select an image and a labels layer.',
-                                 thread='widget_add_stack',
-                                 level='warning')
-        return None
-
-    if is_sparse:
-        # if a single dataset is sparse, all the others should be threaded as sparse
-        dataset_config['is_sparse'] = True
-
-    image_data = image.data
-    labels_data = labels.data
-
-    # Validation of the image and labels data
-    # check if the image and labels have the same shape,
-    # dimensionality and number of channels as the rest of the dataset
-
-    if image_data.ndim == 3:
-        image_channels = 1
-        dimensionality = '2D' if image_data.shape[0] == 1 else '3D'
-        assert image_data.shape == labels_data.shape, f'Image and labels should have the same shape, found ' \
-                                                      f'{image_data.shape} and {labels_data.shape}.'
-
-    elif image_data.ndim == 4:
-        image_channels = image_data.shape[0]
-        dimensionality = '2D' if image_data.shape[1] == 1 else '3D'
-        assert image_data.shape[1:] == labels_data.shape, f'Image and labels should have the same shape, found ' \
-                                                          f'{image_data.shape} and {labels_data.shape}.'
-
-    else:
-        raise ValueError(f'Image data should be 3D or multichannel 3D, found {image_data.ndim}D.')
-
-    dataset_image_channels = dataset_config['image_channels']
-    if dataset_image_channels is None:
-        dataset_config['image_channels'] = image_channels
-    elif dataset_image_channels != image_channels:
-        raise ValueError(f'Image data should have {dataset_image_channels} channels, found {image_channels}.')
-
-    dataset_dimensionality = dataset_config['dimensionality']
-    if dataset_dimensionality is None:
-        dataset_config['dimensionality'] = dimensionality
-    elif dataset_dimensionality != dimensionality:
-        raise ValueError(f'Image data should be {dataset_dimensionality}, found {dimensionality}.')
-
-    if is_sparse:
-        dataset_config['is_sparse'] = True
-
-    # Check if the stack name already exists in the dataset
-    # If so, add a number to the end of the name until it is unique
-    stack_name = image.name
-    existing_stacks = dataset_config[phase]
-
-    idx = 0
-    while True:
-        if stack_name in existing_stacks:
-            stack_name = f'{stack_name}_{idx}'
-        else:
-            break
-        idx += 1
-
-    dataset_config[phase].append(stack_name)
-
-    # Save the data to disk
-    dataset_dir = Path(dataset_config['dataset_dir']) / phase
-    dataset_dir.mkdir(parents=True, exist_ok=True)
-
-    image_path = str(dataset_dir / f'{stack_name}.h5')
-    create_h5(image_path, image_data, key=dataset_config['image_key'])
-    create_h5(image_path, labels_data, key=dataset_config['labels_key'])
-    dump_dataset_dict(dataset_name, dataset_config)
-    napari_formatted_logging(message=f'Stack {stack_name} added to dataset {dataset_name}.',
-                             thread='widget_add_stack',
-                             level='info')
-
-
-@magicgui(call_button='Validata Dataset',
-          dataset_name={'label': 'Dataset name',
-                        'choices': startup_list_datasets,
-                        'tooltip': f'Name of the dataset to be validated'},
-          )
-def widget_validata_dataset(dataset_name: str = startup_list_datasets[0]):
-    dataset_config = get_dataset_dict(dataset_name)
-
-    # check all stacks are present
-    dataset_dir = Path(dataset_config['dataset_dir'])
-    for phase in ['train', 'val', 'test']:
-        phase_dir = dataset_dir / phase
-        stacks_expected = dataset_config[phase]
-        stacks_found = [file.stem for file in phase_dir.glob('*.h5')]
-        if len(stacks_found) != len(stacks_expected):
-            napari_formatted_logging(message=f'Found {len(stacks_found)} stacks in {phase} phase, '
-                                             f'expected {len(stacks_expected)}.',
-                                     thread='widget_validata_dataset',
-                                     level='warning')
-
-            dataset_config[phase] = stacks_found
-
-    # check all stacks have the same shape and dimensionality
-    for key, value in dataset_config.items():
-        napari_formatted_logging(message=f'Dataset info {key}: {value}',
-                                 thread='widget_validata_dataset',
-                                 level='info')
-
-
-@magicgui(call_button='Delete Dataset',
-          dataset_name={'label': 'Dataset name',
-                        'choices': startup_list_datasets,
-                        'tooltip': f'Name of the dataset to be deleted'},
-          )
-def widget_delete_dataset(dataset_name: str = startup_list_datasets[0]):
-    delist_dataset(dataset_name)
+def widget_edit_dataset(action: str = list(available_modes.keys())[0],
+                        dataset_name: str = startup_list_datasets[0],
+                        images: list[tuple[str, Optional[Layer]]] = (),
+                        phase: str = 'train',
+                        is_sparse: bool = False,
+                        stack_name: str = '') -> str:
+    func = available_modes[action]
+    kwargs = {'dataset_name': dataset_name,
+              'images': images,
+              'phase': phase,
+              'is_sparse': is_sparse,
+              'stack_name': stack_name}
+    func(**kwargs)
+    return action
 
 
 @widget_create_dataset.called.connect
-def _on_create_dataset_called(new_dataset: dict):
-    new_dataset_list = list_datasets()
-    if not widget_add_stack.visible:
-        widget_add_stack.show()
-    widget_add_stack.dataset_name.choices = new_dataset_list
-    widget_add_stack.dataset_name.value = new_dataset['name']
+def update_dataset_name(dataset: DatasetHandler):
+    if dataset is None:
+        return None
 
-    if not widget_delete_dataset.visible:
-        widget_delete_dataset.show()
-
-    widget_delete_dataset.dataset_name.choices = new_dataset_list
-    widget_delete_dataset.dataset_name.value = new_dataset['name']
-
-    if not widget_validata_dataset.visible:
-        widget_validata_dataset.show()
-
-    widget_validata_dataset.dataset_name.choices = new_dataset_list
-    widget_validata_dataset.dataset_name.value = new_dataset['name']
+    widget_edit_dataset.dataset_name.choices = list_datasets()
+    widget_edit_dataset.dataset_name.value = dataset.name
 
 
-if startup_list_datasets == empty_dataset:
-    widget_add_stack.hide()
-    widget_delete_dataset.hide()
-    widget_validata_dataset.hide()
+def _update_stack_name_choices(dataset: DatasetHandler = None):
+    if dataset is None:
+        dataset = load_dataset(widget_edit_dataset.dataset_name.value)
+    stacks_options = dataset.find_stacks_names()
+    stacks_options = stacks_options if stacks_options else ['']
+    widget_edit_dataset.stack_name.choices = stacks_options
+    widget_edit_dataset.stack_name.value = stacks_options[0] if stacks_options else ''
+
+
+def _update_images_choices(dataset: DatasetHandler = None):
+    if len(list_datasets()) == 0:
+        return None
+
+    if dataset is None:
+        dataset = load_dataset(widget_edit_dataset.dataset_name.value)
+
+    images_default = []
+    for image in dataset.expected_stack_specs.list_specs:
+        images_default.append((image.key, None))
+
+    widget_edit_dataset.images.value = images_default
+
+
+_update_images_choices()
+
+
+@widget_edit_dataset.dataset_name.changed.connect
+def update_dataset_name(dataset_name: str):
+    dataset = load_dataset(dataset_name)
+    widget_edit_dataset.phase.choices = dataset.default_phases
+    widget_edit_dataset.is_sparse.value = dataset.is_sparse
+
+    _update_images_choices(dataset)
+    _update_stack_name_choices(dataset)
+
+
+def _add_stack_callback():
+    widget_edit_dataset.images.show()
+    widget_edit_dataset.phase.show()
+    widget_edit_dataset.stack_name.hide()
+
+
+def _remove_stack_callback():
+    widget_edit_dataset.images.hide()
+    widget_edit_dataset.phase.hide()
+    widget_edit_dataset.is_sparse.hide()
+    widget_edit_dataset.stack_name.show()
+
+    _update_stack_name_choices()
+
+
+_add_stack_callback()
+
+
+available_modes_callbacks = {
+    'Add stack to dataset': _add_stack_callback,
+    'Remove stack from dataset': _remove_stack_callback,
+}
+
+
+@widget_edit_dataset.action.changed.connect
+def update_mode(action: str):
+    if action in available_modes_callbacks.keys():
+        available_modes_callbacks[action]()
+
+
+def _remove_stack_update_choices():
+    _update_stack_name_choices()
+
+
+available_actions_on_done = {
+    'Remove stack from dataset': _remove_stack_update_choices
+}
+
+
+@widget_edit_dataset.called.connect
+def update_state_after_edit(action: str):
+    if action in available_actions_on_done.keys():
+        available_actions_on_done[action]()

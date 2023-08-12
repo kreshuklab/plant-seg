@@ -15,8 +15,7 @@ from plantseg.ui.widgets.segmentation import widget_dt_ws, widget_agglomeration
 from plantseg.ui.widgets.segmentation import widget_fix_over_under_segmentation_from_nuclei
 from plantseg.ui.widgets.segmentation import widget_lifted_multicut
 from plantseg.ui.widgets.segmentation import widget_simple_dt_ws
-from plantseg.ui.widgets.dataset_tools import widget_create_dataset
-from plantseg.ui.widgets.dataset_tools import widget_add_stack, widget_delete_dataset, widget_validata_dataset
+from plantseg.ui.widgets.dataset_tools import widget_create_dataset, widget_edit_dataset
 
 
 def setup_menu(container, path=None):
@@ -66,9 +65,8 @@ def get_gasp_workflow():
 
 def get_dataset_workflow():
     container = MainWindow(widgets=[widget_create_dataset,
-                                    widget_add_stack,
-                                    widget_validata_dataset,
-                                    widget_delete_dataset],
+                                    widget_edit_dataset
+                                    ],
                            labels=False)
     container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/Dataset-Managment')
     return container

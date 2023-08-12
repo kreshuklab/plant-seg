@@ -1,7 +1,7 @@
 import warnings
+from pathlib import Path
 from typing import Optional, Union
 
-from pathlib import Path
 import h5py
 import numpy as np
 
@@ -55,6 +55,7 @@ def _find_input_key(h5_file) -> str:
 def load_h5(path: Union[str, Path],
             key: str,
             slices: Optional[slice] = None,
+
             info_only: bool = False) -> Union[tuple, tuple[np.array, tuple]]:
     """
     Load a dataset from a h5 file and returns some meta info about it.
@@ -110,6 +111,65 @@ def create_h5(path: Union[str, Path],
         f[key].attrs['element_size_um'] = voxel_size
 
 
+def write_attribute_h5(path: Union[str, Path], atr_dict: dict, key: str = None) -> None:
+    """
+    Helper function to add attributes to a h5 file
+    Args:
+        path (str): file path
+        atr_dict (dict): dictionary of attributes to add
+        key (str): key of the dataset in the h5 file
+
+    Returns:
+        None
+    """
+    assert Path(path).suffix in H5_EXTENSIONS, f"File {path} is not a h5 file"
+    assert Path(path).exists(), f"File {path} does not exist"
+    assert isinstance(atr_dict, dict), "atr_dict must be a dictionary"
+    assert isinstance(key, str) or key is None, "key must be a string or None"
+
+    with h5py.File(path, mode='r+') as f:
+        if key is None:
+            file = f
+        elif key in f:
+            file = f[key]
+        else:
+            raise KeyError(f"Key {key} not found in {path}")
+
+        for k, v in atr_dict.items():
+            if v is None:
+                v = 'none'
+            file.attrs[k] = v
+
+
+def read_attribute_h5(path: Union[str, Path], key: str = None) -> dict:
+    """
+    Helper function to read attributes from a h5 file
+    Args:
+        path (str): file path
+        key (str): key of the dataset in the h5 file
+
+    Returns:
+        dict: dictionary of attributes
+    """
+    assert Path(path).suffix in H5_EXTENSIONS, f"File {path} is not a h5 file"
+    assert Path(path).exists(), f"File {path} does not exist"
+    assert isinstance(key, str) or key is None, "key must be a string or None"
+    with h5py.File(path, mode='r') as f:
+        if key is None:
+            attrs = f.attrs
+        elif key in f:
+            attrs = f[key].attrs
+        else:
+            raise KeyError(f"Key {key} not found in {path}")
+
+        attrs_dict = {}
+        for k, v in attrs.items():
+            if isinstance(v, str) and v == 'none':
+                v = None
+            attrs_dict[k] = v
+        return attrs_dict
+
+
 def list_keys(path: Union[str, Path]) -> list[str]:
     """
     List all keys in a h5 file
@@ -119,6 +179,7 @@ def list_keys(path: Union[str, Path]) -> list[str]:
     Returns:
         list of keys
     """
+
     def _recursive_find_keys(f, base='/'):
         _list_keys = []
         for key, dataset in f.items():
