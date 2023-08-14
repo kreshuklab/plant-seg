@@ -25,7 +25,7 @@ class ImageType(Enum):
     LABELS: str = 'labels'
 
 
-@magicgui(call_button='Initialize Dataset',
+@magicgui(call_button='Initialize New Dataset',
           dataset_name={'label': 'Dataset name',
                         'tooltip': f'Initialize an empty dataset with name model_name'},
           dataset_dir={'label': 'Path to the dataset directory',
@@ -318,8 +318,8 @@ rename_stack_action = RenameStack()
 change_phase_stack_action = ChangePhaseStack()
 print_dataset_action = PrintDataset()
 link_new_location_action = LinkNewLocation()
-delete_dataset_action = DeleteDataset()
 delist_dataset_action = DeListDataset()
+delete_dataset_action = DeleteDataset()
 
 available_actions: dict[str, Action] = {action.name: action for action in [add_stack_action,
                                                                            visualize_stack_action,
@@ -328,8 +328,9 @@ available_actions: dict[str, Action] = {action.name: action for action in [add_s
                                                                            change_phase_stack_action,
                                                                            print_dataset_action,
                                                                            link_new_location_action,
+                                                                           delist_dataset_action,
                                                                            delete_dataset_action,
-                                                                           delist_dataset_action]}
+                                                                           ]}
 
 
 @magicgui(call_button=list(available_actions.values())[0].name,
@@ -542,6 +543,7 @@ def _create_dataset_is_called(dataset: DatasetHandler):
     _update_stack_name_choices(dataset)
 
     widget_create_dataset.dataset_name.value = ''
+    widget_edit_dataset.show()
 
 
 @widget_edit_dataset.dataset_name.changed.connect
@@ -575,5 +577,9 @@ def _on_done(action: str):
         action_class.on_edit_done()
 
 
-_hide_all()
-list(available_actions.values())[0].on_action_changed()
+if startup_list_datasets == empty_dataset:
+    widget_edit_dataset.hide()
+
+else:
+    _hide_all()
+    list(available_actions.values())[0].on_action_changed()

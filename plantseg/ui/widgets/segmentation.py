@@ -3,16 +3,16 @@ from enum import Enum
 from typing import Tuple, Callable
 
 from magicgui import magicgui
+from napari import Viewer
 from napari.layers import Labels, Image, Layer
 from napari.types import LayerDataTuple
 
-from napari import Viewer
 from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_under_segmentation_from_nuclei
 from plantseg.dataprocessing.functional.dataprocessing import normalize_01
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed, mutex_ws
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
-from plantseg.ui.widgets.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.ui.logging import napari_formatted_logging
+from plantseg.ui.widgets.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.ui.widgets.utils import start_threading_process, create_layer_name, layer_properties
 
 
@@ -97,19 +97,22 @@ def widget_agglomeration(viewer: Viewer,
                  'tooltip': 'Raw or boundary image to use as input for clustering.'},
           nuclei={'label': 'Nuclei',
                   'tooltip': 'Nuclei binary predictions or Nuclei segmentation.'},
-          _labels={'label': 'Over-segmentation',
-                   'tooltip': 'Over-segmentation labels layer to use as input for clustering.'},
+          im_labels={'label': 'Over-segmentation',
+                     'tooltip': 'Over-segmentation labels layer to use as input for clustering.'},
           beta={'label': 'Under/Over segmentation factor',
                 'tooltip': 'A low value will increase under-segmentation tendency '
                            'and a large value increase over-segmentation tendency.',
                 'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
           minsize={'label': 'Min-size',
-                   'tooltip': 'Minimum segment size allowed in voxels.'})
+                   'tooltip': 'Minimum segment size allowed in voxels.'},
+          show_widget={'label': 'Show Widget: Lifted MultiCut',
+                       'tooltip': 'Show the widget for the lifted multicut.'})
 def widget_lifted_multicut(image: Image,
                            nuclei: Layer,
-                           _labels: Labels,
+                           im_labels: Labels,
                            beta: float = 0.5,
-                           minsize: int = 100) -> Future[LayerDataTuple]:
+                           minsize: int = 100,
+                           show_widget: bool = False) -> Future[LayerDataTuple]:
     if 'pmap' not in image.metadata:
         _pmap_warn('Lifted MultiCut Widget')
 
@@ -123,7 +126,7 @@ def widget_lifted_multicut(image: Image,
         raise ValueError(f'{nuclei} must be either an image or a labels layer')
 
     out_name = create_layer_name(image.name, 'LiftedMultiCut')
-    inputs_names = (image.name, nuclei.name, _labels.name)
+    inputs_names = (image.name, nuclei.name, im_labels.name)
     layer_kwargs = layer_properties(name=out_name,
                                     scale=image.scale,
                                     metadata=image.metadata)
@@ -133,7 +136,7 @@ def widget_lifted_multicut(image: Image,
     return start_threading_process(lmc,
                                    runtime_kwargs={'boundary_pmaps': image.data,
                                                    extra_key: nuclei.data,
-                                                   'superpixels': _labels.data},
+                                                   'superpixels': im_labels.data},
                                    statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
@@ -141,6 +144,27 @@ def widget_lifted_multicut(image: Image,
                                    layer_type=layer_type,
                                    step_name=f'Lifted Multicut Clustering',
                                    )
+
+
+@widget_lifted_multicut.show_widget.changed.connect
+def _on_show_lifted_multicut(show_widget: bool):
+    if show_widget:
+        widget_lifted_multicut.image.show()
+        widget_lifted_multicut.nuclei.show()
+        widget_lifted_multicut.im_labels.show()
+        widget_lifted_multicut.beta.show()
+        widget_lifted_multicut.minsize.show()
+        widget_lifted_multicut.call_button.show()
+    else:
+        widget_lifted_multicut.image.hide()
+        widget_lifted_multicut.nuclei.hide()
+        widget_lifted_multicut.im_labels.hide()
+        widget_lifted_multicut.beta.hide()
+        widget_lifted_multicut.minsize.hide()
+        widget_lifted_multicut.call_button.hide()
+
+
+_on_show_lifted_multicut(False)
 
 
 def dtws_wrapper(boundary_pmaps,
@@ -194,7 +218,9 @@ def dtws_wrapper(boundary_pmaps,
           use_pixel_pitch={'label': 'Use pixel pitch'},
           pixel_pitch={'label': 'Pixel pitch'},
           apply_nonmax_suppression={'label': 'Apply nonmax suppression'},
-          nuclei={'label': 'Is image Nuclei'}
+          nuclei={'label': 'Is image Nuclei'},
+          show_widget={'label': 'Show widget: Advanced Watershed',
+                       'tooltip': 'Show the widget to run Watershed.'}
           )
 def widget_dt_ws(image: Image,
                  stacked: str = '2D',
@@ -206,7 +232,8 @@ def widget_dt_ws(image: Image,
                  use_pixel_pitch: bool = False,
                  pixel_pitch: Tuple[int, int, int] = (1, 1, 1),
                  apply_nonmax_suppression: bool = False,
-                 nuclei: bool = False) -> Future[LayerDataTuple]:
+                 nuclei: bool = False,
+                 show_widget: bool = False) -> Future[LayerDataTuple]:
     if 'pmap' not in image.metadata:
         _pmap_warn("Watershed Widget")
 
@@ -238,6 +265,39 @@ def widget_dt_ws(image: Image,
                                    layer_type=layer_type,
                                    step_name=f'Watershed Segmentation',
                                    )
+
+
+@widget_dt_ws.show_widget.changed.connect
+def _show_widget_dt_ws(show_widget: bool):
+    if show_widget:
+        widget_dt_ws.image.show()
+        widget_dt_ws.stacked.show()
+        widget_dt_ws.threshold.show()
+        widget_dt_ws.min_size.show()
+        widget_dt_ws.sigma_seeds.show()
+        widget_dt_ws.sigma_weights.show()
+        widget_dt_ws.alpha.show()
+        widget_dt_ws.use_pixel_pitch.show()
+        widget_dt_ws.pixel_pitch.show()
+        widget_dt_ws.apply_nonmax_suppression.show()
+        widget_dt_ws.nuclei.show()
+        widget_dt_ws.call_button.show()
+    else:
+        widget_dt_ws.image.hide()
+        widget_dt_ws.stacked.hide()
+        widget_dt_ws.threshold.hide()
+        widget_dt_ws.min_size.hide()
+        widget_dt_ws.sigma_seeds.hide()
+        widget_dt_ws.sigma_weights.hide()
+        widget_dt_ws.alpha.hide()
+        widget_dt_ws.use_pixel_pitch.hide()
+        widget_dt_ws.pixel_pitch.hide()
+        widget_dt_ws.apply_nonmax_suppression.hide()
+        widget_dt_ws.nuclei.hide()
+        widget_dt_ws.call_button.hide()
+
+
+_show_widget_dt_ws(False)
 
 
 @magicgui(call_button='Run Watershed',
@@ -294,12 +354,15 @@ def widget_simple_dt_ws(image: Image,
           threshold={'label': 'Threshold',
                      'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 0.1},
           quantile={'label': 'Nuclei Quantile',
-                    'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 0.1})
+                    'widget_type': 'FloatRangeSlider', 'max': 100, 'min': 0, 'step': 0.1},
+          show_widget={'label': 'Show Widget: Fix Segmentation from Nuclei',
+                       'tooltip': 'Show/Hide the widget to change the parameters of the segmentation.'})
 def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
                                                    nuclei_segmentation: Labels,
                                                    boundary_pmaps: Image,
                                                    threshold=(33, 66),
-                                                   quantile=(0.1, 99.9)) -> Future[LayerDataTuple]:
+                                                   quantile=(0.1, 99.9),
+                                                   show_widget: bool = False) -> Future[LayerDataTuple]:
     out_name = create_layer_name(cell_segmentation.name, 'NucleiSegFix')
     threshold_merge, threshold_split = threshold
     threshold_merge, threshold_split = threshold_merge / 100, threshold_split / 100
@@ -332,3 +395,24 @@ def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
                                    layer_type=layer_type,
                                    step_name=f'Fix Over / Under segmentation',
                                    )
+
+
+@widget_fix_over_under_segmentation_from_nuclei.show_widget.changed.connect
+def _show_widget_fix_over_under_segmentation_from_nuclei(show_widget: bool):
+    if show_widget:
+        widget_fix_over_under_segmentation_from_nuclei.cell_segmentation.show()
+        widget_fix_over_under_segmentation_from_nuclei.nuclei_segmentation.show()
+        widget_fix_over_under_segmentation_from_nuclei.boundary_pmaps.show()
+        widget_fix_over_under_segmentation_from_nuclei.threshold.show()
+        widget_fix_over_under_segmentation_from_nuclei.quantile.show()
+        widget_fix_over_under_segmentation_from_nuclei.call_button.show()
+    else:
+        widget_fix_over_under_segmentation_from_nuclei.cell_segmentation.hide()
+        widget_fix_over_under_segmentation_from_nuclei.nuclei_segmentation.hide()
+        widget_fix_over_under_segmentation_from_nuclei.boundary_pmaps.hide()
+        widget_fix_over_under_segmentation_from_nuclei.threshold.hide()
+        widget_fix_over_under_segmentation_from_nuclei.quantile.hide()
+        widget_fix_over_under_segmentation_from_nuclei.call_button.hide()
+
+
+_show_widget_fix_over_under_segmentation_from_nuclei(False)

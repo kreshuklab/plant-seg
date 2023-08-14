@@ -12,13 +12,13 @@ from napari.types import LayerDataTuple
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
-from plantseg.utils import list_all_modality, list_all_dimensionality, list_all_output_type
-from plantseg.utils import list_models, add_custom_model, get_train_config, get_model_zoo, get_model_description
 from plantseg.ui.logging import napari_formatted_logging
 from plantseg.ui.widgets.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.ui.widgets.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
 from plantseg.ui.widgets.utils import return_value_if_widget
 from plantseg.ui.widgets.utils import start_threading_process, create_layer_name, layer_properties
+from plantseg.utils import list_all_modality, list_all_dimensionality, list_all_output_type
+from plantseg.utils import list_models, add_custom_model, get_train_config, get_model_zoo, get_model_description
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
@@ -180,11 +180,14 @@ def _compute_multiple_predictions(image, patch_size, device):
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
           device={'label': 'Device',
-                  'choices': ALL_DEVICES}
+                  'choices': ALL_DEVICES},
+          show_widget={'label': 'Show Widget: Try all Available Models',
+                       'tooltip': 'Show the widget to try all available models.'}
           )
 def widget_test_all_unet_predictions(image: Image,
                                      patch_size: Tuple[int, int, int] = (80, 170, 170),
-                                     device: str = ALL_DEVICES[0]) -> Future[List[LayerDataTuple]]:
+                                     device: str = ALL_DEVICES[0],
+                                     show_widget: bool = False) -> Future[List[LayerDataTuple]]:
     func = thread_worker(partial(_compute_multiple_predictions,
                                  image=image,
                                  patch_size=patch_size,
@@ -199,6 +202,23 @@ def widget_test_all_unet_predictions(image: Image,
     worker.returned.connect(on_done)
     worker.start()
     return future
+
+
+@widget_test_all_unet_predictions.show_widget.changed.connect
+def _on_show_all_unet_predictions(show_widget: bool):
+    if show_widget:
+        widget_test_all_unet_predictions.image.show()
+        widget_test_all_unet_predictions.patch_size.show()
+        widget_test_all_unet_predictions.device.show()
+        widget_test_all_unet_predictions.call_button.show()
+    else:
+        widget_test_all_unet_predictions.image.hide()
+        widget_test_all_unet_predictions.patch_size.hide()
+        widget_test_all_unet_predictions.device.hide()
+        widget_test_all_unet_predictions.call_button.hide()
+
+
+_on_show_all_unet_predictions(True)
 
 
 def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patch_size, single_batch_mode, device):
@@ -231,7 +251,9 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
           single_patch={'label': 'Single Patch',
                         'tooltip': 'If True, a single patch will be processed at a time to save memory.'},
           device={'label': 'Device',
-                  'choices': ALL_DEVICES}
+                  'choices': ALL_DEVICES},
+          show_widget={'label': 'Show Widget: Iterative Predictions',
+                       'tooltip': 'Show the widget to try all available models.'}
           )
 def widget_iterative_unet_predictions(image: Image,
                                       model_name: str,
@@ -239,7 +261,8 @@ def widget_iterative_unet_predictions(image: Image,
                                       sigma: float = 1.0,
                                       patch_size: Tuple[int, int, int] = (80, 170, 170),
                                       single_patch: bool = True,
-                                      device: str = ALL_DEVICES[0]) -> Future[LayerDataTuple]:
+                                      device: str = ALL_DEVICES[0],
+                                      show_widget: bool = False) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, f'iterative-{model_name}-x{num_iterations}')
     inputs_names = (image.name,)
     layer_kwargs = layer_properties(name=out_name,
@@ -263,6 +286,31 @@ def widget_iterative_unet_predictions(image: Image,
                                    layer_type=layer_type,
                                    step_name='UNet Iterative Predictions',
                                    )
+
+
+@widget_iterative_unet_predictions.show_widget.changed.connect
+def _on_show_iterative_unet_predictions(show_widget: bool):
+    if show_widget:
+        widget_iterative_unet_predictions.image.show()
+        widget_iterative_unet_predictions.model_name.show()
+        widget_iterative_unet_predictions.num_iterations.show()
+        widget_iterative_unet_predictions.sigma.show()
+        widget_iterative_unet_predictions.patch_size.show()
+        widget_iterative_unet_predictions.single_patch.show()
+        widget_iterative_unet_predictions.device.show()
+        widget_iterative_unet_predictions.call_button.show()
+    else:
+        widget_iterative_unet_predictions.image.hide()
+        widget_iterative_unet_predictions.model_name.hide()
+        widget_iterative_unet_predictions.num_iterations.hide()
+        widget_iterative_unet_predictions.sigma.hide()
+        widget_iterative_unet_predictions.patch_size.hide()
+        widget_iterative_unet_predictions.single_patch.hide()
+        widget_iterative_unet_predictions.device.hide()
+        widget_iterative_unet_predictions.call_button.hide()
+
+
+_on_show_iterative_unet_predictions(False)
 
 
 @widget_iterative_unet_predictions.model_name.changed.connect
@@ -292,6 +340,8 @@ def _on_model_name_changed_iterative(model_name: str):
                        'widget_type': 'ComboBox',
                        'tooltip': 'Type of prediction (e.g. cell boundaries predictions or nuclei...).',
                        'choices': list_all_output_type()},
+          show_widget={'label': 'Show Widget: Add Custom Model',
+                       'tooltip': 'Show the widget to add a new custom model.'}
 
           )
 def widget_add_custom_model(new_model_name: str = 'custom_model',
@@ -300,7 +350,8 @@ def widget_add_custom_model(new_model_name: str = 'custom_model',
                             description: str = 'New custom model',
                             dimensionality: str = list_all_dimensionality()[0],
                             modality: str = list_all_modality()[0],
-                            output_type: str = list_all_output_type()[0]) -> None:
+                            output_type: str = list_all_output_type()[0],
+                            show_widget: bool = False) -> None:
     finished, error_msg = add_custom_model(new_model_name=new_model_name,
                                            location=model_location,
                                            resolution=resolution,
@@ -319,6 +370,31 @@ def widget_add_custom_model(new_model_name: str = 'custom_model',
                                  f'{error_msg}',
                                  level='error',
                                  thread='Add Custom Model')
+
+
+@widget_add_custom_model.show_widget.changed.connect
+def _on_show_widget_add_custom_model(show_widget: bool):
+    if show_widget:
+        widget_add_custom_model.new_model_name.show()
+        widget_add_custom_model.model_location.show()
+        widget_add_custom_model.resolution.show()
+        widget_add_custom_model.description.show()
+        widget_add_custom_model.dimensionality.show()
+        widget_add_custom_model.modality.show()
+        widget_add_custom_model.output_type.show()
+        widget_add_custom_model.call_button.show()
+    else:
+        widget_add_custom_model.new_model_name.hide()
+        widget_add_custom_model.model_location.hide()
+        widget_add_custom_model.resolution.hide()
+        widget_add_custom_model.description.hide()
+        widget_add_custom_model.dimensionality.hide()
+        widget_add_custom_model.modality.hide()
+        widget_add_custom_model.output_type.hide()
+        widget_add_custom_model.call_button.hide()
+
+
+_on_show_widget_add_custom_model(False)
 
 
 @widget_add_custom_model.called.connect
