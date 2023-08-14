@@ -263,7 +263,7 @@ class Image(GenericImage):
             elif data.ndim == 4:
                 num_channels = data.shape[0]
                 assert num_channels == spec.num_channels, (f'Invalid shape for 2D image: expected number of channels '
-                                                              f'{spec.num_channels}, got {num_channels}')
+                                                           f'{spec.num_channels}, got {num_channels}')
                 assert data.shape[1] == 1, (f'Invalid shape for 2D image: {data.shape}, expected (C, 1, X, Y), '
                                             f'got (c, {data.shape[1]}, x, y')
                 layout = 'c1xy'
@@ -277,7 +277,7 @@ class Image(GenericImage):
             elif data.ndim == 4:
                 num_channels = data.shape[0]
                 assert num_channels == spec.num_channels, (f'Invalid shape for 3D image: expected number of channels '
-                                                              f'{spec.num_channels}, got {num_channels}')
+                                                           f'{spec.num_channels}, got {num_channels}')
                 layout = 'cxyz'
             else:
                 raise ValueError(f'Invalid number of dimensions: {data.ndim}, expected 3 or 4.')

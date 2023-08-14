@@ -7,7 +7,6 @@ import napari
 from magicgui import magicgui
 from napari.layers import Labels, Image, Layer
 
-from plantseg import PLANTSEG_MODELS_DIR
 from plantseg.dataset_tools.dataset_handler import DatasetHandler, save_dataset, load_dataset
 from plantseg.dataset_tools.dataset_handler import delete_dataset, change_dataset_location
 from plantseg.dataset_tools.images import Image as PlantSegImage

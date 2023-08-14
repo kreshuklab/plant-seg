@@ -12,11 +12,11 @@ from plantseg.dataprocessing.functional import image_gaussian_smoothing, image_r
 from plantseg.dataprocessing.functional.dataprocessing import compute_scaling_factor, compute_scaling_voxelsize
 from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation as _relabel_segmentation
 from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
-from plantseg.utils import list_models, get_model_resolution
 from plantseg.ui.widgets.predictions import widget_unet_predictions
 from plantseg.ui.widgets.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
 from plantseg.ui.widgets.utils import return_value_if_widget
 from plantseg.ui.widgets.utils import start_threading_process, create_layer_name, layer_properties
+from plantseg.utils import list_models, get_model_resolution
 
 
 @magicgui(call_button='Run Gaussian Smoothing',

@@ -6,13 +6,12 @@ from napari import Viewer
 from napari.types import LayerDataTuple
 
 from plantseg import PLANTSEG_MODELS_DIR
+from plantseg.dataset_tools.dataset_handler import load_dataset
 from plantseg.training.train import unet_training
 from plantseg.ui.widgets.predictions import ALL_DEVICES
 from plantseg.ui.widgets.utils import create_layer_name, start_threading_process, return_value_if_widget
 from plantseg.utils import list_all_dimensionality
 from plantseg.utils import list_datasets
-from plantseg.dataset_tools.dataset_handler import load_dataset
-from plantseg.ui.logging import napari_formatted_logging
 
 empty_dataset = ['none']
 startup_list_datasets = list_datasets() or empty_dataset
@@ -127,4 +126,3 @@ def _on_sparse_change(sparse: bool):
 
 if startup_list_datasets[0] != empty_dataset[0]:
     _on_dataset_name_changed(startup_list_datasets[0])
-

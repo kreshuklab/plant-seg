@@ -1,8 +1,8 @@
 import napari
 
+from plantseg.ui.containers import get_dataset_workflow
 from plantseg.ui.containers import get_extra
 from plantseg.ui.containers import get_gasp_workflow, get_preprocessing_workflow, get_main
-from plantseg.ui.containers import get_dataset_workflow
 from plantseg.ui.logging import napari_formatted_logging
 from plantseg.ui.widgets.proofreading.proofreading import setup_proofreading_keybindings
 

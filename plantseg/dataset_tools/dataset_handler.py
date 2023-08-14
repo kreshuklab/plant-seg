@@ -354,7 +354,6 @@ class DatasetHandler:
         raise ValueError(f'Stack {stack_name} not found in dataset {self.name}.')
 
 
-
 def load_dataset(dataset_name: str) -> DatasetHandler:
     """
     Load a dataset from the user dataset config file.

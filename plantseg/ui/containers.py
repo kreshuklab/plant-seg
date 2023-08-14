@@ -8,14 +8,14 @@ from plantseg.ui.widgets.dataprocessing import widget_label_processing
 from plantseg.ui.widgets.dataprocessing import widget_rescaling, widget_gaussian_smoothing
 from plantseg.ui.widgets.dataset_tools import widget_create_dataset, widget_edit_dataset
 from plantseg.ui.widgets.io import open_file, export_stacks
-from plantseg.ui.widgets.predictions import widget_unet_predictions, widget_test_all_unet_predictions
 from plantseg.ui.widgets.predictions import widget_iterative_unet_predictions, widget_add_custom_model
+from plantseg.ui.widgets.predictions import widget_unet_predictions, widget_test_all_unet_predictions
 from plantseg.ui.widgets.proofreading.proofreading import widget_clean_scribble, widget_filter_segmentation
 from plantseg.ui.widgets.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.ui.widgets.segmentation import widget_dt_ws, widget_agglomeration
-from plantseg.ui.widgets.segmentation import widget_simple_dt_ws
-from plantseg.ui.widgets.segmentation import widget_lifted_multicut
 from plantseg.ui.widgets.segmentation import widget_fix_over_under_segmentation_from_nuclei
+from plantseg.ui.widgets.segmentation import widget_lifted_multicut
+from plantseg.ui.widgets.segmentation import widget_simple_dt_ws
 
 
 def setup_menu(container, path=None):
