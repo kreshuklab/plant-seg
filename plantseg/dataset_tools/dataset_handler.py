@@ -136,7 +136,8 @@ class DatasetHandler:
         info = f'{self.__repr__()}:\n'
         info += f'Dimensionality: {self.expected_stack_specs.dimensionality}\n'
         info += f'Is sparse: {self.is_sparse}\n'
-        info += f'Number of stacks: {len(self.find_stacks_names())}\n'
+        info += f'Num of stacks: {len(self.find_stacks_names())} (train: {len(self.train)}, val: {len(self.val)}, ' \
+                f'test: {len(self.test)}) \n'
         return info
 
     def validate(self, *dataset_validators: DatasetValidator) -> tuple[bool, str]:
@@ -156,6 +157,13 @@ class DatasetHandler:
             Stack: the stack
         """
         return Stack.from_h5(path=path, expected_stack_specs=self.expected_stack_specs)
+
+    def get_stack_from_name(self, stack_name: str) -> tuple[Stack, bool, str]:
+        for h5 in self.find_stored_files():
+            if stack_name == f'{h5.parent.name}/{h5.stem}':
+                return self.get_stack(h5)
+
+        raise ValueError(f'Stack {stack_name} not found in dataset {self.name}')
 
     def update_stack_from_disk(self, phase: str = None):
         """
@@ -196,13 +204,16 @@ class DatasetHandler:
         file_formats = self.default_file_formats if not ignore_default_file_format else ('*',)
 
         for phase in phases:
+            phase_found_files = []
             phase_dir = self.dataset_dir / phase
             assert phase_dir.exists(), f'Phase {phase} not found in {self.dataset_dir}'
 
             for file_format in file_formats:
                 stacks_found = [file for file in phase_dir.glob(f'*{file_format}')]
-                found_files.extend(stacks_found)
+                phase_found_files.extend(stacks_found)
 
+            phase_found_files = sorted(phase_found_files, key=lambda x: x.stem)
+            found_files.extend(phase_found_files)
         return found_files
 
     def find_stacks_names(self, phase: str = None) -> list[str]:
@@ -210,7 +221,7 @@ class DatasetHandler:
         Find the name of the stacks in the dataset directory.
         """
         stacks = self.find_stored_files(phase=phase)
-        return [stack.stem for stack in stacks]
+        return [f'{stack.parent.name}/{stack.stem}' for stack in stacks]
 
     def get_stacks(self, phase: str = None) -> list[Stack]:
         """
@@ -246,8 +257,15 @@ class DatasetHandler:
         phase_dir = self.dataset_dir / phase
         stack_path = phase_dir / f'{stack_name}.h5'
         idx = 1
+
         while stack_path.exists() and unique_name:
-            stack_name += f'_{idx}'
+            if stack_name.find('_') == -1:
+                stack_name += f'_{idx}'
+            else:
+                *name_base, idx_name = stack_name.split('_')
+                name_base = '_'.join(name_base)
+                stack_name = f'{name_base}_{idx}'
+
             stack_path = phase_dir / f'{stack_name}.h5'
             idx += 1
 
@@ -269,7 +287,7 @@ class DatasetHandler:
         for phase in self.default_phases:
             stacks = self.find_stacks_names(phase=phase)
             if stack_name in stacks:
-                stack_path = self.dataset_dir / phase / f'{stack_name}.h5'
+                stack_path = self.dataset_dir / f'{stack_name}.h5'
                 if stack_path.exists():
                     stack_path.unlink()
                     self.update_stack_from_disk(phase=phase)
@@ -291,7 +309,7 @@ class DatasetHandler:
         for phase in self.default_phases:
             stacks = self.find_stacks_names(phase=phase)
             if stack_name in stacks:
-                stack_path = self.dataset_dir / phase / f'{stack_name}.h5'
+                stack_path = self.dataset_dir / f'{stack_name}.h5'
                 if stack_path.exists():
                     new_stack_path = self.dataset_dir / phase / f'{new_name}.h5'
                     stack_path.rename(new_stack_path)
@@ -301,6 +319,35 @@ class DatasetHandler:
                     raise FileNotFoundError(f'Stack {stack_name} not found in {phase} phase.')
 
         raise ValueError(f'Stack {stack_name} not found in dataset {self.name}.')
+
+    def change_phase_stack(self, stack_name: str, new_phase: str):
+        """
+        Change the phase of a stack in the dataset.
+        Args:
+            stack_name: string with the name of the stack
+            new_phase: string with the new phase of the stack
+
+        Returns: None
+        """
+        assert new_phase in self.default_phases, f'Phase {new_phase} not found in dataset {self.name}.'
+        for phase in self.default_phases:
+            stacks = self.find_stacks_names(phase=phase)
+            if stack_name in stacks:
+                stack_path = self.dataset_dir / f'{stack_name}.h5'
+                if stack_path.exists():
+                    if phase == new_phase:
+                        return None
+
+                    stack_name = stack_name.split('/')[-1]
+                    new_stack_path = self.dataset_dir / new_phase / f'{stack_name}.h5'
+                    stack_path.rename(new_stack_path)
+                    self.update_stack_from_disk()
+                    return None
+                else:
+                    raise FileNotFoundError(f'Stack {stack_name} not found in {phase} phase.')
+
+        raise ValueError(f'Stack {stack_name} not found in dataset {self.name}.')
+
 
 
 def load_dataset(dataset_name: str) -> DatasetHandler:

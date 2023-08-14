@@ -27,7 +27,8 @@ class MockData:
         self.path = path
 
     def load(self):
-        return load_h5(self.path, key=self.key)
+        data, infos = load_h5(self.path, key=self.key)
+        return data, infos
 
 
 @dataclass
@@ -89,6 +90,7 @@ class GenericImage:
     layout: str = 'xy'
     is_sparse: bool
     data_type: str
+    infos: tuple = None
 
     def __init__(self, data: np.ndarray,
                  spec: ImageSpecs):
@@ -147,7 +149,9 @@ class GenericImage:
         Load the data from the h5 file
         """
         if isinstance(self.data, MockData):
-            return self.data.load()
+            data, infos = self.data.load()
+            self.infos = infos
+            return data
 
         return self.data
 
@@ -253,10 +257,15 @@ class Image(GenericImage):
                 layout = 'xy'
             elif data.ndim == 3:
                 num_channels = data.shape[0]
+                assert num_channels == spec.num_channels, (f'Invalid shape for 2D image: expected number of channels '
+                                                           f'{spec.num_channels}, got {num_channels}')
                 layout = 'cxy'
             elif data.ndim == 4:
                 num_channels = data.shape[0]
-                assert data.shape[1] == 1, f'Invalid number of channels: {data.shape[1]}, expected 1.'
+                assert num_channels == spec.num_channels, (f'Invalid shape for 2D image: expected number of channels '
+                                                              f'{spec.num_channels}, got {num_channels}')
+                assert data.shape[1] == 1, (f'Invalid shape for 2D image: {data.shape}, expected (C, 1, X, Y), '
+                                            f'got (c, {data.shape[1]}, x, y')
                 layout = 'c1xy'
             else:
                 raise ValueError(f'Invalid number of dimensions: {data.ndim}, expected 2 or 3 or 4.')
@@ -267,6 +276,8 @@ class Image(GenericImage):
                 layout = 'xyz'
             elif data.ndim == 4:
                 num_channels = data.shape[0]
+                assert num_channels == spec.num_channels, (f'Invalid shape for 3D image: expected number of channels '
+                                                              f'{spec.num_channels}, got {num_channels}')
                 layout = 'cxyz'
             else:
                 raise ValueError(f'Invalid number of dimensions: {data.ndim}, expected 3 or 4.')
@@ -296,11 +307,13 @@ class Labels(GenericImage):
             if data.ndim == 2:
                 layout = 'xy'
             elif data.ndim == 3:
-                assert data.shape[0] == 1, f'Invalid number of channels: {data.shape[0]}, expected 1.'
+                assert data.shape[0] == 1, (f'Invalid shape for 2D labels. '
+                                            f'Expected shape: (1, y, x) got ({data.shape[0]}, y, x).')
                 layout = '1xy'
             elif data.ndim == 4:
-                assert data.shape[0] == 1, f'Invalid number of channels: {data.shape[0]}, expected 1.'
-                assert data.shape[1] == 1, f'Invalid number of channels: {data.shape[1]}, expected 1.'
+                assert data.shape[0] == 1 and data.shape[1], (f'Invalid shape for 2D labels. '
+                                                              f'Expected shape: (1, 1, y, x) got'
+                                                              f' ({data.shape[0]}, {data.shape[1]} y, x).')
                 layout = '11xy'
             else:
                 raise ValueError(f'Invalid number of dimensions: {data.ndim}, expected 2 or 3 or 4.')
@@ -309,7 +322,9 @@ class Labels(GenericImage):
             if data.ndim == 3:
                 layout = 'xyz'
             elif data.ndim == 4:
-                assert data.shape[0] == 1, f'Invalid number of channels: {data.shape[0]}, expected 1.'
+                assert data.shape[0] == 1, (f'Invalid shape for 3D labels. '
+                                            f'Expected shape: (1, z, y, x) got'
+                                            f' ({data.shape[0]}, z, y, x).')
                 layout = '1xyz'
             else:
                 raise ValueError(f'Invalid number of dimensions: {data.ndim}, expected 3 or 4.')
