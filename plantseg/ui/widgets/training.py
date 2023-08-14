@@ -1,5 +1,4 @@
 from concurrent.futures import Future
-from pathlib import Path
 from typing import Tuple
 
 from magicgui import magicgui
@@ -8,10 +7,15 @@ from napari.types import LayerDataTuple
 
 from plantseg import PLANTSEG_MODELS_DIR
 from plantseg.training.train import unet_training
-from plantseg.utils import list_all_dimensionality
 from plantseg.ui.widgets.predictions import ALL_DEVICES
-from plantseg.ui.widgets.utils import create_layer_name, start_threading_process, return_value_if_widget, \
-    layer_properties
+from plantseg.ui.widgets.utils import create_layer_name, start_threading_process, return_value_if_widget
+from plantseg.utils import list_all_dimensionality
+from plantseg.utils import list_datasets
+from plantseg.dataset_tools.dataset_handler import load_dataset
+from plantseg.ui.logging import napari_formatted_logging
+
+empty_dataset = ['none']
+startup_list_datasets = list_datasets() or empty_dataset
 
 
 def unet_training_wrapper(dataset_dir, model_name, in_channels, out_channels, patch_size, max_num_iters, dimensionality,
@@ -25,9 +29,9 @@ def unet_training_wrapper(dataset_dir, model_name, in_channels, out_channels, pa
 
 
 @magicgui(call_button='Run Training',
-          dataset_dir={'label': 'Path to the dataset directory',
-                       'mode': 'd',
-                       'tooltip': 'Select a directory containing train and val subfolders'},
+          dataset_name={'label': 'Dataset name',
+                        'choices': startup_list_datasets,
+                        'tooltip': f'Choose the dataset for the training.'},
           model_name={'label': 'Trained model name',
                       'tooltip': f'Model files will be saved in f{PLANTSEG_MODELS_DIR}/model_name'},
           in_channels={'label': 'Input channels',
@@ -48,7 +52,7 @@ def unet_training_wrapper(dataset_dir, model_name, in_channels, out_channels, pa
                   'choices': ALL_DEVICES}
           )
 def widget_unet_training(viewer: Viewer,
-                         dataset_dir: Path = Path.home(),
+                         dataset_name: str = startup_list_datasets[0],
                          model_name: str = 'my-model',
                          in_channels: int = 1,
                          out_channels: int = 1,
@@ -59,6 +63,12 @@ def widget_unet_training(viewer: Viewer,
                          device: str = ALL_DEVICES[0]) -> Future[LayerDataTuple]:
     out_name = create_layer_name(model_name, 'training')
     step_kwargs = dict(model_name=model_name, sparse=sparse, dimensionality=dimensionality)
+    if dataset_name == empty_dataset[0]:
+        raise ValueError('Please select a dataset, if you do not have one, please create one using the napari '
+                         'dataset creator widget.')
+
+    dataset_dir = load_dataset(dataset_name).dataset_dir
+
     return start_threading_process(unet_training_wrapper,
                                    runtime_kwargs={
                                        'dataset_dir': dataset_dir,
@@ -82,6 +92,19 @@ def widget_unet_training(viewer: Viewer,
                                    )
 
 
+@widget_unet_training.dataset_name.changed.connect
+def _on_dataset_name_changed(dataset_name: str):
+    if dataset_name == empty_dataset[0]:
+        return None
+
+    dataset = load_dataset(dataset_name)
+    widget_unet_training.sparse.value = dataset.is_sparse
+    widget_unet_training.dimensionality.value = dataset.dimensionality
+    for spec in dataset.expected_stack_specs.list_specs:
+        if spec.key == 'raw':
+            widget_unet_training.in_channels.value = spec.num_channels
+
+
 @widget_unet_training.dimensionality.changed.connect
 def _on_dimensionality_changed(dimensionality: str):
     dimensionality = return_value_if_widget(dimensionality)
@@ -100,3 +123,8 @@ def _on_sparse_change(sparse: bool):
         widget_unet_training.out_channels.value = 8
     else:
         widget_unet_training.out_channels.value = 1
+
+
+if startup_list_datasets[0] != empty_dataset[0]:
+    _on_dataset_name_changed(startup_list_datasets[0])
+

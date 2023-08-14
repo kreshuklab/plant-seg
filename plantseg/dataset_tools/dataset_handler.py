@@ -68,6 +68,7 @@ class DatasetHandler:
     train: list[str]
     val: list[str]
     test: list[str]
+    dimensionality: str
     default_file_formats = H5_EXTENSIONS
 
     def __init__(self,
@@ -94,6 +95,10 @@ class DatasetHandler:
         self.dataset_dir.mkdir(parents=True, exist_ok=True)
         for phase in self.default_phases:
             (self.dataset_dir / phase).mkdir(exist_ok=True)
+
+    @property
+    def dimensionality(self) -> str:
+        return self.expected_stack_specs.dimensionality
 
     @classmethod
     def from_dict(cls, dataset_dict: dict):

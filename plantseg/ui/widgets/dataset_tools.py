@@ -338,7 +338,7 @@ available_actions: dict[str, Action] = {action.name: action for action in [add_s
                   'tooltip': f'Define if the stack will be added or removed from the dataset'},
           dataset_name={'label': 'Dataset name',
                         'choices': startup_list_datasets,
-                        'tooltip': f'Model files will be saved in f{PLANTSEG_MODELS_DIR}/model_name'},
+                        'tooltip': f'Choose the dataset to be edited'},
           phase={'label': 'Phase',
                  'choices': ['train', 'val', 'test'],
                  'tooltip': f'Define if the stack will be used for training, validation or testing'},
