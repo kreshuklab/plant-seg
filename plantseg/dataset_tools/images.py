@@ -92,7 +92,7 @@ class GenericImage:
     data_type: str
     infos: tuple = None
 
-    def __init__(self, data: np.ndarray,
+    def __init__(self, data: Union[np.ndarray, MockData],
                  spec: ImageSpecs):
         """
         Generic image class to handle 2D and 3D images consistently.

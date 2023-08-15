@@ -283,7 +283,7 @@ def clean_models():
                        "Are you sure you want to continue? (y/n) ")
         if answer == 'y':
             shutil.rmtree(PLANTSEG_LOCAL_DIR)
-            print("All models deleted... PlantSeg will now close")
+            print("All models/configs deleted... PlantSeg will now close")
             return None
 
         elif answer == 'n':
