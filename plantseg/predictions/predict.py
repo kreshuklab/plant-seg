@@ -55,6 +55,11 @@ class UnetPredictions(GenericPipelineStep):
 
         model, model_config, model_path = get_model_config(model_name, model_update=model_update)
         state = torch.load(model_path, map_location='cpu')
+
+        # ensure compatibility with models trained with pytorch-3dunet
+        if 'model_state_dict' in state:
+            state = state['model_state_dict']
+
         model.load_state_dict(state)
 
         patch_halo = get_patch_halo(model_name)
