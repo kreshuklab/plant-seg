@@ -9,6 +9,7 @@ from plantseg.segmentation.functional.segmentation import dt_watershed
 class DistanceTransformWatershed(AbstractSegmentationStep):
     def __init__(self,
                  predictions_paths,
+                 channel=None,
                  save_directory="DTWatershed",
                  ws_2D=True,
                  ws_threshold=0.4,
@@ -21,7 +22,8 @@ class DistanceTransformWatershed(AbstractSegmentationStep):
         super().__init__(input_paths=predictions_paths,
                          save_directory=save_directory,
                          file_suffix='_dtws',
-                         state=state)
+                         state=state,
+                         channel=channel)
 
         self.dt_watershed = partial(dt_watershed,
                                     threshold=ws_threshold, sigma_seeds=ws_sigma,

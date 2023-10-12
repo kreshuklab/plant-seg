@@ -17,6 +17,7 @@ class WSSegmentationFeeder:
 class GaspFromPmaps(AbstractSegmentationStep):
     def __init__(self,
                  predictions_paths,
+                 channel=None,
                  save_directory="GASP",
                  gasp_linkage_criteria='average',
                  beta=0.5,
@@ -34,7 +35,8 @@ class GaspFromPmaps(AbstractSegmentationStep):
         super().__init__(input_paths=predictions_paths,
                          save_directory=save_directory,
                          file_suffix='_gasp_' + gasp_linkage_criteria,
-                         state=state)
+                         state=state,
+                         channel=channel)
 
         assert gasp_linkage_criteria in ['average',
                                          'mutex_watershed'], f"Unsupported linkage criteria '{gasp_linkage_criteria}'"

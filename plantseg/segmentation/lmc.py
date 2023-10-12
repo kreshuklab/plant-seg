@@ -5,14 +5,15 @@ from functools import partial
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import AbstractSegmentationStep
 from plantseg.pipeline.utils import load_paths
-from plantseg.segmentation.functional.segmentation import dt_watershed, lifted_multicut_from_nuclei_pmaps, \
-    lifted_multicut_from_nuclei_segmentation
+from plantseg.segmentation.functional.segmentation import dt_watershed, lifted_multicut_from_nuclei_pmaps, lifted_multicut_from_nuclei_segmentation
 
 
 class LiftedMulticut(AbstractSegmentationStep):
     def __init__(self,
                  predictions_paths,
                  nuclei_predictions_path,
+                 channel=None,
+                 channel_nuclei=None,
                  is_segmentation=False,
                  save_directory="LiftedMulticut",
                  beta=0.6,
@@ -29,9 +30,11 @@ class LiftedMulticut(AbstractSegmentationStep):
         super().__init__(input_paths=predictions_paths,
                          save_directory=save_directory,
                          file_suffix='_lmc',
-                         state=state)
+                         state=state,
+                         channel=channel)
 
         self.nuclei_predictions_paths = load_paths(nuclei_predictions_path)
+        self.channel_nuclei = channel_nuclei
         self.is_segmentation = is_segmentation
 
         self.beta = beta
@@ -84,6 +87,8 @@ class LiftedMulticut(AbstractSegmentationStep):
     def read_process_write(self, input_path):
         gui_logger.info(f'Loading stack from {input_path}')
         boundary_pmaps, voxel_size = self.load_stack(input_path)
+
+        self.input_channel = self.channel_nuclei  # load_stack() uses self.input_channel to load
         nuclei_pmaps_path = self._find_nuclei_pmaps_path(input_path)
         if nuclei_pmaps_path is None:
             raise RuntimeError(f'Cannot find nuclei probability maps for: {input_path}. '
@@ -115,5 +120,3 @@ class LiftedMulticut(AbstractSegmentationStep):
             if fn == filename:
                 return nuclei_path
         return None
-
-

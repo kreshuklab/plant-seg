@@ -12,7 +12,13 @@ from plantseg.segmentation.utils import SUPPORTED_ALGORITMS
 from plantseg.utils import list_models, check_models
 
 deprecated_keys = {'param': 'filter_param'}
-special_keys = {'nuclei_predictions_path', 'is_segmentation'}
+special_keys = {
+    'key',
+    'channel',
+    'channel_nuclei',
+    'nuclei_predictions_path',
+    'is_segmentation',
+}
 
 
 def _error_message(error, key, value, fallback):
