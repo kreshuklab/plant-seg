@@ -26,7 +26,7 @@ class GenericPipelineStep:
         save_raw (bool): save raw input in the output H5
     """
 
-    def __init__(self, input_paths, input_type, output_type, save_directory, channel=None,
+    def __init__(self, input_paths, input_type, output_type, save_directory, input_key=None, input_channel=None,
                  file_suffix="", out_ext=".h5", state=True, h5_output_key=None, save_raw=False):
         assert isinstance(input_paths, list)
         assert len(input_paths) > 0, "Input file paths cannot be empty"
@@ -35,7 +35,8 @@ class GenericPipelineStep:
         assert save_directory is not None
 
         self.input_paths = input_paths
-        self.input_channel = channel
+        self.input_key = input_key
+        self.input_channel = input_channel
         self.h5_output_key = h5_output_key
         self.output_type = output_type
         self.input_type = input_type
@@ -102,8 +103,7 @@ class GenericPipelineStep:
         Returns:
             tuple(nd.array, tuple(float)): (numpy array containing stack's data, stack's data voxel size)
         """
-        _, ext = os.path.splitext(file_path)
-        data, (voxel_size, _, key, _) = smart_load(file_path, key=None)
+        data, (voxel_size, _, key, _) = smart_load(file_path, key=self.input_key)
         if self.h5_output_key is None:
             self.h5_output_key = key
 
@@ -211,10 +211,11 @@ class GenericPipelineStep:
 
 
 class AbstractSegmentationStep(GenericPipelineStep, ABC):
-    def __init__(self, input_paths, save_directory, file_suffix, state, channel=None):
+    def __init__(self, input_paths, save_directory, file_suffix, state, input_key=None, input_channel=None):
         super().__init__(
             input_paths=input_paths,
-            channel=channel,
+            input_key=input_key,
+            input_channel=input_channel,
             input_type="data_float32",
             output_type="labels",
             save_directory=save_directory,
@@ -223,4 +224,3 @@ class AbstractSegmentationStep(GenericPipelineStep, ABC):
             state=state,
             h5_output_key='segmentation',
         )
-        self.prediction_channel = None

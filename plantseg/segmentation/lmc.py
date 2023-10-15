@@ -12,6 +12,8 @@ class LiftedMulticut(AbstractSegmentationStep):
     def __init__(self,
                  predictions_paths,
                  nuclei_predictions_path,
+                 key=None,
+                 key_nuclei=None,
                  channel=None,
                  channel_nuclei=None,
                  is_segmentation=False,
@@ -31,9 +33,11 @@ class LiftedMulticut(AbstractSegmentationStep):
                          save_directory=save_directory,
                          file_suffix='_lmc',
                          state=state,
-                         channel=channel)
+                         input_key=key,
+                         input_channel=channel)
 
         self.nuclei_predictions_paths = load_paths(nuclei_predictions_path)
+        self.key_nuclei = key_nuclei
         self.channel_nuclei = channel_nuclei
         self.is_segmentation = is_segmentation
 
@@ -88,7 +92,8 @@ class LiftedMulticut(AbstractSegmentationStep):
         gui_logger.info(f'Loading stack from {input_path}')
         boundary_pmaps, voxel_size = self.load_stack(input_path)
 
-        self.input_channel = self.channel_nuclei  # load_stack() uses self.input_channel to load
+        self.input_key = self.key_nuclei  # load_stack() uses self.input_key to load dataset
+        self.input_channel = self.channel_nuclei  # load_stack() uses self.input_channel to select channel
         nuclei_pmaps_path = self._find_nuclei_pmaps_path(input_path)
         if nuclei_pmaps_path is None:
             raise RuntimeError(f'Cannot find nuclei probability maps for: {input_path}. '

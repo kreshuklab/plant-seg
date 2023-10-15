@@ -14,6 +14,7 @@ from plantseg.utils import list_models, check_models
 deprecated_keys = {'param': 'filter_param'}
 special_keys = {
     'key',
+    'key_nuclei',
     'channel',
     'channel_nuclei',
     'nuclei_predictions_path',

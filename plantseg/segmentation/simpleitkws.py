@@ -5,6 +5,7 @@ from plantseg.segmentation.functional.segmentation import simple_itk_watershed
 class SimpleITKWatershed(AbstractSegmentationStep):
     def __init__(self,
                  predictions_paths,
+                 key=None,
                  channel=None,
                  save_directory="ITKWatershed",
                  ws_2D=True,
@@ -18,7 +19,8 @@ class SimpleITKWatershed(AbstractSegmentationStep):
                          save_directory=save_directory,
                          file_suffix='_itkws',
                          state=state,
-                         channel=channel)
+                         input_key=key,
+                         input_channel=channel)
 
         self.ws_threshold = ws_threshold
         self.ws_minsize = ws_minsize

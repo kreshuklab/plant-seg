@@ -11,6 +11,7 @@ from plantseg.segmentation.functional.segmentation import dt_watershed, multicut
 class MulticutFromPmaps(AbstractSegmentationStep):
     def __init__(self,
                  predictions_paths,
+                 key=None,
                  channel=None,
                  save_directory="MultiCut",
                  beta=0.5,
@@ -29,7 +30,8 @@ class MulticutFromPmaps(AbstractSegmentationStep):
                          save_directory=save_directory,
                          file_suffix='_multicut',
                          state=state,
-                         channel=channel)
+                         input_key=key,
+                         input_channel=channel)
 
         self.beta = beta
 

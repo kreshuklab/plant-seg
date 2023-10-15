@@ -70,4 +70,4 @@ class UnetPredictions(GenericPipelineStep):
     def process(self, raw: np.ndarray) -> np.ndarray:
         dataset = get_array_dataset(raw, self.model_name, patch=self.patch, stride_ratio=self.stride_ratio)
         pmaps = self.predictor(dataset)
-        return pmaps[0]
+        return pmaps
