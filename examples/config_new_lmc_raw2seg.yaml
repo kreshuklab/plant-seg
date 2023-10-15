@@ -1,11 +1,11 @@
 # Contains the path to the directory or file to process
-path: '/g/kreshuk/yu/datasets/EMBL/YWang2021Embryo/cells/VF_04/000.tif'
+path: '/g/kreshuk/yu/datasets/EMBL/YWang2021Embryo/combined_nuclei_cells/VF_04/000.h5'
 
 preprocessing:
   # enable/disable preprocessing
   state: True
   # key for H5 or ZARR, can be set to null if only one key exists in each file
-  key: Null
+  key: 'cells'
   # channel to use if input image has shape CZYX or CYX, otherwise set to null
   channel: Null
   # create a new sub folder where all results will be stored
@@ -42,7 +42,7 @@ cnn_prediction:
   # how many subprocesses to use for data loading
   num_workers: 8
   # patch size given to the network (adapt to fit in your GPU mem)
-  patch: [32, 96, 96]
+  patch: [64, 96, 128]
   # stride between patches will be computed as `stride_ratio * patch`
   # recommended values are in range `[0.5, 0.75]` to make sure the patches have enough overlap to get smooth prediction maps
   stride_ratio: 0.75
@@ -52,8 +52,12 @@ cnn_prediction:
 cnn_postprocessing:
   # enable/disable cnn post processing
   state: True
+  # key for H5 or ZARR, can be set to null if only one key exists in each file; null is recommended if the previous steps has state True
+  key: Null
+  # channel to use if input image has shape CZYX or CYX, otherwise set to null; null is recommended if the previous steps has state True
+  channel: 1
   # if True convert to result to tiff
-  tiff: False
+  tiff: True
   # rescaling factor
   factor: [1, 1, 1]
   # spline order for rescaling
@@ -100,6 +104,10 @@ segmentation:
 segmentation_postprocessing:
   # enable/disable segmentation post processing
   state: True
+  # key for H5 or ZARR, can be set to null if only one key exists in each file; null is recommended if the previous steps has state True
+  key: Null
+  # channel to use if input image has shape CZYX or CYX, otherwise set to null; null is recommended if the previous steps has state True
+  channel: Null
   # if True convert to result to tiff
   tiff: True
   # rescaling factor
