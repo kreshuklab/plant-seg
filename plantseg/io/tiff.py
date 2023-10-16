@@ -166,4 +166,5 @@ def create_tiff(path: str, stack: np.array, voxel_size: list[float, float, float
                      dtype=stack.dtype,
                      imagej=True,
                      resolution=resolution,
-                     metadata={'axes': 'TZCYXS', 'spacing': spacing, 'unit': voxel_size_unit})
+                     metadata={'axes': 'TZCYXS', 'spacing': spacing, 'unit': voxel_size_unit},
+                     compression='zlib')
