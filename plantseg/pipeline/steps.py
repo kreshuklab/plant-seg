@@ -13,9 +13,10 @@ from plantseg.pipeline.utils import SUPPORTED_TYPES
 class GenericPipelineStep:
     """
     Base class for a single step of a pipeline
-    
+
     Args:
         input_paths (iterable): paths to the files to be processed
+        channel (int): channel to be used from the input volume, None if no C dimension
         output_type (str): numpy dtype or the output
         save_directory (str): relative dir where the output files will be saved
         file_suffix (str): suffix added to the output files
@@ -25,7 +26,7 @@ class GenericPipelineStep:
         save_raw (bool): save raw input in the output H5
     """
 
-    def __init__(self, input_paths, input_type, output_type, save_directory,
+    def __init__(self, input_paths, input_type, output_type, save_directory, input_key=None, input_channel=None,
                  file_suffix="", out_ext=".h5", state=True, h5_output_key=None, save_raw=False):
         assert isinstance(input_paths, list)
         assert len(input_paths) > 0, "Input file paths cannot be empty"
@@ -34,6 +35,8 @@ class GenericPipelineStep:
         assert save_directory is not None
 
         self.input_paths = input_paths
+        self.input_key = input_key
+        self.input_channel = input_channel
         self.h5_output_key = h5_output_key
         self.output_type = output_type
         self.input_type = input_type
@@ -100,12 +103,14 @@ class GenericPipelineStep:
         Returns:
             tuple(nd.array, tuple(float)): (numpy array containing stack's data, stack's data voxel size)
         """
-        _, ext = os.path.splitext(file_path)
-        data, (voxel_size, _, key, _) = smart_load(file_path, key=None)
+        data, (voxel_size, _, key, _) = smart_load(file_path, key=self.input_key)
         if self.h5_output_key is None:
             self.h5_output_key = key
 
         # reshape data to 3D always
+        if self.input_channel is not None:
+            data = data[self.input_channel]
+            gui_logger.warning(f"Input channel {self.input_channel} was selected, assuming dimension order CZYX or CYX")
         data = np.nan_to_num(data)
         data = self._fix_input_shape(data)
 
@@ -128,7 +133,12 @@ class GenericPipelineStep:
 
     @staticmethod
     def _fix_input_shape(data):
-        return fix_input_shape(data)
+        shape_before = data.shape
+        data = fix_input_shape(data)
+        shape_after = data.shape
+        if shape_before != shape_after:
+            gui_logger.warning(f"Input shape {shape_before} was fixed to {shape_after}")
+        return data
 
     def _adjust_input_type(self, data):
         if self.input_type == "labels":
@@ -183,7 +193,7 @@ class GenericPipelineStep:
 
         elif self.output_type == "data_uint8":
             data = self._normalize_01(data)
-            data = (data * np.iinfo(np.uint8).max)
+            data = data * np.iinfo(np.uint8).max
             return data.astype(np.uint8)
 
     def _raw_path(self, input_path):
@@ -201,12 +211,16 @@ class GenericPipelineStep:
 
 
 class AbstractSegmentationStep(GenericPipelineStep, ABC):
-    def __init__(self, input_paths, save_directory, file_suffix, state):
-        super().__init__(input_paths=input_paths,
-                         input_type="data_float32",
-                         output_type="labels",
-                         save_directory=save_directory,
-                         file_suffix=file_suffix,
-                         out_ext=".h5",
-                         state=state,
-                         h5_output_key='segmentation')
+    def __init__(self, input_paths, save_directory, file_suffix, state, input_key=None, input_channel=None):
+        super().__init__(
+            input_paths=input_paths,
+            input_key=input_key,
+            input_channel=input_channel,
+            input_type="data_float32",
+            output_type="labels",
+            save_directory=save_directory,
+            file_suffix=file_suffix,
+            out_ext=".h5",
+            state=state,
+            h5_output_key='segmentation',
+        )

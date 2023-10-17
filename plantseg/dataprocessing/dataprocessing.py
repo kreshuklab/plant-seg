@@ -17,6 +17,8 @@ def _no_filter(image, param):
 class DataPostProcessing3D(GenericPipelineStep):
     def __init__(self,
                  input_paths: list[str],
+                 input_key: Optional[str] = None,
+                 input_channel: Optional[int] = None,
                  input_type: str = "labels",
                  output_type: str = "labels",
                  save_directory: str = "PostProcessing",
@@ -34,6 +36,8 @@ class DataPostProcessing3D(GenericPipelineStep):
                          input_type=input_type,
                          output_type=output_type,
                          save_directory=save_directory,
+                         input_key=input_key,
+                         input_channel=input_channel,
                          out_ext=out_ext,
                          state=state,
                          h5_output_key=h5_output_key,
@@ -67,6 +71,8 @@ class DataPostProcessing3D(GenericPipelineStep):
 class DataPreProcessing3D(GenericPipelineStep):
     def __init__(self,
                  input_paths: list[str],
+                 input_key: Optional[str] = None,
+                 input_channel: Optional[int] = None,
                  input_type: str = "data_float32",
                  output_type: str = "data_uint8",
                  save_directory: str = "PreProcessing",
@@ -80,6 +86,8 @@ class DataPreProcessing3D(GenericPipelineStep):
                          input_type=input_type,
                          output_type=output_type,
                          save_directory=save_directory,
+                         input_key=input_key,
+                         input_channel=input_channel,
                          out_ext=".h5",
                          state=state,
                          h5_output_key='raw')

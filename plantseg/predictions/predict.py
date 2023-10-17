@@ -35,7 +35,7 @@ def _check_patch_size(paths, patch_size):
 
 
 class UnetPredictions(GenericPipelineStep):
-    def __init__(self, input_paths, model_name, patch=(80, 160, 160), stride_ratio=0.75, device='cuda',
+    def __init__(self, input_paths, model_name, input_key=None, input_channel=None, patch=(80, 160, 160), stride_ratio=0.75, device='cuda',
                  model_update=False, input_type="data_float32", output_type="data_float32", out_ext=".h5", state=True):
         self.patch = patch
         self.model_name = model_name
@@ -48,6 +48,8 @@ class UnetPredictions(GenericPipelineStep):
                          input_type=input_type,
                          output_type=output_type,
                          save_directory=model_name,
+                         input_key=input_key,
+                         input_channel=input_channel,
                          out_ext=out_ext,
                          state=state,
                          file_suffix='_predictions',
@@ -70,4 +72,4 @@ class UnetPredictions(GenericPipelineStep):
     def process(self, raw: np.ndarray) -> np.ndarray:
         dataset = get_array_dataset(raw, self.model_name, patch=self.patch, stride_ratio=self.stride_ratio)
         pmaps = self.predictor(dataset)
-        return pmaps[0]
+        return pmaps
