@@ -8,9 +8,8 @@ generic_confocal_3D_unet:
   description: "Unet trained on confocal images of Arabidopsis Ovules on 1/2-resolution in XY with BCEDiceLoss."
   dimensionality: "3D"
   modality: "confocal"
-  recommended_patch_size: [ 80, 160, 160 ]
+  recommended_patch_size: [80, 160, 160]
   output_type: "boundaries"
-
 
 generic_light_sheet_3D_unet:
   model_url: https://zenodo.org/record/7765026/files/unet3d-lateral-root-lightsheet-ds1x.pytorch
@@ -18,7 +17,7 @@ generic_light_sheet_3D_unet:
   description: "Unet trained on light-sheet images of Arabidopsis Lateral Root Primordia on original resolution with BCEDiceLoss."
   dimensionality: "3D"
   modality: "light-sheet"
-  recommended_patch_size: [ 80, 160, 160 ]
+  recommended_patch_size: [80, 160, 160]
   output_type: "boundaries"
 
 ## Ovules
@@ -28,7 +27,7 @@ confocal_3D_unet_ovules_ds1x:
   description: "Unet trained on confocal images of Arabidopsis Ovules on original resolution with BCEDiceLoss."
   dimensionality: "3D"
   modality: "confocal"
-  recommended_patch_size: [ 80, 160, 160 ]
+  recommended_patch_size: [80, 160, 160]
   output_type: "boundaries"
 
 confocal_3D_unet_ovules_ds2x:
@@ -37,7 +36,7 @@ confocal_3D_unet_ovules_ds2x:
   description: "Unet trained on confocal images of Arabidopsis Ovules on 1/2-resolution in XY with BCEDiceLoss."
   dimensionality: "3D"
   modality: "confocal"
-  recommended_patch_size: [ 80, 160, 160 ]
+  recommended_patch_size: [80, 160, 160]
   output_type: "boundaries"
 
 confocal_3D_unet_ovules_ds3x:
@@ -46,7 +45,7 @@ confocal_3D_unet_ovules_ds3x:
   description: "Unet trained on confocal images of Arabidopsis Ovules on 1/3-resolution in XY with BCEDiceLoss."
   dimensionality: "3D"
   modality: "confocal"
-  recommended_patch_size: [ 80, 160, 160 ]
+  recommended_patch_size: [80, 160, 160]
   output_type: "boundaries"
 
 confocal_2D_unet_ovules_ds2x:
@@ -55,7 +54,7 @@ confocal_2D_unet_ovules_ds2x:
   description: "2D Unet trained on z-slices of confocal images of Arabidopsis Ovules (1/2-resolution in XY) with BCEDiceLoss."
   dimensionality: "2D"
   modality: "confocal"
-  recommended_patch_size: [ 1, 256, 256 ]
+  recommended_patch_size: [1, 256, 256]
   output_type: "boundaries"
 
 confocal_3D_unet_ovules_nuclei_ds1x:
@@ -64,7 +63,7 @@ confocal_3D_unet_ovules_nuclei_ds1x:
   description: "Unet trained on confocal images of Arabidopsis Ovules nuclei stain on original resolution with BCEDiceLoss. The network predicts 1 channel: nuclei probability maps"
   dimensionality: "3D"
   modality: "confocal"
-  recommended_patch_size: [ 80, 160, 160 ]
+  recommended_patch_size: [80, 160, 160]
   output_type: "nuclei"
 
 ## Root
@@ -74,7 +73,7 @@ lightsheet_3D_unet_root_ds1x:
   description: "Unet trained on light-sheet images of Lateral Root Primordia on original resolution with BCEDiceLoss."
   dimensionality: "3D"
   modality: "light-sheet"
-  recommended_patch_size: [ 80, 160, 160 ]
+  recommended_patch_size: [80, 160, 160]
   output_type: "boundaries"
 
 lightsheet_3D_unet_root_ds2x:
@@ -83,7 +82,7 @@ lightsheet_3D_unet_root_ds2x:
   description: "Unet trained on light-sheet images of Lateral Root Primordia on 1/2-resolution in XY with BCEDiceLoss."
   dimensionality: "3D"
   modality: "light-sheet"
-  recommended_patch_size: [ 80, 160, 160 ]
+  recommended_patch_size: [80, 160, 160]
   output_type: "boundaries"
 
 lightsheet_3D_unet_root_ds3x:
@@ -92,7 +91,7 @@ lightsheet_3D_unet_root_ds3x:
   description: "Unet trained on light-sheet images of Lateral Root Primordia on 1/3-resolution in XY with BCEDiceLoss."
   dimensionality: "3D"
   modality: "light-sheet"
-  recommended_patch_size: [ 80, 160, 160 ]
+  recommended_patch_size: [80, 160, 160]
   output_type: "boundaries"
 
 lightsheet_2D_unet_root_ds1x:
@@ -101,7 +100,7 @@ lightsheet_2D_unet_root_ds1x:
   description: "2D Unet trained on z-slices of light-sheet images of Lateral Root Primordia on original resolution with BCEDiceLoss."
   dimensionality: "2D"
   modality: "light-sheet"
-  recommended_patch_size: [ 1, 256, 256 ]
+  recommended_patch_size: [1, 256, 256]
   output_type: "boundaries"
 
 lightsheet_3D_unet_root_nuclei_ds1x:
@@ -110,7 +109,7 @@ lightsheet_3D_unet_root_nuclei_ds1x:
   description: "Unet trained on light-sheet images of Lateral Root Primordia nuclei on original resolution with BCEDiceLoss. The network predicts 2 channels: nuclei mask in the 1st channel, nuclei boundaries in the 2nd channel"
   dimensionality: "3D"
   modality: "light-sheet"
-  recommended_patch_size: [ 80, 160, 160 ]
+  recommended_patch_size: [80, 160, 160]
   output_type: "nuclei"
 
 lightsheet_2D_unet_root_nuclei_ds1x:
@@ -119,7 +118,7 @@ lightsheet_2D_unet_root_nuclei_ds1x:
   description: "2D Unet trained on z-slices of light-sheet images of Lateral Root Primordia nuclei on original resolution with BCEDiceLoss. The network predicts 2 channels: nuclei mask in the 1st channel, nuclei boundaries in the 2nd channel"
   dimensionality: "2D"
   modality: "light-sheet"
-  recommended_patch_size: [ 1, 256, 256 ]
+  recommended_patch_size: [1, 256, 256]
   output_type: "nuclei"
 
 # PNAS
@@ -129,7 +128,7 @@ confocal_2D_unet_sa_meristem_cells:
   description: "2D Unet trained on z-slices of confocal images of Arabidopsis thaliana apical stem cell: https://www.repository.cam.ac.uk/handle/1810/262530"
   dimensionality: "2D"
   modality: "confocal"
-  recommended_patch_size: [ 1, 256, 256 ]
+  recommended_patch_size: [1, 256, 256]
   output_type: "boundaries"
 
 confocal_3D_unet_sa_meristem_cells:
@@ -138,7 +137,7 @@ confocal_3D_unet_sa_meristem_cells:
   description: "3D Unet trained on confocal images of Arabidopsis thaliana apical stem cell: https://www.repository.cam.ac.uk/handle/1810/262530"
   dimensionality: "3D"
   modality: "confocal"
-  recommended_patch_size: [ 80, 160, 160 ]
+  recommended_patch_size: [80, 160, 160]
   output_type: "boundaries"
 
 # Mouse embryo ex vivo
@@ -148,7 +147,7 @@ lightsheet_3D_unet_mouse_embryo_cells:
   description: "A a variant of 3D U-Net trained to predict the cell boundaries in live light-sheet images of ex-vivo developing mouse embryo. Voxel size: (0.2×0.2×1 µm^3) (XYZ)"
   dimensionality: "3D"
   modality: "light-sheet"
-  recommended_patch_size: [ 80, 160, 160 ]
+  recommended_patch_size: [80, 160, 160]
   output_type: "boundaries"
 
 confocal_3D_unet_mouse_embryo_nuclei:
@@ -157,5 +156,14 @@ confocal_3D_unet_mouse_embryo_nuclei:
   description: "A 3D U-Net trained to predict the nuclei and their boundaries in fixed confocal images of developing mouse embryo. Voxel size: (0.2×0.2×1 µm^3) (XYZ)"
   dimensionality: "3D"
   modality: "confocal"
-  recommended_patch_size: [ 40, 220, 220 ]
+  recommended_patch_size: [40, 220, 220]
+  output_type: "nuclei"
+
+generic_plant_nuclei_3D:
+  model_url: https://zenodo.org/records/10070349/files/FOR2581_PlantSeg_Plant_Nuclei_3D.pytorch
+  resolution: [0.2837 0.1268 0.1268]
+  description: "A generic 3D U-Net trained to predict the nuclei and their boundaries in plant. Voxel size: (0.1268×0.1268×0.2837 µm^3) (XYZ)"
+  dimensionality: "3D"
+  modality: "confocal"
+  recommended_patch_size: [80, 160, 160]
   output_type: "nuclei"
