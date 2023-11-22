@@ -7,7 +7,10 @@ import yaml
 plantseg_global_path = Path(__file__).parent.absolute()
 
 # Create configs directory at startup
-home_path = os.path.expanduser("~")
+if 'PLANTSEG_HOME' in os.environ:
+    home_path = os.environ['PLANTSEG_HOME']
+else:
+    home_path = os.path.expanduser("~")
 PLANTSEG_MODELS_DIR = ".plantseg_models"
 
 configs_path = os.path.join(home_path, PLANTSEG_MODELS_DIR, "configs")

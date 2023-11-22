@@ -198,6 +198,11 @@ Selecting a given network name (either in the config file or GUI) will download 
 directory.
 Detailed description of network training can be found in our [paper](#citation).
 
+The PlantSeg home directory can be configured with the `PLANTSEG_HOME` environment variable.
+```bash
+export PLANTSEG_HOME="/path/to/plantseg/home"
+```
+
 ## Training on New Data
 For training new models we rely on the [pytorch-3dunet](https://github.com/wolny/pytorch-3dunet). 
 A similar configuration file can be used for training on new data and all the instructions can be found in the repo.
