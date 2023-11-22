@@ -132,6 +132,12 @@ where `CONFIG_PATH` is the path to the YAML configuration file. See [config.yaml
 file and our [wiki](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-CLI) for a
 detailed description of the parameters.
 
+## Update PlantSeg
+The easiest way to update plantseg to the latest version is to reinstall the conda environment from scratch. 
+To do so on a freshly open terminal: 
+```bash
+mamba create -n plant-seg [The command that matches your OS]
+
 ## Data Parallelism
 In the headless mode (i.e. when invoked with `plantseg --config CONFIG_PATH`) the prediction step will run on all the GPUs using [DataParallel](https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html).
 If prediction on all available GPUs is not desirable, restrict the number of GPUs using `CUDA_VISIBLE_DEVICES`, e.g.
