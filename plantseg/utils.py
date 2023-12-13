@@ -326,3 +326,5 @@ def check_version(plantseg_url=' https://api.github.com/repos/hci-unihd/plant-se
             print(f"New version of PlantSeg available: {latest_version}.\n"
                   f"Please update your version to the latest one!")
             return None
+        
+    print(f"PlantSeg version: {current_version}.")
