@@ -4,7 +4,7 @@ PlantSeg is a tool for 3D and 2D segmentation.
 The methods used are very generic and can be used for any instance segmentation workflow,
 but they are tuned towards cell segmentation in plant tissue. The tool is fundamentally composed of two main steps.
 
-![Main Figure](_images/main_figure.png)
+![Main Figure](https://github.com/hci-unihd/plant-seg/raw/assets/images/main_figure.png)
 
 * ***Cell boundary predictions***: Where a convolutional neural network is used to extract a
 voxel wise boundary classification. The neural network can filter out very different types/intensities of
@@ -15,7 +15,7 @@ segmentation. We implemented four different algorithms for segmentation, each wi
  This approach is especially well suited for segmenting densely packed cells.
 
 For a complete description of the methods used, please check out our
-[manuscript](https://elifesciences.org/articles/57613)
+[manuscript](https://elifesciences.org/articles/57613).
 
 If you find PlantSeg useful, please cite {cite:p}`wolny2020accurate`.
 

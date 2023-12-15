@@ -19,25 +19,25 @@ Pre-trained models are provided.
 * New workflows
 
 ## Getting Started
-The recommended way of installing plantseg is via the conda package, 
+The recommended way of installing plantseg is via the conda package,
 which is currently supported on Linux and Windows.
-For detailed usage documentation checkout our [**wiki**](https://github.com/hci-unihd/plant-seg/wiki) 
+For detailed usage documentation checkout our [**wiki**](https://github.com/hci-unihd/plant-seg/wiki)
 [📖](https://github.com/hci-unihd/plant-seg/wiki):
 
 <!---
-Or quick test PlantSeg online using Google Colab (requires a google account)  
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hci-unihd/plant-seg/blob/assets/plantseg_colab.ipynb)
+Or quick test PlantSeg online using Google Colab (requires a google account)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hci-unihd/plant-seg/raw/assets/plantseg_colab.ipynb)
 --->
 
 ### Prerequisites for conda package
 * Linux or Windows (Might work on MacOS but it's not tested).
-* (Optional) Nvidia GPU with official Nvidia drivers installed. 
+* (Optional) Nvidia GPU with official Nvidia drivers installed.
 
 ### Install on Linux
 #### Install Anaconda python
 First step required to use the pipeline is installing anaconda python.
-If you already have a working anaconda setup you can go directly to next item. Anaconda can be downloaded for all 
-platforms from here [anaconda](https://www.anaconda.com/products/individual). We suggest to use Miniconda, 
+If you already have a working anaconda setup you can go directly to next item. Anaconda can be downloaded for all
+platforms from here [anaconda](https://www.anaconda.com/products/individual). We suggest to use Miniconda,
 because it is lighter and install fewer unnecessary packages.
 
 To download Anaconda Python open a terminal and type
@@ -74,16 +74,16 @@ The above command will create new conda environment `plant-seg` together with al
 ### Install on Windows
 #### Install Anaconda python
 First step required to use the pipeline is installing anaconda python.
-If you already have a working anaconda setup you can go directly to next item. Anaconda can be downloaded for all 
-platforms from here [anaconda](https://www.anaconda.com/products/individual). We suggest to use Miniconda, 
+If you already have a working anaconda setup you can go directly to next item. Anaconda can be downloaded for all
+platforms from here [anaconda](https://www.anaconda.com/products/individual). We suggest to use Miniconda,
 because it is lighter and install fewer unnecessary packages.
 
-Miniconda can be downloaded from [miniconda](https://docs.conda.io/en/latest/miniconda.html). Download the 
+Miniconda can be downloaded from [miniconda](https://docs.conda.io/en/latest/miniconda.html). Download the
 executable `.exe` for your Windows version and follow the installation instructions.
 
 #### Install PlantSeg using mamba
 The tool can be installed directly by executing in the anaconda prompt the following commands
-(***For installing and running plantseg this is equivalent to a linux terminal***). 
+(***For installing and running plantseg this is equivalent to a linux terminal***).
 Fist step is to install mamba, which is an alternative to conda:
 ```bash
 conda install -c conda-forge mamba
@@ -134,7 +134,7 @@ First, activate the newly created conda environment with:
 ```bash
 conda activate plant-seg
 ```
-then, one can just start the pipeline with  
+then, one can just start the pipeline with
 ```bash
 plantseg --config CONFIG_PATH
 ```
@@ -143,8 +143,8 @@ file and our [wiki](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic
 detailed description of the parameters.
 
 ## Update PlantSeg
-The easiest way to update plantseg to the latest version is to reinstall the conda environment from scratch. 
-To do so on a freshly open terminal: 
+The easiest way to update plantseg to the latest version is to reinstall the conda environment from scratch.
+To do so on a freshly open terminal:
 ```bash
 mamba create -n plant-seg [The command that matches your OS]
 
@@ -153,19 +153,19 @@ In the headless mode (i.e. when invoked with `plantseg --config CONFIG_PATH`) th
 If prediction on all available GPUs is not desirable, restrict the number of GPUs using `CUDA_VISIBLE_DEVICES`, e.g.
 ```bash
 CUDA_VISIBLE_DEVICES=0,1 plantseg --config CONFIG_PATH
-``` 
+```
 
 ### Optional dependencies (not fully tested on Windows)
-Some types of compressed tiff files require an additional package to be read correctly (eg: Zlib, 
-ZSTD, LZMA, ...). To run plantseg on those stacks you need to install `imagecodecs`. 
+Some types of compressed tiff files require an additional package to be read correctly (eg: Zlib,
+ZSTD, LZMA, ...). To run plantseg on those stacks you need to install `imagecodecs`.
 In the terminal:
 ```bash
 conda activate plant-seg
 pip install imagecodecs
 ```
 
-Experimental support for SimpleITK watershed segmentation has been added to PlantSeg version 1.1.8. This features can be used only 
-after installing the SimpleITK package: 
+Experimental support for SimpleITK watershed segmentation has been added to PlantSeg version 1.1.8. This features can be used only
+after installing the SimpleITK package:
 ```bash
 conda activate plant-seg
 pip install SimpleITK
@@ -176,7 +176,7 @@ The PlantSeg repository is organised as follows:
 * **plantseg**: Contains the source code of PlantSeg.
 * **conda-reicpe**: Contains all necessary code and configuration to create the anaconda package.
 * **Documentation-GUI**: Contains a more in-depth documentation of PlantSeg functionality.
-* **evaluation**: Contains all script required to reproduce the quantitative evaluation in 
+* **evaluation**: Contains all script required to reproduce the quantitative evaluation in
 [Wolny et al.](https://www.biorxiv.org/content/10.1101/2020.01.17.910562v1).
 * **examples**: Contains the files required to test PlantSeg.
 * **tests**: Contains automated tests that ensures the PlantSeg functionality are not compromised during an update.
@@ -185,7 +185,7 @@ The PlantSeg repository is organised as follows:
 We publicly release the datasets used for training the networks which available as part of the _PlantSeg_ package.
 Please refer to [our publication](https://www.biorxiv.org/content/10.1101/2020.01.17.910562v1) for more details about the datasets:
 - _Arabidopsis thaliana_ ovules dataset (raw confocal images + ground truth labels)
-- _Arabidopsis thaliana_ lateral root (raw light sheet images + ground truth labels) 
+- _Arabidopsis thaliana_ lateral root (raw light sheet images + ground truth labels)
 
 Both datasets can be downloaded from [our OSF project](https://osf.io/uzq3w/)
 
@@ -207,8 +207,8 @@ The following pre-trained networks are provided with PlantSeg package out-of-the
 * `lightsheet_2D_unet_root_nuclei_ds1x` - a variant of 2D U-Net trained on light-sheet images _Arabidopsis_ lateral root nuclei. Training the 2D U-Net is done on the Z-slices (pixel size: 0.1625x0.1625 µm^3) with BCEDiceLoss.
 * `confocal_3D_unet_sa_meristem_cells` - a variant of 3D U-Net trained on confocal images of shoot apical meristem dataset from: Jonsson, H., Willis, L., & Refahi, Y. (2017). Research data supporting Cell size and growth regulation in the Arabidopsis thaliana apical stem cell niche. https://doi.org/10.17863/CAM.7793. voxel size: (0.25x0.25x0.25 µm^3) (ZYX)
 * `confocal_2D_unet_sa_meristem_cells` - a variant of 2D U-Net trained on confocal images of shoot apical meristem dataset from: Jonsson, H., Willis, L., & Refahi, Y. (2017). Research data supporting Cell size and growth regulation in the Arabidopsis thaliana apical stem cell niche. https://doi.org/10.17863/CAM.7793.  pixel size: (25x0.25 µm^3) (YX)
-* `lightsheet_3D_unet_mouse_embryo_cells` - A variant of 3D U-Net trained to predict the cell boundaries in live light-sheet images of ex-vivo developing mouse embryo. Voxel size: (0.2×0.2×1 µm^3) (XYZ) 
-* `confocal_3D_unet_mouse_embryo_nuclei` - A variant of 3D U-Net trained to predict the cell boundaries in live light-sheet images of ex-vivo developing mouse embryo. Voxel size: (0.2×0.2×1 µm^3) (XYZ) 
+* `lightsheet_3D_unet_mouse_embryo_cells` - A variant of 3D U-Net trained to predict the cell boundaries in live light-sheet images of ex-vivo developing mouse embryo. Voxel size: (0.2×0.2×1 µm^3) (XYZ)
+* `confocal_3D_unet_mouse_embryo_nuclei` - A variant of 3D U-Net trained to predict the cell boundaries in live light-sheet images of ex-vivo developing mouse embryo. Voxel size: (0.2×0.2×1 µm^3) (XYZ)
 
 Selecting a given network name (either in the config file or GUI) will download the network into the `~/.plantseg_models`
 directory.
@@ -220,9 +220,9 @@ export PLANTSEG_HOME="/path/to/plantseg/home"
 ```
 
 ## Training on New Data
-For training new models we rely on the [pytorch-3dunet](https://github.com/wolny/pytorch-3dunet). 
+For training new models we rely on the [pytorch-3dunet](https://github.com/wolny/pytorch-3dunet).
 A similar configuration file can be used for training on new data and all the instructions can be found in the repo.
-When the network is trained it is enough to create `~/.plantseg_models/MY_MODEL_NAME` directory 
+When the network is trained it is enough to create `~/.plantseg_models/MY_MODEL_NAME` directory
 and copy the following files into it:
 * configuration file used for training: `config_train.yml`
 * snapshot of the best model across training: `best_checkpoint.pytorch`
@@ -231,13 +231,13 @@ and copy the following files into it:
 The later two files are automatically generated during training and contain all neural networks parameters.
 
 Now you can simply use your model for prediction by setting the [model_name](examples/config.yaml) key to `MY_MODEL_NAME`.
- 
+
 If you want your model to be part of the open-source model zoo provided with this package, please contact us.
 
 ## Using LiftedMulticut segmentation
 As reported in our [paper](https://elifesciences.org/articles/57613), if one has a nuclei signal imaged together with
-the boundary signal, we could leverage the fact that one cell contains only one nucleus and use the `LiftedMultict` 
-segmentation strategy and obtain improved segmentation. This workflow can be used from our napari gui and from our 
+the boundary signal, we could leverage the fact that one cell contains only one nucleus and use the `LiftedMultict`
+segmentation strategy and obtain improved segmentation. This workflow can be used from our napari gui and from our
 [CLI](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-CLI/_edit#liftedmulticut-segmentation).
 
 ## Troubleshooting
@@ -256,7 +256,7 @@ or:
     raise AssertionError("Torch not compiled with CUDA enabled")
 AssertionError: Torch not compiled with CUDA enabled
 ```
-It means that your cuda installation does not match the default in plantseg. 
+It means that your cuda installation does not match the default in plantseg.
 You can check your current cuda version by typing in the terminal
 ```
 cat /usr/local/cuda/version.txt
@@ -265,7 +265,7 @@ Then you can re-install the pytorch version compatible with your cuda by activat
 ```
 conda activate plant-seg
 ```
-and 
+and
 ```
 conda install -c pytorch torchvision cudatoolkit=<YOU_CUDA_VERSION> pytorch
 ```
@@ -297,7 +297,7 @@ $ rm ~/.plantseg_models/configs/config_gui_last.yaml
 RuntimeError: key : 'crop_volume' is missing, plant-seg requires 'crop_volume' to run
 ```
 
-Please make sure that your configuration has the correct formatting and contains all required keys. 
+Please make sure that your configuration has the correct formatting and contains all required keys.
 An updated example can be found inside the directory `examples`, in this repository.
 
 * If when trying to execute the Lifted Multicut pipeline you receive an error like:
@@ -310,13 +310,13 @@ conda install -c conda-forge python-elf
 ```
 
 * PlantSeg is under active development, so it may happen that the models/configuration files saved in `~/.plantseg_modes`
-are outdated. In case of errors related to loading the configuration file, please close the PlantSeg app, 
+are outdated. In case of errors related to loading the configuration file, please close the PlantSeg app,
 remove `~/.plantseg_models` directory and try again.
 
 ## Tests
-In order to run tests make sure that `pytest` is installed in your conda environment. You can run your tests 
+In order to run tests make sure that `pytest` is installed in your conda environment. You can run your tests
 simply with `python -m pytest` or `pytest`. For the latter to work you need to install `plantseg` locally in "develop mode"
-with `pip install -e .`. 
+with `pip install -e .`.
 
 ## Citation
 ```
