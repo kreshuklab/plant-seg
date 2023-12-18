@@ -3,6 +3,7 @@
 
 title: PlantSeg Documentation
 author: Lorenzo Cerrone, Adrian Wolny
+copyright: '2019-2024'
 logo: logo.png
 
 # Force re-execution of notebooks on each build.
