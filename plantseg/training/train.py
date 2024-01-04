@@ -3,14 +3,11 @@ import os
 from itertools import chain
 from typing import Tuple
 
-import numpy as np
 import torch
 import yaml
-from PIL import Image
 from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader, ConcatDataset
-import matplotlib.pyplot as plt
 
 from plantseg import PLANTSEG_MODELS_DIR, plantseg_global_path
 from plantseg.pipeline import gui_logger
@@ -21,7 +18,8 @@ from plantseg.training.model import UNet2D, UNet3D
 from plantseg.training.trainer import UNetTrainer
 
 
-def create_model_config(checkpoint_dir, in_channels, out_channels, patch_size, dimensionality, sparse, f_maps):
+def create_model_config(checkpoint_dir, in_channels, out_channels, patch_size, dimensionality, sparse, f_maps,
+                        max_num_iters):
     os.makedirs(checkpoint_dir, exist_ok=True)
     train_template_path = os.path.join(plantseg_global_path,
                                        "resources",
@@ -38,52 +36,47 @@ def create_model_config(checkpoint_dir, in_channels, out_channels, patch_size, d
         train_template['model']['name'] = 'UNet3D'
     train_template['model']['final_sigmoid'] = not sparse
     train_template['trainer']['checkpoint_dir'] = checkpoint_dir
+    train_template['trainer']['max_num_iterations'] = max_num_iters
     train_template['loaders']['train']['slice_builder']['patch_shape'] = patch_size
+    train_template['loaders']['train']['slice_builder']['stride_shape'] = list(i // 2 for i in patch_size)
     train_template['loaders']['val']['slice_builder']['patch_shape'] = patch_size
+    train_template['loaders']['val']['slice_builder']['stride_shape'] = patch_size
 
     out_path = os.path.join(checkpoint_dir, 'config_train.yml')
     with open(out_path, 'w') as yaml_file:
         yaml.dump(train_template, yaml_file, default_flow_style=False)
 
 
-def plot_curves(learning_curves, checkpoint_dir):
-    plt.figure()
-    plt.plot(list(learning_curves['train_loss'].keys()), list(learning_curves['train_loss'].values()),
-             label='train_loss', c='y', marker='o')
-    plt.plot(list(learning_curves['val_loss'].keys()), list(learning_curves['val_loss'].values()),
-             label='val_loss', c='b', marker='o')
-    plt.legend(loc='upper right')
-    plot_path = os.path.join(checkpoint_dir, 'learning_curves.png')
-    plt.savefig(plot_path)
-    return np.array(Image.open(plot_path))
-
-
-def unet_training(dataset_dir: str, model_name: str, in_channels: int, out_channels: int,
+def unet_training(dataset_dir: str, model_name: str, in_channels: int, out_channels: int, feature_maps: tuple,
                   patch_size: Tuple[int, int, int], max_num_iters: int, dimensionality: str,
-                  sparse: bool, device: str, headless: bool = False, **kwargs) -> Image:
+                  sparse: bool, device: str) -> None:
     # create model
-    batch_size = 1
     # set final activation to sigmoid if not sparse (i.e. not embedding model)
     final_sigmoid = not sparse
-    f_maps = [32, 64, 128, 256, 512]
-    if dimensionality == '2D':
-        model = UNet2D(in_channels=in_channels, out_channels=out_channels, f_maps=f_maps, final_sigmoid=final_sigmoid)
+    if dimensionality in ['2D', '2d']:
+        model = UNet2D(in_channels=in_channels, out_channels=out_channels, f_maps=feature_maps,
+                       final_sigmoid=final_sigmoid)
     else:
-        model = UNet3D(in_channels=in_channels, out_channels=out_channels, f_maps=f_maps, final_sigmoid=final_sigmoid)
+        model = UNet3D(in_channels=in_channels, out_channels=out_channels, f_maps=feature_maps,
+                       final_sigmoid=final_sigmoid)
+    gui_logger.info(f'Using {model.__class__.__name__} model for training.')
 
-    if torch.cuda.device_count() > 1 and device != 'cpu' and headless:
+    batch_size = 1
+    if torch.cuda.device_count() > 1 and device != 'cpu':
         model = nn.DataParallel(model)
         gui_logger.info(f'Using {torch.cuda.device_count()} GPUs for prediction.')
         batch_size *= torch.cuda.device_count()
         device = 'cuda'
 
+    gui_logger.info(f'Sending model to {device}')
     model = model.to(device)
     # create loaders
+    gui_logger.info(f'Creating train/val loaders with batch size {batch_size}')
     train_datasets = create_datasets(dataset_dir, 'train', patch_size)
     val_datasets = create_datasets(dataset_dir, 'val', patch_size)
     loaders = {
         'train': DataLoader(ConcatDataset(train_datasets), batch_size=batch_size, shuffle=True, pin_memory=True,
-                            num_workers=4),
+                            num_workers=1),
         # don't shuffle during validation: useful when showing how predictions for a given batch get better over time
         'val': DataLoader(ConcatDataset(val_datasets), batch_size=batch_size, shuffle=False, pin_memory=True,
                           num_workers=1)
@@ -95,9 +88,11 @@ def unet_training(dataset_dir: str, model_name: str, in_channels: int, out_chann
     # create trainer
     home_path = os.path.expanduser("~")
     checkpoint_dir = os.path.join(home_path, PLANTSEG_MODELS_DIR, model_name)
-    if os.path.exists(checkpoint_dir):
-        gui_logger.warn(f'Checkpoint dir {checkpoint_dir} already exists! Overwriting...')
-    create_model_config(checkpoint_dir, in_channels, out_channels, patch_size, dimensionality, sparse, f_maps)
+    gui_logger.info(f'Saving training files in {checkpoint_dir}')
+    assert not os.path.exists(checkpoint_dir), f'Checkpoint dir {checkpoint_dir} already exists!'
+
+    create_model_config(checkpoint_dir, in_channels, out_channels, patch_size, dimensionality, sparse, feature_maps,
+                        max_num_iters)
 
     trainer = UNetTrainer(
         model=model,
@@ -110,8 +105,7 @@ def unet_training(dataset_dir: str, model_name: str, in_channels: int, out_chann
         device=device
     )
 
-    learning_curves = trainer.train()
-    return plot_curves(learning_curves, checkpoint_dir)
+    trainer.train()
 
 
 def create_datasets(dataset_dir, phase, patch_shape):

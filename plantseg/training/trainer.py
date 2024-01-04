@@ -3,9 +3,10 @@ import shutil
 from typing import Tuple
 
 import torch
-from torch import nn
 import torch.optim as optim
+from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from plantseg.pipeline import gui_logger
@@ -52,21 +53,18 @@ class UNetTrainer:
             state = torch.load(pre_trained, map_location='cpu')
             self.model.load_state_dict(state)
 
-        # init learning curves
-        self.learning_curves = {
-            'train_loss': {},
-            'val_loss': {},
-        }
+        # init tensorboard logger
+        self.writer = SummaryWriter(log_dir=os.path.join(checkpoint_dir, 'logs'))
 
-    def train(self) -> dict:
+    def train(self) -> None:
         for epoch in range(self.max_num_epochs):
-            print(f'Epoch [{epoch}/{self.max_num_epochs}]')
+            print(f'Epoch [{epoch}/~{self.max_num_epochs}]')
             # train for one epoch
             should_terminate = self.train_epoch()
 
             if should_terminate:
                 gui_logger.info('Stopping criterion is satisfied. Finishing training')
-                return self.learning_curves
+                return
 
             print('Validating...')
             # set the model in eval mode
@@ -74,7 +72,7 @@ class UNetTrainer:
             # evaluate on validation set
             eval_loss = self.validate()
             gui_logger.info(f'Val Loss: {eval_loss}.')
-            self.learning_curves['val_loss'][self.num_iterations] = eval_loss
+            self.writer.add_scalar('Loss/val', eval_loss, self.num_iterations)
             # set the model back to training mode
             self.model.train()
 
@@ -92,7 +90,6 @@ class UNetTrainer:
             self._save_checkpoint(is_best)
 
         gui_logger.info(f"Reached maximum number of epochs: {self.max_num_epochs}. Finishing training...")
-        return self.learning_curves
 
     def train_epoch(self):
         """Trains the model for 1 epoch.
@@ -119,7 +116,7 @@ class UNetTrainer:
             if self.num_iterations % self.log_after_iters == 0:
                 # log stats, params and images
                 gui_logger.info(f'Train Loss: {train_losses.avg}.')
-                self.learning_curves['train_loss'][self.num_iterations] = train_losses.avg
+                self.writer.add_scalar('Loss/train', train_losses.avg, self.num_iterations)
 
                 if self.should_stop():
                     return True
@@ -183,6 +180,7 @@ class UNetTrainer:
 
         torch.save(state_dict, last_file_path)
         if is_best:
+            gui_logger.info("Saving best checkpoint")
             best_file_path = os.path.join(self.checkpoint_dir, 'best_checkpoint.pytorch')
             shutil.copyfile(last_file_path, best_file_path)
 

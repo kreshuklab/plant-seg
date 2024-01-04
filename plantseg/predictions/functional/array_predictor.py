@@ -117,10 +117,13 @@ class ArrayPredictor:
 
         # dimensionality of the output predictions
         volume_shape = self.volume_shape(test_dataset)
+        is_2d_model = _is_2d_model(self.model)
         if self.is_embedding:
-            if _is_2d_model(self.model):
+            if is_2d_model:
+                # outputs 1-affinities in XY
                 out_channels = 2
             else:
+                # outputs 1-affinities in XYZ
                 out_channels = 3
         else:
             out_channels = self.out_channels
@@ -150,7 +153,7 @@ class ArrayPredictor:
                 # pad input patch
                 input = _pad(input, self.patch_halo)
                 # forward pass
-                if _is_2d_model(self.model):
+                if is_2d_model:
                     # remove the singleton z-dimension from the input
                     input = torch.squeeze(input, dim=-3)
                     prediction = self.model(input)
@@ -160,13 +163,13 @@ class ArrayPredictor:
                     prediction = self.model(input)
 
                 if self.is_embedding:
-                    if _is_2d_model(self.model):
+                    if is_2d_model:
                         offsets = [[-1, 0], [0, -1]]
                     else:
                         offsets = [[-1, 0, 0], [0, -1, 0], [0, 0, -1]]
                     # convert embeddings to affinities
                     prediction = embeddings_to_affinities(prediction, offsets, delta=0.5)
-                    # average across channels (i.e. 1-affinities) and invert
+                    # average across channels and invert (i.e. 1-affinities)
                     prediction = 1 - prediction.mean(dim=1)
                 # unpad the prediction
                 prediction = _unpad(prediction, self.patch_halo)

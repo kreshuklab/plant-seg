@@ -35,7 +35,13 @@ def main():
         from plantseg.pipeline.raw2seg import raw2seg
         from plantseg.utils import load_config
         config = load_config(args.config)
-        raw2seg(config)
+        if 'training' in config:
+            from plantseg.training.train import unet_training
+            c = config['training']
+            unet_training(c['dataset_dir'], c['model_name'], c['in_channels'], c['out_channels'], c['feature_maps'],
+                          c['patch_size'], c['max_num_iters'], c['dimensionality'], c['sparse'], c['device'])
+        else:
+            raw2seg(config)
 
     elif args.version:
         from plantseg.__version__ import __version__

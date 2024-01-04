@@ -33,8 +33,6 @@ trainer:
   pre_trained: null
   # how many iterations between tensorboard logging
   log_after_iters: 500
-  # max number of epochs
-  max_num_epochs: 5000
   # max number of iterations
   max_num_iterations: 50000
 # Configure training and validation loaders
