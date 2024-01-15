@@ -59,11 +59,11 @@ conda install -c conda-forge mamba
 Install PlantSeg using mamba:
 *  GPU version, CUDA=12.x
     ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 pyqt lcerrone::plantseg
+    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 pyqt plant-seg
     ```
 *  GPU version, CUDA=11.x
     ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 pyqt lcerrone::plantseg
+    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 pyqt plant-seg
     ```
 *  CPU version
     ```bash
