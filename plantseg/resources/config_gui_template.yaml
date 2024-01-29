@@ -4,6 +4,10 @@ path:
 preprocessing:
   # enable/disable preprocessing
   state: True
+  # key for H5 or ZARR, can be set to null if only one key exists in each file
+  key: Null
+  # channel to use if input image has shape CZYX or CYX, otherwise set to null
+  channel: -1
   # create a new sub folder where all results will be stored
   save_directory: "PreProcessing"
   # rescaling the volume is essential for the generalization of the networks. The rescaling factor can be computed as the resolution
@@ -27,6 +31,10 @@ preprocessing:
 cnn_prediction:
   # enable/disable UNet prediction
   state: True
+  # key for H5 or ZARR, can be set to null if only one key exists in each file; null is recommended if the previous steps has state True
+  key: Null
+  # channel to use if input image has shape CZYX or CYX, otherwise set to null; null is recommended if the previous steps has state True
+  channel: -1
   # Trained model name, more info on available models and custom models in the README
   model_name: "generic_confocal_3D_unet"
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
@@ -45,6 +53,10 @@ cnn_prediction:
 cnn_postprocessing:
   # enable/disable cnn post processing
   state: True
+  # key for H5 or ZARR, can be set to null if only one key exists in each file; null is recommended if the previous steps has state True
+  key: Null
+  # channel to use if input image has shape CZYX or CYX, otherwise set to null; null is recommended if the previous steps has state True
+  channel: -1
   # if True convert to result to tiff
   tiff: False
   output_type: "data_float32"
@@ -55,10 +67,13 @@ cnn_postprocessing:
   # save raw input in the output prediction file h5 file
   save_raw: False
 
-
 segmentation:
   # enable/disable segmentation
   state: True
+  # key for H5 or ZARR, can be set to null if only one key exists in each file; null is recommended if the previous steps has state True
+  key: Null
+  # channel to use if prediction has shape CZYX or CYX, otherwise set to null; null is recommended if the previous steps has state True
+  channel: -1
   # Name of the algorithm to use for inferences
   name: "GASP"
   # Segmentation specific parameters here
@@ -84,6 +99,10 @@ segmentation:
 segmentation_postprocessing:
   # enable/disable segmentation post processing
   state: True
+  # key for H5 or ZARR, can be set to null if only one key exists in each file; null is recommended if the previous steps has state True
+  key: Null
+  # channel to use if input image has shape CZYX or CYX, otherwise set to null; null is recommended if the previous steps has state True
+  channel: -1
   # if True convert to result to tiff
   tiff: False
   # rescaling factor
