@@ -396,28 +396,28 @@ class PlantSegApp:
 
     @staticmethod
     def open_documentation_index():
-        """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki")
+        """Open documentation homepage on the default browser"""
+        webbrowser.open("https://hci-unihd.github.io/plant-seg/intro.html")
 
     @staticmethod
     def open_documentation_preprocessing():
-        """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Classic-Data-Processing")
+        """Open Classic Data Processing documentation on the default browser"""
+        webbrowser.open("https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/data_processing.html")
 
     @staticmethod
     def open_documentation_3dunet():
-        """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/CNN-Predictions")
+        """Open CNN Predictions documentation on the default browser"""
+        webbrowser.open("https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_predictions.html")
 
     @staticmethod
     def open_documentation_segmentation():
-        """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Segmentation")
+        """Open Segmentation documentation on the default browser"""
+        webbrowser.open("https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/segmentation.html")
 
     @staticmethod
     def open_postprocessing():
-        """Open git page on the default browser"""
-        webbrowser.open("https://github.com/hci-unihd/plant-seg/wiki/Classic-Data-Processing")
+        """Open Classic Data Processing documentation on the default browser"""
+        webbrowser.open("https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/data_processing.html")
 
     def size_up(self):
         """ adjust font size in the main widget"""
