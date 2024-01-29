@@ -38,7 +38,7 @@ class PlantSegApp:
 
         # Load app config
         self.app_config = self.load_app_config()
-        self.plant_config_path, self.plantseg_config = self.load_config()
+        self.plant_config_path, self.plantseg_config = self.load_core_config()
 
         # Init main app and configure
         self.plant_segapp = tkinter.Tk()
@@ -312,8 +312,8 @@ class PlantSegApp:
         icon_path = os.path.join(plantseg_global_path, RESOURCES_DIR, name)
         return icon_path
 
-    def load_config(self, name="config_gui_last.yaml"):
-        """Load the last (or if not possible a standard) config"""
+    def load_core_config(self, name="config_gui_last.yaml"):
+        """Load the last (or if not possible a standard) config. Used only once at startup."""
         plant_config_path = self.get_last_config_path(name)
 
         if os.path.exists(plant_config_path):
