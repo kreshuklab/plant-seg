@@ -76,6 +76,17 @@ segmentation:
   channel: -1
   # Name of the algorithm to use for inferences
   name: "GASP"
+
+  # For 'LiftedMulticut' algorithm only
+  # path to the directory containing the nuclei predictions (either probability maps or segmentation)
+  nuclei_predictions_path:
+  # whether the `nuclei_predictions_path` contains the probability maps (is_segmentation=False) or segmentation (is_segmentation=True)
+  is_segmentation: True
+  # key for H5 or ZARR, can be set to null if only one key exists in each file; null is recommended if the previous steps has state True
+  key_nuclei: Null
+  # channel to use if prediction has shape CZYX or CYX, otherwise set to null; null is recommended if the previous steps has state True
+  channel_nuclei: -1
+
   # Segmentation specific parameters here
   # balance under-/over-segmentation; 0 - aim for undersegmentation, 1 - aim for oversegmentation
   beta: 0.6

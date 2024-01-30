@@ -426,6 +426,39 @@ class SegmentationFrame(ModuleFramePrototype):
                 _type=int,
                 _font=font,
             ),
+            "nuclei_predictions_path": SimpleEntry(
+                self.segmentation_frame,
+                text="Nuclei Path: ",
+                row=12,
+                column=0,
+                _type=str,
+                _font=font,
+            ),
+            "key_nuclei": SimpleEntry(
+                self.segmentation_frame,
+                text="Nuclei Key (HDF5 only): ",
+                row=13,
+                column=0,
+                _type=str,
+                _font=font,
+            ),
+            "channel_nuclei": SimpleEntry(
+                self.segmentation_frame,
+                text="Nuclei Channel (HDF5 only): ",
+                row=14,
+                column=0,
+                _type=int,
+                _font=font,
+            ),
+            "is_segmentation": MenuEntry(
+                self.segmentation_frame,
+                text="Nuclei are Labels (or Probability): ",
+                row=15,
+                column=0,
+                menu={"True", "False"},
+                default=config[self.module]["is_segmentation"],
+                font=font,
+            ),
         }
 
         self.show_options()
