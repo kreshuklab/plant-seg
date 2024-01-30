@@ -99,11 +99,15 @@ def raw2seg(config):
     ]
 
     for pipeline_step_name, pipeline_step_setup in all_pipeline_steps: # Common section for all steps
-        # In Tk GUI, entries have fixed types. TODO: better solution?
+        # In Tk GUI, entries have fixed types. All steps are fixed here including LMC. TODO: better solution?
         if config[pipeline_step_name].get('key', None) == 'None':  # in Tk GUI key is str
             config[pipeline_step_name]['key'] = None
         if config[pipeline_step_name].get('channel', None) == -1:  # in Tk GUI channel is int
             config[pipeline_step_name]['channel'] = None
+        if config[pipeline_step_name].get('key_nuclei', None) == 'None':  # in Tk GUI key is str
+            config[pipeline_step_name]['key_nuclei'] = None
+        if config[pipeline_step_name].get('channel_nuclei', None) == -1:  # in Tk GUI channel is int
+            config[pipeline_step_name]['channel_nuclei'] = None
 
         if pipeline_step_name == 'preprocessing':
             _validate_cnn_postprocessing_rescaling(input_paths, config)
