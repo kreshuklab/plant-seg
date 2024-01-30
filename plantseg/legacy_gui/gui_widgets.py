@@ -352,7 +352,7 @@ class SegmentationFrame(ModuleFramePrototype):
                 text="Algorithm: ",
                 row=3,
                 column=0,
-                menu={"MultiCut", "GASP", "MutexWS", "DtWatershed", "SimpleITK"},
+                menu={"MultiCut", "LiftedMulticut", "GASP", "MutexWS", "DtWatershed", "SimpleITK"},
                 is_segmentation=True,
                 default=config[self.module]["name"],
                 font=font,
