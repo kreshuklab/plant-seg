@@ -18,7 +18,7 @@ from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
 from plantseg.viewer.widget.utils import return_value_if_widget
-from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
+from plantseg.viewer.widget.utils import start_threading_process, start_prediction_threading_process, create_layer_name, layer_properties
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
@@ -87,7 +87,7 @@ def widget_unet_predictions(viewer: Viewer,
     layer_type = 'image'
     step_kwargs = dict(model_name=model_name, patch=patch_size, single_batch_mode=single_patch)
 
-    return start_threading_process(unet_predictions_wrapper,
+    return start_prediction_threading_process(unet_predictions_wrapper,
                                    runtime_kwargs={'raw': image.data, 'device': device},
                                    statics_kwargs=step_kwargs,
                                    out_name=out_name,

@@ -54,5 +54,5 @@ def unet_predictions(raw: np.array, model_name: str, patch: Tuple[int, int, int]
     test_dataset = ArrayDataset(raw, slice_builder, augs, verbose_logging=False)
 
     pmaps = predictor(test_dataset)
-    pmaps = fix_input_shape(pmaps[0])
+    # pmaps = fix_input_shape(pmaps[0])
     return pmaps

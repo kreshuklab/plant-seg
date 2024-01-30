@@ -70,6 +70,51 @@ def start_threading_process(func: Callable,
     return future
 
 
+def start_prediction_threading_process(func: Callable,
+                            runtime_kwargs: dict,
+                            statics_kwargs: dict,
+                            out_name: str,
+                            input_keys: Tuple[str, ...],
+                            layer_kwarg: dict,
+                            layer_type: str = 'image',
+                            step_name: str = '',
+                            skip_dag: bool = False,
+                            viewer: Viewer = None,
+                            widgets_to_update: list = None) -> Future:
+    runtime_kwargs.update(statics_kwargs)
+    thread_func = thread_worker(partial(func, **runtime_kwargs))
+    future = Future()
+    timer_start = timeit.default_timer()
+
+    def on_done(result):
+        timer = timeit.default_timer() - timer_start
+        napari_formatted_logging(f'Widget {step_name} computation complete in {timer:.2f}s', thread=step_name)
+        _func = func if not skip_dag else identity
+        dag_manager.add_step(_func, input_keys=input_keys,
+                             output_key=out_name,
+                             static_params=statics_kwargs,
+                             step_name=step_name)
+        if result.ndim == 4:
+            pmap_layers = []
+            for i, pmap in enumerate(result):
+                temp_layer_kwarg = layer_kwarg.copy()
+                temp_layer_kwarg['name'] = layer_kwarg['name'] + f'_{i}'
+                pmap_layers.append((pmap, temp_layer_kwarg, layer_type))
+            result = pmap_layers
+        else: 
+            result = result, layer_kwarg, layer_type
+        future.set_result(result)
+
+        if viewer is not None and widgets_to_update is not None:
+            setup_layers_suggestions(viewer, out_name, widgets_to_update)
+
+    worker = thread_func()
+    worker.returned.connect(on_done)
+    worker.start()
+    napari_formatted_logging(f'Widget {step_name} computation started', thread=step_name)
+    return future
+
+
 def layer_properties(name, scale, metadata: dict = None):
     keys_to_save = {'original_voxel_size', 'voxel_size_unit', 'root_name'}
     if metadata is not None:
