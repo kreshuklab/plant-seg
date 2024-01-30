@@ -12,11 +12,7 @@ from plantseg.segmentation.utils import configure_segmentation_step
 
 def configure_preprocessing_step(input_paths, config):
     input_key = config.get('key', None)
-    if input_key == 'None':  # TODO: looking for better solutions, this is a workaround for Tk GUI
-        input_key = None
     input_channel = config.get('channel', None)
-    if input_channel < 0:  # TODO: looking for better solutions, this is a workaround for Tk GUI
-        input_channel = None
 
     output_type = config.get('output_type', "data_uint8")
     save_directory = config.get('save_directory', 'PreProcessing')
@@ -37,11 +33,7 @@ def configure_preprocessing_step(input_paths, config):
 
 def configure_cnn_step(input_paths, config):
     input_key = config.get('key', None)
-    if input_key == 'None':
-        input_key = None
     input_channel = config.get('channel', None)
-    if input_channel < 0:
-        input_channel = None
 
     model_name = config['model_name']
     patch = config.get('patch', (80, 160, 160))
@@ -63,11 +55,7 @@ def configure_segmentation_postprocessing_step(input_paths, config):
 
 def _create_postprocessing_step(input_paths, input_type, config):
     input_key = config.get('key', None)
-    if input_key == 'None':
-        input_key = None
     input_channel = config.get('channel', None)
-    if input_channel < 0:
-        input_channel = None
 
     output_type = config.get('output_type', input_type)
     save_directory = config.get('save_directory', 'PostProcessing')
@@ -84,11 +72,7 @@ def _create_postprocessing_step(input_paths, input_type, config):
 
 def _validate_cnn_postprocessing_rescaling(input_paths, config):
     input_key = config["preprocessing"].get('key', None)
-    if input_key == 'None':
-        input_key = None
     input_channel = config["preprocessing"].get('channel', None)
-    if input_channel < 0:
-        input_channel = None
 
     input_shapes = [load_shape(input_path, key=input_key) for input_path in input_paths]
     if input_channel is not None:
@@ -111,10 +95,16 @@ def raw2seg(config):
         ('cnn_prediction', configure_cnn_step),
         ('cnn_postprocessing', configure_cnn_postprocessing_step),
         ('segmentation', configure_segmentation_step),
-        ('segmentation_postprocessing', configure_segmentation_postprocessing_step)
+        ('segmentation_postprocessing', configure_segmentation_postprocessing_step),
     ]
 
-    for pipeline_step_name, pipeline_step_setup in all_pipeline_steps:
+    for pipeline_step_name, pipeline_step_setup in all_pipeline_steps: # Common section for all steps
+        # In Tk GUI, entries have fixed types. TODO: better solution?
+        if config[pipeline_step_name].get('key', None) == 'None':  # in Tk GUI key is str
+            config[pipeline_step_name]['key'] = None
+        if config[pipeline_step_name].get('channel', None) == -1:  # in Tk GUI channel is int
+            config[pipeline_step_name]['channel'] = None
+
         if pipeline_step_name == 'preprocessing':
             _validate_cnn_postprocessing_rescaling(input_paths, config)
 
@@ -127,4 +117,4 @@ def raw2seg(config):
         if not isinstance(pipeline_step, DataPostProcessing3D):
             input_paths = output_paths
 
-    gui_logger.info(f"Pipeline execution finished!")
+    gui_logger.info("Pipeline execution finished!")
