@@ -101,6 +101,8 @@ def start_prediction_threading_process(func: Callable,
                 temp_layer_kwarg['name'] = layer_kwarg['name'] + f'_{i}'
                 pmap_layers.append((pmap, temp_layer_kwarg, layer_type))
             result = pmap_layers
+            
+            # Only widget_unet_predictions() invokes and handles 4D UNet output for now, but headless mode can also invoke this part, thus warn:
             napari_formatted_logging(f'Widget {step_name}: Headless mode is not supported for 2-channel output predictions', thread=step_name, level='warning')
         else:  # then we have a 1-channel output
             result = result, layer_kwarg, layer_type

@@ -88,7 +88,9 @@ def widget_unet_predictions(viewer: Viewer,
     step_kwargs = dict(model_name=model_name, patch=patch_size, single_batch_mode=single_patch)
 
     return start_prediction_threading_process(unet_predictions_wrapper,
-                                   runtime_kwargs={'raw': image.data, 'device': device},
+                                   runtime_kwargs={'raw': image.data, 
+                                                   'device': device, 
+                                                   'handle_multichannel': True},
                                    statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,

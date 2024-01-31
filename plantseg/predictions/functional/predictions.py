@@ -3,6 +3,7 @@ from typing import Tuple
 import numpy as np
 import torch
 
+from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.augment.transforms import get_test_augmentations
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape_to_3D, fix_input_shape_to_4D
 from plantseg.predictions.functional.array_dataset import ArrayDataset
@@ -14,7 +15,7 @@ from plantseg.predictions.functional.utils import get_model_config, get_patch_ha
 
 def unet_predictions(raw: np.array, model_name: str, patch: Tuple[int, int, int] = (80, 160, 160),
                      single_batch_mode: bool = True, device: str = 'cuda', model_update: bool = False,
-                     disable_tqdm: bool = False, **kwargs) -> np.array:
+                     disable_tqdm: bool = False, handle_multichannel = False, **kwargs) -> np.array:
     """
     Predict boundaries predictions from raw data using a 3D U-Net model.
     If the model has single-channel output, then return a 3D array of shape (Z, Y, X).
@@ -59,10 +60,11 @@ def unet_predictions(raw: np.array, model_name: str, patch: Tuple[int, int, int]
 
     pmaps = predictor(test_dataset)  # pmaps either (C, Z, Y, X) or (C, Y, X)
     out_channel = int(model_config['out_channels'])
-    print(f"TESTING ---------------------- out_channel is {out_channel}")
-    
-    if out_channel == 1:  # if not multi-channel output then use old mechanism
+
+    if out_channel > 1 and handle_multichannel:  # if multi-channel output and who called this function can handle it
+        napari_formatted_logging(f'`unet_predictions()` has `handle_multichannel`={handle_multichannel}',
+                                 thread="unet_predictions", level='warning')
+        pmaps = fix_input_shape_to_4D(pmaps)  # then make (C, Y, X) to (C, 1, Y, X) and keep (C, Z, Y, X) unchanged
+    else:  # otherwise use old mechanism
         pmaps = fix_input_shape_to_3D(pmaps[0])
-    else:  # otherwise make (C, Y, X) to (C, 1, Y, X) and keep (C, Z, Y, X) unchanged
-        pmaps = fix_input_shape_to_4D(pmaps)
     return pmaps
