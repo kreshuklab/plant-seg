@@ -94,14 +94,15 @@ def start_prediction_threading_process(func: Callable,
                              output_key=out_name,
                              static_params=statics_kwargs,
                              step_name=step_name)
-        if result.ndim == 4:
+        if result.ndim == 4:  # then we have a 2-channel output
             pmap_layers = []
             for i, pmap in enumerate(result):
                 temp_layer_kwarg = layer_kwarg.copy()
                 temp_layer_kwarg['name'] = layer_kwarg['name'] + f'_{i}'
                 pmap_layers.append((pmap, temp_layer_kwarg, layer_type))
             result = pmap_layers
-        else: 
+            napari_formatted_logging(f'Widget {step_name}: Headless mode is not supported for 2-channel output predictions', thread=step_name, level='warning')
+        else:  # then we have a 1-channel output
             result = result, layer_kwarg, layer_type
         future.set_result(result)
 
