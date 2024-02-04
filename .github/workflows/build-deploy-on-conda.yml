@@ -23,17 +23,14 @@ jobs:
     - shell: bash -l {0}
       run: |
         conda info --envs
-    - name: Build PlantSeg using Boa
+    - name: Build PlantSeg
       shell: bash -l {0}
       run: |
-          # conda config --set allow_conda_downgrades true
-          # conda install conda=4.12.0 -y
-          conda install --yes -c conda-forge mamba
-          mamba install -q boa
-          conda mambabuild -c conda-forge conda-recipe
+          conda install -q conda-build
+          conda build -c conda-forge conda-recipe
     - name: Create PlantSeg env
       run: |
-          mamba create -n plant-seg -c local -c conda-forge plantseg pytest
+          conda create -n plant-seg -c local -c conda-forge plantseg pytest
     - name: Run pytest
       shell: bash -l {0}
       run: |
@@ -46,5 +43,5 @@ jobs:
         ANACONDA_SECRET: ${{ secrets.ANACONDA_TOKEN }}
       shell: bash -l {0}
       run: |
-        mamba install -q anaconda-client
+        conda install -q anaconda-client
         anaconda -t $ANACONDA_SECRET upload $CONDA/conda-bld/**/plantseg-*.tar.bz2
