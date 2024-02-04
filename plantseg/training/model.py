@@ -2,6 +2,7 @@
 # https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/unet3d/model.py
 
 import importlib
+from typing import List
 
 import torch.nn as nn
 
@@ -158,58 +159,6 @@ class DoubleConv(nn.Sequential):
                                    padding=padding, is3d=is3d))
 
 
-class ResNetBlock(nn.Module):
-    """
-    Residual block that can be used instead of standard DoubleConv in the Encoder module.
-    Motivated by: https://arxiv.org/pdf/1706.00120.pdf
-
-    Notice we use ELU instead of ReLU (order='cge') and put non-linearity after the groupnorm.
-    """
-
-    def __init__(self, in_channels, out_channels, kernel_size=3, order='cge', num_groups=8, is3d=True, **kwargs):
-        super(ResNetBlock, self).__init__()
-
-        if in_channels != out_channels:
-            # conv1x1 for increasing the number of channels
-            if is3d:
-                self.conv1 = nn.Conv3d(in_channels, out_channels, 1)
-            else:
-                self.conv1 = nn.Conv2d(in_channels, out_channels, 1)
-        else:
-            self.conv1 = nn.Identity()
-
-        # residual block
-        self.conv2 = SingleConv(out_channels, out_channels, kernel_size=kernel_size, order=order, num_groups=num_groups,
-                                is3d=is3d)
-        # remove non-linearity from the 3rd convolution since it's going to be applied after adding the residual
-        n_order = order
-        for c in 'rel':
-            n_order = n_order.replace(c, '')
-        self.conv3 = SingleConv(out_channels, out_channels, kernel_size=kernel_size, order=n_order,
-                                num_groups=num_groups, is3d=is3d)
-
-        # create non-linearity separately
-        if 'l' in order:
-            self.non_linearity = nn.LeakyReLU(negative_slope=0.1, inplace=True)
-        elif 'e' in order:
-            self.non_linearity = nn.ELU(inplace=True)
-        else:
-            self.non_linearity = nn.ReLU(inplace=True)
-
-    def forward(self, x):
-        # apply first convolution to bring the number of channels to out_channels
-        residual = self.conv1(x)
-
-        # residual block
-        out = self.conv2(residual)
-        out = self.conv3(out)
-
-        out += residual
-        out = self.non_linearity(out)
-
-        return out
-
-
 class Encoder(nn.Module):
     """
     A single module from the encoder path consisting of the optional max
@@ -225,7 +174,6 @@ class Encoder(nn.Module):
         apply_pooling (bool): if True use MaxPool3d before DoubleConv
         pool_kernel_size (int or tuple): the size of the window
         pool_type (str): pooling layer: 'max' or 'avg'
-        basic_module(nn.Module): either ResNetBlock or DoubleConv
         conv_layer_order (string): determines the order of layers
             in `DoubleConv` module. See `DoubleConv` for more info.
         num_groups (int): number of groups for the GroupNorm
@@ -233,9 +181,8 @@ class Encoder(nn.Module):
         is3d (bool): use 3d or 2d convolutions/pooling operation
     """
 
-    def __init__(self, in_channels, out_channels, conv_kernel_size=3, apply_pooling=True,
-                 pool_kernel_size=2, pool_type='max', basic_module=DoubleConv, conv_layer_order='gcr',
-                 num_groups=8, padding=1, is3d=True):
+    def __init__(self, in_channels, out_channels, conv_kernel_size=3, apply_pooling=True, pool_kernel_size=2,
+                 pool_type='max', conv_layer_order='gcr', num_groups=8, padding=1, is3d=True):
         super(Encoder, self).__init__()
         assert pool_type in ['max', 'avg']
         if apply_pooling:
@@ -252,13 +199,13 @@ class Encoder(nn.Module):
         else:
             self.pooling = None
 
-        self.basic_module = basic_module(in_channels, out_channels,
-                                         encoder=True,
-                                         kernel_size=conv_kernel_size,
-                                         order=conv_layer_order,
-                                         num_groups=num_groups,
-                                         padding=padding,
-                                         is3d=is3d)
+        self.basic_module = DoubleConv(in_channels, out_channels,
+                                       encoder=True,
+                                       kernel_size=conv_kernel_size,
+                                       order=conv_layer_order,
+                                       num_groups=num_groups,
+                                       padding=padding,
+                                       is3d=is3d)
 
     def forward(self, x):
         if self.pooling is not None:
@@ -280,7 +227,6 @@ class Decoder(nn.Module):
         scale_factor (tuple): used as the multiplier for the image H/W/D in
             case of nn.Upsample or as stride in case of ConvTranspose3d, must reverse the MaxPool3d operation
             from the corresponding encoder
-        basic_module(nn.Module): either ResNetBlock or DoubleConv
         conv_layer_order (string): determines the order of layers
             in `DoubleConv` module. See `DoubleConv` for more info.
         num_groups (int): number of groups for the GroupNorm
@@ -288,37 +234,28 @@ class Decoder(nn.Module):
         upsample (bool): should the input be upsampled
     """
 
-    def __init__(self, in_channels, out_channels, conv_kernel_size=3, scale_factor=(2, 2, 2), basic_module=DoubleConv,
-                 conv_layer_order='gcr', num_groups=8, mode='nearest', padding=1, upsample=True, is3d=True):
+    def __init__(self, in_channels, out_channels, conv_kernel_size=3, scale_factor=(2, 2, 2), conv_layer_order='gcr',
+                 num_groups=8, mode='nearest', padding=1, upsample=True, is3d=True):
         super(Decoder, self).__init__()
 
         if upsample:
-            if basic_module == DoubleConv:
-                # if DoubleConv is the basic_module use interpolation for upsampling and concatenation joining
-                self.upsampling = InterpolateUpsampling(mode=mode)
-                # concat joining
-                self.joining = partial(self._joining, concat=True)
-            else:
-                # if basic_module=ResNetBlock use transposed convolution upsampling and summation joining
-                self.upsampling = TransposeConvUpsampling(in_channels=in_channels, out_channels=out_channels,
-                                                          kernel_size=conv_kernel_size, scale_factor=scale_factor)
-                # sum joining
-                self.joining = partial(self._joining, concat=False)
-                # adapt the number of in_channels for the ResNetBlock
-                in_channels = out_channels
+            self.upsampling = InterpolateUpsampling(mode=mode)
+            # concat joining
+            self.joining = partial(self._joining, concat=True)
+
         else:
             # no upsampling
             self.upsampling = NoUpsampling()
             # concat joining
             self.joining = partial(self._joining, concat=True)
 
-        self.basic_module = basic_module(in_channels, out_channels,
-                                         encoder=False,
-                                         kernel_size=conv_kernel_size,
-                                         order=conv_layer_order,
-                                         num_groups=num_groups,
-                                         padding=padding,
-                                         is3d=is3d)
+        self.basic_module = DoubleConv(in_channels, out_channels,
+                                       encoder=False,
+                                       kernel_size=conv_kernel_size,
+                                       order=conv_layer_order,
+                                       num_groups=num_groups,
+                                       padding=padding,
+                                       is3d=is3d)
 
     def forward(self, encoder_features, x):
         x = self.upsampling(encoder_features=encoder_features, x=x)
@@ -334,55 +271,35 @@ class Decoder(nn.Module):
             return encoder_features + x
 
 
-def create_encoders(in_channels, f_maps, basic_module, conv_kernel_size, conv_padding, layer_order, num_groups,
-                    pool_kernel_size, is3d):
+def create_encoders(in_channels, f_maps, conv_kernel_size, conv_padding, layer_order, num_groups, pool_kernel_size,
+                    is3d):
     # create encoder path consisting of Encoder modules. Depth of the encoder is equal to `len(f_maps)`
     encoders = []
     for i, out_feature_num in enumerate(f_maps):
         if i == 0:
             # apply conv_coord only in the first encoder if any
-            encoder = Encoder(in_channels, out_feature_num,
-                              apply_pooling=False,  # skip pooling in the firs encoder
-                              basic_module=basic_module,
-                              conv_layer_order=layer_order,
-                              conv_kernel_size=conv_kernel_size,
-                              num_groups=num_groups,
-                              padding=conv_padding,
-                              is3d=is3d)
+            encoder = Encoder(in_channels, out_feature_num, conv_kernel_size=conv_kernel_size, apply_pooling=False,
+                              conv_layer_order=layer_order, num_groups=num_groups, padding=conv_padding, is3d=is3d)
         else:
-            encoder = Encoder(f_maps[i - 1], out_feature_num,
-                              basic_module=basic_module,
-                              conv_layer_order=layer_order,
-                              conv_kernel_size=conv_kernel_size,
-                              num_groups=num_groups,
-                              pool_kernel_size=pool_kernel_size,
-                              padding=conv_padding,
-                              is3d=is3d)
+            encoder = Encoder(f_maps[i - 1], out_feature_num, conv_kernel_size=conv_kernel_size,
+                              pool_kernel_size=pool_kernel_size, conv_layer_order=layer_order, num_groups=num_groups,
+                              padding=conv_padding, is3d=is3d)
 
         encoders.append(encoder)
 
     return nn.ModuleList(encoders)
 
 
-def create_decoders(f_maps, basic_module, conv_kernel_size, conv_padding, layer_order, num_groups, is3d):
+def create_decoders(f_maps, conv_kernel_size, conv_padding, layer_order, num_groups, is3d):
     # create decoder path consisting of the Decoder modules. The length of the decoder list is equal to `len(f_maps) - 1`
     decoders = []
     reversed_f_maps = list(reversed(f_maps))
     for i in range(len(reversed_f_maps) - 1):
-        if basic_module == DoubleConv:
-            in_feature_num = reversed_f_maps[i] + reversed_f_maps[i + 1]
-        else:
-            in_feature_num = reversed_f_maps[i]
-
+        in_feature_num = reversed_f_maps[i] + reversed_f_maps[i + 1]
         out_feature_num = reversed_f_maps[i + 1]
 
-        decoder = Decoder(in_feature_num, out_feature_num,
-                          basic_module=basic_module,
-                          conv_layer_order=layer_order,
-                          conv_kernel_size=conv_kernel_size,
-                          num_groups=num_groups,
-                          padding=conv_padding,
-                          is3d=is3d)
+        decoder = Decoder(in_feature_num, out_feature_num, conv_kernel_size=conv_kernel_size,
+                          conv_layer_order=layer_order, num_groups=num_groups, padding=conv_padding, is3d=is3d)
         decoders.append(decoder)
     return nn.ModuleList(decoders)
 
@@ -421,27 +338,6 @@ class InterpolateUpsampling(AbstractUpsampling):
         return F.interpolate(x, size=size, mode=mode)
 
 
-class TransposeConvUpsampling(AbstractUpsampling):
-    """
-    Args:
-        in_channels (int): number of input channels for transposed conv
-            used only if transposed_conv is True
-        out_channels (int): number of output channels for transpose conv
-            used only if transposed_conv is True
-        kernel_size (int or tuple): size of the convolving kernel
-            used only if transposed_conv is True
-        scale_factor (int or tuple): stride of the convolution
-            used only if transposed_conv is True
-
-    """
-
-    def __init__(self, in_channels=None, out_channels=None, kernel_size=3, scale_factor=(2, 2, 2)):
-        # make sure that the output size reverses the MaxPool3d from the corresponding encoder
-        upsample = nn.ConvTranspose3d(in_channels, out_channels, kernel_size=kernel_size, stride=scale_factor,
-                                      padding=1)
-        super().__init__(upsample)
-
-
 class NoUpsampling(AbstractUpsampling):
     def __init__(self):
         super().__init__(self._no_upsampling)
@@ -467,7 +363,6 @@ class AbstractUNet(nn.Module):
             of feature maps is given by the geometric progression: f_maps ^ k, k=1,2,3,4
         final_sigmoid (bool): if True apply element-wise nn.Sigmoid after the final 1x1 convolution,
             otherwise apply nn.Softmax. In effect only if `self.training == False`, i.e. during validation/testing
-        basic_module: basic model for the encoder/decoder (DoubleConv, ResNetBlock, ....)
         layer_order (string): determines the order of layers in `SingleConv` module.
             E.g. 'crg' stands for GroupNorm3d+Conv3d+ReLU. See `SingleConv` for more info
         num_groups (int): number of groups for the GroupNorm
@@ -475,15 +370,14 @@ class AbstractUNet(nn.Module):
             default: 4
         is_segmentation (bool): if True and the model is in eval mode, Sigmoid/Softmax normalization is applied
             after the final convolution; if False (regression problem) the normalization layer is skipped
-        conv_kernel_size (int or tuple): size of the convolving kernel in the basic_module
+        conv_kernel_size (int or tuple): size of the convolving kernel in the conv layer
         pool_kernel_size (int or tuple): the size of the window
         conv_padding (int or tuple): add zero-padding added to all three sides of the input
         is3d (bool): if True the model is 3D, otherwise 2D, default: True
     """
 
-    def __init__(self, in_channels, out_channels, final_sigmoid, basic_module, f_maps=64, layer_order='gcr',
-                 num_groups=8, num_levels=4, is_segmentation=True, conv_kernel_size=3, pool_kernel_size=2,
-                 conv_padding=1, is3d=True):
+    def __init__(self, in_channels, out_channels, final_sigmoid, f_maps=64, layer_order='gcr', num_groups=8,
+                 num_levels=4, is_segmentation=True, conv_kernel_size=3, pool_kernel_size=2, conv_padding=1, is3d=True):
         super(AbstractUNet, self).__init__()
 
         if isinstance(f_maps, int):
@@ -495,12 +389,11 @@ class AbstractUNet(nn.Module):
             assert num_groups is not None, "num_groups must be specified if GroupNorm is used"
 
         # create encoder path
-        self.encoders = create_encoders(in_channels, f_maps, basic_module, conv_kernel_size, conv_padding, layer_order,
-                                        num_groups, pool_kernel_size, is3d)
+        self.encoders = create_encoders(in_channels, f_maps, conv_kernel_size, conv_padding, layer_order, num_groups,
+                                        pool_kernel_size, is3d)
 
         # create decoder path
-        self.decoders = create_decoders(f_maps, basic_module, conv_kernel_size, conv_padding, layer_order, num_groups,
-                                        is3d)
+        self.decoders = create_decoders(f_maps, conv_kernel_size, conv_padding, layer_order, num_groups, is3d)
 
         # in the last layer a 1×1 convolution reduces the number of output channels to the number of labels
         if is3d:
@@ -551,22 +444,13 @@ class UNet3D(AbstractUNet):
     3DUnet model from
     `"3D U-Net: Learning Dense Volumetric Segmentation from Sparse Annotation"
         <https://arxiv.org/pdf/1606.06650.pdf>`.
-
-    Uses `DoubleConv` as a basic_module and nearest neighbor upsampling in the decoder
     """
 
     def __init__(self, in_channels, out_channels, final_sigmoid=True, f_maps=64, layer_order='gcr',
                  num_groups=8, num_levels=4, is_segmentation=True, conv_padding=1, **kwargs):
-        super(UNet3D, self).__init__(in_channels=in_channels,
-                                     out_channels=out_channels,
-                                     final_sigmoid=final_sigmoid,
-                                     basic_module=DoubleConv,
-                                     f_maps=f_maps,
-                                     layer_order=layer_order,
-                                     num_groups=num_groups,
-                                     num_levels=num_levels,
-                                     is_segmentation=is_segmentation,
-                                     conv_padding=conv_padding,
+        super(UNet3D, self).__init__(in_channels=in_channels, out_channels=out_channels, final_sigmoid=final_sigmoid,
+                                     f_maps=f_maps, layer_order=layer_order, num_groups=num_groups,
+                                     num_levels=num_levels, is_segmentation=is_segmentation, conv_padding=conv_padding,
                                      is3d=True)
 
 
@@ -578,17 +462,48 @@ class UNet2D(AbstractUNet):
 
     def __init__(self, in_channels, out_channels, final_sigmoid=True, f_maps=64, layer_order='gcr',
                  num_groups=8, num_levels=4, is_segmentation=True, conv_padding=1, **kwargs):
-        super(UNet2D, self).__init__(in_channels=in_channels,
-                                     out_channels=out_channels,
-                                     final_sigmoid=final_sigmoid,
-                                     basic_module=DoubleConv,
-                                     f_maps=f_maps,
-                                     layer_order=layer_order,
-                                     num_groups=num_groups,
-                                     num_levels=num_levels,
-                                     is_segmentation=is_segmentation,
-                                     conv_padding=conv_padding,
+        super(UNet2D, self).__init__(in_channels=in_channels, out_channels=out_channels, final_sigmoid=final_sigmoid,
+                                     f_maps=f_maps, layer_order=layer_order, num_groups=num_groups,
+                                     num_levels=num_levels, is_segmentation=is_segmentation, conv_padding=conv_padding,
                                      is3d=False)
+
+
+class SpocoNet(nn.Module):
+    """
+    Wrapper around the f-network and the moving average g-network.
+    """
+
+    def __init__(self, net_f, net_g, m=0.999, init_equal=True):
+        super(SpocoNet, self).__init__()
+
+        self.net_f = net_f
+        self.net_g = net_g
+        self.m = m
+
+        if init_equal:
+            # initialize g weights to be equal to f weights
+            for param_f, param_g in zip(self.net_f.parameters(), self.net_g.parameters()):
+                param_g.data.copy_(param_f.data)  # initialize
+                param_g.requires_grad = False  # freeze g parameters
+
+    @torch.no_grad()
+    def _momentum_update(self):
+        """
+        Momentum update of the g
+        """
+        for param_f, param_g in zip(self.net_f.parameters(), self.net_g.parameters()):
+            param_g.data = param_g.data * self.m + param_f.data * (1. - self.m)
+
+    def forward(self, im_f, im_g):
+        # compute f-embeddings
+        emb_f = self.net_f(im_f)
+
+        # compute g-embeddings
+        with torch.no_grad():  # no gradient to g-embeddings
+            self._momentum_update()  # momentum update of g
+            emb_g = self.net_g(im_g)
+
+        return emb_f, emb_g
 
 
 def number_of_features_per_level(init_channel_number, num_levels):
@@ -605,5 +520,23 @@ def get_class(class_name, modules):
 
 
 def get_model(model_config):
-    model_class = get_class(model_config['name'], modules=['plantseg.models.model'])
+    model_class = get_class(model_config['name'], modules=['plantseg.training.model'])
     return model_class(**model_config)
+
+
+def get_spoco(in_channels: int, out_channels: int, f_maps: List[int], layer_order='bcr') -> SpocoNet:
+    net_f = UNet2D(
+        in_channels=in_channels,
+        out_channels=out_channels,
+        f_maps=f_maps,
+        layer_order=layer_order
+    )
+
+    net_g = UNet2D(
+        in_channels=in_channels,
+        out_channels=out_channels,
+        f_maps=f_maps,
+        layer_order=layer_order
+    )
+
+    return SpocoNet(net_f, net_g)

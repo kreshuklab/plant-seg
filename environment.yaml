@@ -1,7 +1,7 @@
 name: plant-seg
 channels:
-  - lcerrone
   - pytorch
+  - nvidia
   - conda-forge
 dependencies:
   - python

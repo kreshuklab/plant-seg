@@ -6,7 +6,8 @@ import tqdm
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
-from plantseg.models.model import UNet2D
+from plantseg.training.embeddings import embeddings_to_affinities
+from plantseg.training.model import UNet2D
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset, default_prediction_collate
 
@@ -77,11 +78,13 @@ class ArrayPredictor:
         patch_halo (tuple): mirror padding around the patch
         single_batch_mode (bool): if True, the batch size will be set to 1
         headless (bool): if True, DataParallel will be used if multiple GPUs are available
+        is_embedding (bool): if True, the model returns embeddings instead of probabilities
     """
 
     def __init__(self, model: nn.Module, in_channels: int, out_channels: int, device: str, patch: Tuple[int, int, int],
-                 patch_halo: Tuple[int, int, int], single_batch_mode: bool, headless: bool,
+                 patch_halo: Tuple[int, int, int], single_batch_mode: bool, headless: bool, is_embedding: bool = False,
                  verbose_logging: bool = False, disable_tqdm: bool = False):
+
         self.device = device
         if single_batch_mode:
             self.batch_size = 1
@@ -101,6 +104,7 @@ class ArrayPredictor:
         self.patch_halo = patch_halo
         self.verbose_logging = verbose_logging
         self.disable_tqdm = disable_tqdm
+        self.is_embedding = is_embedding
 
     def __call__(self, test_dataset: Dataset) -> np.ndarray:
         assert isinstance(test_dataset, ArrayDataset)
@@ -113,7 +117,19 @@ class ArrayPredictor:
 
         # dimensionality of the output predictions
         volume_shape = self.volume_shape(test_dataset)
-        prediction_maps_shape = (self.out_channels,) + volume_shape
+        is_2d_model = _is_2d_model(self.model)
+        if self.is_embedding:
+            if is_2d_model:
+                # outputs 1-affinities in XY
+                out_channels = 2
+            else:
+                # outputs 1-affinities in XYZ
+                out_channels = 3
+        else:
+            out_channels = self.out_channels
+
+        prediction_maps_shape = (out_channels,) + volume_shape
+
         if self.verbose_logging:
             gui_logger.info(f'The shape of the output prediction maps (CDHW): {prediction_maps_shape}')
             gui_logger.info(f'Using patch_halo: {self.patch_halo}')
@@ -137,7 +153,7 @@ class ArrayPredictor:
                 # pad input patch
                 input = _pad(input, self.patch_halo)
                 # forward pass
-                if _is_2d_model(self.model):
+                if is_2d_model:
                     # remove the singleton z-dimension from the input
                     input = torch.squeeze(input, dim=-3)
                     prediction = self.model(input)
@@ -145,11 +161,21 @@ class ArrayPredictor:
                     prediction = torch.unsqueeze(prediction, dim=-3)
                 else:
                     prediction = self.model(input)
+
+                if self.is_embedding:
+                    if is_2d_model:
+                        offsets = [[-1, 0], [0, -1]]
+                    else:
+                        offsets = [[-1, 0, 0], [0, -1, 0], [0, 0, -1]]
+                    # convert embeddings to affinities
+                    prediction = embeddings_to_affinities(prediction, offsets, delta=0.5)
+                    # average across channels and invert (i.e. 1-affinities)
+                    prediction = 1 - prediction.mean(dim=1)
                 # unpad the prediction
                 prediction = _unpad(prediction, self.patch_halo)
                 # convert to numpy array
                 prediction = prediction.cpu().numpy()
-                channel_slice = slice(0, self.out_channels)
+                channel_slice = slice(0, out_channels)
                 # for each batch sample
                 for pred, index in zip(prediction, indices):
                     # add channel dimension to the index

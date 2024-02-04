@@ -1,0 +1,80 @@
+model:
+  name: UNet3D
+  # number of input channels to the model
+  in_channels: 1
+  # number of output channels
+  out_channels: 1
+  # determines the order of operators in a single layer (crg - Conv3d+ReLU+GroupNorm)
+  layer_order: gcr
+  # initial number of feature maps
+  f_maps: 32
+  # number of groups in the groupnorm
+  num_groups: 8
+  # apply element-wise nn.Sigmoid after the final 1x1x1 convolution, otherwise apply nn.Softmax
+  final_sigmoid: true
+# loss function to be used during training
+loss:
+  name: DiceLoss
+optimizer:
+  # initial learning rate
+  learning_rate: 0.0001
+  # weight decay
+  weight_decay: 0.00001
+# evaluation metric
+lr_scheduler:
+  name: ReduceLROnPlateau
+  # make sure to use the 'min' mode cause lower AdaptedRandError is better
+  mode: min
+  factor: 0.2
+  patience: 10
+trainer:
+  checkpoint_dir: CHECKPOINT_DIR
+  # path to the best_checkpoint.pytorch; to be used for fine-tuning the model with additional ground truth
+  pre_trained: null
+  # how many iterations between tensorboard logging
+  log_after_iters: 500
+  # max number of iterations
+  max_num_iterations: 50000
+# Configure training and validation loaders
+loaders:
+  # how many subprocesses to use for data loading
+  num_workers: 8
+  # path to the raw data within the H5
+  raw_internal_path: raw
+  # path to the label data withtin the H5
+  label_internal_path: label
+  # configuration of the train loader
+  train:
+    # path to the training datasets
+    file_paths:
+      - PATH_TO_TRAIN_DIR
+
+    # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
+    slice_builder:
+      name: FilterSliceBuilder
+      # train patch size given to the network (adapt to fit in your GPU mem, generally the bigger patch the better)
+      patch_shape: [ 80, 160, 160 ]
+      # train stride between patches
+      stride_shape: [ 40, 80, 80 ]
+      # minimum volume of the labels in the patch
+      threshold: 0.1
+      # probability of accepting patches which do not fulfil the threshold criterion
+      slack_acceptance: 0.01
+
+  # configuration of the val loader
+  val:
+    # path to the val datasets
+    file_paths:
+      - PATH_TO_VAL_DIR
+
+    # SliceBuilder configuration, i.e. how to iterate over the input volume patch-by-patch
+    slice_builder:
+      name: FilterSliceBuilder
+      # train patch size given to the network (adapt to fit in your GPU mem, generally the bigger patch the better)
+      patch_shape: [ 80, 160, 160 ]
+      # train stride between patches
+      stride_shape: [ 80, 160, 160 ]
+      # minimum volume of the labels in the patch
+      threshold: 0.1
+      # probability of accepting patches which do not fulfil the threshold criterion
+      slack_acceptance: 0.01

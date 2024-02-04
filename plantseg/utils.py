@@ -156,7 +156,7 @@ def add_custom_model(new_model_name: str,
 
     recommended_patch_size = [80, 170, 170]
     for file in all_files:
-        if os.path.basename(file) == 'config_train.yaml':
+        if os.path.basename(file) == 'config_train.yml':
             config_train = load_config(file)
             recommended_patch_size = list(config_train['loaders']['train']['slice_builder']['patch_shape'])
 
@@ -295,7 +295,7 @@ def clean_models():
             print("Invalid input, please type 'y' or 'n'.")
 
 
-def check_version(plantseg_url=' https://api.github.com/repos/hci-unihd/plant-seg/releases/latest'):
+def check_version(plantseg_url='https://api.github.com/repos/hci-unihd/plant-seg/releases/latest'):
     try:
         response = requests.get(plantseg_url).json()
         latest_version = response['tag_name']

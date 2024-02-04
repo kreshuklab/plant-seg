@@ -1,0 +1,11 @@
+training:
+  dataset_dir: TRAIN_DIR # contains train/val subdirectories
+  model_name: custom_model
+  in_channels: 1
+  out_channels: 2
+  feature_maps: [ 32, 64, 128, 256, 512 ]
+  patch_size: [ 80, 160, 160 ]
+  max_num_iters: 50000
+  dimensionality: 3D
+  sparse: false
+  device: cuda

@@ -2,7 +2,7 @@ import os
 
 from plantseg import plantseg_global_path, PLANTSEG_MODELS_DIR, home_path
 from plantseg.augment.transforms import get_test_augmentations
-from plantseg.models.model import get_model
+from plantseg.training.model import get_model
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset
 from plantseg.predictions.functional.slice_builder import SliceBuilder
@@ -44,7 +44,7 @@ def get_array_dataset(raw, model_name, patch, stride_ratio, global_normalization
         augs = get_test_augmentations(None)
 
     stride = get_stride_shape(patch, stride_ratio)
-    slice_builder = SliceBuilder(raw, label_dataset=None, weight_dataset=None, patch_shape=patch, stride_shape=stride)
+    slice_builder = SliceBuilder(raw, label_dataset=None, patch_shape=patch, stride_shape=stride)
     return ArrayDataset(raw, slice_builder, augs, verbose_logging=False)
 
 
