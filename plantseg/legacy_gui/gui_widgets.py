@@ -9,8 +9,8 @@ from plantseg.legacy_gui.gui_tools import ListEntry, SimpleEntry, FilterEntry, R
 class ModuleFramePrototype:
     """
     Prototype for the main keys field.
-     Every process is in the pipeline is represented by a single instance of it.
-     """
+    Every process is in the pipeline is represented by a single instance of it.
+    """
 
     def __init__(self, frame, module_name="processing", font=None):
         self.frame = frame
@@ -24,13 +24,19 @@ class ModuleFramePrototype:
         self.place_module(module_name=module_name)
 
     def place_module(self, module_name):
-        self.checkbox = tkinter.Checkbutton(self.frame, bg=convert_rgb((208, 240, 192)),
-                                            text=module_name, font=self.font)
-        self.checkbox.grid(column=0,
-                           row=0,
-                           padx=self.style["padx"],
-                           pady=self.style["pady"],
-                           sticky=stick_all)
+        self.checkbox = tkinter.Checkbutton(
+            self.frame,
+            bg=convert_rgb((208, 240, 192)),
+            text=module_name,
+            font=self.font,
+        )
+        self.checkbox.grid(
+            column=0,
+            row=0,
+            padx=self.style["padx"],
+            pady=self.style["pady"],
+            sticky=stick_all,
+        )
 
     def _show_options(self, config, module):
         if self.show.get():
@@ -103,25 +109,26 @@ class ModuleFramePrototype:
 class PreprocessingFrame(ModuleFramePrototype):
     def __init__(self, frame, config, col=0, module_name="preprocessing", font=None, show_all=True):
         self.preprocessing_frame = tkinter.Frame(frame)
-        self.preprocessing_style = {"bg": "white",
-                                    "padx": 10,
-                                    "pady": 10,
-                                    "row_weights": [2, 1, 1, 1, 1],
-                                    "columns_weights": [1],
-                                    "height": 4,
-                                    }
+        self.preprocessing_style = {
+            "bg": "white",
+            "padx": 10,
+            "pady": 10,
+            "row_weights": [2, 1, 1, 1, 1],
+            "columns_weights": [1],
+            "height": 4,
+        }
 
         self.preprocessing_frame["bg"] = self.preprocessing_style["bg"]
-        self.preprocessing_frame.grid(column=col,
-                                      row=0,
-                                      padx=self.preprocessing_style["padx"],
-                                      pady=self.preprocessing_style["pady"],
-                                      sticky=stick_new)
+        self.preprocessing_frame.grid(
+            column=col,
+            row=0,
+            padx=self.preprocessing_style["padx"],
+            pady=self.preprocessing_style["pady"],
+            sticky=stick_new,
+        )
 
-        [tkinter.Grid.rowconfigure(self.preprocessing_frame, i, weight=w)
-         for i, w in enumerate(self.preprocessing_style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.preprocessing_frame, i, weight=w)
-         for i, w in enumerate(self.preprocessing_style["columns_weights"])]
+        [tkinter.Grid.rowconfigure(self.preprocessing_frame, i, weight=w) for i, w in enumerate(self.preprocessing_style["row_weights"])]
+        [tkinter.Grid.columnconfigure(self.preprocessing_frame, i, weight=w) for i, w in enumerate(self.preprocessing_style["columns_weights"])]
 
         super().__init__(self.preprocessing_frame, module_name, font=font)
         self.module = "preprocessing"
@@ -137,36 +144,63 @@ class PreprocessingFrame(ModuleFramePrototype):
         self.checkbox["command"] = self.show_options
 
         self.obj_collection = []
-        self.custom_key = {"save_directory": SimpleEntry(self.preprocessing_frame,
-                                                         text="Save Directory: ",
-                                                         row=1,
-                                                         column=0,
-                                                         _type=str,
-                                                         _font=font),
-                           "factor": RescaleEntry(self.preprocessing_frame,
-                                                  text="Rescaling (z,x,y):",
-                                                  row=2,
-                                                  column=0,
-                                                  font=font),
-                           "order": MenuEntry(self.preprocessing_frame,
-                                              text="Interpolation: ",
-                                              row=3,
-                                              column=0,
-                                              menu=[0, 1, 2],
-                                              default=2,
-                                              font=font),
-                           "filter": FilterEntry(self.preprocessing_frame,
-                                                 text="Filter (Optional): ",
-                                                 row=4,
-                                                 column=0,
-                                                 font=font),
-                           "crop_volume": SimpleEntry(self.preprocessing_frame,
-                                                         text="Crop Volume: ",
-                                                         row=5,
-                                                         column=0,
-                                                         _type=str,
-                                                         _font=font),
-                           }
+        self.custom_key = {
+            "key": SimpleEntry(
+                self.preprocessing_frame,
+                text="Key (HDF5 only): ",
+                row=1,
+                column=0,
+                _type=str,
+                _font=font,
+            ),
+            "channel": SimpleEntry(
+                self.preprocessing_frame,
+                text="Channel (HDF5 only): ",
+                row=2,
+                column=0,
+                _type=int,
+                _font=font,
+            ),
+            "save_directory": SimpleEntry(
+                self.preprocessing_frame,
+                text="Save Directory: ",
+                row=3,
+                column=0,
+                _type=str,
+                _font=font,
+            ),
+            "factor": RescaleEntry(
+                self.preprocessing_frame,
+                text="Rescaling (z,x,y):",
+                row=4,
+                column=0,
+                font=font,
+            ),
+            "order": MenuEntry(
+                self.preprocessing_frame,
+                text="Interpolation: ",
+                row=5,
+                column=0,
+                menu=[0, 1, 2],
+                default=2,
+                font=font,
+            ),
+            "filter": FilterEntry(
+                self.preprocessing_frame,
+                text="Filter (Optional): ",
+                row=6,
+                column=0,
+                font=font,
+            ),
+            "crop_volume": SimpleEntry(
+                self.preprocessing_frame,
+                text="Crop Volume: ",
+                row=7,
+                column=0,
+                _type=str,
+                _font=font,
+            ),
+        }
 
         self.show_options()
 
@@ -174,25 +208,26 @@ class PreprocessingFrame(ModuleFramePrototype):
 class UnetPredictionFrame(ModuleFramePrototype):
     def __init__(self, frame, config, col=0, module_name="preprocessing", font=None, show_all=True):
         self.prediction_frame = tkinter.Frame(frame)
-        self.prediction_style = {"bg": "white",
-                                 "padx": 10,
-                                 "pady": 10,
-                                 "row_weights": [2, 1, 1, 1, 1],
-                                 "columns_weights": [1],
-                                 "height": 4,
-                                 }
+        self.prediction_style = {
+            "bg": "white",
+            "padx": 10,
+            "pady": 10,
+            "row_weights": [2, 1, 1, 1, 1],
+            "columns_weights": [1],
+            "height": 4,
+        }
 
         self.prediction_frame["bg"] = self.prediction_style["bg"]
-        self.prediction_frame.grid(column=col,
-                                   row=0,
-                                   padx=self.prediction_style["padx"],
-                                   pady=self.prediction_style["pady"],
-                                   sticky=stick_new)
+        self.prediction_frame.grid(
+            column=col,
+            row=0,
+            padx=self.prediction_style["padx"],
+            pady=self.prediction_style["pady"],
+            sticky=stick_new,
+        )
 
-        [tkinter.Grid.rowconfigure(self.prediction_frame, i, weight=w)
-         for i, w in enumerate(self.prediction_style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.prediction_frame, i, weight=w)
-         for i, w in enumerate(self.prediction_style["columns_weights"])]
+        [tkinter.Grid.rowconfigure(self.prediction_frame, i, weight=w) for i, w in enumerate(self.prediction_style["row_weights"])]
+        [tkinter.Grid.columnconfigure(self.prediction_frame, i, weight=w) for i, w in enumerate(self.prediction_style["columns_weights"])]
 
         super().__init__(self.prediction_frame, module_name, font=font)
         self.module = "cnn_prediction"
@@ -208,28 +243,51 @@ class UnetPredictionFrame(ModuleFramePrototype):
         self.checkbox["command"] = self.show_options
 
         self.obj_collection = []
-        self.custom_key = {"model_name": MenuEntry(self.prediction_frame,
-                                                   text="Model Name: ",
-                                                   row=1,
-                                                   column=0,
-                                                   menu=list_models(),
-                                                   default=config[self.module]["model_name"],
-                                                   is_model=True,
-                                                   font=font),
-                           "patch": ListEntry(self.prediction_frame,
-                                              text="Patch Size: ",
-                                              row=2,
-                                              column=0,
-                                              type=int,
-                                              font=font),
-                           "device": MenuEntry(self.prediction_frame,
-                                               text="Device Type: ",
-                                               row=4,
-                                               column=0,
-                                               menu=["cuda", "cpu"],
-                                               default=config[self.module]["device"],
-                                               font=font),
-                           }
+        self.custom_key = {
+            "key": SimpleEntry(
+                self.prediction_frame,
+                text="Key (HDF5 only): ",
+                row=1,
+                column=0,
+                _type=str,
+                _font=font,
+            ),
+            "channel": SimpleEntry(
+                self.prediction_frame,
+                text="Channel (HDF5 only): ",
+                row=2,
+                column=0,
+                _type=int,
+                _font=font,
+            ),
+            "model_name": MenuEntry(
+                self.prediction_frame,
+                text="Model Name: ",
+                row=3,
+                column=0,
+                menu=list_models(),
+                default=config[self.module]["model_name"],
+                is_model=True,
+                font=font,
+            ),
+            "patch": ListEntry(
+                self.prediction_frame,
+                text="Patch Size: ",
+                row=4,
+                column=0,
+                type=int,
+                font=font,
+            ),
+            "device": MenuEntry(
+                self.prediction_frame,
+                text="Device Type: ",
+                row=5,
+                column=0,
+                menu=["cuda", "cpu"],
+                default=config[self.module]["device"],
+                font=font,
+            ),
+        }
 
         self.show_options()
 
@@ -237,25 +295,26 @@ class UnetPredictionFrame(ModuleFramePrototype):
 class SegmentationFrame(ModuleFramePrototype):
     def __init__(self, frame, config, col=0, module_name="segmentation", font=None, show_all=True):
         self.segmentation_frame = tkinter.Frame(frame)
-        self.segmentation_style = {"bg": "white",
-                                   "padx": 10,
-                                   "pady": 10,
-                                   "row_weights": [2, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                                   "columns_weights": [1],
-                                   "height": 4,
-                                   }
+        self.segmentation_style = {
+            "bg": "white",
+            "padx": 10,
+            "pady": 10,
+            "row_weights": [2, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            "columns_weights": [1],
+            "height": 4,
+        }
 
         self.segmentation_frame["bg"] = self.segmentation_style["bg"]
-        self.segmentation_frame.grid(column=col,
-                                     row=0,
-                                     padx=self.segmentation_style["padx"],
-                                     pady=self.segmentation_style["pady"],
-                                     sticky=stick_new)
+        self.segmentation_frame.grid(
+            column=col,
+            row=0,
+            padx=self.segmentation_style["padx"],
+            pady=self.segmentation_style["pady"],
+            sticky=stick_new,
+        )
 
-        [tkinter.Grid.rowconfigure(self.segmentation_frame, i, weight=w)
-         for i, w in enumerate(self.segmentation_style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.segmentation_frame, i, weight=w)
-         for i, w in enumerate(self.segmentation_style["columns_weights"])]
+        [tkinter.Grid.rowconfigure(self.segmentation_frame, i, weight=w) for i, w in enumerate(self.segmentation_style["row_weights"])]
+        [tkinter.Grid.columnconfigure(self.segmentation_frame, i, weight=w) for i, w in enumerate(self.segmentation_style["columns_weights"])]
 
         super().__init__(self.segmentation_frame, module_name, font)
         self.module = "segmentation"
@@ -271,70 +330,136 @@ class SegmentationFrame(ModuleFramePrototype):
         self.checkbox["command"] = self.show_options
 
         self.obj_collection = []
-        self.custom_key = {"name": MenuEntry(self.segmentation_frame,
-                                             text="Algorithm: ",
-                                             row=1,
-                                             column=0,
-                                             menu={"MultiCut", "GASP", "MutexWS", "DtWatershed", "SimpleITK"},
-                                             is_segmentation=True,
-                                             default=config[self.module]["name"],
-                                             font=font),
-                           "save_directory": SimpleEntry(self.segmentation_frame,
-                                                         text="Save Directory: ",
-                                                         row=2,
-                                                         column=0,
-                                                         _type=str,
-                                                         _font=font),
-                           "beta": SliderEntry(self.segmentation_frame,
-                                               text="Under-/Over-segmentation factor: ",
-                                               row=3,
-                                               column=0,
-                                               is_not_in_dtws=True,
-                                               _type=float,
-                                               _font=font),
-                           "ws_2D": MenuEntry(self.segmentation_frame,
-                                              text="Run Watershed in 2D: ",
-                                              row=4,
-                                              column=0,
-                                              menu={"True", "False"},
-                                              default=config[self.module]["ws_2D"],
-                                              font=font),
-
-                           "ws_threshold": SliderEntry(self.segmentation_frame,
-                                                       text="CNN Predictions Threshold: ",
-                                                       row=5,
-                                                       column=0,
-                                                       data_range=(0, 1, 0.001),
-                                                       _type=float,
-                                                       _font=font),
-
-                           "ws_sigma": SliderEntry(self.segmentation_frame,
-                                                   text="Watershed Seeds Sigma: ",
-                                                   row=6,
-                                                   column=0,
-                                                   data_range=(0, 5, 0.2),
-                                                   _type=float,
-                                                   _font=font),
-                           "ws_w_sigma": SliderEntry(self.segmentation_frame,
-                                                     text="Watershed Boundary Sigma: ",
-                                                     row=7,
-                                                     column=0,
-                                                     data_range=(0, 5, 0.2),
-                                                     _type=float,
-                                                     _font=font),
-                           "ws_minsize": SimpleEntry(self.segmentation_frame,
-                                                         text="Superpixels Minimum Size (voxels): ",
-                                                         row=8,
-                                                         column=0,
-                                                         _type=int,
-                                                         _font=font),
-                           "post_minsize": SimpleEntry(self.segmentation_frame,
-                                                     text="Cell Minimum Size (voxels): ",
-                                                     row=9,
-                                                     column=0,
-                                                     _type=int,
-                                                     _font=font),
-                           }
+        self.custom_key = {
+            "key": SimpleEntry(
+                self.segmentation_frame,
+                text="Key (HDF5 only): ",
+                row=1,
+                column=0,
+                _type=str,
+                _font=font,
+            ),
+            "channel": SimpleEntry(
+                self.segmentation_frame,
+                text="Channel (HDF5 only): ",
+                row=2,
+                column=0,
+                _type=int,
+                _font=font,
+            ),
+            "name": MenuEntry(
+                self.segmentation_frame,
+                text="Algorithm: ",
+                row=3,
+                column=0,
+                menu={"MultiCut", "LiftedMulticut", "GASP", "MutexWS", "DtWatershed", "SimpleITK"},
+                is_segmentation=True,
+                default=config[self.module]["name"],
+                font=font,
+            ),
+            "save_directory": SimpleEntry(
+                self.segmentation_frame,
+                text="Save Directory: ",
+                row=4,
+                column=0,
+                _type=str,
+                _font=font,
+            ),
+            "beta": SliderEntry(
+                self.segmentation_frame,
+                text="Under-/Over-segmentation factor: ",
+                row=5,
+                column=0,
+                is_not_in_dtws=True,
+                _type=float,
+                _font=font,
+            ),
+            "ws_2D": MenuEntry(
+                self.segmentation_frame,
+                text="Run Watershed in 2D: ",
+                row=6,
+                column=0,
+                menu={"True", "False"},
+                default=config[self.module]["ws_2D"],
+                font=font,
+            ),
+            "ws_threshold": SliderEntry(
+                self.segmentation_frame,
+                text="CNN Predictions Threshold: ",
+                row=7,
+                column=0,
+                data_range=(0, 1, 0.001),
+                _type=float,
+                _font=font,
+            ),
+            "ws_sigma": SliderEntry(
+                self.segmentation_frame,
+                text="Watershed Seeds Sigma: ",
+                row=8,
+                column=0,
+                data_range=(0, 5, 0.2),
+                _type=float,
+                _font=font,
+            ),
+            "ws_w_sigma": SliderEntry(
+                self.segmentation_frame,
+                text="Watershed Boundary Sigma: ",
+                row=9,
+                column=0,
+                data_range=(0, 5, 0.2),
+                _type=float,
+                _font=font,
+            ),
+            "ws_minsize": SimpleEntry(
+                self.segmentation_frame,
+                text="Superpixels Minimum Size (voxels): ",
+                row=10,
+                column=0,
+                _type=int,
+                _font=font,
+            ),
+            "post_minsize": SimpleEntry(
+                self.segmentation_frame,
+                text="Cell Minimum Size (voxels): ",
+                row=11,
+                column=0,
+                _type=int,
+                _font=font,
+            ),
+            "nuclei_predictions_path": SimpleEntry(
+                self.segmentation_frame,
+                text="Nuclei Path: ",
+                row=12,
+                column=0,
+                _type=str,
+                _font=font,
+            ),
+            "key_nuclei": SimpleEntry(
+                self.segmentation_frame,
+                text="Nuclei Key (HDF5 only): ",
+                row=13,
+                column=0,
+                _type=str,
+                _font=font,
+            ),
+            "channel_nuclei": SimpleEntry(
+                self.segmentation_frame,
+                text="Nuclei Channel (HDF5 only): ",
+                row=14,
+                column=0,
+                _type=int,
+                _font=font,
+            ),
+            "is_segmentation": MenuEntry(
+                self.segmentation_frame,
+                text="Nuclei are Labels (or Probability): ",
+                row=15,
+                column=0,
+                menu={"True", "False"},
+                default=config[self.module]["is_segmentation"],
+                font=font,
+            ),
+        }
 
         self.show_options()
 
@@ -342,26 +467,21 @@ class SegmentationFrame(ModuleFramePrototype):
 class PostSegmentationFrame(ModuleFramePrototype):
     def __init__(self, frame, config, row=0, module_name="Segmentation Post Processing", font=None, show_all=True):
         self.post_frame = tkinter.Frame(frame)
-        self.post_style = {"bg": "white",
-                           "padx": 0,
-                           "pady": 0,
-                           "row_weights": [1, 1, 1, 1],
-                           "columns_weights": [1],
-                           "height": 4,
-                           }
+        self.post_style = {
+            "bg": "white",
+            "padx": 0,
+            "pady": 0,
+            "row_weights": [1, 1, 1, 1],
+            "columns_weights": [1],
+            "height": 4,
+        }
 
         self.post_frame["bg"] = self.post_style["bg"]
         self.font = font
-        self.post_frame.grid(column=0,
-                             row=row,
-                             padx=self.post_style["padx"],
-                             pady=self.post_style["pady"],
-                             sticky=stick_all)
+        self.post_frame.grid(column=0, row=row, padx=self.post_style["padx"], pady=self.post_style["pady"], sticky=stick_all)
 
-        [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w)
-         for i, w in enumerate(self.post_style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.post_frame, i, weight=w)
-         for i, w in enumerate(self.post_style["columns_weights"])]
+        [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w) for i, w in enumerate(self.post_style["row_weights"])]
+        [tkinter.Grid.columnconfigure(self.post_frame, i, weight=w) for i, w in enumerate(self.post_style["columns_weights"])]
 
         super().__init__(self.post_frame, module_name, font=font)
         self.module = "segmentation_postprocessing"
@@ -377,21 +497,42 @@ class PostSegmentationFrame(ModuleFramePrototype):
         self.checkbox["command"] = self.show_options
 
         self.obj_collection = []
-        self.custom_key = {"tiff": MenuEntry(self.post_frame,
-                                             text="Convert to tiff: ",
-                                             row=1,
-                                             column=0,
-                                             menu=["True", "False"],
-                                             default=self.config[self.module]["tiff"],
-                                             font=font),
-                           "save_raw": MenuEntry(self.post_frame,
-                                             text="Save raw data: ",
-                                             row=4,
-                                             column=0,
-                                             menu=["True", "False"],
-                                             default=self.config[self.module].get("save_raw", "False"),
-                                             font=font),
-                           }
+        self.custom_key = {
+            "key": SimpleEntry(
+                self.post_frame,
+                text="Key (HDF5 only): ",
+                row=1,
+                column=0,
+                _type=str,
+                _font=font,
+            ),
+            "channel": SimpleEntry(
+                self.post_frame,
+                text="Channel (HDF5 only): ",
+                row=2,
+                column=0,
+                _type=int,
+                _font=font,
+            ),
+            "tiff": MenuEntry(
+                self.post_frame,
+                text="Convert to tiff: ",
+                row=3,
+                column=0,
+                menu=["True", "False"],
+                default=self.config[self.module]["tiff"],
+                font=font,
+            ),
+            "save_raw": MenuEntry(
+                self.post_frame,
+                text="Save raw data: ",
+                row=4,
+                column=0,
+                menu=["True", "False"],
+                default=self.config[self.module].get("save_raw", "False"),
+                font=font,
+            ),
+        }
 
         self.show_options()
 
@@ -399,27 +540,28 @@ class PostSegmentationFrame(ModuleFramePrototype):
 class PostPredictionsFrame(ModuleFramePrototype):
     def __init__(self, frame, config, row=0, module_name="Prediction Post Processing", font=None, show_all=True):
         self.post_frame = tkinter.Frame(frame)
-        self.post_style = {"bg": "white",
-                           "padx": 0,
-                           "pady": 0,
-                           "row_weights": [1, 1, 1, 1],
-                           "columns_weights": [1],
-                           "height": 4,
-                           }
+        self.post_style = {
+            "bg": "white",
+            "padx": 0,
+            "pady": 0,
+            "row_weights": [1, 1, 1, 1],
+            "columns_weights": [1],
+            "height": 4,
+        }
 
         self.post_frame["bg"] = self.post_style["bg"]
         self.font = font
 
-        self.post_frame.grid(column=0,
-                             row=row,
-                             padx=self.post_style["padx"],
-                             pady=self.post_style["pady"],
-                             sticky=stick_new)
+        self.post_frame.grid(
+            column=0,
+            row=row,
+            padx=self.post_style["padx"],
+            pady=self.post_style["pady"],
+            sticky=stick_new,
+        )
 
-        [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w)
-         for i, w in enumerate(self.post_style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.post_frame, i, weight=w)
-         for i, w in enumerate(self.post_style["columns_weights"])]
+        [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w) for i, w in enumerate(self.post_style["row_weights"])]
+        [tkinter.Grid.columnconfigure(self.post_frame, i, weight=w) for i, w in enumerate(self.post_style["columns_weights"])]
 
         super().__init__(self.post_frame, module_name, font=font)
         self.module = "cnn_postprocessing"
@@ -435,28 +577,51 @@ class PostPredictionsFrame(ModuleFramePrototype):
         self.checkbox["command"] = self.show_options
 
         self.obj_collection = []
-        self.custom_key = {"tiff": MenuEntry(self.post_frame,
-                                             text="Convert to tiff: ",
-                                             row=1,
-                                             column=0,
-                                             menu=["True", "False"],
-                                             default=self.config[self.module]["tiff"],
-                                             font=font),
-                           "output_type": MenuEntry(self.post_frame,
-                                                    text="Cast Predictions: ",
-                                                    row=4,
-                                                    column=0,
-                                                    menu=["data_uint8", "data_float32"],
-                                                    default=config[self.module]["output_type"],
-                                                    font=font),
-                           "save_raw": MenuEntry(self.post_frame,
-                                                 text="Save raw data: ",
-                                                 row=7,
-                                                 column=0,
-                                                 menu=["True", "False"],
-                                                 default=self.config[self.module].get("save_raw", "False"),
-                                                 font=font),
-                           }
+        self.custom_key = {
+            "key": SimpleEntry(
+                self.post_frame,
+                text="Key (HDF5 only): ",
+                row=1,
+                column=0,
+                _type=str,
+                _font=font,
+            ),
+            "channel": SimpleEntry(
+                self.post_frame,
+                text="Channel (HDF5 only): ",
+                row=2,
+                column=0,
+                _type=int,
+                _font=font,
+            ),
+            "tiff": MenuEntry(
+                self.post_frame,
+                text="Convert to tiff: ",
+                row=3,
+                column=0,
+                menu=["True", "False"],
+                default=self.config[self.module]["tiff"],
+                font=font,
+            ),
+            "output_type": MenuEntry(
+                self.post_frame,
+                text="Cast Predictions: ",
+                row=4,
+                column=0,
+                menu=["data_uint8", "data_float32"],
+                default=config[self.module]["output_type"],
+                font=font,
+            ),
+            "save_raw": MenuEntry(
+                self.post_frame,
+                text="Save raw data: ",
+                row=5,
+                column=0,
+                menu=["True", "False"],
+                default=self.config[self.module].get("save_raw", "False"),
+                font=font,
+            ),
+        }
 
         self.show_options()
 
@@ -464,26 +629,21 @@ class PostPredictionsFrame(ModuleFramePrototype):
 class PostFrame:
     def __init__(self, frame, config, col=0, font=None, show_all=True):
         self.post_frame = tkinter.Frame(frame)
-        self.post_style = {"bg": "white",
-                           "padx": 10,
-                           "pady": 10,
-                           "row_weights": [1, 1],
-                           "columns_weights": [1],
-                           "height": 4,
-                           }
+        self.post_style = {
+            "bg": "white",
+            "padx": 10,
+            "pady": 10,
+            "row_weights": [1, 1],
+            "columns_weights": [1],
+            "height": 4,
+        }
 
         self.post_frame["bg"] = self.post_style["bg"]
         self.font = font
-        self.post_frame.grid(column=col,
-                             row=0,
-                             padx=self.post_style["padx"],
-                             pady=self.post_style["pady"],
-                             sticky=stick_new)
+        self.post_frame.grid(column=col, row=0, padx=self.post_style["padx"], pady=self.post_style["pady"], sticky=stick_new)
 
-        [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w)
-         for i, w in enumerate(self.post_style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.post_frame, i, weight=w)
-         for i, w in enumerate(self.post_style["columns_weights"])]
+        [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w) for i, w in enumerate(self.post_style["row_weights"])]
+        [tkinter.Grid.columnconfigure(self.post_frame, i, weight=w) for i, w in enumerate(self.post_style["columns_weights"])]
 
         # init frames
         self.post_pred_obj = PostPredictionsFrame(self.post_frame, config, row=0, font=font, show_all=True)

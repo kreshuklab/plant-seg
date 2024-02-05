@@ -77,7 +77,15 @@ def image_crop(image: np.array, crop_str: str) -> np.array:
     return image[slices]
 
 
-def fix_input_shape(data: np.array) -> np.array:
+def fix_input_shape(data: np.array, ndim=3) -> np.array:
+    assert ndim in [3, 4]
+    if ndim == 3:
+        return fix_input_shape_to_3D(data)
+    else:
+        return fix_input_shape_to_4D(data)
+
+
+def fix_input_shape_to_3D(data: np.array) -> np.array:
     """
     fix array ndim to be always 3
     """
@@ -92,6 +100,25 @@ def fix_input_shape(data: np.array) -> np.array:
 
     else:
         raise RuntimeError(f"Expected input data to be 2d, 3d or 4d, but got {data.ndim}d input")
+
+
+def fix_input_shape_to_4D(data: np.array) -> np.array:
+    """
+    Fix array ndim to be 4 and return it in (C x Z x Y x X) e.g. 2 x 1 x 512 x 512
+
+    Only used for multi-channel network output, e.g. 2-channel 3D pmaps.
+    """
+    if data.ndim == 4:
+        return data
+
+    elif data.ndim == 3:
+        return data.reshape(data.shape[0], 1, data.shape[1], data.shape[2])
+
+    # elif data.ndim == 2:
+    #     return data.reshape(1, 1, data.shape[0], data.shape[1])
+
+    else:
+        raise RuntimeError(f"Expected input data to be 3d or 4d, but got {data.ndim}d input")
 
 
 def normalize_01(data: np.array) -> np.array:

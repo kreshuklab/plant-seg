@@ -36,7 +36,7 @@ cnn_prediction:
   # channel to use if input image has shape CZYX or CYX, otherwise set to null; null is recommended if the previous steps has state True
   channel: Null
   # Trained model name, more info on available models and custom models in the README
-  model_name: 'RIKEN20230824v160'
+  model_name: 'generic_plant_nuclei_3D'
   # If a CUDA capable gpu is available and corrected setup use "cuda", if not you can use "cpu" for cpu only inference (slower)
   device: 'cuda'
   # how many subprocesses to use for data loading

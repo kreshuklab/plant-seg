@@ -1,0 +1,22 @@
+name: plant-seg-dev
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python
+  - h5py
+  - zarr
+  - requests
+  - pyyaml
+  - scikit-image
+  - tifffile
+  - vigra
+  - cudnn
+  - pytorch
+  - pytorch-cuda=12.1
+  - python-elf
+  - pyqt
+  - napari
+  - python-graphviz
+# then `pip install -e .`

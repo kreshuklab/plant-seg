@@ -38,7 +38,7 @@ def get_main():
                                     widget_filter_segmentation,
                                     ],
                            labels=False)
-    container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/Napari-Main')
+    container = setup_menu(container, path='https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/index.html')
     return container
 
 
@@ -49,7 +49,7 @@ def get_preprocessing_workflow():
                                     widget_add_layers,
                                     widget_label_processing],
                            labels=False)
-    container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/Data-Processing')
+    container = setup_menu(container, path='https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/data_processing.html')
     return container
 
 
@@ -58,7 +58,7 @@ def get_gasp_workflow():
                                     widget_simple_dt_ws,
                                     widget_agglomeration],
                            labels=False)
-    container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/UNet-GASP-Workflow')
+    container = setup_menu(container, path='https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/unet_gasp_workflow.html')
     return container
 
 
@@ -67,7 +67,7 @@ def get_extra_seg():
                                     widget_lifted_multicut,
                                     widget_fix_over_under_segmentation_from_nuclei],
                            labels=False)
-    container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/Extra-Seg')
+    container = setup_menu(container, path='https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/extra_seg.html')
     return container
 
 
@@ -76,5 +76,5 @@ def get_extra_pred():
                                     widget_iterative_unet_predictions,
                                     widget_add_custom_model],
                            labels=False)
-    container = setup_menu(container, path='https://github.com/hci-unihd/plant-seg/wiki/Extra-Pred')
+    container = setup_menu(container, path='https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/extra_pred.html')
     return container
