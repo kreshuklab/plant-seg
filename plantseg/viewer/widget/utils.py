@@ -70,7 +70,7 @@ def start_threading_process(func: Callable,
     return future
 
 
-def start_prediction_threading_process(func: Callable,
+def start_prediction_process(func: Callable,
                             runtime_kwargs: dict,
                             statics_kwargs: dict,
                             out_name: str,
