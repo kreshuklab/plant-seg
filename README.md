@@ -10,9 +10,10 @@
 | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [![doc build status](https://img.shields.io/badge/Documentation-Home-blue)](https://hci-unihd.github.io/plant-seg/) | [![doc build status](https://img.shields.io/badge/Documentation-GUI-blue)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/) | [![doc build status](https://img.shields.io/badge/Documentation-Lecagy-blue)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/) | [![doc build status](https://img.shields.io/badge/Documentation-CLI-blue)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_cli/) |
 
-# PlantSeg
+# PlantSeg  <!-- omit in toc -->
 
-![alt text](../assets/images/main_figure_nologo.png)
+![Illustration of Pipeline](../assets/images/main_figure_nologo.png)
+
 [PlantSeg](plantseg) is a tool for cell instance aware segmentation in densely packed 3D volumetric images.
 The pipeline uses a two stages segmentation strategy (Neural Network + Segmentation).
 The pipeline is tuned for plant cell tissue acquired with confocal and light sheet microscopy.
@@ -24,11 +25,35 @@ Pre-trained models are provided.
 * New experimental headless mode
 * New workflows
 
+### Table of Contents  <!-- omit in toc -->
+
+- [Getting Started](#getting-started)
+  - [Prerequisites for conda package](#prerequisites-for-conda-package)
+  - [Install on Linux](#install-on-linux)
+    - [Install Anaconda python](#install-anaconda-python)
+    - [Install PlantSeg using mamba](#install-plantseg-using-mamba)
+  - [Install on Windows](#install-on-windows)
+    - [Install Anaconda python](#install-anaconda-python-1)
+    - [Install PlantSeg using mamba](#install-plantseg-using-mamba-1)
+- [Pipeline Usage (Napari viewer)](#pipeline-usage-napari-viewer)
+- [Pipeline Usage (GUI)](#pipeline-usage-gui)
+- [Pipeline Usage (command line)](#pipeline-usage-command-line)
+- [Update PlantSeg](#update-plantseg)
+  - [Optional dependencies (not fully tested on Windows)](#optional-dependencies-not-fully-tested-on-windows)
+- [Repository index](#repository-index)
+- [Datasets](#datasets)
+- [Pre-trained networks](#pre-trained-networks)
+- [Training on New Data](#training-on-new-data)
+- [Using LiftedMulticut segmentation](#using-liftedmulticut-segmentation)
+- [Troubleshooting](#troubleshooting)
+- [Tests](#tests)
+- [Citation](#citation)
+
+
 ## Getting Started
 The recommended way of installing plantseg is via the conda package,
 which is currently supported on Linux and Windows.
-For detailed usage documentation checkout our [**wiki**](https://github.com/hci-unihd/plant-seg/wiki)
-[📖](https://github.com/hci-unihd/plant-seg/wiki):
+For detailed usage checkout our [**documentation** 📖](https://hci-unihd.github.io/plant-seg/).
 
 <!---
 Or quick test PlantSeg online using Google Colab (requires a google account)
@@ -120,7 +145,7 @@ then, start the plantseg in napari
 ```bash
 plantseg --napari
 ```
-A more in depth guide can be found in our [wiki](https://github.com/hci-unihd/plant-seg/wiki/Napari).
+A more in depth guide can be found in our [documentation (GUI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/).
 ## Pipeline Usage (GUI)
 PlantSeg app can also be started in a GUI mode, where basic user interface allows to configure and run the pipeline.
 First, activate the newly created conda environment with:
@@ -132,7 +157,7 @@ then, run the GUI by simply typing:
 ```bash
 plantseg --gui
 ```
-A more in depth guide can be found in our [wiki](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-GUI).
+A more in depth guide can be found in our [documentation (Classic GUI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/).
 ## Pipeline Usage (command line)
 Our pipeline is completely configuration file based and does not require any coding.
 
@@ -145,7 +170,7 @@ then, one can just start the pipeline with
 plantseg --config CONFIG_PATH
 ```
 where `CONFIG_PATH` is the path to the YAML configuration file. See [config.yaml](examples/config.yaml) for a sample configuration
-file and our [wiki](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-CLI) for a
+file and our [documentation (CLI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_cli/) for a
 detailed description of the parameters.
 
 ## Update PlantSeg
@@ -243,8 +268,7 @@ If you want your model to be part of the open-source model zoo provided with thi
 ## Using LiftedMulticut segmentation
 As reported in our [paper](https://elifesciences.org/articles/57613), if one has a nuclei signal imaged together with
 the boundary signal, we could leverage the fact that one cell contains only one nucleus and use the `LiftedMultict`
-segmentation strategy and obtain improved segmentation. This workflow can be used from our napari gui and from our
-[CLI](https://github.com/hci-unihd/plant-seg/wiki/PlantSeg-Classic-CLI/_edit#liftedmulticut-segmentation).
+segmentation strategy and obtain improved segmentation. This workflow is now available in all PlantSeg interfaces.
 
 ## Troubleshooting
 * If you stumble in the following error message:
