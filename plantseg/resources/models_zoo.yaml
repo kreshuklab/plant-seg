@@ -57,15 +57,6 @@ confocal_2D_unet_ovules_ds2x:
   recommended_patch_size: [1, 256, 256]
   output_type: "boundaries"
 
-confocal_3D_unet_ovules_nuclei_ds1x:
-  model_url: https://zenodo.org/record/7774321/files/confocal_3D_unet_ovules_nuclei_ds1x.pytorch
-  resolution: [0.35, 0.1, 0.1]
-  description: "Unet trained on confocal images of Arabidopsis Ovules nuclei stain on original resolution with BCEDiceLoss. The network predicts 1 channel: nuclei probability maps"
-  dimensionality: "3D"
-  modality: "confocal"
-  recommended_patch_size: [80, 160, 160]
-  output_type: "nuclei"
-
 ## Root
 lightsheet_3D_unet_root_ds1x:
   model_url: https://zenodo.org/record/7765026/files/unet3d-lateral-root-lightsheet-ds1x.pytorch
@@ -159,11 +150,11 @@ confocal_3D_unet_mouse_embryo_nuclei:
   recommended_patch_size: [40, 220, 220]
   output_type: "nuclei"
 
-generic_plant_nuclei_3D:
+PlantSeg_3Dnuc_platinum:
   model_url: https://zenodo.org/records/10070349/files/FOR2581_PlantSeg_Plant_Nuclei_3D.pytorch
   resolution: [0.2837 0.1268 0.1268]
   description: "A generic 3D U-Net trained to predict the nuclei and their boundaries in plant. Voxel size: (0.1268×0.1268×0.2837 µm^3) (XYZ)"
   dimensionality: "3D"
   modality: "confocal"
-  recommended_patch_size: [80, 160, 160]
+  recommended_patch_size: [128, 256, 256]
   output_type: "nuclei"
