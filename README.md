@@ -2,9 +2,16 @@
 
 [![doc build status](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-book.yml/badge.svg)](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-book.yml)
 [![package build status](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-on-conda.yml/badge.svg)](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-on-conda.yml)
+
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/version.svg)](https://anaconda.org/conda-forge/plant-seg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/plant-seg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/downloads.svg)](https://anaconda.org/conda-forge/plant-seg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/license.svg)](https://anaconda.org/conda-forge/plant-seg)
+
+<!-- [![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/version.svg)](https://anaconda.org/lcerrone/plantseg)
 [![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/latest_release_date.svg)](https://anaconda.org/lcerrone/plantseg)
 [![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/downloads.svg)](https://anaconda.org/lcerrone/plantseg)
-[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/license.svg)](https://anaconda.org/lcerrone/plantseg)
+[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/license.svg)](https://anaconda.org/lcerrone/plantseg) -->
 
 | Documentation                                                                                                       | Napari GUI                                                                                                                                              | Legacy GUI                                                                                                                                          | Command Line                                                                                                                                     |
 | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -35,6 +42,7 @@ Pre-trained models are provided.
   - [Install on Windows](#install-on-windows)
     - [Install Anaconda python](#install-anaconda-python-1)
     - [Install PlantSeg using mamba](#install-plantseg-using-mamba-1)
+  - [Install versions not available on `conda-forge`](#install-versions-not-available-on-conda-forge)
 - [Pipeline Usage (Napari viewer)](#pipeline-usage-napari-viewer)
 - [Pipeline Usage (GUI)](#pipeline-usage-gui)
 - [Pipeline Usage (command line)](#pipeline-usage-command-line)
@@ -98,7 +106,7 @@ Install PlantSeg using mamba:
     ```
 *  CPU version
     ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly pyqt lcerrone::plantseg
+    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly pyqt plant-seg
     ```
 The above command will create new conda environment `plant-seg` together with all required dependencies.
 
@@ -122,17 +130,39 @@ conda install -c conda-forge mamba
 Install PlantSeg using mamba:
 *  GPU version, CUDA=12.x
     ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone pytorch pytorch-cuda=12.1 pyqt plantseg
+    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 pyqt plant-seg
     ```
 *  GPU version, CUDA=11.x
     ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone pytorch pytorch-cuda=11.8 pyqt plantseg
+    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 pyqt plant-seg
     ```
 *  CPU version
     ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone pytorch cpuonly pyqt plantseg
+    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly pyqt plant-seg
     ```
 The above command will create new conda environment `plant-seg` together with all required dependencies.
+
+### Install versions not available on `conda-forge`
+
+If you want to install a specific version of PlantSeg that is not available on `conda-forge`, you can install it from the `lcerrone` channel. For example, to install version 1.5.0, you can run the following command:
+
+```bash
+mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone pytorch pytorch-cuda=12.1 pyqt plantseg
+```
+
+Difference between conda-forge and lcerrone channels:
+
+- conda-forge/plant-seg:
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/version.svg)](https://anaconda.org/conda-forge/plant-seg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/plant-seg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/downloads.svg)](https://anaconda.org/conda-forge/plant-seg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/license.svg)](https://anaconda.org/conda-forge/plant-seg)
+
+- lcerrone/plantseg:
+[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/version.svg)](https://anaconda.org/lcerrone/plantseg)
+[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/latest_release_date.svg)](https://anaconda.org/lcerrone/plantseg)
+[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/downloads.svg)](https://anaconda.org/lcerrone/plantseg)
+[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/license.svg)](https://anaconda.org/lcerrone/plantseg)
 
 ## Pipeline Usage (Napari viewer)
 PlantSeg app can also be started using napari as a viewer.
