@@ -56,13 +56,15 @@ class GaspFromPmaps(AbstractSegmentationStep):
 
         # Postprocessing size threshold
         self.post_minsize = post_minsize
-
         self.n_threads = n_threads
-
         self.dt_watershed = partial(dt_watershed,
                                     threshold=ws_threshold, sigma_seeds=ws_sigma,
                                     stacked=ws_2D, sigma_weights=ws_w_sigma,
                                     min_size=ws_minsize, n_threads=n_threads)
+
+        # Postprocessing foreground probability map
+        self.foreground_pmap = kwargs.get('foreground_pmap', None)
+        self.foreground_threshold = kwargs.get('foreground_threshold', 0.6)
 
     def process(self, pmaps):
         # start real world clock timer
@@ -84,7 +86,9 @@ class GaspFromPmaps(AbstractSegmentationStep):
                             gasp_linkage_criteria=self.gasp_linkage_criteria,
                             beta=self.beta,
                             post_minsize=self.post_minsize,
-                            n_threads=self.n_threads)
+                            n_threads=self.n_threads,
+                            foreground_pmap=self.foreground_pmap,
+                            foreground_threshold=self.foreground_threshold,)
 
         # stop real world clock timer
         runtime = time.time() - runtime
