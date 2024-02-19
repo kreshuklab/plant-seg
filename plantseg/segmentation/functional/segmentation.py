@@ -1,8 +1,6 @@
 import nifty
 import nifty.graph.rag as nrag
 import numpy as np
-from skimage.measure import regionprops
-from skimage.segmentation import relabel_sequential
 from elf.segmentation import GaspFromAffinities
 from elf.segmentation import stacked_watershed, lifted_multicut as lmc, \
     project_node_labels_to_pixels
@@ -19,49 +17,6 @@ try:
     sitk_installed = True
 except ImportError:
     sitk_installed = False
-
-
-def rm_fp_by_fg_prob(seg, prob, threshold):
-    """Remove false positive regions based on the foreground probability map."""
-    regions_nuclei = regionprops(seg)
-    for region in regions_nuclei:
-        z, y, x = [int(coor) for coor in region.centroid]
-        this_prob = prob[z, y, x]
-        if this_prob < threshold:
-            seg[seg == region.label] = 0
-    return seg
-
-
-def remove_false_positives_by_foreground_probability(seg, prob, threshold):
-    """
-    Remove false positive regions in a segmentation based on a foreground probability map.
-
-    Args:
-        seg (np.ndarray): The segmentation array, where each unique non-zero value indicates a distinct region.
-        prob (np.ndarray): The foreground probability map, same shape as `seg`.
-        threshold (float): Probability threshold below which regions are considered false positives.
-
-    Returns:
-        np.ndarray: The modified segmentation array with false positives removed.
-    """
-    if not seg.shape == prob.shape:
-        raise ValueError("Shape of segmentation and probability map must match.")
-
-    seg, _, _ = relabel_sequential(seg)  # avoid unnecessary computation
-    regions = regionprops(seg, cache=True)
-    centroids = np.array([region.centroid for region in regions])
-    labels = np.array([region.label for region in regions])
-
-    z, y, x = np.transpose(centroids).astype(int)  # convert to int for indexing
-    print(z, y, x)
-    region_probs = prob[z, y, x]
-    low_prob_labels = labels[region_probs < threshold]
-    for label in low_prob_labels:
-        print(f"Removing region {label} with probability {prob[z[label], y[label], x[label]]}")
-        seg[seg == label] = 0
-
-    seg, _, _ = relabel_sequential(seg)
-    return seg
 
 
 def dt_watershed(boundary_pmaps: np.array,
