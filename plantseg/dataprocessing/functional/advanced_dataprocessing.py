@@ -241,21 +241,38 @@ def remove_false_positives_by_foreground_probability(segmentation: np.array,
                                                      foreground: np.array,
                                                      threshold: float) -> np.array:
     """
-    Remove false positive regions in a segmentation based on a foreground probability map.
+    Remove false positive regions in a segmentation based on a foreground probability map in a smart way.
+    If the mean(an instance * its own probability region) < threshold, it is removed.
 
     Args:
-        seg (np.ndarray): The segmentation array, where each unique non-zero value indicates a distinct region.
-        prob (np.ndarray): The foreground probability map, same shape as `seg`.
+        segmentation (np.ndarray): The segmentation array, where each unique non-zero value indicates a distinct region.
+        foreground (np.ndarray): The foreground probability map, same shape as `segmentation`.
         threshold (float): Probability threshold below which regions are considered false positives.
 
     Returns:
         np.ndarray: The modified segmentation array with false positives removed.
     """
-    regions_nuclei = regionprops(segmentation)
-    for region in regions_nuclei:
-        z, y, x = [int(coor) for coor in region.centroid]
-        this_prob = foreground[z, y, x]
-        if this_prob < threshold:
-            print(f"Removing region {region.label} with probability {this_prob} and coordinates {z, y, x}")
-            segmentation[segmentation == region.label] = 0
-    return segmentation
+    # TODO: make a channel for removed regions for easier inspection
+    # TODO: use `relabel_sequential` to recover the original labels
+
+    if not segmentation.shape == foreground.shape:
+        raise ValueError("Shape of segmentation and probability map must match.")
+    if foreground.max() > 1:
+        raise ValueError("Foreground must be a probability map probability map.")
+
+    instances, _, _ = relabel_sequential(segmentation)
+
+    regions = regionprops(instances)
+    for region in regions:
+        bbox = region.bbox
+        cube = instances[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]:bbox[5]] == region.label  # other instances may exist, don't use `> 0`
+        prob = foreground[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]:bbox[5]]
+        pixel_count = region.area
+        pixel_value = (cube * prob).sum()
+        likelihood = pixel_value / pixel_count
+        if likelihood < threshold:
+            instances[instances == region.label] = 0
+            print(f"    Removing instance {region.label}: pixel count: {pixel_count}, pixel value: {pixel_value}, likelihood: {likelihood}")
+
+    instances, _, _ = relabel_sequential(instances)
+    return instances
