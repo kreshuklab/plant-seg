@@ -76,9 +76,7 @@ def gasp(boundary_pmaps: np.array,
          gasp_linkage_criteria: str = 'average',
          beta: float = 0.5,
          post_minsize: int = 100,
-         n_threads: int = 6,
-         foreground_pmap: np.array = None,
-         foreground_threshold: float = 0.6) -> np.array:
+         n_threads: int = 6) -> np.array:
     """
     Implementation of the GASP algorithm for segmentation from affinities.
 
@@ -136,13 +134,6 @@ def gasp(boundary_pmaps: np.array,
     # init and run size threshold
     if post_minsize > 0:
         segmentation, _ = apply_size_filter(segmentation.astype('uint32'), boundary_pmaps, post_minsize)
-
-    if foreground_pmap is not None:
-        segmentation = remove_false_positives_by_foreground_probability(
-            segmentation,
-            foreground_pmap,
-            foreground_threshold,
-        )
     return segmentation
 
 
