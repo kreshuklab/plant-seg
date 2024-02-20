@@ -7,7 +7,7 @@ from napari.layers import Labels, Image, Layer
 from napari.types import LayerDataTuple
 
 from napari import Viewer
-from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_under_segmentation_from_nuclei
+from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_under_segmentation_from_nuclei, remove_false_positives_by_foreground_probability
 from plantseg.dataprocessing.functional.dataprocessing import normalize_01
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed, mutex_ws
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
@@ -330,5 +330,36 @@ def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
-                                   step_name=f'Fix Over / Under segmentation',
+                                   step_name='Fix Over / Under Segmentation',
+                                   )
+
+
+@magicgui(call_button='Run Segmentation Fix from Foreground Pmap',
+          segmentation={'label': 'Segmentation'},
+          foreground={'label': 'Foreground Pmap'},
+          threshold={'label': 'Threshold',
+                     'widget_type': 'FloatSlider', 'max': 1., 'min': 0.})
+def widget_fix_false_positive_from_foreground_pmap(segmentation: Labels,
+                                                   foreground: Image,  # TODO: maybe also allow labels
+                                                   threshold=0.6) -> Future[LayerDataTuple]:
+    out_name = create_layer_name(segmentation.name, 'FGPmapFix')
+
+    inputs_names = (segmentation.name, foreground.name)
+    func_kwargs = {'segmentation': segmentation.data,
+                   'foreground': foreground.data}
+
+    layer_kwargs = layer_properties(name=out_name,
+                                    scale=segmentation.scale,
+                                    metadata=segmentation.metadata)
+    layer_type = 'labels'
+    step_kwargs = dict(threshold=threshold)
+
+    return start_threading_process(remove_false_positives_by_foreground_probability,
+                                   runtime_kwargs=func_kwargs,
+                                   statics_kwargs=step_kwargs,
+                                   out_name=out_name,
+                                   input_keys=inputs_names,
+                                   layer_kwarg=layer_kwargs,
+                                   layer_type=layer_type,
+                                   step_name='Reduce False Positives',
                                    )

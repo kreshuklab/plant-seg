@@ -5,8 +5,8 @@ import numba
 import numpy as np
 import tqdm
 from skimage.filters import gaussian
-from skimage.segmentation import watershed
-
+from skimage.segmentation import watershed, relabel_sequential
+from skimage.measure import regionprops
 
 def get_bbox(mask: np.array, pixel_toll: int = 0) -> tuple[tuple, int, int, int]:
     """
@@ -235,3 +235,27 @@ def fix_over_under_segmentation_from_nuclei(cell_seg: np.array,
                                        cell_assignments,
                                        cell_idx=None)
     return _cell_seg
+
+
+def remove_false_positives_by_foreground_probability(segmentation: np.array,
+                                                     foreground: np.array,
+                                                     threshold: float) -> np.array:
+    """
+    Remove false positive regions in a segmentation based on a foreground probability map.
+
+    Args:
+        seg (np.ndarray): The segmentation array, where each unique non-zero value indicates a distinct region.
+        prob (np.ndarray): The foreground probability map, same shape as `seg`.
+        threshold (float): Probability threshold below which regions are considered false positives.
+
+    Returns:
+        np.ndarray: The modified segmentation array with false positives removed.
+    """
+    regions_nuclei = regionprops(segmentation)
+    for region in regions_nuclei:
+        z, y, x = [int(coor) for coor in region.centroid]
+        this_prob = foreground[z, y, x]
+        if this_prob < threshold:
+            print(f"Removing region {region.label} with probability {this_prob} and coordinates {z, y, x}")
+            segmentation[segmentation == region.label] = 0
+    return segmentation
