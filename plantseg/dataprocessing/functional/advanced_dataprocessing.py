@@ -263,16 +263,24 @@ def remove_false_positives_by_foreground_probability(segmentation: np.array,
     instances, _, _ = relabel_sequential(segmentation)
 
     regions = regionprops(instances)
-    for region in regions:
+    to_keep = np.ones(len(regions) + 1)
+    pixel_count = np.zeros(len(regions) + 1)
+    pixel_value = np.zeros(len(regions) + 1)
+
+    for region in tqdm.tqdm(regions):
         bbox = region.bbox
         cube = instances[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]:bbox[5]] == region.label  # other instances may exist, don't use `> 0`
         prob = foreground[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]:bbox[5]]
-        pixel_count = region.area
-        pixel_value = (cube * prob).sum()
-        likelihood = pixel_value / pixel_count
-        if likelihood < threshold:
-            instances[instances == region.label] = 0
-            print(f"    Removing instance {region.label}: pixel count: {pixel_count}, pixel value: {pixel_value}, likelihood: {likelihood}")
+        pixel_count[region.label] = region.area
+        pixel_value[region.label] = (cube * prob).sum()
 
+    likelihood = pixel_value / pixel_count
+    to_keep[likelihood < threshold] = 0
+    ids_to_delete = np.argwhere(to_keep == 0)
+    assert ids_to_delete.shape[1] == 1
+    ids_to_delete = ids_to_delete.flatten()
+    # print(f"    Removing instance {region.label}: pixel count: {pixel_count}, pixel value: {pixel_value}, likelihood: {likelihood}")
+
+    instances[np.isin(instances, ids_to_delete)] = 0
     instances, _, _ = relabel_sequential(instances)
     return instances
