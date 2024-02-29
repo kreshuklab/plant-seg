@@ -26,7 +26,7 @@ def load_config(config_path: str) -> dict:
     return config
 
 
-def get_model_zoo() -> dict:
+def get_model_zoo(get_custom: bool = True) -> dict:
     """
     returns a dictionary of all models in the model zoo.
     example:
@@ -43,22 +43,24 @@ def get_model_zoo() -> dict:
 
     zoo_config = load_config(zoo_config)
 
-    custom_zoo_config = load_config(custom_zoo)
+    if get_custom:
+        custom_zoo_config = load_config(custom_zoo)
 
-    if custom_zoo_config is None:
-        custom_zoo_config = {}
+        if custom_zoo_config is None:
+            custom_zoo_config = {}
 
-    zoo_config.update(custom_zoo_config)
+        zoo_config.update(custom_zoo_config)
     return zoo_config
 
 
 def list_models(dimensionality_filter: list[str] = None,
                 modality_filter: list[str] = None,
-                output_type_filter: list[str] = None) -> list[str]:
+                output_type_filter: list[str] = None,
+                use_custom_models: bool = True) -> list[str]:
     """
     return a list of models in the model zoo by name
     """
-    zoo_config = get_model_zoo()
+    zoo_config = get_model_zoo(use_custom_models)
     models = list(zoo_config.keys())
 
     if dimensionality_filter is not None:
