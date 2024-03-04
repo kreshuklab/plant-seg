@@ -13,6 +13,7 @@ from plantseg.viewer.widget.proofreading.proofreading import widget_clean_scribb
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.widget.segmentation import widget_dt_ws, widget_agglomeration
 from plantseg.viewer.widget.segmentation import widget_fix_over_under_segmentation_from_nuclei
+from plantseg.viewer.widget.segmentation import widget_fix_false_positive_from_foreground_pmap
 from plantseg.viewer.widget.segmentation import widget_lifted_multicut
 from plantseg.viewer.widget.segmentation import widget_simple_dt_ws
 
@@ -65,7 +66,8 @@ def get_gasp_workflow():
 def get_extra_seg():
     container = MainWindow(widgets=[widget_dt_ws,
                                     widget_lifted_multicut,
-                                    widget_fix_over_under_segmentation_from_nuclei],
+                                    widget_fix_over_under_segmentation_from_nuclei,
+                                    widget_fix_false_positive_from_foreground_pmap],
                            labels=False)
     container = setup_menu(container, path='https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/extra_seg.html')
     return container

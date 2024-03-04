@@ -56,9 +56,7 @@ class GaspFromPmaps(AbstractSegmentationStep):
 
         # Postprocessing size threshold
         self.post_minsize = post_minsize
-
         self.n_threads = n_threads
-
         self.dt_watershed = partial(dt_watershed,
                                     threshold=ws_threshold, sigma_seeds=ws_sigma,
                                     stacked=ws_2D, sigma_weights=ws_w_sigma,
