@@ -19,6 +19,7 @@ from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_me
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
 from plantseg.viewer.widget.utils import return_value_if_widget
 from plantseg.viewer.widget.utils import start_threading_process, start_prediction_process, create_layer_name, layer_properties
+from plantseg.viewer.widget.validation import change_handler, get_image_volume_from_layer, widgets_inactive
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
@@ -61,6 +62,8 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                       'choices': LIST_ALL_MODELS},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
+          patch_halo={'label': 'Patch halo',
+                      'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
           single_patch={'label': 'Single Patch',
                         'tooltip': 'If True, a single patch will be processed at a time to save memory.'},
           device={'label': 'Device',
@@ -73,6 +76,7 @@ def widget_unet_predictions(viewer: Viewer,
                             modality: str = 'All',
                             output_type: str = 'All',
                             patch_size: Tuple[int, int, int] = (80, 170, 170),
+                            patch_halo: Tuple[int, int, int] = (8, 16, 16),
                             single_patch: bool = True,
                             device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, model_name)
@@ -85,7 +89,7 @@ def widget_unet_predictions(viewer: Viewer,
     layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
 
     layer_type = 'image'
-    step_kwargs = dict(model_name=model_name, patch=patch_size, single_batch_mode=single_patch)
+    step_kwargs = dict(model_name=model_name, patch=patch_size, patch_halo=patch_halo, single_batch_mode=single_patch)
 
     return start_prediction_process(unet_predictions_wrapper,
                                    runtime_kwargs={'raw': image.data,
@@ -103,6 +107,26 @@ def widget_unet_predictions(viewer: Viewer,
                                                       widget_simple_dt_ws.image,
                                                       widget_split_and_merge_from_scribbles.image]
                                    )
+
+
+@change_handler(widget_unet_predictions.image, init=False)
+def _image_change(image: Image):
+    shape = get_image_volume_from_layer(image).shape
+    ndim = len(shape)
+    widget_unet_predictions.image.tooltip = f"Shape: {shape}"
+
+    size_z = widget_unet_predictions.patch_size[0]
+    halo_z = widget_unet_predictions.patch_halo[0]
+    if ndim == 2 or (ndim == 3 and shape[0] == 1):  # 2D image imported by Napari thus no Z, or by PlantSeg widget
+        size_z.value = 0
+        halo_z.value = 0
+        widgets_inactive(size_z, halo_z, active=False)
+    elif ndim == 3 and shape[0] > 1:  # 3D
+        size_z.value = min(64, shape[0])  # TODO: fetch model default
+        halo_z.value = 8
+        widgets_inactive(size_z, halo_z, active=True)
+    else:
+        raise ValueError(f"Unsupported number of dimensions: {ndim}")
 
 
 def _on_any_metadata_changed(dimensionality, modality, output_type):
@@ -152,7 +176,7 @@ def _on_model_name_changed(model_name: str):
     widget_unet_predictions.model_name.tooltip = f'Select a pretrained model. Current model description: {description}'
 
 
-def _compute_multiple_predictions(image, patch_size, device):
+def _compute_multiple_predictions(image, patch_size, patch_halo, device):
     out_layers = []
     for i, model_name in enumerate(list_models()):
 
@@ -167,7 +191,7 @@ def _compute_multiple_predictions(image, patch_size, device):
         layer_type = 'image'
         try:
             pmap = unet_predictions(raw=image.data, model_name=model_name, patch=patch_size, single_batch_mode=True,
-                                    device=device)
+                                    device=device, patch_halo=patch_halo)
             out_layers.append((pmap, layer_kwargs, layer_type))
 
         except Exception as e:
@@ -181,15 +205,19 @@ def _compute_multiple_predictions(image, patch_size, device):
                  'tooltip': 'Raw image to be processed with a neural network.'},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
+          patch_halo={'label': 'Patch halo',
+                      'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
           device={'label': 'Device',
                   'choices': ALL_DEVICES}
           )
 def widget_test_all_unet_predictions(image: Image,
                                      patch_size: Tuple[int, int, int] = (80, 170, 170),
+                                     patch_halo: Tuple[int, int, int] = (2, 4, 4),
                                      device: str = ALL_DEVICES[0]) -> Future[List[LayerDataTuple]]:
     func = thread_worker(partial(_compute_multiple_predictions,
                                  image=image,
                                  patch_size=patch_size,
+                                 patch_halo=patch_halo,
                                  device=device))
 
     future = Future()
