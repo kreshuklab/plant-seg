@@ -19,7 +19,7 @@ from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_me
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
 from plantseg.viewer.widget.utils import return_value_if_widget
 from plantseg.viewer.widget.utils import start_threading_process, start_prediction_process, create_layer_name, layer_properties
-from plantseg.viewer.widget.validation import change_handler, get_image_volume_from_layer, widgets_inactive
+from plantseg.viewer.widget.validation import _on_prediction_input_image_change, widgets_inactive
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
@@ -109,24 +109,9 @@ def widget_unet_predictions(viewer: Viewer,
                                    )
 
 
-@change_handler(widget_unet_predictions.image, init=False)
-def _image_change(image: Image):
-    shape = get_image_volume_from_layer(image).shape
-    ndim = len(shape)
-    widget_unet_predictions.image.tooltip = f"Shape: {shape}"
-
-    size_z = widget_unet_predictions.patch_size[0]
-    halo_z = widget_unet_predictions.patch_halo[0]
-    if ndim == 2 or (ndim == 3 and shape[0] == 1):  # 2D image imported by Napari thus no Z, or by PlantSeg widget
-        size_z.value = 0
-        halo_z.value = 0
-        widgets_inactive(size_z, halo_z, active=False)
-    elif ndim == 3 and shape[0] > 1:  # 3D
-        size_z.value = min(64, shape[0])  # TODO: fetch model default
-        halo_z.value = 8
-        widgets_inactive(size_z, halo_z, active=True)
-    else:
-        raise ValueError(f"Unsupported number of dimensions: {ndim}")
+@widget_unet_predictions.image.changed.connect
+def _on_widget_unet_predictions_image_change(image: Image):
+    _on_prediction_input_image_change(widget_unet_predictions, image)
 
 
 def _on_any_metadata_changed(dimensionality, modality, output_type):
@@ -231,9 +216,14 @@ def widget_test_all_unet_predictions(image: Image,
     return future
 
 
-def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patch_size, single_batch_mode, device):
-    func = partial(unet_predictions, model_name=model_name, patch=patch_size, single_batch_mode=single_batch_mode,
-                   device=device)
+@widget_test_all_unet_predictions.image.changed.connect
+def _on_widget_test_all_unet_predictions_image_change(image: Image):
+    _on_prediction_input_image_change(widget_test_all_unet_predictions, image)
+
+
+def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patch_size, patch_halo, single_batch_mode, device):
+    func = partial(unet_predictions, model_name=model_name, patch=patch_size, patch_halo=patch_halo,
+                   single_batch_mode=single_batch_mode, device=device)
     for i in range(num_iterations - 1):
         pmap = func(pmap)
         pmap = image_gaussian_smoothing(image=pmap, sigma=sigma)
@@ -258,6 +248,8 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
                  'min': 0.},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
+          patch_halo={'label': 'Patch halo',
+                      'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
           single_patch={'label': 'Single Patch',
                         'tooltip': 'If True, a single patch will be processed at a time to save memory.'},
           device={'label': 'Device',
@@ -268,6 +260,7 @@ def widget_iterative_unet_predictions(image: Image,
                                       num_iterations: int = 2,
                                       sigma: float = 1.0,
                                       patch_size: Tuple[int, int, int] = (80, 170, 170),
+                                      patch_halo: Tuple[int, int, int] = (8, 16, 16),
                                       single_patch: bool = True,
                                       device: str = ALL_DEVICES[0]) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, f'iterative-{model_name}-x{num_iterations}')
@@ -281,6 +274,7 @@ def widget_iterative_unet_predictions(image: Image,
                        num_iterations=num_iterations,
                        sigma=sigma,
                        patch_size=patch_size,
+                       patch_halo=patch_halo,
                        single_batch_mode=single_patch,
                        device=device)
 
@@ -301,6 +295,11 @@ def _on_model_name_changed_iterative(model_name: str):
     train_config = get_train_config(model_name)
     patch_size = train_config['loaders']['train']['slice_builder']['patch_shape']
     widget_iterative_unet_predictions.patch_size.value = tuple(patch_size)
+
+
+@widget_iterative_unet_predictions.image.changed.connect
+def _on_widget_iterative_unet_predictions_image_change(image: Image):
+    _on_prediction_input_image_change(widget_iterative_unet_predictions, image)
 
 
 @magicgui(call_button='Add Custom Model',
