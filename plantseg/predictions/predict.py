@@ -36,7 +36,7 @@ def _check_patch_size(paths, patch_size):
 
 class UnetPredictions(GenericPipelineStep):
     def __init__(self, input_paths, model_name, input_key=None, input_channel=None, patch=(80, 160, 160), stride_ratio=0.75, device='cuda',
-                 model_update=False, input_type="data_float32", output_type="data_float32", out_ext=".h5", state=True):
+                 model_update=False, input_type="data_float32", output_type="data_float32", out_ext=".h5", state=True, patch_halo=None):
         self.patch = patch
         self.model_name = model_name
         self.stride_ratio = stride_ratio
@@ -64,7 +64,8 @@ class UnetPredictions(GenericPipelineStep):
 
         model.load_state_dict(state)
 
-        patch_halo = get_patch_halo(model_name)
+        if patch_halo is None:
+            patch_halo = get_patch_halo(model_name)
         is_embedding = not model_config.get('is_segmentation', True)
         self.predictor = ArrayPredictor(model=model, in_channels=model_config['in_channels'],
                                         out_channels=model_config['out_channels'], device=device, patch=self.patch,

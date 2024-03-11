@@ -206,7 +206,7 @@ class PreprocessingFrame(ModuleFramePrototype):
 
 
 class UnetPredictionFrame(ModuleFramePrototype):
-    def __init__(self, frame, config, col=0, module_name="preprocessing", font=None, show_all=True):
+    def __init__(self, frame, config, col=0, module_name="prediction", font=None, show_all=True):
         self.prediction_frame = tkinter.Frame(frame)
         self.prediction_style = {
             "bg": "white",
@@ -278,10 +278,18 @@ class UnetPredictionFrame(ModuleFramePrototype):
                 type=int,
                 font=font,
             ),
+            "patch_halo": ListEntry(
+                self.prediction_frame,
+                text="Patch Halo: ",
+                row=5,
+                column=0,
+                type=int,
+                font=font,
+            ),
             "device": MenuEntry(
                 self.prediction_frame,
                 text="Device Type: ",
-                row=5,
+                row=6,
                 column=0,
                 menu=["cuda", "cpu"],
                 default=config[self.module]["device"],

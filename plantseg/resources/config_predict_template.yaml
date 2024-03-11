@@ -42,6 +42,3 @@ loaders:
         - name: Standardize
         - name: ToTensor
           expand_dims: true
-
-
-

@@ -30,7 +30,7 @@ def unet_predictions(raw: np.array, model_name: str, patch: Tuple[int, int, int]
             Defaults to 'cuda'.
         model_update (bool, optional): if True will update the model to the latest version. Defaults to False.
         disable_tqdm (bool, optional): if True will disable tqdm progress bar. Defaults to False.
-        output_ndim (int, optional): output ndim, must be one of [3, 4]. Only use `4` if network output is 
+        output_ndim (int, optional): output ndim, must be one of [3, 4]. Only use `4` if network output is
             multi-channel 3D pmap. Now `4` only used in `widget_unet_predictions()`.
 
     Returns:
@@ -45,7 +45,9 @@ def unet_predictions(raw: np.array, model_name: str, patch: Tuple[int, int, int]
         state = state['model_state_dict']
     model.load_state_dict(state)
 
-    patch_halo = get_patch_halo(model_name)
+    patch_halo = kwargs.get('patch_halo', None)
+    if patch_halo is None:
+        patch_halo = get_patch_halo(model_name)
     predictor = ArrayPredictor(model=model, in_channels=model_config['in_channels'],
                                out_channels=model_config['out_channels'], device=device, patch=patch,
                                patch_halo=patch_halo, single_batch_mode=single_batch_mode, headless=False,

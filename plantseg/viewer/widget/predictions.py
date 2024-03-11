@@ -19,6 +19,7 @@ from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_me
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
 from plantseg.viewer.widget.utils import return_value_if_widget
 from plantseg.viewer.widget.utils import start_threading_process, start_prediction_process, create_layer_name, layer_properties
+from plantseg.viewer.widget.validation import _on_prediction_input_image_change, widgets_inactive
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
@@ -61,6 +62,8 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                       'choices': LIST_ALL_MODELS},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
+          patch_halo={'label': 'Patch halo',
+                      'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
           single_patch={'label': 'Single Patch',
                         'tooltip': 'If True, a single patch will be processed at a time to save memory.'},
           device={'label': 'Device',
@@ -73,6 +76,7 @@ def widget_unet_predictions(viewer: Viewer,
                             modality: str = 'All',
                             output_type: str = 'All',
                             patch_size: Tuple[int, int, int] = (80, 170, 170),
+                            patch_halo: Tuple[int, int, int] = (8, 16, 16),
                             single_patch: bool = True,
                             device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, model_name)
@@ -85,7 +89,7 @@ def widget_unet_predictions(viewer: Viewer,
     layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
 
     layer_type = 'image'
-    step_kwargs = dict(model_name=model_name, patch=patch_size, single_batch_mode=single_patch)
+    step_kwargs = dict(model_name=model_name, patch=patch_size, patch_halo=patch_halo, single_batch_mode=single_patch)
 
     return start_prediction_process(unet_predictions_wrapper,
                                    runtime_kwargs={'raw': image.data,
@@ -103,6 +107,11 @@ def widget_unet_predictions(viewer: Viewer,
                                                       widget_simple_dt_ws.image,
                                                       widget_split_and_merge_from_scribbles.image]
                                    )
+
+
+@widget_unet_predictions.image.changed.connect
+def _on_widget_unet_predictions_image_change(image: Image):
+    _on_prediction_input_image_change(widget_unet_predictions, image)
 
 
 def _on_any_metadata_changed(dimensionality, modality, output_type):
@@ -152,7 +161,7 @@ def _on_model_name_changed(model_name: str):
     widget_unet_predictions.model_name.tooltip = f'Select a pretrained model. Current model description: {description}'
 
 
-def _compute_multiple_predictions(image, patch_size, device, use_custom_models=True):
+def _compute_multiple_predictions(image, patch_size, patch_halo, device, use_custom_models=True):
     out_layers = []
     model_list = list_models(use_custom_models=use_custom_models)
     for i, model_name in enumerate(model_list):
@@ -168,7 +177,7 @@ def _compute_multiple_predictions(image, patch_size, device, use_custom_models=T
         layer_type = 'image'
         try:
             pmap = unet_predictions(raw=image.data, model_name=model_name, patch=patch_size, single_batch_mode=True,
-                                    device=device)
+                                    device=device, patch_halo=patch_halo)
             out_layers.append((pmap, layer_kwargs, layer_type))
 
         except Exception as e:
@@ -182,6 +191,8 @@ def _compute_multiple_predictions(image, patch_size, device, use_custom_models=T
                  'tooltip': 'Raw image to be processed with a neural network.'},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
+          patch_halo={'label': 'Patch halo',
+                      'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
           device={'label': 'Device',
                   'choices': ALL_DEVICES},
           use_custom_models={'label': 'Use custom models',
@@ -189,11 +200,13 @@ def _compute_multiple_predictions(image, patch_size, device, use_custom_models=T
           )
 def widget_test_all_unet_predictions(image: Image,
                                      patch_size: Tuple[int, int, int] = (80, 170, 170),
+                                     patch_halo: Tuple[int, int, int] = (2, 4, 4),
                                      device: str = ALL_DEVICES[0],
                                      use_custom_models: bool = True) -> Future[List[LayerDataTuple]]:
     func = thread_worker(partial(_compute_multiple_predictions,
                                  image=image,
                                  patch_size=patch_size,
+                                 patch_halo=patch_halo,
                                  device=device,
                                  use_custom_models=use_custom_models,))
 
@@ -208,9 +221,14 @@ def widget_test_all_unet_predictions(image: Image,
     return future
 
 
-def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patch_size, single_batch_mode, device):
-    func = partial(unet_predictions, model_name=model_name, patch=patch_size, single_batch_mode=single_batch_mode,
-                   device=device)
+@widget_test_all_unet_predictions.image.changed.connect
+def _on_widget_test_all_unet_predictions_image_change(image: Image):
+    _on_prediction_input_image_change(widget_test_all_unet_predictions, image)
+
+
+def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patch_size, patch_halo, single_batch_mode, device):
+    func = partial(unet_predictions, model_name=model_name, patch=patch_size, patch_halo=patch_halo,
+                   single_batch_mode=single_batch_mode, device=device)
     for i in range(num_iterations - 1):
         pmap = func(pmap)
         pmap = image_gaussian_smoothing(image=pmap, sigma=sigma)
@@ -235,6 +253,8 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
                  'min': 0.},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
+          patch_halo={'label': 'Patch halo',
+                      'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
           single_patch={'label': 'Single Patch',
                         'tooltip': 'If True, a single patch will be processed at a time to save memory.'},
           device={'label': 'Device',
@@ -245,6 +265,7 @@ def widget_iterative_unet_predictions(image: Image,
                                       num_iterations: int = 2,
                                       sigma: float = 1.0,
                                       patch_size: Tuple[int, int, int] = (80, 170, 170),
+                                      patch_halo: Tuple[int, int, int] = (8, 16, 16),
                                       single_patch: bool = True,
                                       device: str = ALL_DEVICES[0]) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, f'iterative-{model_name}-x{num_iterations}')
@@ -258,6 +279,7 @@ def widget_iterative_unet_predictions(image: Image,
                        num_iterations=num_iterations,
                        sigma=sigma,
                        patch_size=patch_size,
+                       patch_halo=patch_halo,
                        single_batch_mode=single_patch,
                        device=device)
 
@@ -278,6 +300,11 @@ def _on_model_name_changed_iterative(model_name: str):
     train_config = get_train_config(model_name)
     patch_size = train_config['loaders']['train']['slice_builder']['patch_shape']
     widget_iterative_unet_predictions.patch_size.value = tuple(patch_size)
+
+
+@widget_iterative_unet_predictions.image.changed.connect
+def _on_widget_iterative_unet_predictions_image_change(image: Image):
+    _on_prediction_input_image_change(widget_iterative_unet_predictions, image)
 
 
 @magicgui(call_button='Add Custom Model',
