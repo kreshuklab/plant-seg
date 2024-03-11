@@ -19,58 +19,55 @@ from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.utils import layer_properties, return_value_if_widget
 
 
-def _check_layout_string(layout):
-    n_c = 0
-    for l in layout:
-        if l not in ['x', 'c']:
-            raise ValueError(f'letter {l} found in layout [{layout}], layout should contain only x and a single c')
-        if l == 'c':
-            n_c += 1
-
-    if n_c != 1:
-        raise ValueError(f'letter c found in layout {n_c} times, but should be present only once')
+path_modes = ['tiff, h5, etc..', 'zarr']
+channels_stack_layouts = ['Z<c>XY (usually tiff)', '<c>ZXY (usually h5 or zarr)', '<c>XY']
+no_channels_stack_layouts = ['ZXY', 'XY']
 
 
-def _filter_channel(data, channel, layout):
-    slices = []
-    for i, l in enumerate(layout):
-        if l == 'x':
-            slices.append(slice(None, None))
-        else:
-            if channel > data.shape[i]:
-                raise ValueError(f'image has only {data.shape[i]} channels along {layout}')
-            slices.append(slice(channel, channel + 1))
+def select_channel(data, channel, layout):
+    channel_index = layout.find('<c>')
+    if channel_index == -1:
+        return data
 
-    return np.squeeze(data[tuple(slices)])
+    if channel_index == 0:
+        assert channel < data.shape[0], f'Channel {channel} is out of range for image of shape {data.shape}'
+        return data[channel, ...]
+
+    if channel_index == 1:
+        assert channel < data.shape[1], f'Channel {channel} is out of range for image of shape {data.shape}'
+        return data[:, channel, ...]
+
+    else:
+        raise ValueError(f'channel index out of range, error in formatting channel_stack_layout')
 
 
-def napari_image_load(path, key, channel, advanced_load=False, layer_type='image'):
+def napari_image_load(path, key, channel, stack_layout, layer_type='image'):
     path = Path(path)
     base, ext = path.stem, path.suffix
+
     if ext not in allowed_data_format:
         raise ValueError(f'File extension is {ext} but should be one of {allowed_data_format}')
 
     if ext in H5_EXTENSIONS:
-        key = key if advanced_load else None
+        if key == '':
+            key = None
         data, (voxel_size, _, _, voxel_size_unit) = load_h5(path, key=key)
 
     elif ext in TIFF_EXTENSIONS:
-        channel, layout = channel
         data, (voxel_size, _, _, voxel_size_unit) = load_tiff(path)
-        if advanced_load:
-            assert data.ndim == len(layout)
-            _check_layout_string(layout)
-            data = _filter_channel(data, channel=channel, layout=layout)
 
     elif ext in PIL_EXTENSIONS:
         data, (voxel_size, _, _, voxel_size_unit) = load_pill(path)
 
     elif ext in ZARR_EXTENSIONS:
+        if key == '':
+            key = None
         data, (voxel_size, _, _, voxel_size_unit) = load_zarr(path, key=key)
 
     else:
         raise NotImplementedError()
 
+    data = select_channel(data=data, channel=channel, layout=stack_layout)
     data = fix_input_shape(data)
 
     if layer_type == 'image':
@@ -91,11 +88,11 @@ def unpack_load(loaded_dict, key):
 
 @magicgui(
     call_button='Open file',
-    path={'label': 'Pick a file (tiff, h5, png, jpg)',
+    path={'label': 'Pick a file (tiff, h5, zarr, png, jpg)',
           'mode': 'r',
           'tooltip': 'Select a file to be imported, the file can be a tiff, h5, png, jpg.'},
     path_mode={'label': 'File type',
-               'choices': ['tiff, h5', 'zarr'],
+               'choices': path_modes,
                'widget_type': 'RadioButtons',
                'orientation': 'horizontal'},
     new_layer_name={'label': 'Layer Name',
@@ -106,21 +103,22 @@ def unpack_load(loaded_dict, key):
         'widget_type': 'RadioButtons',
         'orientation': 'horizontal',
         'choices': ['image', 'labels']},
-    advanced_load={'label': 'Advanced load a specific h5-key / tiff-channel',
-                   'tooltip': 'If specified allows to select specific h5 dataset in a file,'
-                              ' or specific channels in a tiff.'},
     key={'label': 'Key (h5/zarr only)',
          'choices': [''],
          'tooltip': 'Key to be loaded from h5'},
-    channel={'label': 'Channel/layout (tiff only)',
-             'tooltip': 'Channel to select and channels layout'})
+    channel={'label': 'Channel',
+             'tooltip': 'Channel to select'},
+    stack_layout={'label': 'Stack Layout',
+                  'choices': channels_stack_layouts + no_channels_stack_layouts,
+                  'tooltip': 'Stack layout'}
+)
 def open_file(path: Path = Path.home(),
-              path_mode: str = 'tiff, h5',
+              path_mode: str = path_modes[0],
               layer_type: str = 'image',
               new_layer_name: str = '',
-              advanced_load: bool = False,
               key: str = '',
-              channel: Tuple[int, str] = (0, 'xcxx'),
+              channel: int = 0,
+              stack_layout: str = no_channels_stack_layouts[0]
               ) -> LayerDataTuple:
     """Open a file and return a napari layer."""
     new_layer_name = layer_type if new_layer_name == '' else new_layer_name
@@ -129,7 +127,7 @@ def open_file(path: Path = Path.home(),
     # wrap load routine and add it to the dag
     step_params = {'key': key,
                    'channel': channel,
-                   'advanced_load': advanced_load,
+                   'stack_layout': stack_layout,
                    'layer_type': layer_type}
 
     dag_manager.add_step(napari_image_load,
@@ -175,10 +173,10 @@ open_file.channel.hide()
 @open_file.path_mode.changed.connect
 def _on_path_mode_changed(path_mode: str):
     path_mode = return_value_if_widget(path_mode)
-    if path_mode == 'tiff, h5':
+    if path_mode == path_modes[0]:  # file
         open_file.path.mode = 'r'
         open_file.path.label = 'Pick a file (.tiff, .h5, .png, .jpg)'
-    elif path_mode == 'zarr':
+    elif path_mode == path_modes[1]:  # directory case
         open_file.path.mode = 'd'
         open_file.path.label = 'Pick a folder (.zarr)'
 
@@ -190,36 +188,24 @@ def _on_path_changed(path: Path):
     ext = path.suffix
 
     if ext in H5_EXTENSIONS:
+        open_file.key.show()
         keys = list_h5_keys(path)
         open_file.key.choices = keys
         open_file.key.value = keys[0]
 
     elif ext in ZARR_EXTENSIONS:
+        open_file.key.show()
         keys = list_zarr_keys(path)
         open_file.key.choices = keys
         open_file.key.value = keys[0]
 
 
-@open_file.advanced_load.changed.connect
-def _on_advanced_load_changed(advanced_load: bool):
-    advanced_load = return_value_if_widget(advanced_load)
-    if advanced_load:
-        open_file.key.show()
+@open_file.stack_layout.changed.connect
+def _on_stack_layout_changed(stack_layout: str):
+    if 'c' in stack_layout:
         open_file.channel.show()
-
-        ext = open_file.path.value.suffix
-        if ext in H5_EXTENSIONS:
-            keys = list_h5_keys(open_file.path.value)
-            open_file.key.choices = keys
-            open_file.key.value = keys[0]
-        elif ext in ZARR_EXTENSIONS:
-            keys = list_zarr_keys(open_file.path.value)
-            open_file.key.choices = keys
-            open_file.key.value = keys[0]
     else:
-        open_file.key.hide()
         open_file.channel.hide()
-
 
 @open_file.call_button.clicked.connect
 def _on_call_button_clicked():
