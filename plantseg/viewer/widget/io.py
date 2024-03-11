@@ -55,6 +55,7 @@ def napari_image_load(path, key, channel, stack_layout, layer_type='image'):
 
     elif ext in TIFF_EXTENSIONS:
         data, (voxel_size, _, _, voxel_size_unit) = load_tiff(path)
+        print(data.shape)
 
     elif ext in PIL_EXTENSIONS:
         data, (voxel_size, _, _, voxel_size_unit) = load_pill(path)
@@ -206,10 +207,6 @@ def _on_stack_layout_changed(stack_layout: str):
         open_file.channel.show()
     else:
         open_file.channel.hide()
-
-@open_file.call_button.clicked.connect
-def _on_call_button_clicked():
-    open_file.advanced_load.value = False
 
 
 def export_stack_as_tiff(data,
