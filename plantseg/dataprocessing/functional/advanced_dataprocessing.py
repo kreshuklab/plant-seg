@@ -5,8 +5,8 @@ import numba
 import numpy as np
 import tqdm
 from skimage.filters import gaussian
-from skimage.segmentation import watershed
-
+from skimage.segmentation import watershed, relabel_sequential
+from skimage.measure import regionprops
 
 def get_bbox(mask: np.array, pixel_toll: int = 0) -> tuple[tuple, int, int, int]:
     """
@@ -235,3 +235,52 @@ def fix_over_under_segmentation_from_nuclei(cell_seg: np.array,
                                        cell_assignments,
                                        cell_idx=None)
     return _cell_seg
+
+
+def remove_false_positives_by_foreground_probability(segmentation: np.array,
+                                                     foreground: np.array,
+                                                     threshold: float) -> np.array:
+    """
+    Remove false positive regions in a segmentation based on a foreground probability map in a smart way.
+    If the mean(an instance * its own probability region) < threshold, it is removed.
+
+    Args:
+        segmentation (np.ndarray): The segmentation array, where each unique non-zero value indicates a distinct region.
+        foreground (np.ndarray): The foreground probability map, same shape as `segmentation`.
+        threshold (float): Probability threshold below which regions are considered false positives.
+
+    Returns:
+        np.ndarray: The modified segmentation array with false positives removed.
+    """
+    # TODO: make a channel for removed regions for easier inspection
+    # TODO: use `relabel_sequential` to recover the original labels
+
+    if not segmentation.shape == foreground.shape:
+        raise ValueError("Shape of segmentation and probability map must match.")
+    if foreground.max() > 1:
+        raise ValueError("Foreground must be a probability map probability map.")
+
+    instances, _, _ = relabel_sequential(segmentation)
+
+    regions = regionprops(instances)
+    to_keep = np.ones(len(regions) + 1)
+    pixel_count = np.zeros(len(regions) + 1)
+    pixel_value = np.zeros(len(regions) + 1)
+
+    for region in tqdm.tqdm(regions):
+        bbox = region.bbox
+        cube = instances[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]:bbox[5]] == region.label  # other instances may exist, don't use `> 0`
+        prob = foreground[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]:bbox[5]]
+        pixel_count[region.label] = region.area
+        pixel_value[region.label] = (cube * prob).sum()
+
+    likelihood = pixel_value / pixel_count
+    to_keep[likelihood < threshold] = 0
+    ids_to_delete = np.argwhere(to_keep == 0)
+    assert ids_to_delete.shape[1] == 1
+    ids_to_delete = ids_to_delete.flatten()
+    # print(f"    Removing instance {region.label}: pixel count: {pixel_count}, pixel value: {pixel_value}, likelihood: {likelihood}")
+
+    instances[np.isin(instances, ids_to_delete)] = 0
+    instances, _, _ = relabel_sequential(instances)
+    return instances

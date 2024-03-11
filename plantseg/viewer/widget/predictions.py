@@ -161,11 +161,12 @@ def _on_model_name_changed(model_name: str):
     widget_unet_predictions.model_name.tooltip = f'Select a pretrained model. Current model description: {description}'
 
 
-def _compute_multiple_predictions(image, patch_size, patch_halo, device):
+def _compute_multiple_predictions(image, patch_size, patch_halo, device, use_custom_models=True):
     out_layers = []
-    for i, model_name in enumerate(list_models()):
+    model_list = list_models(use_custom_models=use_custom_models)
+    for i, model_name in enumerate(model_list):
 
-        napari_formatted_logging(f'Running UNet Predictions: {model_name} {i}/{len(list_models())}',
+        napari_formatted_logging(f'Running UNet Predictions: {model_name} {i}/{len(model_list)}',
                                  thread='UNet Grid Predictions')
 
         out_name = create_layer_name(image.name, model_name)
@@ -193,17 +194,21 @@ def _compute_multiple_predictions(image, patch_size, patch_halo, device):
           patch_halo={'label': 'Patch halo',
                       'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
           device={'label': 'Device',
-                  'choices': ALL_DEVICES}
+                  'choices': ALL_DEVICES},
+          use_custom_models={'label': 'Use custom models',
+                             'tooltip': 'If True, custom models will also be used.'}
           )
 def widget_test_all_unet_predictions(image: Image,
                                      patch_size: Tuple[int, int, int] = (80, 170, 170),
                                      patch_halo: Tuple[int, int, int] = (2, 4, 4),
-                                     device: str = ALL_DEVICES[0]) -> Future[List[LayerDataTuple]]:
+                                     device: str = ALL_DEVICES[0],
+                                     use_custom_models: bool = True) -> Future[List[LayerDataTuple]]:
     func = thread_worker(partial(_compute_multiple_predictions,
                                  image=image,
                                  patch_size=patch_size,
                                  patch_halo=patch_halo,
-                                 device=device))
+                                 device=device,
+                                 use_custom_models=use_custom_models,))
 
     future = Future()
 
