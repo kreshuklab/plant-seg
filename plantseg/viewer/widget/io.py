@@ -26,7 +26,7 @@ channels_stack_layouts = [f'Z{channel_token}XY (usually tiff)',
                           f'{channel_token}XY']
 no_channels_stack_layouts = ['ZXY',
                              'XY']
-manual_slicing = 'Manual Slice ([:, :, :])'
+manual_slicing = 'Manual Slicing'
 all_layouts = channels_stack_layouts + no_channels_stack_layouts + [manual_slicing]
 
 
