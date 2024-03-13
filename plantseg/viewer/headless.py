@@ -3,7 +3,8 @@ import time
 from pathlib import Path
 from typing import List, Tuple
 
-import distributed
+from dask.distributed import LocalCluster
+from dask.distributed import Client
 from magicgui import magicgui
 from tqdm import tqdm
 
@@ -53,8 +54,8 @@ def run_workflow_headless(path):
             num_workers: int = MAX_WORKERS,
             scheduler: str = 'multiprocessing'):
         dict_of_jobs = {}
-        cluster = distributed.LocalCluster(n_workers=num_workers, threads_per_worker=1)
-        client = distributed.Client(cluster)
+        cluster = LocalCluster(n_workers=num_workers, threads_per_worker=1)
+        client = Client(cluster)
         print(f"You can check the execution of the workflow at: \n{client.dashboard_link}\n")
 
         print('Setting up jobs...')
