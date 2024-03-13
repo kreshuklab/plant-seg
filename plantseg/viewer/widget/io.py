@@ -129,7 +129,7 @@ def unpack_open_file(loaded_dict, key):
                   'choices': all_layouts,
                   'tooltip': 'Stack layout'}
 )
-def open_file_widget(path: Path = Path.home(),
+def widget_open_file(path: Path = Path.home(),
                      path_mode: str = path_modes[0],
                      layer_type: str = 'image',
                      new_layer_name: str = '',
@@ -186,54 +186,54 @@ def open_file_widget(path: Path = Path.home(),
     return data, layer_kwargs, layer_type
 
 
-open_file_widget.key.hide()
-open_file_widget.channel.hide()
-open_file_widget.m_slicing.hide()
+widget_open_file.key.hide()
+widget_open_file.channel.hide()
+widget_open_file.m_slicing.hide()
 
 
-@open_file_widget.path_mode.changed.connect
+@widget_open_file.path_mode.changed.connect
 def _on_path_mode_changed(path_mode: str):
     path_mode = return_value_if_widget(path_mode)
     if path_mode == path_modes[0]:  # file
-        open_file_widget.path.mode = 'r'
-        open_file_widget.path.label = 'Pick a file (.tiff, .h5, .png, .jpg)'
+        widget_open_file.path.mode = 'r'
+        widget_open_file.path.label = 'Pick a file (.tiff, .h5, .png, .jpg)'
     elif path_mode == path_modes[1]:  # directory case
-        open_file_widget.path.mode = 'd'
-        open_file_widget.path.label = 'Pick a folder (.zarr)'
+        widget_open_file.path.mode = 'd'
+        widget_open_file.path.label = 'Pick a folder (.zarr)'
 
 
-@open_file_widget.path.changed.connect
+@widget_open_file.path.changed.connect
 def _on_path_changed(path: Path):
     path = return_value_if_widget(path)
-    open_file_widget.new_layer_name.value = path.stem
+    widget_open_file.new_layer_name.value = path.stem
     ext = path.suffix
 
     if ext in H5_EXTENSIONS:
-        open_file_widget.key.show()
+        widget_open_file.key.show()
         keys = list_h5_keys(path)
-        open_file_widget.key.choices = keys
-        open_file_widget.key.value = keys[0]
+        widget_open_file.key.choices = keys
+        widget_open_file.key.value = keys[0]
 
     elif ext in ZARR_EXTENSIONS:
-        open_file_widget.key.show()
+        widget_open_file.key.show()
         keys = list_zarr_keys(path)
-        open_file_widget.key.choices = keys
-        open_file_widget.key.value = keys[0]
+        widget_open_file.key.choices = keys
+        widget_open_file.key.value = keys[0]
 
 
-@open_file_widget.stack_layout.changed.connect
+@widget_open_file.stack_layout.changed.connect
 def _on_stack_layout_changed(stack_layout: str):
     if channel_token in stack_layout:
-        open_file_widget.channel.show()
-        open_file_widget.m_slicing.hide()
+        widget_open_file.channel.show()
+        widget_open_file.m_slicing.hide()
 
     elif stack_layout == manual_slicing:
-        open_file_widget.channel.hide()
-        open_file_widget.m_slicing.show()
+        widget_open_file.channel.hide()
+        widget_open_file.m_slicing.show()
 
     else:
-        open_file_widget.channel.hide()
-        open_file_widget.m_slicing.hide()
+        widget_open_file.channel.hide()
+        widget_open_file.m_slicing.hide()
 
 
 def export_stack_as_tiff(data,
