@@ -9,7 +9,7 @@ from warnings import warn
 import requests
 import yaml
 
-from plantseg import model_zoo_path, custom_zoo, home_path, PLANTSEG_MODELS_DIR, plantseg_global_path
+from plantseg import custom_zoo_path, home_path, PLANTSEG_MODELS_DIR, plantseg_global_path
 from plantseg.__version__ import __version__ as current_version
 from plantseg.pipeline import gui_logger
 
@@ -17,117 +17,14 @@ CONFIG_TRAIN_YAML = "config_train.yml"
 BEST_MODEL_PYTORCH = "best_checkpoint.pytorch"
 
 
-def load_config(config_path: str) -> dict:
+def load_config(config_path: str | Path) -> dict:
     """
     load a yaml config in a dictionary
     """
-    with open(config_path, 'r') as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
+    config_path = Path(config_path)
+    config_content = config_path.read_text()
+    config = yaml.load(config_content, Loader=yaml.FullLoader)
     return config
-
-
-def get_model_zoo(get_custom: bool = True) -> dict:
-    """
-    returns a dictionary of all models in the model zoo.
-    example:
-        {
-        ...
-        generic_confocal_3d_unet:
-            path: 'download link or model location'
-            resolution: [0.235, 0.150, 0.150]
-            description: 'Unet trained on confocal images on 1/2-resolution in XY with BCEDiceLoss.'
-        ...
-        }
-    """
-    zoo_config = os.path.join(model_zoo_path)
-
-    zoo_config = load_config(zoo_config)
-
-    if get_custom:
-        custom_zoo_config = load_config(custom_zoo)
-
-        if custom_zoo_config is None:
-            custom_zoo_config = {}
-
-        zoo_config.update(custom_zoo_config)
-    return zoo_config
-
-
-def list_models(dimensionality_filter: list[str] = None,
-                modality_filter: list[str] = None,
-                output_type_filter: list[str] = None,
-                use_custom_models: bool = True) -> list[str]:
-    """
-    return a list of models in the model zoo by name
-    """
-    zoo_config = get_model_zoo(use_custom_models)
-    models = list(zoo_config.keys())
-
-    if dimensionality_filter is not None:
-        models = [model for model in models if zoo_config[model].get('dimensionality', None) in dimensionality_filter]
-
-    if modality_filter is not None:
-        models = [model for model in models if zoo_config[model].get('modality', None) in modality_filter]
-
-    if output_type_filter is not None:
-        models = [model for model in models if zoo_config[model].get('output_type', None) in output_type_filter]
-
-    return models
-
-
-def get_model_description(model_name: str) -> str:
-    """
-    return the description of a model
-    """
-    zoo_config = get_model_zoo()
-    if model_name not in zoo_config:
-        raise ValueError(f'Model {model_name} not found in the model zoo.')
-
-    description = zoo_config[model_name].get('description', None)
-    if description is None or description == '':
-        return 'No description available for this model.'
-
-    return description
-
-
-def _list_all_metadata(metadata_key: str) -> list[str]:
-    """
-    return a list of all properties in the model zoo
-    """
-    zoo_config = get_model_zoo()
-    properties = list(set([zoo_config[model].get(metadata_key, None) for model in zoo_config]))
-    properties = [prop for prop in properties if prop is not None]
-    return sorted(properties)
-
-
-def list_all_dimensionality() -> list[str]:
-    """
-    return a list of all dimensionality in the model zoo
-    """
-    return _list_all_metadata('dimensionality')
-
-
-def list_all_modality() -> list[str]:
-    """
-    return a list of all modality in the model zoo
-    """
-    return _list_all_metadata('modality')
-
-
-def list_all_output_type() -> list[str]:
-    """
-    return a list of all output_type in the model zoo
-    """
-    return _list_all_metadata('output_type')
-
-
-def get_model_resolution(model: str) -> list[float, float, float]:
-    """
-    return a models reference resolution
-    """
-    zoo_config = get_model_zoo()
-    resolution = zoo_config[model].get('resolution', [1., 1., 1.])
-    return resolution
 
 
 def add_custom_model(new_model_name: str,
@@ -171,7 +68,7 @@ def add_custom_model(new_model_name: str,
               f'the model can not be loaded.'
         return False, msg
 
-    custom_zoo_dict = load_config(custom_zoo)
+    custom_zoo_dict = load_config(custom_zoo_path)
     if custom_zoo_dict is None:
         custom_zoo_dict = {}
 
@@ -184,7 +81,7 @@ def add_custom_model(new_model_name: str,
     custom_zoo_dict[new_model_name]["modality"] = modality
     custom_zoo_dict[new_model_name]["output_type"] = output_type
 
-    with open(custom_zoo, 'w') as f:
+    with open(custom_zoo_path, 'w') as f:
         yaml.dump(custom_zoo_dict, f)
 
     return True, None

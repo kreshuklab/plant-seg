@@ -9,7 +9,9 @@ from plantseg.pipeline import gui_logger
 from plantseg.pipeline import raw2seg_config_template
 from plantseg.predictions.functional.utils import get_stride_shape
 from plantseg.segmentation.utils import SUPPORTED_ALGORITMS
-from plantseg.utils import list_models, check_models
+from plantseg.utils import check_models
+from plantseg.models.zoo import model_zoo
+
 
 deprecated_keys = {'param': 'filter_param'}
 special_keys = {
@@ -94,7 +96,7 @@ def is_file_or_dir(key, value, fallback):
 
 
 def model_exist(key, value, fallback):
-    _list_models = list_models()
+    _list_models = model_zoo.list_models()
     if value not in _list_models and not check_models(value):
         _error_message(f"value must be one of {_list_models}", key, value, fallback)
         return fallback

@@ -1,9 +1,9 @@
 import tkinter
 
 from plantseg.legacy_gui import convert_rgb
-from plantseg.utils import list_models
 from plantseg.legacy_gui import stick_all, stick_new
 from plantseg.legacy_gui.gui_tools import ListEntry, SimpleEntry, FilterEntry, RescaleEntry, MenuEntry, SliderEntry
+from plantseg.models.zoo import model_zoo
 
 
 class ModuleFramePrototype:
@@ -265,7 +265,7 @@ class UnetPredictionFrame(ModuleFramePrototype):
                 text="Model Name: ",
                 row=3,
                 column=0,
-                menu=list_models(),
+                menu=model_zoo.list_models(),
                 default=config[self.module]["model_name"],
                 is_model=True,
                 font=font,

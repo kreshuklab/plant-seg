@@ -12,23 +12,24 @@ from napari.types import LayerDataTuple
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
-from plantseg.utils import list_all_modality, list_all_dimensionality, list_all_output_type
-from plantseg.utils import list_models, add_custom_model, get_train_config, get_model_zoo, get_model_description
+from plantseg.utils import add_custom_model, get_train_config
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
 from plantseg.viewer.widget.utils import return_value_if_widget
 from plantseg.viewer.widget.utils import start_threading_process, start_prediction_process, create_layer_name, layer_properties
-from plantseg.viewer.widget.validation import _on_prediction_input_image_change, widgets_inactive
+from plantseg.viewer.widget.validation import _on_prediction_input_image_change
+from plantseg.models.zoo import model_zoo
+
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
 ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ['cpu']
 
-LIST_ALL_MODALITY = ['All'] + list_all_modality()
-LIST_ALL_DIMENSIONALITY = ['All'] + list_all_dimensionality()
-LIST_ALL_OUTPUT_TYPE = ['All'] + list_all_output_type()
-LIST_ALL_MODELS = list_models()
+LIST_ALL_MODALITY = ['All'] + model_zoo.list_all_modality()
+LIST_ALL_DIMENSIONALITY = ['All'] + model_zoo.list_all_dimensionality()
+LIST_ALL_OUTPUT_TYPE = ['All'] + model_zoo.list_all_output_type()
+LIST_ALL_MODELS = model_zoo.list_models()
 
 
 def unet_predictions_wrapper(raw, device, **kwargs):
@@ -58,7 +59,7 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                        'choices': LIST_ALL_OUTPUT_TYPE},
           model_name={'label': 'Select model',
                       'tooltip': f'Select a pretrained model. '
-                                 f'Current model description: {get_model_description(LIST_ALL_MODELS[0])}',
+                                 f'Current model description: {model_zoo.get_model_description(LIST_ALL_MODELS[0])}',
                       'choices': LIST_ALL_MODELS},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
@@ -118,7 +119,7 @@ def _on_any_metadata_changed(dimensionality, modality, output_type):
     dimensionality = [dimensionality] if dimensionality != 'All' else None
     modality = [modality] if modality != 'All' else None
     output_type = [output_type] if output_type != 'All' else None
-    widget_unet_predictions.model_name.choices = list_models(dimensionality_filter=dimensionality,
+    widget_unet_predictions.model_name.choices = model_zoo.list_models(dimensionality_filter=dimensionality,
                                                              modality_filter=modality,
                                                              output_type_filter=output_type)
 
@@ -147,8 +148,7 @@ def _on_output_type_changed(output_type: str):
 @widget_unet_predictions.model_name.changed.connect
 def _on_model_name_changed(model_name: str):
     model_name = return_value_if_widget(model_name)
-    model_zoo = get_model_zoo()
-    model_metadata = model_zoo[model_name]
+    model_metadata = model_zoo.get_model_zoo()[model_name]
     if 'recommended_patch_size' in model_metadata:
         patch_size = model_metadata.get('recommended_patch_size')
         widget_unet_predictions.patch_size.value = tuple(patch_size)
@@ -163,7 +163,7 @@ def _on_model_name_changed(model_name: str):
 
 def _compute_multiple_predictions(image, patch_size, patch_halo, device, use_custom_models=True):
     out_layers = []
-    model_list = list_models(use_custom_models=use_custom_models)
+    model_list = model_zoo.list_models(use_custom_models=use_custom_models)
     for i, model_name in enumerate(model_list):
 
         napari_formatted_logging(f'Running UNet Predictions: {model_name} {i}/{len(model_list)}',
@@ -241,8 +241,8 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
           image={'label': 'Image',
                  'tooltip': 'Raw image to be processed with a neural network.'},
           model_name={'label': 'Select model',
-                      'tooltip': f'Select a pretrained model. {list_models()[0]}',
-                      'choices': list_models()},
+                      'tooltip': f'Select a pretrained model. {model_zoo.list_models()[0]}',
+                      'choices': model_zoo.list_models()},
           num_iterations={'label': 'Num. of iterations',
                           'tooltip': 'Nuber of iterations the model will run.'},
           sigma={'label': 'Sigma',
@@ -317,24 +317,24 @@ def _on_widget_iterative_unet_predictions_image_change(image: Image):
                           'tooltip': 'Dimensionality of the model (2D or 3D). '
                                      'Any 2D model can be used for 3D data.',
                           'widget_type': 'ComboBox',
-                          'choices': list_all_dimensionality()},
+                          'choices': model_zoo.list_all_dimensionality()},
           modality={'label': 'Microscopy modality',
                     'tooltip': 'Modality of the model (e.g. confocal, light-sheet ...).',
                     'widget_type': 'ComboBox',
-                    'choices': list_all_modality()},
+                    'choices': model_zoo.list_all_modality()},
           output_type={'label': 'Prediction type',
                        'widget_type': 'ComboBox',
                        'tooltip': 'Type of prediction (e.g. cell boundaries predictions or nuclei...).',
-                       'choices': list_all_output_type()},
+                       'choices': model_zoo.list_all_output_type()},
 
           )
 def widget_add_custom_model(new_model_name: str = 'custom_model',
                             model_location: Path = Path.home(),
                             resolution: Tuple[float, float, float] = (1., 1., 1.),
                             description: str = 'New custom model',
-                            dimensionality: str = list_all_dimensionality()[0],
-                            modality: str = list_all_modality()[0],
-                            output_type: str = list_all_output_type()[0]) -> None:
+                            dimensionality: str = model_zoo.list_all_dimensionality()[0],
+                            modality: str = model_zoo.list_all_modality()[0],
+                            output_type: str = model_zoo.list_all_output_type()[0]) -> None:
     finished, error_msg = add_custom_model(new_model_name=new_model_name,
                                            location=model_location,
                                            resolution=resolution,
@@ -347,7 +347,7 @@ def widget_add_custom_model(new_model_name: str = 'custom_model',
         napari_formatted_logging(f'New model {new_model_name} added to the list of available models.',
                                  level='info',
                                  thread='Add Custom Model')
-        widget_unet_predictions.model_name.choices = list_models()
+        widget_unet_predictions.model_name.choices = model_zoo.list_models()
     else:
         napari_formatted_logging(f'Error adding new model {new_model_name} to the list of available models: '
                                  f'{error_msg}',
