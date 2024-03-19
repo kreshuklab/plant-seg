@@ -9,7 +9,7 @@ from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader, ConcatDataset
 
-from plantseg import PLANTSEG_MODELS_DIR, plantseg_global_path
+from plantseg import DIR_PLANTSEG_MODELS, PATH_PLANTSEG_GLOBAL
 from plantseg.pipeline import gui_logger
 from plantseg.training.augs import Augmenter
 from plantseg.training.h5dataset import HDF5Dataset
@@ -21,7 +21,7 @@ from plantseg.training.trainer import UNetTrainer
 def create_model_config(checkpoint_dir, in_channels, out_channels, patch_size, dimensionality, sparse, f_maps,
                         max_num_iters):
     os.makedirs(checkpoint_dir, exist_ok=True)
-    train_template_path = os.path.join(plantseg_global_path,
+    train_template_path = os.path.join(PATH_PLANTSEG_GLOBAL,
                                        "resources",
                                        "config_train_template.yaml")
     with open(train_template_path, 'r') as f:
@@ -87,7 +87,7 @@ def unet_training(dataset_dir: str, model_name: str, in_channels: int, out_chann
 
     # create trainer
     home_path = os.path.expanduser("~")
-    checkpoint_dir = os.path.join(home_path, PLANTSEG_MODELS_DIR, model_name)
+    checkpoint_dir = os.path.join(home_path, DIR_PLANTSEG_MODELS, model_name)
     gui_logger.info(f'Saving training files in {checkpoint_dir}')
     assert not os.path.exists(checkpoint_dir), f'Checkpoint dir {checkpoint_dir} already exists!'
 

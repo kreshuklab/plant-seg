@@ -5,28 +5,28 @@ from pathlib import Path
 import yaml
 
 
-plantseg_global_path = Path(__file__).parent.resolve()
+PATH_PLANTSEG_GLOBAL = Path(__file__).parent.resolve()
 
 # Files in code repository
-RESOURCES_DIR = "resources"
-MODELS_ZOO_FILE_NAME = "models_zoo.yaml"
-CONFIG_GUI_TEMPLATE_FILE_NAME = "config_gui_template.yaml"
+DIR_RESOURCES = "resources"
+FILE_MODEL_ZOO = "models_zoo.yaml"
+FILE_CONFIG_GUI_TEMPLATE = "config_gui_template.yaml"
 
-model_zoo_path = plantseg_global_path / RESOURCES_DIR / MODELS_ZOO_FILE_NAME
-standard_config_template = plantseg_global_path / RESOURCES_DIR / CONFIG_GUI_TEMPLATE_FILE_NAME
+PATH_MODEL_ZOO = PATH_PLANTSEG_GLOBAL / DIR_RESOURCES / FILE_MODEL_ZOO
+PATH_STANDARD_TEMPLATE = PATH_PLANTSEG_GLOBAL / DIR_RESOURCES / FILE_CONFIG_GUI_TEMPLATE
 
 # Files in user home
-PLANTSEG_MODELS_DIR = ".plantseg_models"
-CONFIGS_DIR_NAME = "configs"
-CUSTOM_ZOO_FILE_NAME = "custom_zoo.yaml"
+DIR_PLANTSEG_MODELS = ".plantseg_models"
+DIR_CONFIGS = "configs"
+FILE_MODEL_ZOO_CUSTOM = "custom_zoo.yaml"
 
-home_path = Path(getenv('PLANTSEG_HOME', str(Path.home())))
+PATH_HOME = Path(getenv('PLANTSEG_HOME', str(Path.home())))
 
-configs_path = home_path / PLANTSEG_MODELS_DIR / CONFIGS_DIR_NAME
-custom_zoo_path = home_path / PLANTSEG_MODELS_DIR / CUSTOM_ZOO_FILE_NAME
+PATH_CONFIGS = PATH_HOME / DIR_PLANTSEG_MODELS / DIR_CONFIGS
+PATH_MODEL_ZOO_CUSTOM = PATH_HOME / DIR_PLANTSEG_MODELS / FILE_MODEL_ZOO_CUSTOM
 
-configs_path.mkdir(parents=True, exist_ok=True)
+PATH_CONFIGS.mkdir(parents=True, exist_ok=True)
 
-if not custom_zoo_path.exists():
-    with custom_zoo_path.open('w') as file:
+if not PATH_MODEL_ZOO_CUSTOM.exists():
+    with PATH_MODEL_ZOO_CUSTOM.open('w') as file:
         yaml.dump({}, file)

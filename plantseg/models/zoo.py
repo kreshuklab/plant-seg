@@ -1,53 +1,99 @@
 """Model Zoo Singleton"""
 
 from pathlib import Path
-from typing import Dict, Optional
+from typing import List, Optional, Self
 
-from plantseg import model_zoo_path, custom_zoo_path
+from pandas import DataFrame, concat
+from pydantic import BaseModel, Field, model_validator
+
+from plantseg import PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM
 from plantseg.utils import load_config
 
 
-class ModelZooRecord:
-    """A record in the PlantSeg model zoo.
+class ModelZooRecord(BaseModel):
+    name: str
+    url: Optional[str] = Field(None, alias='model_url')
+    path: Optional[str] = None
+    id: Optional[str] = None
+    description: Optional[str] = None
+    resolution: Optional[List[float]] = None
+    dimensionality: Optional[str] = None
+    modality: Optional[str] = None
+    recommended_patch_size: Optional[List[int]] = None
+    output_type: Optional[str] = None
+    doi: Optional[str] = None
+    added_by: Optional[str] = None
 
-    Example YAML Record:
-
-    PlantSeg_3Dnuc_platinum:
-        model_url: https://zenodo.org/records/10070349/files/FOR2581_PlantSeg_Plant_Nuclei_3D.pytorch
-        resolution: [0.2837 0.1268 0.1268]
-        description: "A generic 3D U-Net trained to predict the nuclei and their boundaries in plant. Voxel size: (0.1268×0.1268×0.2837 µm^3) (XYZ)"
-        dimensionality: "3D"
-        modality: "confocal"
-        recommended_patch_size: [128, 256, 256]
-        output_type: "nuclei"
-    """
-
-    def __init__(self, model_url, resolution, description, dimensionality, modality, recommended_patch_size, output_type, added_by):
-        self.model_url = model_url
-        self.resolution = resolution
-        self.description = description
-        self.dimensionality = dimensionality
-        self.modality = modality
-        self.recommended_patch_size = recommended_patch_size
-        self.output_type = output_type
-        self.added_by = added_by
+    @model_validator(mode='after')
+    def check_one_id_present(self) -> Self:
+        if self.url is None and self.path is None and self.id is None:
+            print(self)
+            raise ValueError('One of url, path or id must be present')
+        return self
 
 
 class ModelZoo:
     _instance: Optional['ModelZoo'] = None
-    _models: Dict
-    # _models: Dict[str, ModelZooRecord]
+
+    _zoo_dict: dict = {}
+    _zoo_custom_dict: dict = {}
+
+    path_zoo: str | Path = PATH_MODEL_ZOO
+    path_zoo_custom: str | Path = PATH_MODEL_ZOO_CUSTOM
+    models: DataFrame
 
     def __new__(cls, path_zoo, path_zoo_custom):
         if cls._instance is None:
             cls._instance = super(ModelZoo, cls).__new__(cls)
-            cls._instance._initialisation(path_zoo, path_zoo_custom)
+            cls._instance.update(path_zoo, path_zoo_custom)
         return cls._instance
 
-    def _initialisation(self, path_zoo, path_zoo_custom):
-        self._models = self._get_model_zoo(path_zoo, path_zoo_custom)
+    def _init_zoo_dict(
+        self,
+        path_zoo: Optional[str | Path] = None,
+        path_zoo_custom: Optional[str | Path] = None,
+    ) -> None:
+        if path_zoo is not None:
+            self.path_zoo = path_zoo
+        if path_zoo_custom is not None:
+            self.path_zoo_custom = path_zoo_custom
 
-    def _get_model_zoo(self, path_zoo: str | Path, path_zoo_custom: Optional[str | Path] = None) -> dict:
+        zoo_dict = load_config(Path(self.path_zoo))
+        self._zoo_dict = zoo_dict
+
+        if self.path_zoo_custom is not None:
+            zoo_custom_dict = load_config(Path(self.path_zoo_custom))
+            if zoo_custom_dict is None:
+                zoo_custom_dict = {}
+
+            # zoo_dict.update(zoo_custom_dict)
+            self._zoo_custom_dict = zoo_custom_dict
+
+    def _init_zoo_df(self) -> None:
+        # DataFrame.from_dict(zoo_dict, orient='index', columns=list(ModelZooRecord.__annotations__.keys()))
+        records = []
+        for name, model in self._zoo_dict.items():
+            model['name'] = name
+            records.append(ModelZooRecord(**model, added_by='plantseg').model_dump())
+
+        for name, model in self._zoo_custom_dict.items():
+            model['name'] = name
+            records.append(ModelZooRecord(**model, added_by='user').model_dump())
+
+        self.models = DataFrame(
+            records,
+            columns=list(ModelZooRecord.model_fields.keys()),
+        ).set_index('name')
+
+    def update(
+        self,
+        path_zoo: Optional[str | Path] = None,
+        path_zoo_custom: Optional[str | Path] = None,
+    ) -> None:
+        self._init_zoo_dict(path_zoo, path_zoo_custom)
+        self._init_zoo_df()
+
+    def get_model_zoo(self, get_custom: bool = True) -> dict:
         """
         returns a dictionary of all models in the model zoo.
         example:
@@ -60,18 +106,7 @@ class ModelZoo:
             ...
             }
         """
-        config_zoo = load_config(Path(path_zoo))
-
-        if path_zoo_custom is not None:
-            config_zoo_custom = load_config(Path(path_zoo_custom))
-            if config_zoo_custom is None:
-                config_zoo_custom = {}
-
-            config_zoo.update(config_zoo_custom)
-        return config_zoo
-
-    def get_model_zoo(self, get_custom: bool = True) -> dict:
-        return self._models
+        return self.models
 
     def list_models(
         self,
@@ -83,7 +118,7 @@ class ModelZoo:
         """
         return a list of models in the model zoo by name
         """
-        zoo_config = self._models
+        zoo_config = self.models
         models = list(zoo_config.keys())
 
         if dimensionality_filter is not None:
@@ -97,40 +132,25 @@ class ModelZoo:
 
         return models
 
-    def register_model(
-        self,
-        name,
-        model_url,
-        resolution,
-        description,
-        dimensionality,
-        modality,
-        recommended_patch_size,
-        output_type,
-        added_by,
-    ):
-        self._models[name] = ModelZooRecord(
-            model_url,
-            resolution,
-            description,
-            dimensionality,
-            modality,
-            recommended_patch_size,
-            output_type,
-            added_by,
-        )
+    def register_model(self, model_record: ModelZooRecord) -> None:
+        """Add model_record to the model zoo dataframe"""
+        models_new = DataFrame(
+            [model_record.model_dump()],
+            columns=list(ModelZooRecord.model_fields.keys()),
+        ).set_index('name')
+        self.models = concat([self.models, models_new], ignore_index=False)
 
     def get_model(self, name):
-        return self._models[name]
+        return self.models[name]
 
     def get_model_names(self):
-        return list(self._models.keys())
+        return list(self.models.keys())
 
     def get_model_description(self, model_name: str) -> str:
         """
         return the description of a model
         """
-        zoo_config = self._models
+        zoo_config = self.models
         if model_name not in zoo_config:
             raise ValueError(f'Model {model_name} not found in the model zoo.')
 
@@ -173,4 +193,4 @@ class ModelZoo:
         return self.get_model(model_name).resolution
 
 
-model_zoo = ModelZoo(model_zoo_path, custom_zoo_path)
+model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)

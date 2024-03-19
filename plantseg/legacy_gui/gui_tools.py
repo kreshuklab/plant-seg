@@ -5,7 +5,7 @@ from tkinter import filedialog
 
 import yaml
 
-from plantseg import custom_zoo, home_path, PLANTSEG_MODELS_DIR, model_zoo_path
+from plantseg import custom_zoo, PATH_HOME, DIR_PLANTSEG_MODELS, PATH_MODEL_ZOO
 from plantseg.__version__ import __version__
 from plantseg.io import read_tiff_voxel_size, TIFF_EXTENSIONS
 from plantseg.legacy_gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
@@ -482,7 +482,7 @@ class RescaleEntry:
          factor from the resolution given by the user"""
         global current_model
 
-        model_config = load_config(model_zoo_path)
+        model_config = load_config(PATH_MODEL_ZOO)
 
         net_resolution = model_config[current_model]["resolution"]
         AutoResPopup(net_resolution, current_model, self.tk_value, self.font)
@@ -561,7 +561,7 @@ class Files2Process:
         """ Browse for file and directory """
         self.files = tkinter.StringVar()
         if config["path"] is None:
-            self.files.set(home_path)
+            self.files.set(PATH_HOME)
         else:
             self.files.set(config["path"])
         self.config = config
@@ -569,7 +569,7 @@ class Files2Process:
     def browse_for_file(self):
         """ browse for file """
         current_file_dir, _ = os.path.split(self.files.get())
-        current_file_dir = (home_path if len(home_path) > len(current_file_dir)
+        current_file_dir = (PATH_HOME if len(PATH_HOME) > len(current_file_dir)
                             else current_file_dir)
 
         file_name = filedialog.askopenfilename(initialdir=current_file_dir,
@@ -584,7 +584,7 @@ class Files2Process:
     def browse_for_directory(self):
         """ browse for directory """
         current_file_dir, _ = os.path.split(self.files.get())
-        current_file_dir = (home_path if len(home_path) > len(current_file_dir)
+        current_file_dir = (PATH_HOME if len(PATH_HOME) > len(current_file_dir)
                             else current_file_dir)
         dire_name = filedialog.askdirectory(initialdir=current_file_dir,
                                             title="Select directory")
@@ -930,7 +930,7 @@ class RemovePopup:
         with open(custom_zoo, 'w') as f:
             yaml.dump(custom_zoo_dict, f)
 
-        self.join = os.path.join(home_path, PLANTSEG_MODELS_DIR, self.file_to_remove)
+        self.join = os.path.join(PATH_HOME, DIR_PLANTSEG_MODELS, self.file_to_remove)
         file_directory = self.join
 
         if os.path.exists(file_directory):

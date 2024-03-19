@@ -9,7 +9,7 @@ from tkinter import font
 import yaml
 
 from plantseg.utils import load_config
-from plantseg import plantseg_global_path, configs_path, RESOURCES_DIR, standard_config_template
+from plantseg import PATH_PLANTSEG_GLOBAL, PATH_CONFIGS, DIR_RESOURCES, PATH_STANDARD_TEMPLATE
 from plantseg.legacy_gui import convert_rgb
 from plantseg.legacy_gui.gui_tools import Files2Process, report_error, version_popup, LoadModelPopup, RemovePopup
 from plantseg.pipeline import gui_logger
@@ -297,19 +297,19 @@ class PlantSegApp:
     @staticmethod
     def get_last_config_path(name="config_gui_last.yaml"):
         # Working directory path + relative dir structure to yaml file
-        config_path = os.path.join(configs_path, name)
+        config_path = os.path.join(PATH_CONFIGS, name)
         return config_path
 
     @staticmethod
     def get_app_config_path(name="gui_configuration.yaml"):
         # Working directory path + relative dir structure to yaml file
-        config_path = os.path.join(plantseg_global_path, RESOURCES_DIR, name)
+        config_path = os.path.join(PATH_PLANTSEG_GLOBAL, DIR_RESOURCES, name)
         return config_path
 
     @staticmethod
     def get_icon_path(name="FOR2581_Logo_FINAL_no_text.png"):
         # Working directory path + relative dir structure to yaml file
-        icon_path = os.path.join(plantseg_global_path, RESOURCES_DIR, name)
+        icon_path = os.path.join(PATH_PLANTSEG_GLOBAL, DIR_RESOURCES, name)
         return icon_path
 
     def load_core_config(self, name="config_gui_last.yaml"):
@@ -320,7 +320,7 @@ class PlantSegApp:
             plantseg_config = load_config(plant_config_path)
         else:
             # Do not modify this location
-            plant_config_path = os.path.join(standard_config_template)
+            plant_config_path = os.path.join(PATH_STANDARD_TEMPLATE)
             plantseg_config = load_config(plant_config_path)
 
         return plant_config_path, plantseg_config
@@ -333,7 +333,7 @@ class PlantSegApp:
 
     def reset_config(self):
         """ reset to default config, do not change path"""
-        plant_config_path = os.path.join(standard_config_template)
+        plant_config_path = os.path.join(PATH_STANDARD_TEMPLATE)
         self.plantseg_config = load_config(plant_config_path)
 
         (self.pre_proc_obj,
@@ -343,7 +343,7 @@ class PlantSegApp:
 
     def open_config(self):
         """ open new config"""
-        default_start = os.path.join(configs_path)
+        default_start = os.path.join(PATH_CONFIGS)
         os.makedirs(default_start, exist_ok=True)
         plant_config_path = tkinter.filedialog.askopenfilename(initialdir=default_start,
                                                                title="Select file",
@@ -359,7 +359,7 @@ class PlantSegApp:
     def save_config(self):
         """ save yaml from current entries in the legacy_gui"""
         self.update_config()
-        default_start = os.path.join(configs_path)
+        default_start = os.path.join(PATH_CONFIGS)
         os.makedirs(default_start, exist_ok=True)
 
         save_path = tkinter.filedialog.asksaveasfilename(initialdir=default_start,
