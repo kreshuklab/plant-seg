@@ -148,9 +148,9 @@ def _on_output_type_changed(output_type: str):
 @widget_unet_predictions.model_name.changed.connect
 def _on_model_name_changed(model_name: str):
     model_name = return_value_if_widget(model_name)
-    model_metadata = model_zoo.get_model_zoo()[model_name]
-    if 'recommended_patch_size' in model_metadata:
-        patch_size = model_metadata.get('recommended_patch_size')
+    model_metadata = model_zoo.get_model(model_name)
+    if model_metadata['recommended_patch_size'] is not None:
+        patch_size = model_metadata['recommended_patch_size']
         widget_unet_predictions.patch_size.value = tuple(patch_size)
     else:
         napari_formatted_logging(f'No recommended patch size for {model_name}',

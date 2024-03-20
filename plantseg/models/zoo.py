@@ -9,6 +9,9 @@ from pydantic import BaseModel, Field, model_validator
 from plantseg import PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM
 from plantseg.utils import load_config
 
+AUTHOR_PLANTSEG = 'plantseg'
+AUTHOR_USER = 'user'
+
 
 class ModelZooRecord(BaseModel):
     name: str
@@ -74,11 +77,11 @@ class ModelZoo:
         records = []
         for name, model in self._zoo_dict.items():
             model['name'] = name
-            records.append(ModelZooRecord(**model, added_by='plantseg').model_dump())
+            records.append(ModelZooRecord(**model, added_by=AUTHOR_PLANTSEG).model_dump())
 
         for name, model in self._zoo_custom_dict.items():
             model['name'] = name
-            records.append(ModelZooRecord(**model, added_by='user').model_dump())
+            records.append(ModelZooRecord(**model, added_by=AUTHOR_USER).model_dump())
 
         self.models = DataFrame(
             records,
@@ -93,44 +96,32 @@ class ModelZoo:
         self._init_zoo_dict(path_zoo, path_zoo_custom)
         self._init_zoo_df()
 
-    def get_model_zoo(self, get_custom: bool = True) -> dict:
-        """
-        returns a dictionary of all models in the model zoo.
-        example:
-            {
-            ...
-            generic_confocal_3d_unet:
-                path: 'download link or model location'
-                resolution: [0.235, 0.150, 0.150]
-                description: 'Unet trained on confocal images on 1/2-resolution in XY with BCEDiceLoss.'
-            ...
-            }
-        """
-        return self.models
+    def get_model_zoo_dict(self) -> dict:
+        return self.models.to_dict(orient='index')
 
     def list_models(
         self,
-        dimensionality_filter: Optional[list[str]] = None,
-        modality_filter: Optional[list[str]] = None,
-        output_type_filter: Optional[list[str]] = None,
+        dimensionality_filter: Optional[List[str]] = None,
+        modality_filter: Optional[List[str]] = None,
+        output_type_filter: Optional[List[str]] = None,
         use_custom_models: bool = True,
-    ) -> list[str]:
-        """
-        return a list of models in the model zoo by name
-        """
-        zoo_config = self.models
-        models = list(zoo_config.keys())
+    ) -> List[str]:
+        """Return a list of model names, filtered by the specified criteria"""
+        filtered_df = self.models
 
         if dimensionality_filter is not None:
-            models = [model for model in models if zoo_config[model].get('dimensionality', None) in dimensionality_filter]
+            filtered_df = filtered_df[filtered_df['dimensionality'].isin(dimensionality_filter)]
 
         if modality_filter is not None:
-            models = [model for model in models if zoo_config[model].get('modality', None) in modality_filter]
+            filtered_df = filtered_df[filtered_df['modality'].isin(modality_filter)]
 
         if output_type_filter is not None:
-            models = [model for model in models if zoo_config[model].get('output_type', None) in output_type_filter]
+            filtered_df = filtered_df[filtered_df['output_type'].isin(output_type_filter)]
 
-        return models
+        if not use_custom_models:
+            filtered_df = filtered_df[filtered_df['added_by'] != AUTHOR_USER]
+
+        return filtered_df.index.tolist()
 
     def register_model(self, model_record: ModelZooRecord) -> None:
         """Add model_record to the model zoo dataframe"""
@@ -141,56 +132,29 @@ class ModelZoo:
         self.models = concat([self.models, models_new], ignore_index=False)
 
     def get_model(self, name):
-        return self.models[name]
+        return self.models.loc[name]
 
     def get_model_names(self):
-        return list(self.models.keys())
+        return self.models.index.to_list()
 
     def get_model_description(self, model_name: str) -> str:
-        """
-        return the description of a model
-        """
-        zoo_config = self.models
-        if model_name not in zoo_config:
-            raise ValueError(f'Model {model_name} not found in the model zoo.')
+        return self.get_model(model_name).description
 
-        description = zoo_config[model_name].get('description', None)
-        if description is None or description == '':
-            return 'No description available for this model.'
-
-        return description
+    def get_model_resolution(self, model_name: str) -> list[float]:
+        return self.get_model(model_name).resolution
 
     def _list_all_metadata(self, metadata_key: str) -> list[str]:
-        """
-        return a list of all properties in the model zoo
-        """
-        properties = list(set([self.get_model(model_name).get(metadata_key, None) for model_name in self.get_model_names()]))
-        properties = [prop for prop in properties if prop is not None]
-        return sorted(properties)
+        metadata = self.models[metadata_key].dropna().unique()
+        return [str(x) for x in metadata]
 
     def list_all_dimensionality(self) -> list[str]:
-        """
-        return a list of all dimensionality in the model zoo
-        """
         return self._list_all_metadata('dimensionality')
 
     def list_all_modality(self) -> list[str]:
-        """
-        return a list of all modality in the model zoo
-        """
         return self._list_all_metadata('modality')
 
     def list_all_output_type(self) -> list[str]:
-        """
-        return a list of all output_type in the model zoo
-        """
         return self._list_all_metadata('output_type')
-
-    def get_model_resolution(self, model_name: str) -> list[float]:
-        """
-        return a models reference resolution
-        """
-        return self.get_model(model_name).resolution
 
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)
