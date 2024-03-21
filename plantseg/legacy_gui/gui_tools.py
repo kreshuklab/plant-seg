@@ -5,12 +5,13 @@ from tkinter import filedialog
 
 import yaml
 
-from plantseg import custom_zoo, PATH_HOME, DIR_PLANTSEG_MODELS, PATH_MODEL_ZOO
+from plantseg import PATH_HOME, DIR_PLANTSEG_MODELS, PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM
 from plantseg.__version__ import __version__
 from plantseg.io import read_tiff_voxel_size, TIFF_EXTENSIONS
 from plantseg.legacy_gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
 from plantseg.pipeline import gui_logger
-from plantseg.utils import add_custom_model, load_config
+from plantseg.utils import load_config
+from plantseg.models.zoo import model_zoo
 
 current_model = None
 current_segmentation = None
@@ -851,9 +852,9 @@ class LoadModelPopup:
         # Get description
         description = str(self.simple_entry2.tk_value.get())
 
-        success = add_custom_model(new_model_name=model_name, location=path, resolution=resolution,
-                                   description=description, dimensionality='unknown',
-                                   modality='unknown', output_type='unknown')
+        success = model_zoo.add_custom_model(new_model_name=model_name, location=path, resolution=resolution,
+                                             description=description, dimensionality='unknown',
+                                             modality='unknown', output_type='unknown')
         if not success[0]:
             gui_logger.error(success[1])
             self.popup.destroy()
@@ -914,7 +915,7 @@ class RemovePopup:
     def delete_model(self):
         # Delete entry in zoo custom
         self.file_to_remove = self.file_to_remove.get()
-        custom_zoo_dict = load_config(custom_zoo)
+        custom_zoo_dict = load_config(PATH_MODEL_ZOO_CUSTOM)
         if custom_zoo_dict is None:
             custom_zoo_dict = {}
 
@@ -927,7 +928,7 @@ class RemovePopup:
             self.popup.destroy()
             raise RuntimeError(msg)
 
-        with open(custom_zoo, 'w') as f:
+        with open(PATH_MODEL_ZOO_CUSTOM, 'w') as f:
             yaml.dump(custom_zoo_dict, f)
 
         self.join = os.path.join(PATH_HOME, DIR_PLANTSEG_MODELS, self.file_to_remove)

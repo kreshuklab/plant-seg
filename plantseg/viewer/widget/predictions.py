@@ -12,7 +12,7 @@ from napari.types import LayerDataTuple
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
-from plantseg.utils import add_custom_model, get_train_config
+from plantseg.utils import get_train_config
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
@@ -26,9 +26,9 @@ ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
 ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ['cpu']
 
-LIST_ALL_MODALITY = ['All'] + model_zoo.list_all_modality()
-LIST_ALL_DIMENSIONALITY = ['All'] + model_zoo.list_all_dimensionality()
-LIST_ALL_OUTPUT_TYPE = ['All'] + model_zoo.list_all_output_type()
+LIST_ALL_MODALITY = ['All'] + model_zoo.get_unique_modalities()
+LIST_ALL_DIMENSIONALITY = ['All'] + model_zoo.get_unique_dimensionalities()
+LIST_ALL_OUTPUT_TYPE = ['All'] + model_zoo.get_unique_output_types()
 LIST_ALL_MODELS = model_zoo.list_models()
 
 
@@ -148,16 +148,17 @@ def _on_output_type_changed(output_type: str):
 @widget_unet_predictions.model_name.changed.connect
 def _on_model_name_changed(model_name: str):
     model_name = return_value_if_widget(model_name)
-    model_metadata = model_zoo.get_model(model_name)
-    if model_metadata['recommended_patch_size'] is not None:
-        patch_size = model_metadata['recommended_patch_size']
+    patch_size = model_zoo.get_model_patch_size(model_name)
+    if patch_size is not None:
         widget_unet_predictions.patch_size.value = tuple(patch_size)
     else:
         napari_formatted_logging(f'No recommended patch size for {model_name}',
                                  thread='UNet Predictions',
                                  level='warning')
 
-    description = model_metadata.get('description', 'No description available for this model.')
+    description = model_zoo.get_model_description(model_name)
+    if description is None:
+        description = 'No description available for this model.'
     widget_unet_predictions.model_name.tooltip = f'Select a pretrained model. Current model description: {description}'
 
 
@@ -290,8 +291,7 @@ def widget_iterative_unet_predictions(image: Image,
                                    input_keys=inputs_names,
                                    layer_kwarg=layer_kwargs,
                                    layer_type=layer_type,
-                                   step_name='UNet Iterative Predictions',
-                                   )
+                                   step_name='UNet Iterative Predictions')
 
 
 @widget_iterative_unet_predictions.model_name.changed.connect
@@ -317,31 +317,31 @@ def _on_widget_iterative_unet_predictions_image_change(image: Image):
                           'tooltip': 'Dimensionality of the model (2D or 3D). '
                                      'Any 2D model can be used for 3D data.',
                           'widget_type': 'ComboBox',
-                          'choices': model_zoo.list_all_dimensionality()},
+                          'choices': model_zoo.get_unique_dimensionalities()},
           modality={'label': 'Microscopy modality',
                     'tooltip': 'Modality of the model (e.g. confocal, light-sheet ...).',
                     'widget_type': 'ComboBox',
-                    'choices': model_zoo.list_all_modality()},
+                    'choices': model_zoo.get_unique_modalities()},
           output_type={'label': 'Prediction type',
                        'widget_type': 'ComboBox',
                        'tooltip': 'Type of prediction (e.g. cell boundaries predictions or nuclei...).',
-                       'choices': model_zoo.list_all_output_type()},
+                       'choices': model_zoo.get_unique_output_types()},
 
           )
 def widget_add_custom_model(new_model_name: str = 'custom_model',
                             model_location: Path = Path.home(),
                             resolution: Tuple[float, float, float] = (1., 1., 1.),
                             description: str = 'New custom model',
-                            dimensionality: str = model_zoo.list_all_dimensionality()[0],
-                            modality: str = model_zoo.list_all_modality()[0],
-                            output_type: str = model_zoo.list_all_output_type()[0]) -> None:
-    finished, error_msg = add_custom_model(new_model_name=new_model_name,
-                                           location=model_location,
-                                           resolution=resolution,
-                                           description=description,
-                                           dimensionality=dimensionality,
-                                           modality=modality,
-                                           output_type=output_type)
+                            dimensionality: str = model_zoo.get_unique_dimensionalities()[0],
+                            modality: str = model_zoo.get_unique_modalities()[0],
+                            output_type: str = model_zoo.get_unique_output_types()[0]) -> None:
+    finished, error_msg = model_zoo.add_custom_model(new_model_name=new_model_name,
+                                                     location=model_location,
+                                                     resolution=resolution,
+                                                     description=description,
+                                                     dimensionality=dimensionality,
+                                                     modality=modality,
+                                                     output_type=output_type)
 
     if finished:
         napari_formatted_logging(f'New model {new_model_name} added to the list of available models.',

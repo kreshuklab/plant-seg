@@ -1,15 +1,12 @@
-import glob
 import os
 import shutil
 from pathlib import Path
-from shutil import copy2
-from typing import Tuple, Optional
 from warnings import warn
 
 import requests
 import yaml
 
-from plantseg import PATH_MODEL_ZOO_CUSTOM, PATH_HOME, DIR_PLANTSEG_MODELS, PATH_PLANTSEG_GLOBAL
+from plantseg import PATH_HOME, DIR_PLANTSEG_MODELS, PATH_PLANTSEG_GLOBAL
 from plantseg.__version__ import __version__ as current_version
 from plantseg.pipeline import gui_logger
 
@@ -18,73 +15,18 @@ BEST_MODEL_PYTORCH = "best_checkpoint.pytorch"
 
 
 def load_config(config_path: str | Path) -> dict:
-    """
-    load a yaml config in a dictionary
-    """
+    """load a yaml config in a dictionary"""
     config_path = Path(config_path)
     config_content = config_path.read_text()
     config = yaml.load(config_content, Loader=yaml.FullLoader)
     return config
 
 
-def add_custom_model(new_model_name: str,
-                     location: Path = Path.home(),
-                     resolution: Tuple[float, float, float] = (1., 1., 1.),
-                     description: str = '',
-                     dimensionality: str = '',
-                     modality: str = '',
-                     output_type: str = '') -> Tuple[bool, Optional[str]]:
-    """
-    Add a custom trained model in the model zoo
-    :param new_model_name: name of the new model
-    :param location: location of the directory containing the custom trained model
-    :param resolution: reference resolution of the custom trained model
-    :param description: description of the trained model
-    :param dimensionality: dimensionality of the trained model
-    :param modality: modality of the trained model
-    :param output_type: output type of the trained model
-    :return:
-    """
-
-    dest_dir = os.path.join(PATH_HOME, DIR_PLANTSEG_MODELS, new_model_name)
-    os.makedirs(dest_dir, exist_ok=True)
-    all_files = glob.glob(os.path.join(location, "*"))
-    all_expected_files = ['config_train.yml',
-                          'last_checkpoint.pytorch',
-                          'best_checkpoint.pytorch']
-
-    recommended_patch_size = [80, 170, 170]
-    for file in all_files:
-        if os.path.basename(file) == 'config_train.yml':
-            config_train = load_config(file)
-            recommended_patch_size = list(config_train['loaders']['train']['slice_builder']['patch_shape'])
-
-        if os.path.basename(file) in all_expected_files:
-            copy2(file, dest_dir)
-            all_expected_files.remove(os.path.basename(file))
-
-    if len(all_expected_files) != 0:
-        msg = f'It was not possible to find in the directory specified {all_expected_files}, ' \
-              f'the model can not be loaded.'
-        return False, msg
-
-    custom_zoo_dict = load_config(PATH_MODEL_ZOO_CUSTOM)
-    if custom_zoo_dict is None:
-        custom_zoo_dict = {}
-
-    custom_zoo_dict[new_model_name] = {}
-    custom_zoo_dict[new_model_name]["path"] = str(location)
-    custom_zoo_dict[new_model_name]["resolution"] = resolution
-    custom_zoo_dict[new_model_name]["description"] = description
-    custom_zoo_dict[new_model_name]["recommended_patch_size"] = recommended_patch_size
-    custom_zoo_dict[new_model_name]["dimensionality"] = dimensionality
-    custom_zoo_dict[new_model_name]["modality"] = modality
-    custom_zoo_dict[new_model_name]["output_type"] = output_type
-
-    with open(PATH_MODEL_ZOO_CUSTOM, 'w') as f:
-        yaml.dump(custom_zoo_dict, f)
-
-    return True, None
+def save_config(config: dict, config_path: str | Path) -> None:
+    """save a dictionary in a yaml file"""
+    config_path = Path(config_path)
+    with config_path.open('w') as f:
+        yaml.dump(config, f)
 
 
 def get_train_config(model_name: str) -> dict:

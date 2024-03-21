@@ -1,21 +1,24 @@
 """Model Zoo Singleton"""
 
 from pathlib import Path
-from typing import List, Optional, Self
+from shutil import copy2
+from typing import List, Tuple, Optional, Self
 
 from pandas import DataFrame, concat
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, AliasChoices, model_validator
 
-from plantseg import PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM
-from plantseg.utils import load_config
+from plantseg import PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM, PATH_HOME, DIR_PLANTSEG_MODELS
+from plantseg.utils import load_config, save_config
 
 AUTHOR_PLANTSEG = 'plantseg'
 AUTHOR_USER = 'user'
 
 
 class ModelZooRecord(BaseModel):
+    """Model Zoo Record"""
+
     name: str
-    url: Optional[str] = Field(None, alias='model_url')
+    url: Optional[str] = Field(None, alias=AliasChoices('model_url', 'url')) # type: ignore
     path: Optional[str] = None
     id: Optional[str] = None
     description: Optional[str] = None
@@ -29,13 +32,22 @@ class ModelZooRecord(BaseModel):
 
     @model_validator(mode='after')
     def check_one_id_present(self) -> Self:
+        """Check that one of url (zenodo), path (custom/local) or id (bioimage.io) is present"""
         if self.url is None and self.path is None and self.id is None:
-            print(self)
-            raise ValueError('One of url, path or id must be present')
+            raise ValueError(f'One of url, path or id must be present: {self}')
         return self
 
 
 class ModelZoo:
+    """Model Zoo Singleton
+
+    A model zoo DataFrame serves as a central repository for model metadata.
+    The DataFrame is indexed by model name and contains columns for model metadata.
+    The ModelZoo class provides methods to update, query and add records to the DataFrame.
+
+    Records are added as ModelZooRecord instances, validated by the ModelZooRecord class.
+    """
+
     _instance: Optional['ModelZoo'] = None
 
     _zoo_dict: dict = {}
@@ -69,11 +81,9 @@ class ModelZoo:
             if zoo_custom_dict is None:
                 zoo_custom_dict = {}
 
-            # zoo_dict.update(zoo_custom_dict)
             self._zoo_custom_dict = zoo_custom_dict
 
     def _init_zoo_df(self) -> None:
-        # DataFrame.from_dict(zoo_dict, orient='index', columns=list(ModelZooRecord.__annotations__.keys()))
         records = []
         for name, model in self._zoo_dict.items():
             model['name'] = name
@@ -107,10 +117,11 @@ class ModelZoo:
         use_custom_models: bool = True,
     ) -> List[str]:
         """Return a list of model names, filtered by the specified criteria"""
-        filtered_df = self.models
+        filtered_df: DataFrame = self.models
 
         if dimensionality_filter is not None:
-            filtered_df = filtered_df[filtered_df['dimensionality'].isin(dimensionality_filter)]
+            # `loc` to avoid pylint E1136 ; following lines have no warning because filtered_df now is a DataFrame
+            filtered_df = filtered_df.loc[filtered_df.loc[:, 'dimensionality'].isin(dimensionality_filter)]
 
         if modality_filter is not None:
             filtered_df = filtered_df[filtered_df['modality'].isin(modality_filter)]
@@ -123,38 +134,100 @@ class ModelZoo:
 
         return filtered_df.index.tolist()
 
-    def register_model(self, model_record: ModelZooRecord) -> None:
-        """Add model_record to the model zoo dataframe"""
+    def get_model_names(self) -> List[str]:
+        return self.models.index.to_list()
+
+    def _get_model_record(self, name) -> ModelZooRecord:
+        return ModelZooRecord(name=name, **self.models.loc[name])
+
+    def get_model_description(self, model_name: str) -> Optional[str]:
+        return self._get_model_record(model_name).description
+
+    def get_model_resolution(self, model_name: str) -> Optional[List[float]]:
+        return self._get_model_record(model_name).resolution
+
+    def get_model_patch_size(self, model_name: str) -> Optional[List[int]]:
+        return self._get_model_record(model_name).recommended_patch_size
+
+    def _get_unique_metadata(self, metadata_key: str) -> List[str]:
+        metadata = self.models.loc[:, metadata_key].dropna().unique()
+        return [str(x) for x in metadata]
+
+    def get_unique_dimensionalities(self) -> List[str]:
+        return self._get_unique_metadata('dimensionality')
+
+    def get_unique_modalities(self) -> List[str]:
+        return self._get_unique_metadata('modality')
+
+    def get_unique_output_types(self) -> List[str]:
+        return self._get_unique_metadata('output_type')
+
+    def _add_model_record(self, model_record: ModelZooRecord) -> None:
+        """Add a ModelZooRecord to the ModelZoo DataFrame"""
         models_new = DataFrame(
             [model_record.model_dump()],
             columns=list(ModelZooRecord.model_fields.keys()),
         ).set_index('name')
         self.models = concat([self.models, models_new], ignore_index=False)
 
-    def get_model(self, name):
-        return self.models.loc[name]
+    def add_custom_model(
+        self,
+        new_model_name: str,
+        location: Path = Path.home(),
+        resolution: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+        description: str = '',
+        dimensionality: str = '',
+        modality: str = '',
+        output_type: str = '',
+    ) -> Tuple[bool, Optional[str]]:
+        """Add a custom trained model in the model zoo local record file"""
 
-    def get_model_names(self):
-        return self.models.index.to_list()
+        dest_dir = PATH_HOME / DIR_PLANTSEG_MODELS / new_model_name
+        dest_dir.mkdir(parents=True, exist_ok=True)
 
-    def get_model_description(self, model_name: str) -> str:
-        return self.get_model(model_name).description
+        all_expected_files = {
+            'config_train.yml',
+            'last_checkpoint.pytorch',
+            'best_checkpoint.pytorch',
+        }
+        found_files = set()
 
-    def get_model_resolution(self, model_name: str) -> list[float]:
-        return self.get_model(model_name).resolution
+        recommended_patch_size = [80, 170, 170]
+        for file_path in location.glob("*"):
+            if file_path.name == 'config_train.yml':
+                try:
+                    config_train = load_config(file_path)
+                    recommended_patch_size = config_train['loaders']['train']['slice_builder']['patch_shape']
+                except Exception as e:
+                    return False, f'Failed to load or parse config_train.yml: {e}'
 
-    def _list_all_metadata(self, metadata_key: str) -> list[str]:
-        metadata = self.models[metadata_key].dropna().unique()
-        return [str(x) for x in metadata]
+            if file_path.name in all_expected_files:
+                copy2(file_path, dest_dir)
+                found_files.add(file_path.name)
 
-    def list_all_dimensionality(self) -> list[str]:
-        return self._list_all_metadata('dimensionality')
+        missing_files = all_expected_files - found_files
+        if missing_files:
+            msg = f'Missing required files in the specified directory: {", ".join(missing_files)}. Model cannot be loaded.'
+            return False, msg
 
-    def list_all_modality(self) -> list[str]:
-        return self._list_all_metadata('modality')
+        # Create and check the new model record
+        new_model_record = {
+            "path": str(location),
+            "resolution": resolution,
+            "description": description,
+            "recommended_patch_size": recommended_patch_size,
+            "dimensionality": dimensionality,
+            "modality": modality,
+            "output_type": output_type,
+        }
+        self._add_model_record(ModelZooRecord(name=new_model_name, **new_model_record, added_by=AUTHOR_USER))
 
-    def list_all_output_type(self) -> list[str]:
-        return self._list_all_metadata('output_type')
+        # Update the custom zoo dictionary in ModelZoo and save to file
+        custom_zoo_dict = self._zoo_custom_dict
+        custom_zoo_dict[new_model_name] = new_model_record
+        save_config(custom_zoo_dict, self.path_zoo_custom)
+
+        return True, None
 
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)
