@@ -21,15 +21,10 @@ from plantseg.viewer.widget.utils import start_threading_process, start_predicti
 from plantseg.viewer.widget.validation import _on_prediction_input_image_change
 from plantseg.models.zoo import model_zoo
 
-
+ALL = 'All'
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
 ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ['cpu']
-
-LIST_ALL_MODALITY = ['All'] + model_zoo.get_unique_modalities()
-LIST_ALL_DIMENSIONALITY = ['All'] + model_zoo.get_unique_dimensionalities()
-LIST_ALL_OUTPUT_TYPE = ['All'] + model_zoo.get_unique_output_types()
-LIST_ALL_MODELS = model_zoo.list_models()
 
 
 def unet_predictions_wrapper(raw, device, **kwargs):
@@ -47,20 +42,20 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                           'tooltip': 'Dimensionality of the model (2D or 3D). '
                                      'Any 2D model can be used for 3D data. If unsure, select "All".',
                           'widget_type': 'ComboBox',
-                          'choices': LIST_ALL_DIMENSIONALITY},
+                          'choices': [ALL] + model_zoo.get_unique_dimensionalities()},
           modality={'label': 'Microscopy Modality',
                     'tooltip': 'Modality of the model (e.g. confocal, light-sheet ...). If unsure, select "All".',
                     'widget_type': 'ComboBox',
-                    'choices': LIST_ALL_MODALITY},
+                    'choices': [ALL] + model_zoo.get_unique_modalities()},
           output_type={'label': 'Prediction type',
                        'widget_type': 'ComboBox',
                        'tooltip': 'Type of prediction (e.g. cell boundaries predictions or nuclei...).'
                                   ' If unsure, select "All".',
-                       'choices': LIST_ALL_OUTPUT_TYPE},
+                       'choices': [ALL] + model_zoo.get_unique_output_types()},
           model_name={'label': 'Select model',
                       'tooltip': f'Select a pretrained model. '
-                                 f'Current model description: {model_zoo.get_model_description(LIST_ALL_MODELS[0])}',
-                      'choices': LIST_ALL_MODELS},
+                                 f'Current model description: {model_zoo.get_model_description(model_zoo.list_models()[0])}',
+                      'choices': model_zoo.list_models()},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
           patch_halo={'label': 'Patch halo',
@@ -72,10 +67,10 @@ def unet_predictions_wrapper(raw, device, **kwargs):
           )
 def widget_unet_predictions(viewer: Viewer,
                             image: Image,
-                            model_name: str = LIST_ALL_MODELS[0],
-                            dimensionality: str = 'All',
-                            modality: str = 'All',
-                            output_type: str = 'All',
+                            model_name: str = model_zoo.list_models()[0],
+                            dimensionality: str = ALL,
+                            modality: str = ALL,
+                            output_type: str = ALL,
                             patch_size: Tuple[int, int, int] = (80, 170, 170),
                             patch_halo: Tuple[int, int, int] = (8, 16, 16),
                             single_patch: bool = True,
@@ -115,34 +110,45 @@ def _on_widget_unet_predictions_image_change(image: Image):
     _on_prediction_input_image_change(widget_unet_predictions, image)
 
 
-def _on_any_metadata_changed(dimensionality, modality, output_type):
-    dimensionality = [dimensionality] if dimensionality != 'All' else None
-    modality = [modality] if modality != 'All' else None
-    output_type = [output_type] if output_type != 'All' else None
-    widget_unet_predictions.model_name.choices = model_zoo.list_models(dimensionality_filter=dimensionality,
-                                                             modality_filter=modality,
-                                                             output_type_filter=output_type)
+def _on_any_metadata_changed(modality, output_type, dimensionality):
+    modality = [modality] if modality != ALL else None
+    output_type = [output_type] if output_type != ALL else None
+    dimensionality = [dimensionality] if dimensionality != ALL else None
+    widget_unet_predictions.model_name.choices = model_zoo.list_models(
+        modality_filter=modality,
+        output_type_filter=output_type,
+        dimensionality_filter=dimensionality,
+    )
 
 
 @widget_unet_predictions.dimensionality.changed.connect
 def _on_dimensionality_changed(dimensionality: str):
     dimensionality = return_value_if_widget(dimensionality)
-    _on_any_metadata_changed(dimensionality, widget_unet_predictions.modality.value,
-                             widget_unet_predictions.output_type.value)
+    _on_any_metadata_changed(
+        widget_unet_predictions.modality.value,
+        widget_unet_predictions.output_type.value,
+        dimensionality,
+    )
 
 
 @widget_unet_predictions.modality.changed.connect
 def _on_modality_changed(modality: str):
     modality = return_value_if_widget(modality)
-    _on_any_metadata_changed(widget_unet_predictions.dimensionality.value, modality,
-                             widget_unet_predictions.output_type.value)
+    _on_any_metadata_changed(
+        modality,
+        widget_unet_predictions.output_type.value,
+        widget_unet_predictions.dimensionality.value,
+    )
 
 
 @widget_unet_predictions.output_type.changed.connect
 def _on_output_type_changed(output_type: str):
     output_type = return_value_if_widget(output_type)
-    _on_any_metadata_changed(widget_unet_predictions.dimensionality.value,
-                             widget_unet_predictions.modality.value, output_type)
+    _on_any_metadata_changed(
+        widget_unet_predictions.modality.value,
+        output_type,
+        widget_unet_predictions.dimensionality.value,
+    )
 
 
 @widget_unet_predictions.model_name.changed.connect

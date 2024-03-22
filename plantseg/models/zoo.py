@@ -53,20 +53,21 @@ class ModelZoo:
     _zoo_dict: dict = {}
     _zoo_custom_dict: dict = {}
 
-    path_zoo: str | Path = PATH_MODEL_ZOO
-    path_zoo_custom: str | Path = PATH_MODEL_ZOO_CUSTOM
+    path_zoo: Path = PATH_MODEL_ZOO
+    path_zoo_custom: Path = PATH_MODEL_ZOO_CUSTOM
+
     models: DataFrame
 
     def __new__(cls, path_zoo, path_zoo_custom):
         if cls._instance is None:
             cls._instance = super(ModelZoo, cls).__new__(cls)
-            cls._instance.update(path_zoo, path_zoo_custom)
+            cls._instance.refresh(path_zoo, path_zoo_custom)
         return cls._instance
 
     def _init_zoo_dict(
         self,
-        path_zoo: Optional[str | Path] = None,
-        path_zoo_custom: Optional[str | Path] = None,
+        path_zoo: Optional[Path] = None,
+        path_zoo_custom: Optional[Path] = None,
     ) -> None:
         if path_zoo is not None:
             self.path_zoo = path_zoo
@@ -98,10 +99,10 @@ class ModelZoo:
             columns=list(ModelZooRecord.model_fields.keys()),
         ).set_index('name')
 
-    def update(
+    def refresh(
         self,
-        path_zoo: Optional[str | Path] = None,
-        path_zoo_custom: Optional[str | Path] = None,
+        path_zoo: Optional[Path] = None,
+        path_zoo_custom: Optional[Path] = None,
     ) -> None:
         self._init_zoo_dict(path_zoo, path_zoo_custom)
         self._init_zoo_df()
@@ -111,10 +112,10 @@ class ModelZoo:
 
     def list_models(
         self,
-        dimensionality_filter: Optional[List[str]] = None,
+        use_custom_models: bool = True,
         modality_filter: Optional[List[str]] = None,
         output_type_filter: Optional[List[str]] = None,
-        use_custom_models: bool = True,
+        dimensionality_filter: Optional[List[str]] = None,
     ) -> List[str]:
         """Return a list of model names, filtered by the specified criteria"""
         filtered_df: DataFrame = self.models
@@ -223,9 +224,8 @@ class ModelZoo:
         self._add_model_record(ModelZooRecord(name=new_model_name, **new_model_record, added_by=AUTHOR_USER))
 
         # Update the custom zoo dictionary in ModelZoo and save to file
-        custom_zoo_dict = self._zoo_custom_dict
-        custom_zoo_dict[new_model_name] = new_model_record
-        save_config(custom_zoo_dict, self.path_zoo_custom)
+        self._zoo_custom_dict[new_model_name] = new_model_record
+        save_config(self._zoo_custom_dict, self.path_zoo_custom)
 
         return True, None
 
