@@ -6,7 +6,6 @@ import requests
 import yaml
 
 from plantseg import PATH_HOME, DIR_PLANTSEG_MODELS, PATH_PLANTSEG_GLOBAL
-from plantseg.__version__ import __version__ as current_version
 from plantseg.pipeline import gui_logger
 
 CONFIG_TRAIN_YAML = "config_train.yml"
@@ -52,6 +51,7 @@ def check_models(model_name: str, update_files: bool = False, config_only: bool 
     model_dir = Path.home() / DIR_PLANTSEG_MODELS / model_name
     model_dir.mkdir(parents=True, exist_ok=True)
 
+    # Check if the model configuration file exists and download it if it doesn't
     if not (model_dir / CONFIG_TRAIN_YAML).exists() or update_files:
         model_file = PATH_PLANTSEG_GLOBAL / "resources" / "models_zoo.yaml"
         config = load_config(model_file)
@@ -77,13 +77,17 @@ def clean_models() -> None:
         else:
             print("Invalid input, please type 'y' or 'n'.")
 
-def check_version(plantseg_url: str = 'https://api.github.com/repos/hci-unihd/plant-seg/releases/latest') -> None:
+def check_version(current_version: str, plantseg_url: str = 'https://api.github.com/repos/hci-unihd/plant-seg/releases/latest') -> None:
     """Check for the latest version of PlantSeg available on GitHub."""
     try:
         response = requests.get(plantseg_url)
-        response.raise_for_status()
+        response.raise_for_status()  # Raises an HTTPError if the response status code was unsuccessful
         latest_version = response.json()['tag_name']
-        if list(map(int, latest_version.split("."))) > list(map(int, current_version.split("."))):
+
+        # Splitting the version string into components and comparing as tuples of integers
+        if tuple(map(int, latest_version.strip('v').split('.'))) > tuple(map(int, current_version.strip('v').split('.'))):
             print(f"New version of PlantSeg available: {latest_version}. Please update to the latest version.")
+        else:
+            print(f"You are using the latest version of PlantSeg: {current_version}.")
     except requests.RequestException as e:
         warn(f"Could not check for new version. Error: {e}")
