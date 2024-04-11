@@ -4,7 +4,7 @@ import numpy as np
 import torch
 
 from plantseg.viewer.logging import napari_formatted_logging
-from plantseg.augment.transforms import get_test_augmentations
+from plantseg.augment.transforms import get_test_augmentations, Standardize
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape_to_3D, fix_input_shape_to_4D
 from plantseg.predictions.functional.array_dataset import ArrayDataset
 from plantseg.predictions.functional.array_predictor import ArrayPredictor
@@ -55,6 +55,8 @@ def unet_predictions(raw: np.array, model_name: str, patch: Tuple[int, int, int]
 
     raw = fix_input_shape_to_3D(raw)
     raw = raw.astype('float32')
+    raw = Standardize(mean=np.mean(raw), std=np.std(raw))(raw)
+
     stride = get_stride_shape(patch)
     augs = get_test_augmentations(raw)
     slice_builder = SliceBuilder(raw, label_dataset=None, patch_shape=patch, stride_shape=stride)

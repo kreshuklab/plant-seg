@@ -77,12 +77,6 @@ def get_test_augmentations(raw: Optional[np.ndarray], expand_dims=True) -> Compo
         raw (np.ndarray): raw data
         expand_dims (bool): if True, adds a channel dimension to the input data
     """
-    mean, std = None, None
-    if raw is not None:
-        mean = np.mean(raw)
-        std = np.std(raw)
-
     return Compose([
-        Standardize(mean=mean, std=std),
         ToTensor(expand_dims=expand_dims)
     ])
