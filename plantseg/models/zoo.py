@@ -1,5 +1,6 @@
 """Model Zoo Singleton"""
 
+from warnings import warn
 from pathlib import Path
 from shutil import copy2
 from typing import List, Tuple, Optional, Self
@@ -7,8 +8,9 @@ from typing import List, Tuple, Optional, Self
 from pandas import DataFrame, concat
 from pydantic import BaseModel, Field, AliasChoices, model_validator
 
-from plantseg import PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM, PATH_HOME, DIR_PLANTSEG_MODELS
-from plantseg.utils import load_config, save_config
+from plantseg import PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM, PATH_PLANTSEG_MODELS
+from plantseg import FILE_CONFIG_TRAIN_YAML, FILE_BEST_MODEL_PYTORCH, FILE_LAST_MODEL_PYTORCH
+from plantseg.utils import load_config, save_config, download_files
 
 AUTHOR_PLANTSEG = 'plantseg'
 AUTHOR_USER = 'user'
@@ -18,7 +20,7 @@ class ModelZooRecord(BaseModel):
     """Model Zoo Record"""
 
     name: str
-    url: Optional[str] = Field(None, alias=AliasChoices('model_url', 'url')) # type: ignore
+    url: Optional[str] = Field(None, alias=AliasChoices('model_url', 'url'))  # type: ignore
     path: Optional[str] = None
     id: Optional[str] = None
     description: Optional[str] = None
@@ -183,13 +185,13 @@ class ModelZoo:
     ) -> Tuple[bool, Optional[str]]:
         """Add a custom trained model in the model zoo local record file"""
 
-        dest_dir = PATH_HOME / DIR_PLANTSEG_MODELS / new_model_name
+        dest_dir = PATH_PLANTSEG_MODELS / new_model_name
         dest_dir.mkdir(parents=True, exist_ok=True)
 
         all_expected_files = {
-            'config_train.yml',
-            'last_checkpoint.pytorch',
-            'best_checkpoint.pytorch',
+            FILE_CONFIG_TRAIN_YAML,
+            FILE_LAST_MODEL_PYTORCH,
+            FILE_BEST_MODEL_PYTORCH,
         }
         found_files = set()
 
@@ -228,6 +230,39 @@ class ModelZoo:
         save_config(self._zoo_custom_dict, self.path_zoo_custom)
 
         return True, None
+
+    def _download_model_files(self, model_url: str, out_dir: Path, config_only: bool = False) -> None:
+        """Download model files and/or configuration based on the model URL."""
+        if not out_dir.exists():
+            out_dir.mkdir(parents=True, exist_ok=True)
+
+        config_url = f"{model_url.rsplit('/', 1)[0]}/{FILE_CONFIG_TRAIN_YAML}"
+        urls = {FILE_CONFIG_TRAIN_YAML: config_url}
+        if not config_only:
+            urls[FILE_BEST_MODEL_PYTORCH] = model_url
+        download_files(urls, out_dir)
+
+    def check_models(self, model_name: str, update_files: bool = False, config_only: bool = False) -> None:
+        """Check and download model files and configurations as needed."""
+        model_dir = PATH_PLANTSEG_MODELS / model_name
+        model_dir.mkdir(parents=True, exist_ok=True)
+
+        # Check if the model configuration file exists and download it if it doesn't
+        if not (model_dir / FILE_CONFIG_TRAIN_YAML).exists() or update_files:
+            model_file = PATH_MODEL_ZOO
+            config = load_config(model_file)
+
+            model_url = config.get(model_name, {}).get("model_url")
+            if model_url:
+                self._download_model_files(model_url, model_dir, config_only)
+            else:
+                warn(f"Model {model_name} not found in the models zoo configuration.")
+
+    def get_train_config(self, model_name: str) -> dict:
+        """Load the training configuration for a specified model."""
+        self.check_models(model_name, config_only=True)
+        train_config_path = PATH_PLANTSEG_MODELS / model_name / FILE_CONFIG_TRAIN_YAML
+        return load_config(train_config_path)
 
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)

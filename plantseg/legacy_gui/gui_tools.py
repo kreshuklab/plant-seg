@@ -1,11 +1,11 @@
-import os
 import tkinter
 from shutil import rmtree
 from tkinter import filedialog
+from pathlib import Path
 
 import yaml
 
-from plantseg import PATH_HOME, DIR_PLANTSEG_MODELS, PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM
+from plantseg import PATH_HOME, PATH_PLANTSEG_MODELS, PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM
 from plantseg.__version__ import __version__
 from plantseg.io import read_tiff_voxel_size, TIFF_EXTENSIONS
 from plantseg.legacy_gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
@@ -560,37 +560,41 @@ class ListEntry:
 class Files2Process:
     def __init__(self, config):
         """ Browse for file and directory """
-        self.files = tkinter.StringVar()
-        if config["path"] is None:
-            self.files.set(PATH_HOME)
-        else:
-            self.files.set(config["path"])
         self.config = config
+        self.files = tkinter.StringVar(value=config.get("path", PATH_HOME))
 
     def browse_for_file(self):
-        """ browse for file """
-        current_file_dir, _ = os.path.split(self.files.get())
-        current_file_dir = (PATH_HOME if len(PATH_HOME) > len(current_file_dir)
-                            else current_file_dir)
+        """ Open a file dialog to browse for a file, and update the configuration. """
+        current_file_dir = Path(self.files.get()).parent
+        # Fallback to PATH_HOME if the current directory path is not valid or shorter than PATH_HOME
+        current_file_dir = PATH_HOME if len(PATH_HOME) > len(current_file_dir) else current_file_dir
 
+        # Define file types for selection
+        file_types = [("h5 files", "*.h5"), ("hdf files", "*.hdf"),
+                      ("tiff files", "*.tiff"), ("tif files", "*.tif")]
+        # Ask user to select a file
         file_name = filedialog.askopenfilename(initialdir=current_file_dir,
                                                title="Select file",
-                                               filetypes=(("h5 files", "*.h5"),
-                                                          ("hdf files", "*.hdf"),
-                                                          ("tiff files", "*.tiff"),
-                                                          ("tif files", "*.tif"),))
-        self.files.set(file_name)
-        self.config["path"] = file_name
+                                               filetypes=file_types)
+        # Update tkinter variable and configuration if a file is selected
+        if file_name:
+            self.files.set(file_name)
+            self.config["path"] = file_name
 
     def browse_for_directory(self):
-        """ browse for directory """
-        current_file_dir, _ = os.path.split(self.files.get())
-        current_file_dir = (PATH_HOME if len(PATH_HOME) > len(current_file_dir)
-                            else current_file_dir)
+        """ Open a directory dialog to browse for a directory, and update the configuration. """
+        current_file_dir = Path(self.files.get()).parent
+        # Fallback to PATH_HOME if the current directory path is not valid or shorter than PATH_HOME
+        current_file_dir = PATH_HOME if len(PATH_HOME) > len(current_file_dir) else current_file_dir
+
+        # Ask user to select a directory
         dire_name = filedialog.askdirectory(initialdir=current_file_dir,
                                             title="Select directory")
-        self.files.set(dire_name)
-        self.config["path"] = dire_name
+        # Update tkinter variable and configuration if a directory is selected
+        if dire_name:
+            self.files.set(dire_name)
+            self.config["path"] = dire_name
+
 
 
 ######################################################################################################################
@@ -725,13 +729,12 @@ class AutoResPopup:
     def read_from_file(self):
         file_dialog = Files2Process({"path": None})
         file_dialog.browse_for_file()
-        path = file_dialog.config["path"]
-        _, ext = os.path.splitext(path)
+        path = Path(file_dialog.config["path"])
 
-        if ext in TIFF_EXTENSIONS:
-            file_resolution, _ = read_tiff_voxel_size(file_dialog.config["path"])
+        if path.suffix in TIFF_EXTENSIONS:
+            file_resolution, _ = read_tiff_voxel_size(str(path))
         else:
-            raise NotImplementedError
+            raise NotImplementedError("The file format is not supported for reading resolution data.")
 
         self.list_entry(file_resolution, [])
         self.update_input_resolution()
@@ -913,37 +916,33 @@ class RemovePopup:
         x.grid(column=1, row=1, padx=10, pady=10, sticky=stick_ew)
 
     def delete_model(self):
-        # Delete entry in zoo custom
+        """ Deletes the model directory after validation """
         self.file_to_remove = self.file_to_remove.get()
         custom_zoo_dict = load_config(PATH_MODEL_ZOO_CUSTOM)
+
         if custom_zoo_dict is None:
             custom_zoo_dict = {}
 
         if self.file_to_remove in custom_zoo_dict:
             del custom_zoo_dict[self.file_to_remove]
         else:
-            msg = f"Model {self.file_to_remove} not found." \
-                  f" Please check if the name you typed is a custom model. Pre-loaded models can not be deleted."
-            self.error = gui_logger.error(msg)
-            self.popup.destroy()
-            raise RuntimeError(msg)
-
-        with open(PATH_MODEL_ZOO_CUSTOM, 'w') as f:
-            yaml.dump(custom_zoo_dict, f)
-
-        self.join = os.path.join(PATH_HOME, DIR_PLANTSEG_MODELS, self.file_to_remove)
-        file_directory = self.join
-
-        if os.path.exists(file_directory):
-            rmtree(file_directory)
-        else:
-            msg = f"Model {self.file_to_remove} not found." \
-                  f" Please check if the name you typed is a custom model. Pre-loaded models can not be deleted."
+            msg = f"Model {self.file_to_remove} not found. Please check the name."
             gui_logger.error(msg)
             self.popup.destroy()
             raise RuntimeError(msg)
 
-        gui_logger.info("Model successfully removed! The effect will be visible after restarting PlantSeg")
+        yaml.dump(custom_zoo_dict, open(PATH_MODEL_ZOO_CUSTOM, 'w'))
+
+        model_directory = PATH_PLANTSEG_MODELS / self.file_to_remove
+        if model_directory.exists():
+            rmtree(model_directory)
+        else:
+            msg = "Model directory not found."
+            gui_logger.error(msg)
+            self.popup.destroy()
+            raise RuntimeError(msg)
+
+        gui_logger.info("Model successfully removed! Please restart PlantSeg.")
         self.popup.destroy()
 
 

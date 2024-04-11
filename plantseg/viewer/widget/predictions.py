@@ -12,7 +12,6 @@ from napari.types import LayerDataTuple
 
 from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
-from plantseg.utils import get_train_config
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
@@ -121,34 +120,9 @@ def _on_any_metadata_changed(modality, output_type, dimensionality):
     )
 
 
-@widget_unet_predictions.dimensionality.changed.connect
-def _on_dimensionality_changed(dimensionality: str):
-    dimensionality = return_value_if_widget(dimensionality)
-    _on_any_metadata_changed(
-        widget_unet_predictions.modality.value,
-        widget_unet_predictions.output_type.value,
-        dimensionality,
-    )
-
-
-@widget_unet_predictions.modality.changed.connect
-def _on_modality_changed(modality: str):
-    modality = return_value_if_widget(modality)
-    _on_any_metadata_changed(
-        modality,
-        widget_unet_predictions.output_type.value,
-        widget_unet_predictions.dimensionality.value,
-    )
-
-
-@widget_unet_predictions.output_type.changed.connect
-def _on_output_type_changed(output_type: str):
-    output_type = return_value_if_widget(output_type)
-    _on_any_metadata_changed(
-        widget_unet_predictions.modality.value,
-        output_type,
-        widget_unet_predictions.dimensionality.value,
-    )
+widget_unet_predictions.modality.changed.connect(lambda value: _on_any_metadata_changed(value, widget_unet_predictions.output_type.value, widget_unet_predictions.dimensionality.value))
+widget_unet_predictions.output_type.changed.connect(lambda value: _on_any_metadata_changed(widget_unet_predictions.modality.value, value, widget_unet_predictions.dimensionality.value))
+widget_unet_predictions.dimensionality.changed.connect(lambda value: _on_any_metadata_changed(widget_unet_predictions.modality.value, widget_unet_predictions.output_type.value, value))
 
 
 @widget_unet_predictions.model_name.changed.connect
@@ -303,7 +277,7 @@ def widget_iterative_unet_predictions(image: Image,
 @widget_iterative_unet_predictions.model_name.changed.connect
 def _on_model_name_changed_iterative(model_name: str):
     model_name = return_value_if_widget(model_name)
-    train_config = get_train_config(model_name)
+    train_config = model_zoo.get_train_config(model_name)
     patch_size = train_config['loaders']['train']['slice_builder']['patch_shape']
     widget_iterative_unet_predictions.patch_size.value = tuple(patch_size)
 
