@@ -12,12 +12,11 @@ from plantseg.dataprocessing.functional import image_gaussian_smoothing, image_r
 from plantseg.dataprocessing.functional.dataprocessing import compute_scaling_factor, compute_scaling_voxelsize
 from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation as _relabel_segmentation
 from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
-from plantseg.utils import list_models, get_model_resolution
 from plantseg.viewer.widget.predictions import widget_unet_predictions
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
 from plantseg.viewer.widget.utils import return_value_if_widget
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
-
+from plantseg.models.zoo import model_zoo
 
 @magicgui(call_button='Run Gaussian Smoothing',
           image={'label': 'Image',
@@ -75,7 +74,7 @@ class RescaleType(Enum):
                            'tooltip': 'Rescale to same voxel size as selected layer.'},
           reference_model={'label': 'Reference model',
                            'tooltip': 'Rescale to same voxel size as selected model.',
-                           'choices': list_models()},
+                           'choices': model_zoo.list_models()},
           order={'label': 'Interpolation order',
                  'widget_type': 'ComboBox',
                  'choices': RescaleType,
@@ -86,7 +85,7 @@ def widget_rescaling(viewer: Viewer,
                      rescaling_factor: Tuple[float, float, float] = (1., 1., 1.),
                      out_voxel_size: Tuple[float, float, float] = (1., 1., 1.),
                      reference_layer: Union[None, Layer] = None,
-                     reference_model: str = list_models()[0],
+                     reference_model: str = model_zoo.list_models()[0],
                      order=RescaleType.linear,
                      ) -> Future[LayerDataTuple]:
     if isinstance(image, Image):
@@ -159,7 +158,7 @@ def _on_reference_layer_changed(reference_layer: Layer):
 @widget_rescaling.reference_model.changed.connect
 def _on_reference_model_changed(reference_model: str):
     reference_model = return_value_if_widget(reference_model)
-    out_voxel_size = get_model_resolution(reference_model)
+    out_voxel_size = model_zoo.get_model_resolution(reference_model)
     rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, out_voxel_size)
     widget_rescaling.rescaling_factor.value = rescaling_factor
     widget_rescaling.out_voxel_size.value = out_voxel_size

@@ -5,6 +5,7 @@ channels:
   - conda-forge
 dependencies:
   - python
+  - pydantic>2
   - h5py
   - zarr
   - requests

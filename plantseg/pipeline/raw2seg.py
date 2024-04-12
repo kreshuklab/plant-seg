@@ -41,8 +41,10 @@ def configure_cnn_step(input_paths, config):
     device = config.get('device', 'cuda')
     state = config.get('state', True)
     model_update = config.get('model_update', False)
+    patch_halo = config.get('patch_halo', None)
     return UnetPredictions(input_paths, model_name=model_name, input_key=input_key, input_channel=input_channel,
-                           patch=patch, stride_ratio=stride_ratio, device=device, model_update=model_update, state=state)
+                           patch=patch, stride_ratio=stride_ratio, device=device, model_update=model_update,
+                           state=state, patch_halo=patch_halo)
 
 
 def configure_cnn_postprocessing_step(input_paths, config):
