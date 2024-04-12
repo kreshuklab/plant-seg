@@ -66,6 +66,7 @@ class UnetPredictions(GenericPipelineStep):
 
         if patch_halo is None:
             patch_halo = get_patch_halo(model_name)
+        self.halo_shape = patch_halo
         is_embedding = not model_config.get('is_segmentation', True)
         self.predictor = ArrayPredictor(model=model, in_channels=model_config['in_channels'],
                                         out_channels=model_config['out_channels'], device=device, patch=self.patch,
@@ -73,6 +74,12 @@ class UnetPredictions(GenericPipelineStep):
                                         is_embedding=is_embedding)
 
     def process(self, raw: np.ndarray) -> np.ndarray:
-        dataset = get_array_dataset(raw, self.model_name, patch=self.patch, stride_ratio=self.stride_ratio)
+        dataset = get_array_dataset(
+            raw,
+            self.model_name,
+            patch=self.patch,
+            stride_ratio=self.stride_ratio,
+            halo_shape=self.halo_shape,
+        )
         pmaps = self.predictor(dataset)
         return pmaps
