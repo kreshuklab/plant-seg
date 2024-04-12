@@ -15,8 +15,8 @@ from plantseg.predictions.functional import unet_predictions
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
-from plantseg.viewer.widget.utils import return_value_if_widget
-from plantseg.viewer.widget.utils import start_threading_process, start_prediction_process, create_layer_name, layer_properties
+from plantseg.viewer.widget.utils import return_value_if_widget, create_layer_name, layer_properties
+from plantseg.viewer.widget.utils import start_threading_process, start_prediction_process
 from plantseg.viewer.widget.validation import _on_prediction_input_image_change
 from plantseg.models.zoo import model_zoo
 
@@ -87,21 +87,21 @@ def widget_unet_predictions(viewer: Viewer,
     step_kwargs = dict(model_name=model_name, patch=patch_size, patch_halo=patch_halo, single_batch_mode=single_patch)
 
     return start_prediction_process(unet_predictions_wrapper,
-                                   runtime_kwargs={'raw': image.data,
-                                                   'device': device,
-                                                   'handle_multichannel': True},
-                                   statics_kwargs=step_kwargs,
-                                   out_name=out_name,
-                                   input_keys=inputs_names,
-                                   layer_kwarg=layer_kwargs,
-                                   layer_type=layer_type,
-                                   step_name='UNet Predictions',
-                                   viewer=viewer,
-                                   widgets_to_update=[widget_agglomeration.image,
-                                                      widget_lifted_multicut.image,
-                                                      widget_simple_dt_ws.image,
-                                                      widget_split_and_merge_from_scribbles.image]
-                                   )
+                                    runtime_kwargs={'raw': image.data,
+                                                    'device': device,
+                                                    'handle_multichannel': True},
+                                    statics_kwargs=step_kwargs,
+                                    out_name=out_name,
+                                    input_keys=inputs_names,
+                                    layer_kwarg=layer_kwargs,
+                                    layer_type=layer_type,
+                                    step_name='UNet Predictions',
+                                    viewer=viewer,
+                                    widgets_to_update=[widget_agglomeration.image,
+                                                       widget_lifted_multicut.image,
+                                                       widget_simple_dt_ws.image,
+                                                       widget_split_and_merge_from_scribbles.image]
+                                    )
 
 
 @widget_unet_predictions.image.changed.connect
@@ -189,7 +189,7 @@ def widget_test_all_unet_predictions(image: Image,
                                  patch_size=patch_size,
                                  patch_halo=patch_halo,
                                  device=device,
-                                 use_custom_models=use_custom_models,))
+                                 use_custom_models=use_custom_models, ))
 
     future = Future()
 
@@ -333,3 +333,23 @@ def widget_add_custom_model(new_model_name: str = 'custom_model',
                                  f'{error_msg}',
                                  level='error',
                                  thread='Add Custom Model')
+
+
+registered_extra_pred_widgets = {"Test all UNet": widget_test_all_unet_predictions,
+                                 "Iterative UNet": widget_iterative_unet_predictions,
+                                 "Add Custom Model": widget_add_custom_model}
+
+for _widget in registered_extra_pred_widgets.values():
+    _widget.hide()
+
+
+@magicgui(auto_call=True,
+          widget_name={'label': 'Widget Selection',
+                       'choices': list(registered_extra_pred_widgets.keys())})
+def widget_extra_pred_manager(widget_name: str) -> None:
+    napari_formatted_logging(f'Showing widget: {widget_name}', thread='Extra-Pred', level='info')
+    for key, value in registered_extra_pred_widgets.items():
+        if key == widget_name:
+            value.show()
+        else:
+            value.hide()
