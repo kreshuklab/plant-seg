@@ -3,16 +3,17 @@ from enum import Enum
 from typing import Tuple, Callable
 
 from magicgui import magicgui
+from napari import Viewer
 from napari.layers import Labels, Image, Layer
 from napari.types import LayerDataTuple
 
-from napari import Viewer
-from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_under_segmentation_from_nuclei, remove_false_positives_by_foreground_probability
+from plantseg.dataprocessing.functional.advanced_dataprocessing import fix_over_under_segmentation_from_nuclei, \
+    remove_false_positives_by_foreground_probability
 from plantseg.dataprocessing.functional.dataprocessing import normalize_01
 from plantseg.segmentation.functional import gasp, multicut, dt_watershed, mutex_ws
 from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
-from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.logging import napari_formatted_logging
+from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 
 
@@ -363,3 +364,27 @@ def widget_fix_false_positive_from_foreground_pmap(segmentation: Labels,
                                    layer_type=layer_type,
                                    step_name='Reduce False Positives',
                                    )
+
+
+register_extra_seg_widgets = {"Watershed": widget_dt_ws,
+                              "Lifted MultiCut": widget_lifted_multicut,
+                              "Fix Over/Under Segmentation from Nuclei": widget_fix_over_under_segmentation_from_nuclei,
+                              "Fix False Positives from Foreground Pmap": widget_fix_false_positive_from_foreground_pmap,
+                              }
+
+for _widget in register_extra_seg_widgets.values():
+    _widget.hide()
+
+
+@magicgui(auto_call=True,
+          widget_name={'label': 'Widget Selection',
+                       'choices': list(register_extra_seg_widgets.keys())})
+def widget_extra_seg_manager(widget_name: str) -> None:
+    napari_formatted_logging(f'Showing {widget_name} widget',
+                             thread='Extra Segmentation Manager',
+                             level='info')
+    for key, value in register_extra_seg_widgets.items():
+        if key == widget_name:
+            value.show()
+        else:
+            value.hide()
