@@ -152,7 +152,7 @@ confocal_3D_unet_mouse_embryo_nuclei:
 
 PlantSeg_3Dnuc_platinum:
   model_url: https://zenodo.org/records/10070349/files/FOR2581_PlantSeg_Plant_Nuclei_3D.pytorch
-  resolution: [0.2837 0.1268 0.1268]
+  resolution: [0.2837, 0.1268, 0.1268]
   description: "A generic 3D U-Net trained to predict the nuclei and their boundaries in plant. Voxel size: (0.1268×0.1268×0.2837 µm^3) (XYZ)"
   dimensionality: "3D"
   modality: "confocal"
