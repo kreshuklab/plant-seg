@@ -77,13 +77,24 @@ class Standardize:
         return (m - mean) / np.clip(std, a_min=self.eps, a_max=None)
 
 
-def get_test_augmentations(expand_dims=True) -> Compose:
+def get_test_augmentations(raw: Optional[np.ndarray], expand_dims: bool = True) -> Compose:
     """
-    Returns a list of data augmentation transforms for inference.
+    Constructs a set of data transformations for inference.
+    Uses global mean and standard deviation of the provided raw data if available;
+    otherwise, it calculatesthese statistics on-the-fly per patch.
 
     Args:
-        expand_dims (bool): if True, adds a channel dimension to the input data
+        raw (Optional[ndarray]): The raw data to compute global statistics.
+                                 If None, statistics are computedduring transformation per patch.
+        expand_dims (bool): if True, adds a channel dimension to the input data.
+
+    Returns:
+        Compose: A composed transformation of standardization and tensor conversion.
     """
+    mean = np.mean(raw) if raw is not None else None
+    std = np.std(raw) if raw is not None else None
+
     return Compose([
+        Standardize(mean=mean, std=std),
         ToTensor(expand_dims=expand_dims)
     ])
