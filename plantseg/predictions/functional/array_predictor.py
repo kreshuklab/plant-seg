@@ -25,6 +25,18 @@ def find_batch_size(
     patch_halo: Tuple[int, int, int],
     device: str,
 ) -> int:
+    """Determine the maximum feasible batch size for a given model based on available GPU memory.
+
+    Args:
+        model (nn.Module): The model to be used for predictions.
+        in_channels (int): Number of input channels to the model.
+        patch_shape (Tuple[int, int, int]): Dimensions of the input patches.
+        patch_halo (Tuple[int, int, int]): Halo size used for patch augmentation.
+        device (str): Device to perform the computation on ('cuda' or 'cpu').
+
+    Returns:
+        int: The largest batch size that can be used without causing memory overflow.
+    """
     if device == 'cpu':
         return 1
 
@@ -39,7 +51,7 @@ def find_batch_size(
                 x = torch.randn((batch_size, in_channels) + patch_shape).to(device)
                 x = mirror_pad(x, patch_halo)
                 _ = model(x)
-            except RuntimeError as e:
+            except RuntimeError:
                 batch_size //= 2
                 break
 
@@ -49,23 +61,38 @@ def find_batch_size(
 
 
 class ArrayPredictor:
-    """
-    Based on pytorch-3dunet StandardPredictor
+    """Predictor class for applying a model to a dataset and returning the results as numpy arrays.
+
+    This predictor applies a given model on a dataset and accumulates the results into numpy arrays.
+    The predictions are computed in batches and memory utilization is carefully managed to fit
+    within available system RAM. For large datasets that do not fit in memory, consider using
+    `LazyPredictor` instead.
+
+    Based on pytorch-3dunet StandardPredictor:
     https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/unet3d/predictor.py
 
-    Applies the model on the given dataset and returns the results as a list of numpy arrays.
-    Predictions from the network are kept in memory. If the results from the network don't fit in into RAM
-    use `LazyPredictor` instead.
     Args:
-        model (Unet3D): trained 3D UNet model used for prediction
-        in_channels (int): number of input channels to the model
-        out_channels (int): number of output channels from the model
-        device (str): device to use for prediction
-        patch (tuple): patch size to use for prediction
-        patch_halo (tuple): mirror padding around the patch
-        single_batch_mode (bool): if True, the batch size will be set to 1
-        headless (bool): if True, DataParallel will be used if multiple GPUs are available
-        is_embedding (bool): if True, the model returns embeddings instead of probabilities
+        model (nn.Module): A trained model used for prediction.
+        in_channels (int): Number of input channels to the model.
+        out_channels (int): Number of output channels from the model.
+        device (str): Device to use for prediction.
+        patch (Tuple[int, int, int]): Patch size used for prediction.
+        patch_halo (Tuple[int, int, int]): Mirror padding around the patch.
+        single_batch_mode (bool): If True, the batch size will be set to 1.
+        headless (bool): If True, use DataParallel if multiple GPUs are available.
+        is_embedding (bool, optional): If True, convert model output to embeddings. Defaults to False.
+        verbose_logging (bool, optional): If True, enable verbose logging. Defaults to False.
+        disable_tqdm (bool, optional): If True, disable tqdm progress bars. Defaults to False.
+
+    Attributes:
+        batch_size (int): Calculated batch size based on device capabilities and model requirements.
+        device (str): Device where the model will be run.
+        model (nn.Module): Model configured for evaluation.
+        out_channels (int): Number of channels expected in the output.
+        patch_halo (Tuple[int, int, int]): Halo size around each patch.
+        verbose_logging (bool): Flag to enable detailed logging.
+        disable_tqdm (bool): Flag to disable tqdm progress bars during prediction.
+        is_embedding (bool): Flag to determine if the output should be treated as embeddings.
     """
 
     def __init__(self, model: nn.Module, in_channels: int, out_channels: int, device: str, patch: Tuple[int, int, int],
@@ -140,17 +167,17 @@ class ArrayPredictor:
         # Run predictions on the entire input dataset
 
         with torch.no_grad():
-            for input, indices in tqdm.tqdm(test_loader, disable=self.disable_tqdm):
-                input = input.to(self.device)  # input is padded with halo in dataset __getitem__
+            for input_, indices in tqdm.tqdm(test_loader, disable=self.disable_tqdm):
+                input_ = input_.to(self.device)  # input is padded with halo in dataset __getitem__
                 # forward pass
                 if is_2d_model:
                     # remove the singleton z-dimension from the input
-                    input = torch.squeeze(input, dim=-3)
-                    prediction = self.model(input)
+                    input_ = torch.squeeze(input_, dim=-3)
+                    prediction = self.model(input_)
                     # add the singleton z-dimension to the output
                     prediction = torch.unsqueeze(prediction, dim=-3)
                 else:
-                    prediction = self.model(input)
+                    prediction = self.model(input_)
 
                 if self.is_embedding:
                     if is_2d_model:

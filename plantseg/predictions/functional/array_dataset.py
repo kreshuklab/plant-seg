@@ -13,14 +13,17 @@ def mirror_pad(image, padding_shape):
     """
     Pad the image with a mirror reflection of itself.
 
-    This function is used on data in its original shape, before it is split into patches.
+    This function is used on data in its original shape before it is split into patches.
 
-    Parameters:
-    - image (np.ndarray): The input image array to be padded.
-    - padding_shape (tuple of ints): Specifies the amount of padding for each dimension, should be YX or ZYX.
+    Args:
+        image (np.ndarray): The input image array to be padded.
+        padding_shape (tuple of int): Specifies the amount of padding for each dimension, should be YX or ZYX.
 
     Returns:
-    - np.ndarray: The mirror-padded image.
+        np.ndarray: The mirror-padded image.
+
+    Raises:
+        ValueError: If any element of padding_shape is negative.
     """
     if any(p < 0 for p in padding_shape):
         raise ValueError("padding_shape must be non-negative")
@@ -35,12 +38,14 @@ def mirror_pad(image, padding_shape):
 def remove_padding(m, padding_shape):
     """
     Removes padding from the margins of a multi-dimensional array.
-    Parameters:
-    - m (np.array): The input array to be unpadded.
-    - padding_shape (tuple of ints, optional): The amount of padding to remove from each dimension.
-      Assumes the tuple length matches the array dimensions.
+
+    Args:
+        m (np.ndarray): The input array to be unpadded.
+        padding_shape (tuple of int, optional): The amount of padding to remove from each dimension.
+            Assumes the tuple length matches the array dimensions.
+
     Returns:
-    - np.array: The unpadded array.
+        np.ndarray: The unpadded array.
     """
     if padding_shape is None:
         return m
@@ -89,7 +94,7 @@ class ArrayDataset(Dataset):
             raise StopIteration
 
         raw_idx = self.raw_slices[idx]
-        raw_idx_padded = tuple(slice(this_index.start, this_index.stop + 2 * this_halo, None) for this_index, this_halo in zip(raw_idx, self.halo_shape))
+        raw_idx_padded = tuple(slice(index.start, index.stop + 2 * halo, None) for index, halo in zip(raw_idx, self.halo_shape))
         raw_patch = self.raw_padded[raw_idx_padded]
         raw_patch_transformed = self.augs(raw_patch)
 
