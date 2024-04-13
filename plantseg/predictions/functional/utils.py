@@ -22,7 +22,7 @@ def get_model_config(model_name, model_update=False):
     return model, model_config, model_path
 
 
-def get_array_dataset(raw, model_name, patch, stride_ratio, global_normalization=True):
+def get_array_dataset(raw, model_name, patch, stride_ratio, halo_shape, global_normalization=True):
     if model_name == 'UNet2D':
         if patch[0] != 1:
             gui_logger.warning(f"Incorrect z-dimension in the patch_shape for the 2D UNet prediction. {patch[0]}"
@@ -37,7 +37,7 @@ def get_array_dataset(raw, model_name, patch, stride_ratio, global_normalization
 
     stride = get_stride_shape(patch, stride_ratio)
     slice_builder = SliceBuilder(raw, label_dataset=None, patch_shape=patch, stride_shape=stride)
-    return ArrayDataset(raw, slice_builder, augs, verbose_logging=False)
+    return ArrayDataset(raw, slice_builder, augs, halo_shape=halo_shape, verbose_logging=False)
 
 
 def get_patch_halo(model_name):
