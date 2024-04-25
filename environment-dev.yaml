@@ -20,4 +20,5 @@ dependencies:
   - pyqt
   - napari
   - python-graphviz
+  - bioimageio.core
 # then `pip install -e .`
