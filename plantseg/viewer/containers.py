@@ -19,6 +19,8 @@ from plantseg.viewer.widget.segmentation import widget_lifted_multicut
 from plantseg.viewer.widget.segmentation import widget_simple_dt_ws
 from plantseg.viewer.widget.segmentation import widget_extra_seg_manager
 
+STYLE_SLIDER = "font-size: 9pt;"
+
 
 def setup_menu(container, path=None):
     def _callback():
@@ -46,6 +48,7 @@ def get_main():
 
 
 def get_preprocessing_workflow():
+    widget_cropping.crop_z.native.setStyleSheet(STYLE_SLIDER)
     container = MainWindow(widgets=[widget_gaussian_smoothing,
                                     widget_rescaling,
                                     widget_cropping,
@@ -66,6 +69,8 @@ def get_gasp_workflow():
 
 
 def get_extra_seg():
+    widget_fix_over_under_segmentation_from_nuclei.threshold.native.setStyleSheet(STYLE_SLIDER)
+    widget_fix_over_under_segmentation_from_nuclei.quantile.native.setStyleSheet(STYLE_SLIDER)
     container = MainWindow(widgets=[widget_extra_seg_manager,
                                     widget_dt_ws,
                                     widget_lifted_multicut,
