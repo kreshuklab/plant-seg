@@ -358,13 +358,13 @@ def checkout(*args):
     workflow_name={'label': 'Workflow name',
                    'tooltip': 'Name of the workflow object.'},
 )
-def export_stacks(images: List[Tuple[Layer, str]],
-                  directory: Path = Path.home(),
-                  export_format: str = 'tiff',
-                  rescale_to_original_resolution: bool = True,
-                  data_type: str = 'float32',
-                  workflow_name: str = 'workflow',
-                  ) -> None:
+def widget_export_stacks(images: List[Tuple[Layer, str]],
+                         directory: Path = Path.home(),
+                         export_format: str = 'tiff',
+                         rescale_to_original_resolution: bool = True,
+                         data_type: str = 'float32',
+                         workflow_name: str = 'workflow',
+                         ) -> None:
     export_name = []
 
     for i, (image, image_custom_name) in enumerate(images):
@@ -457,25 +457,25 @@ def export_stacks(images: List[Tuple[Layer, str]],
         napari_formatted_logging(f'Workflow correctly exported', thread='Export stack')
 
 
-export_stacks.directory.hide()
-export_stacks.export_format.hide()
-export_stacks.rescale_to_original_resolution.hide()
-export_stacks.data_type.hide()
-export_stacks.workflow_name.hide()
+widget_export_stacks.directory.hide()
+widget_export_stacks.export_format.hide()
+widget_export_stacks.rescale_to_original_resolution.hide()
+widget_export_stacks.data_type.hide()
+widget_export_stacks.workflow_name.hide()
 
 
-@export_stacks.images.changed.connect
+@widget_export_stacks.images.changed.connect
 def _on_images_changed(images_list: List[Tuple[Layer, str]]):
     images_list = return_value_if_widget(images_list)
     if len(images_list) > 0:
-        export_stacks.directory.show()
-        export_stacks.export_format.show()
-        export_stacks.rescale_to_original_resolution.show()
-        export_stacks.data_type.show()
-        export_stacks.workflow_name.show()
+        widget_export_stacks.directory.show()
+        widget_export_stacks.export_format.show()
+        widget_export_stacks.rescale_to_original_resolution.show()
+        widget_export_stacks.data_type.show()
+        widget_export_stacks.workflow_name.show()
     else:
-        export_stacks.directory.hide()
-        export_stacks.export_format.hide()
-        export_stacks.rescale_to_original_resolution.hide()
-        export_stacks.data_type.hide()
-        export_stacks.workflow_name.hide()
+        widget_export_stacks.directory.hide()
+        widget_export_stacks.export_format.hide()
+        widget_export_stacks.rescale_to_original_resolution.hide()
+        widget_export_stacks.data_type.hide()
+        widget_export_stacks.workflow_name.hide()
