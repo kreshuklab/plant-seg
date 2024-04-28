@@ -291,7 +291,7 @@ def _on_widget_iterative_unet_predictions_image_change(image: Image):
           new_model_name={'label': 'New model name'},
           model_location={'label': 'Model location',
                           'mode': 'd'},
-          resolution={'label': 'Resolution'},
+          resolution={'label': 'Resolution', 'options': {'step': 0.00001}},
           description={'label': 'Description'},
           dimensionality={'label': 'Dimensionality',
                           'tooltip': 'Dimensionality of the model (2D or 3D). '
