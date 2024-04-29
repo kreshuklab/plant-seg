@@ -1,7 +1,7 @@
 import webbrowser
 
 from PyQt5.QtCore import Qt
-from magicgui.widgets import MainWindow
+from magicgui.widgets import MainWindow, Label
 
 from plantseg.viewer.widget.dataprocessing import widget_cropping, widget_add_layers
 from plantseg.viewer.widget.dataprocessing import widget_label_processing
@@ -66,6 +66,7 @@ def get_gasp_workflow():
 
 def get_extra_pred():
     container = MainWindow(widgets=[widget_extra_pred_manager,
+                                    Label(),
                                     widget_test_all_unet_predictions,
                                     widget_iterative_unet_predictions,
                                     widget_add_custom_model],
@@ -76,6 +77,7 @@ def get_extra_pred():
 
 def get_extra_seg():
     container = MainWindow(widgets=[widget_extra_seg_manager,
+                                    Label(),
                                     widget_dt_ws,
                                     widget_lifted_multicut],
                            labels=False)

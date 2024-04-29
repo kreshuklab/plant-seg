@@ -372,6 +372,7 @@ register_extra_seg_widgets = {"Watershed": widget_dt_ws,
 
 @magicgui(auto_call=True,
           widget_name={'label': 'Widget Selection',
+                       'tooltip': 'Show only one widget if the Napari interface is too long.',
                        'choices': list(register_extra_seg_widgets.keys())})
 def widget_extra_seg_manager(widget_name: str) -> None:
     napari_formatted_logging(f'Showing {widget_name} widget',
@@ -389,4 +390,4 @@ if TOO_MANY_WIDGES:
     for _widget in register_extra_seg_widgets.values():
         _widget.hide()
 
-widget_extra_seg_manager.enabled=TOO_MANY_WIDGES
+# widget_extra_seg_manager.enabled=TOO_MANY_WIDGES

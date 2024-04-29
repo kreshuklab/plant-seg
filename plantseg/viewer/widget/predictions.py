@@ -342,6 +342,7 @@ registered_extra_pred_widgets = {"Test all UNet": widget_test_all_unet_predictio
 
 @magicgui(auto_call=True,
           widget_name={'label': 'Widget Selection',
+                       'tooltip': 'Show only one widget if the Napari interface is too long.',
                        'choices': list(registered_extra_pred_widgets.keys())})
 def widget_extra_pred_manager(widget_name: str) -> None:
     napari_formatted_logging(f'Showing widget: {widget_name}', thread='Extra-Pred', level='info')
@@ -357,5 +358,5 @@ if TOO_MANY_WIDGES:
     for _widget in registered_extra_pred_widgets.values():
         _widget.hide()
 
-widget_extra_pred_manager.enabled=TOO_MANY_WIDGES
+# widget_extra_pred_manager.enabled=TOO_MANY_WIDGES
 
