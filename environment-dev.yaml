@@ -15,9 +15,12 @@ dependencies:
   - vigra
   - cudnn
   - pytorch
+  - torchvision
   - pytorch-cuda=12.1
+  - cuda-version=12.3
   - python-elf
   - pyqt
   - napari
   - python-graphviz
+  - bioimageio.core>=0.6.1
 # then `pip install -e .`
