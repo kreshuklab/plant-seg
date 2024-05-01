@@ -367,17 +367,12 @@ def widget_fix_false_positive_from_foreground_pmap(segmentation: Labels,
 
 
 register_extra_seg_widgets = {"Watershed": widget_dt_ws,
-                              "Lifted MultiCut": widget_lifted_multicut,
-                              "Fix Over/Under Segmentation from Nuclei": widget_fix_over_under_segmentation_from_nuclei,
-                              "Fix False Positives from Foreground Pmap": widget_fix_false_positive_from_foreground_pmap,
-                              }
-
-for _widget in register_extra_seg_widgets.values():
-    _widget.hide()
+                              "Lifted MultiCut": widget_lifted_multicut}
 
 
 @magicgui(auto_call=True,
           widget_name={'label': 'Widget Selection',
+                       'tooltip': 'Show only one widget if the Napari interface is too long.',
                        'choices': list(register_extra_seg_widgets.keys())})
 def widget_extra_seg_manager(widget_name: str) -> None:
     napari_formatted_logging(f'Showing {widget_name} widget',
@@ -388,3 +383,11 @@ def widget_extra_seg_manager(widget_name: str) -> None:
             value.show()
         else:
             value.hide()
+
+TOO_MANY_WIDGES = False  # Set to True if there are too many widgets to show
+
+if TOO_MANY_WIDGES:
+    for _widget in register_extra_seg_widgets.values():
+        _widget.hide()
+
+# widget_extra_seg_manager.enabled=TOO_MANY_WIDGES

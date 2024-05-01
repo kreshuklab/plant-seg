@@ -291,7 +291,7 @@ def _on_widget_iterative_unet_predictions_image_change(image: Image):
           new_model_name={'label': 'New model name'},
           model_location={'label': 'Model location',
                           'mode': 'd'},
-          resolution={'label': 'Resolution'},
+          resolution={'label': 'Resolution', 'options': {'step': 0.00001}},
           description={'label': 'Description'},
           dimensionality={'label': 'Dimensionality',
                           'tooltip': 'Dimensionality of the model (2D or 3D). '
@@ -339,12 +339,10 @@ registered_extra_pred_widgets = {"Test all UNet": widget_test_all_unet_predictio
                                  "Iterative UNet": widget_iterative_unet_predictions,
                                  "Add Custom Model": widget_add_custom_model}
 
-for _widget in registered_extra_pred_widgets.values():
-    _widget.hide()
-
 
 @magicgui(auto_call=True,
           widget_name={'label': 'Widget Selection',
+                       'tooltip': 'Show only one widget if the Napari interface is too long.',
                        'choices': list(registered_extra_pred_widgets.keys())})
 def widget_extra_pred_manager(widget_name: str) -> None:
     napari_formatted_logging(f'Showing widget: {widget_name}', thread='Extra-Pred', level='info')
@@ -353,3 +351,12 @@ def widget_extra_pred_manager(widget_name: str) -> None:
             value.show()
         else:
             value.hide()
+
+TOO_MANY_WIDGES = False  # Set to True if there are too many widgets to show
+
+if TOO_MANY_WIDGES:
+    for _widget in registered_extra_pred_widgets.values():
+        _widget.hide()
+
+# widget_extra_pred_manager.enabled=TOO_MANY_WIDGES
+
