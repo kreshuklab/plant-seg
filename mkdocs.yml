@@ -1,0 +1,84 @@
+site_name: PlantSeg
+site_url: https://hci-unihd.github.io/plant-seg/
+site_description: Cell instance aware segmentation in densely packed 3D volumetric images
+repo_name: hci-unihd/plant-seg
+repo_url: https://github.com/hci-unihd/plant-seg
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2019 - 2024 Lorenzo Cerrone, Adrian Wolny, Qin Yu
+
+theme:
+  name: material
+  favicon: images/favicon.ico
+  logo: logo_white.png
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      # primary: teal
+      accent: light-green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - content.code.annotate
+    - navigation.instant
+    - navigation.instant.progress
+    # - navigation.tabs
+    - navigation.sections
+    - navigation.path
+    - navigation.indexes
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.share
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/pyapp-kit/magicgui
+      name: PlantSeg on GitHub
+
+nav:
+  - Overview: intro.md
+  - Getting Started:
+    - Installation: chapters/getting_started/installation.md
+    - Quick Start: chapters/getting_started/quick_start.md
+    - Troubleshooting: chapters/getting_started/troubleshooting.md
+  - Usage:
+    - chapters/plantseg_interactive_napari/index.md
+    - Data Processing: chapters/plantseg_interactive_napari/data_processing.md
+    - Main Workflow: chapters/plantseg_interactive_napari/unet_gasp_workflow.md
+    - Training: chapters/plantseg_interactive_napari/unet_training.md
+    - Prediction: chapters/plantseg_interactive_napari/extra_pred.md
+    - Segmentation: chapters/plantseg_interactive_napari/extra_seg.md
+    - Batch Processing: chapters/plantseg_interactive_napari/headless_batch_processing.md
+  - Classic GUI:
+    - chapters/plantseg_classic_gui/index.md
+    - Data Processing: chapters/plantseg_classic_gui/data_processing.md
+    - Prediction: chapters/plantseg_classic_gui/cnn_predictions.md
+    - Segmentation: chapters/plantseg_classic_gui/segmentation.md
+  - Classic CLI:
+    - chapters/plantseg_classic_cli/index.md
+  - Python API:
+    - chapters/python_api/index.md
+    - Data Processing: chapters/python_api/data_processing.md
+    - Prediction: chapters/python_api/cnn_predictions.md
+    - Segmentation: chapters/python_api/segmentation.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.extra
+  - attr_list
+  - md_in_html
+  - pymdownx.tabbed:
+      alternate_style: true
