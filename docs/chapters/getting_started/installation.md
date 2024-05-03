@@ -1,64 +1,109 @@
 # Installation
 
 ## Prerequisites for Conda package
+
 * Linux or Windows
 * (Optional) Nvidia GPU with official Nvidia drivers installed
-
 * Native MacOS installation (not yet M1) coming soon.
 
-## Install on Linux
-### Install Anaconda python
-The first step required to use the pipeline is installing anaconda python.
-You can go directly to the next item if you already have a working anaconda setup. Anaconda can be downloaded for all
-platforms from here [anaconda](https://www.anaconda.com/products/individual). We suggest using Miniconda
-because it is lighter and install fewer unnecessary packages.
+## Install Mamba
 
-To download Anaconda Python open a terminal and type
+Fist step is to install `mamba`, which is a faster alternative to `conda`.
+If you have Anaconda/Miniconda installed, you can install Mamba in your base environment.
+Otherwise we suggest to use Miniconda, because it is lighter than Anaconda and install fewer unnecessary packages.
+Check the [Mamba documentation](https://mamba.readthedocs.io/en/latest/ "Mamba is officially recommended to be installed without Conda, but if you even know this you don't need to read this part of PlantSeg installation guide.") for more details.
+
+=== "Linux"
+
+    To download Miniconda open a terminal and type:
+
+    ```bash
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    ```
+
+    Then install by typing:
+
+    ```bash
+    bash ./Miniconda3-latest-Linux-x86_64.sh
+    ```
+
+    and follow the installation instructions.
+    The `Miniconda3-latest-Linux-x86_64.sh` file can be deleted now.
+
+=== "Windows"
+
+    Miniconda can be downloaded from [miniconda](https://docs.conda.io/en/latest/miniconda.html).
+    Download the executable `.exe` for your Windows version and follow the installation instructions.
+
+When the Miniconda installation is complete, run:
+
 ```bash
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+conda install -c conda-forge mamba
 ```
-Then install by typing:
+
+## Install PlantSeg using Mamba
+
+* GPU version, CUDA=12.x
+
+    ```bash
+    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 pyqt plant-seg
+    ```
+
+* GPU version, CUDA=11.x
+
+    ```bash
+    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 pyqt plant-seg
+    ```
+
+* CPU version
+
+    ```bash
+    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly pyqt plant-seg
+    ```
+
+The above command will create new conda environment `plant-seg` together with all required dependencies.
+
+## Install Newer Versions
+
+If you want to install a specific version of PlantSeg that is not available on `conda-forge`,
+you can install it from the `lcerrone` channel. For example, you can run the following command:
+
 ```bash
-bash ./Miniconda3-latest-Linux-x86_64.sh
+mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone pytorch pytorch-cuda=12.1 pyqt plantseg
 ```
-Follow the instructions to complete the anaconda installation.
-The `Miniconda3-latest-Linux-x86_64.sh` file can be safely deleted.
 
-### Install PlantSeg using conda
-PlantSeg can be installed directly by executing in the terminal:
-```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pytorch-3dunet=1.3.7 plantseg napari
-```
-The above command will create a new Conda environment, `plant-seg`, with all required dependencies.
+Difference between `conda-forge` and `lcerrone` channels:
 
-## Install on Windows
-### Install Anaconda python
-The first step required to use the pipeline is installing anaconda python.
-You can go directly to the next item if you already have a working anaconda setup. Anaconda can be downloaded for all
-platforms from here [anaconda](https://www.anaconda.com/products/individual). We suggest using Miniconda
-because it is lighter and install fewer unnecessary packages.
+* conda-forge/plant-seg:
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/version.svg)](https://anaconda.org/conda-forge/plant-seg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/plant-seg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/downloads.svg)](https://anaconda.org/conda-forge/plant-seg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/license.svg)](https://anaconda.org/conda-forge/plant-seg)
 
-Miniconda can be downloaded from [miniconda](https://docs.conda.io/en/latest/miniconda.html). Download the
-executable `.exe` for your Windows version and follow the installation instructions.
+* lcerrone/plantseg:
+[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/version.svg)](https://anaconda.org/lcerrone/plantseg)
+[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/latest_release_date.svg)](https://anaconda.org/lcerrone/plantseg)
+[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/downloads.svg)](https://anaconda.org/lcerrone/plantseg)
+[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/license.svg)](https://anaconda.org/lcerrone/plantseg)
 
-### Install PlantSeg using conda
-PlantSeg can be installed directly by executing in the terminal:
-```bash
-conda create -n plant-seg -c pytorch -c conda-forge -c lcerrone -c awolny python=3.9 pytorch-3dunet=1.3.7 plantseg napari
-```
-The above command will create a new Conda environment, `plant-seg`, with all required dependencies.
+Ultimately you may download this repo and install it from source for the latest version.
 
-## Optional dependencies (not fully tested on Windows)
-Some types of compressed tiff files require an additional package to be load correctly (e.g.: Zlib,
-ZSTD, LZMA, ...). To run PlantSeg on those stacks, you need to install `imagecodecs`.
+## Optional dependencies
+
+*(not fully tested on Windows)*
+
+Some types of compressed tiff files require an additional package to be load correctly (e.g.: Zlib, ZSTD, LZMA, ...).
+To run PlantSeg on those stacks, you need to install `imagecodecs`.
 In the terminal:
+
 ```bash
 conda activate plant-seg
 pip install imagecodecs
 ```
 
-Experimental support for SimpleITK watershed segmentation has been added to PlantSeg version 1.1.8. These features can be used only
-after installing the SimpleITK package:
+Experimental support for SimpleITK watershed segmentation has been added to PlantSeg version 1.1.8.
+These features can be used only after installing the SimpleITK package:
+
 ```bash
 conda activate plant-seg
 pip install SimpleITK

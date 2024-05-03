@@ -28,6 +28,7 @@ theme:
         icon: material/brightness-4
         name: Switch to light mode
   features:
+    - content.tooltips
     - content.code.annotate
     - navigation.instant
     - navigation.instant.progress
@@ -74,11 +75,17 @@ nav:
     - Segmentation: chapters/python_api/segmentation.md
 
 markdown_extensions:
-  - admonition
-  - pymdownx.details
-  - pymdownx.highlight
-  - pymdownx.extra
+  - abbr
   - attr_list
   - md_in_html
+  - admonition
+  - pymdownx.extra
+  - pymdownx.details
+  - pymdownx.snippets
+  - pymdownx.highlight
+  - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
