@@ -16,3 +16,9 @@ To install PlantSeg in development mode, run:
 ```bash
 pip install -e . --no-deps
 ```
+
+## Testing
+
+In order to run tests make sure that `pytest` is installed in your conda environment.
+You can run your tests simply with `python -m pytest` or `pytest`.
+For the latter to work you need to install `plantseg` locally in "develop mode" with `pip install -e .`

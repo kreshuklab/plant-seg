@@ -17,8 +17,16 @@ segmentation. We implemented four different algorithms for segmentation, each wi
 For a complete description of the methods used, please check out our
 [manuscript](https://elifesciences.org/articles/57613).
 
-If you find PlantSeg useful, please cite {cite:p}`wolny2020accurate`.
+If you find PlantSeg useful, please cite:
 
-```{bibliography}
-:filter: docname in docnames
+```bibtex
+@article{wolny2020accurate,
+  title={Accurate and versatile 3D segmentation of plant tissues at cellular resolution},
+  author={Wolny, Adrian and Cerrone, Lorenzo and Vijayan, Athul and Tofanelli, Rachele and Barro, Amaya Vilches and Louveaux, Marion and Wenzl, Christian and Strauss, S{\"o}ren and Wilson-S{\'a}nchez, David and Lymbouridou, Rena and others},
+  journal={Elife},
+  volume={9},
+  pages={e57613},
+  year={2020},
+  publisher={eLife Sciences Publications Limited}
+}
 ```

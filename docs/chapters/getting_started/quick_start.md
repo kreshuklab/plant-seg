@@ -40,3 +40,9 @@ plantseg --config CONFIG_PATH
 where `CONFIG_PATH` is the path to the YAML configuration file. See [config.yaml](examples/config.yaml) for a sample configuration
 file and our [documentation (CLI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_cli/) for a
 detailed description of the parameters.
+
+## Using LiftedMulticut segmentation
+
+As reported in our [paper](https://elifesciences.org/articles/57613), if one has a nuclei signal imaged together with
+the boundary signal, we could leverage the fact that one cell contains only one nucleus and use the `LiftedMultict`
+segmentation strategy and obtain improved segmentation. This workflow is now available in all PlantSeg interfaces.
