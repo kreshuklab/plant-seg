@@ -7,6 +7,7 @@ Please refer to [config.yaml](../../../examples/config.yaml) for a sample pipeli
 of all parameters.
 
 ## Main Keys/Steps
+
 * `path` attribute: is used to define either the file to process or the directory containing the data.
 * `preprocessing` attribute: contains a simple set of possible operations one would need to run on their data before calling the neural network.
 This step can be skipped if data is ready for neural network processing.
@@ -27,6 +28,7 @@ If the `CUDA_VISIBLE_DEVICES` environment variable is not specified, the predict
 E.g. run: `CUDA_VISIBLE_DEVICES=0 plantseg --config CONFIG_PATH` to restrict prediction to a given GPU.
 
 ## configuration file example
+
 This modality of using PlantSeg is particularly suited for high throughput processing and for running
 PlantSeg on a remote server.
 To use PlantSeg from command line mode, you will need to create a configuration file using a standard text editor
@@ -34,7 +36,7 @@ To use PlantSeg from command line mode, you will need to create a configuration 
 
 Here is an example configuration:
 
-```
+```yaml
 path: /home/USERNAME/DATA.tiff # Contains the path to the directory or file to process
 
 preprocessing:
@@ -118,26 +120,41 @@ segmentation_postprocessing:
   # spline order for rescaling (keep 0 for segmentation post processing
   order: 0
 ```
+
 This configuration can be found at [config.yaml](https://github.com/hci-unihd/plant-seg/blob/master/examples/config.yaml).
 
 ## Pipeline Usage (command line)
-To start PlantSeg from the command line:
-First, activate the newly created conda environment with:
+
+To start PlantSeg from the command line. First, activate the newly created conda environment with:
+
 ```bash
 conda activate plant-seg
 ```
+
 then, one can just start the pipeline with
+
 ```bash
 plantseg --config CONFIG_PATH
 ```
+
 where `CONFIG_PATH` is the path to a YAML configuration file.
+
+## Data Parallelism
+
+In the headless mode (i.e. when invoked with `plantseg --config CONFIG_PATH`) the prediction step will run on all the GPUs using [DataParallel](https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html).
+If prediction on all available GPUs is not desirable, restrict the number of GPUs using `CUDA_VISIBLE_DEVICES`, e.g.
+
+```bash
+CUDA_VISIBLE_DEVICES=0,1 plantseg --config CONFIG_PATH
+```
 
 ## Results
 
 The results are stored together with the source input files inside a nested directory structure.
 As an example, if we want to run PlantSeg inside a directory with two stacks, we will obtain the following
 outputs:
-```
+
+```bash
 /file1.tif
 /file2.tif
 /PreProcesing/
@@ -161,29 +178,35 @@ outputs:
 --------------------------------------------------------->/file_2_predions_gasp_average.tiff
 --------------------------------------------------------->/file_2_predions_gasp_average.yaml
 ```
+
 The use of this hierarchical directory structure allows PlantSeg to find the necessary files quickly and can be used
 to test different segmentation algorithms/parameter combinations minimizing the memory overhead on the disk.
 For the sake of reproducibility, every file is associated with a configuration file ".yaml" that saves all parameters used
 to produce the result.
 
 ## LiftedMulticut segmentation
+
 As reported in our [paper](https://elifesciences.org/articles/57613), if one has a nuclei signal imaged together with
 the boundary signal, we could leverage the fact that one cell contains only one nucleus and use the `LiftedMultict`
 segmentation strategy and obtain improved segmentation.
 We will use the _Arabidopsis thaliana_ lateral root as an example. The `LiftedMulticut` strategy consists of running
 PlantSeg two times:
+
 1. Using PlantSeg to predict the nuclei probability maps using the `lightsheet_unet_bce_dice_nuclei_ds1x` network.
 In this case, only the pre-processing and CNN prediction steps are enabled in the config. See [example config](../../../plantseg/resources/nuclei_predictions_example.yaml).
-```bash
-plantseg --config nuclei_predictions_example.yaml
-```
+
+    ```bash
+    plantseg --config nuclei_predictions_example.yaml
+    ```
+
 2. Using PlantSeg to segment the input image with the `LiftedMulticut` algorithm given the nuclei probability maps from the 1st step.
 See [example config](../../../plantseg/resources/lifted_multicut_example.yaml). The notable difference is that in the `segmentation`
 part of the config, we set `name: LiftedMulticut` and the `nuclei_predictions_path` as the path to the directory where the nuclei pmaps
 were saved in step 1. Also, make sure that the `path` attribute points to the raw files containing the cell boundary staining (NOT THE NUCLEI).
-```bash
-plantseg --config lifted_multicut_example.yaml
-```
+
+    ```bash
+    plantseg --config lifted_multicut_example.yaml
+    ```
 
 If case when the nuclei segmentation is given, one should skip step 1., add `is_segmentation=True` flag in the [config](../../../plantseg/resources/lifted_multicut_example.yaml)
 and directly run step 2.

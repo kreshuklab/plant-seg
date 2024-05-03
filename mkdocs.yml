@@ -48,10 +48,11 @@ extra:
       name: PlantSeg on GitHub
 
 nav:
-  - Overview: intro.md
+  - Overview: index.md
   - Getting Started:
     - Installation: chapters/getting_started/installation.md
     - Quick Start: chapters/getting_started/quick_start.md
+    - Contributing: chapters/getting_started/contributing.md
     - Troubleshooting: chapters/getting_started/troubleshooting.md
   - Usage:
     - chapters/plantseg_interactive_napari/index.md

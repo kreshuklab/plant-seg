@@ -8,15 +8,6 @@
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/downloads.svg)](https://anaconda.org/conda-forge/plant-seg)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/license.svg)](https://anaconda.org/conda-forge/plant-seg)
 
-<!-- [![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/version.svg)](https://anaconda.org/lcerrone/plantseg)
-[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/latest_release_date.svg)](https://anaconda.org/lcerrone/plantseg)
-[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/downloads.svg)](https://anaconda.org/lcerrone/plantseg)
-[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/license.svg)](https://anaconda.org/lcerrone/plantseg) -->
-
-| Documentation                                                                                                       | Napari GUI                                                                                                                                              | Legacy GUI                                                                                                                                          | Command Line                                                                                                                                     |
-| ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [![doc build status](https://img.shields.io/badge/Documentation-Home-blue)](https://hci-unihd.github.io/plant-seg/) | [![doc build status](https://img.shields.io/badge/Documentation-GUI-blue)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/) | [![doc build status](https://img.shields.io/badge/Documentation-Lecagy-blue)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/) | [![doc build status](https://img.shields.io/badge/Documentation-CLI-blue)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_cli/) |
-
 # PlantSeg  <!-- omit in toc -->
 
 ![Illustration of Pipeline](../assets/images/main_figure_nologo.png)
@@ -30,23 +21,19 @@ Pre-trained models are provided.
 
 * [Getting Started](#getting-started)
 * [Install PlantSeg](#install-plantseg)
-* [Pipeline Usage (Napari viewer)](#pipeline-usage-napari-viewer)
-* [Pipeline Usage (GUI)](#pipeline-usage-gui)
-* [Pipeline Usage (command line)](#pipeline-usage-command-line)
-* [Data Parallelism](#data-parallelism)
-  * [Optional dependencies (not fully tested on Windows)](#optional-dependencies-not-fully-tested-on-windows)
-* [Repository index](#repository-index)
+* [Repository Index](#repository-index)
 * [Datasets](#datasets)
 * [Pre-trained networks](#pre-trained-networks)
 * [Training on New Data](#training-on-new-data)
-* [Using LiftedMulticut segmentation](#using-liftedmulticut-segmentation)
-* [Troubleshooting](#troubleshooting)
-* [Tests](#tests)
 * [Citation](#citation)
 
 ## Getting Started
 
 For detailed usage checkout our [**documentation** 📖](https://hci-unihd.github.io/plant-seg/).
+
+| Documentation                                                                                                       | Napari GUI                                                                                                                                              | Legacy GUI                                                                                                                                          | Command Line                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [![doc build status](https://img.shields.io/badge/Documentation-Home-blue)](https://hci-unihd.github.io/plant-seg/) | [![doc build status](https://img.shields.io/badge/Documentation-GUI-blue)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/) | [![doc build status](https://img.shields.io/badge/Documentation-Lecagy-blue)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/) | [![doc build status](https://img.shields.io/badge/Documentation-CLI-blue)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_cli/) |
 
 ## Install PlantSeg
 
@@ -72,89 +59,7 @@ Please go to the [documentation](https://hci-unihd.github.io/plant-seg/chapters/
 
 The above command will create new conda environment `plant-seg` together with all required dependencies.
 
-## Pipeline Usage (Napari viewer)
-
-PlantSeg app can also be started using napari as a viewer.
-First, activate the newly created conda environment with:
-
-```bash
-conda activate plant-seg
-```
-
-then, start the plantseg in napari
-
-```bash
-plantseg --napari
-```
-
-A more in depth guide can be found in our [documentation (GUI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/).
-
-## Pipeline Usage (GUI)
-
-PlantSeg app can also be started in a GUI mode, where basic user interface allows to configure and run the pipeline.
-First, activate the newly created conda environment with:
-
-```bash
-conda activate plant-seg
-```
-
-then, run the GUI by simply typing:
-
-```bash
-plantseg --gui
-```
-
-A more in depth guide can be found in our [documentation (Classic GUI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/).
-
-## Pipeline Usage (command line)
-
-Our pipeline is completely configuration file based and does not require any coding.
-
-First, activate the newly created conda environment with:
-
-```bash
-conda activate plant-seg
-```
-
-then, one can just start the pipeline with
-
-```bash
-plantseg --config CONFIG_PATH
-```
-
-where `CONFIG_PATH` is the path to the YAML configuration file. See [config.yaml](examples/config.yaml) for a sample configuration
-file and our [documentation (CLI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_cli/) for a
-detailed description of the parameters.
-
-## Data Parallelism
-
-In the headless mode (i.e. when invoked with `plantseg --config CONFIG_PATH`) the prediction step will run on all the GPUs using [DataParallel](https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html).
-If prediction on all available GPUs is not desirable, restrict the number of GPUs using `CUDA_VISIBLE_DEVICES`, e.g.
-
-```bash
-CUDA_VISIBLE_DEVICES=0,1 plantseg --config CONFIG_PATH
-```
-
-### Optional dependencies (not fully tested on Windows)
-
-Some types of compressed tiff files require an additional package to be read correctly (eg: Zlib,
-ZSTD, LZMA, ...). To run plantseg on those stacks you need to install `imagecodecs`.
-In the terminal:
-
-```bash
-conda activate plant-seg
-pip install imagecodecs
-```
-
-Experimental support for SimpleITK watershed segmentation has been added to PlantSeg version 1.1.8. This features can be used only
-after installing the SimpleITK package:
-
-```bash
-conda activate plant-seg
-pip install SimpleITK
-```
-
-## Repository index
+## Repository Index
 
 The PlantSeg repository is organised as follows:
 
@@ -224,22 +129,6 @@ The later two files are automatically generated during training and contain all 
 Now you can simply use your model for prediction by setting the [model_name](examples/config.yaml) key to `MY_MODEL_NAME`.
 
 If you want your model to be part of the open-source model zoo provided with this package, please contact us.
-
-## Using LiftedMulticut segmentation
-
-As reported in our [paper](https://elifesciences.org/articles/57613), if one has a nuclei signal imaged together with
-the boundary signal, we could leverage the fact that one cell contains only one nucleus and use the `LiftedMultict`
-segmentation strategy and obtain improved segmentation. This workflow is now available in all PlantSeg interfaces.
-
-## Troubleshooting
-
-See [troubleshooting](https://hci-unihd.github.io/plant-seg/chapters/getting_started/troubleshooting) for a list of common issues and their solutions.
-
-## Tests
-
-In order to run tests make sure that `pytest` is installed in your conda environment. You can run your tests
-simply with `python -m pytest` or `pytest`. For the latter to work you need to install `plantseg` locally in "develop mode"
-with `pip install -e .`.
 
 ## Citation
 
