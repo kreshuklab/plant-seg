@@ -12,7 +12,7 @@ from plantseg.predictions.functional.slice_builder import SliceBuilder
 from plantseg.predictions.functional.utils import get_model_config, get_patch_halo, get_stride_shape
 
 def unet_predictions(
-    raw: np.array,
+    raw: np.ndarray,
     model_name: str,
     patch: Tuple[int, int, int] = (80, 160, 160),
     single_batch_mode: bool = True,
@@ -21,14 +21,14 @@ def unet_predictions(
     disable_tqdm: bool = False,
     handle_multichannel: bool = False,
     **kwargs
-) -> np.array:
+) -> np.ndarray:
     """Generate predictions from raw data using a specified 3D U-Net model.
 
     This function handles both single and multi-channel outputs from the model,
     returning appropriately shaped arrays based on the output channel configuration.
 
     Args:
-        raw (np.array): Raw input data as a 3D array of shape (Z, Y, X).
+        raw (np.ndarray): Raw input data as a 3D array of shape (Z, Y, X).
         model_name (str): The name of the model to use.
         patch (Tuple[int, int, int], optional): Patch size for prediction. Defaults to (80, 160, 160).
         single_batch_mode (bool, optional): Whether to use a single batch for prediction. Defaults to True.
@@ -38,7 +38,7 @@ def unet_predictions(
         handle_multichannel (bool, optional): If True, handles multi-channel output properly. Defaults to False.
 
     Returns:
-        np.array: The predicted boundaries as a 3D (Z, Y, X) or 4D (C, Z, Y, X) array, normalized between 0 and 1.
+        np.ndarray: The predicted boundaries as a 3D (Z, Y, X) or 4D (C, Z, Y, X) array, normalized between 0 and 1.
     """
     model, model_config, model_path = get_model_config(model_name, model_update=model_update)
     state = torch.load(model_path, map_location='cpu')

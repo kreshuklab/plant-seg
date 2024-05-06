@@ -23,10 +23,10 @@ def compute_scaling_voxelsize(input_voxel_size: list[float, float, float],
     return output_voxel_size
 
 
-def scale_image_to_voxelsize(image: np.array,
+def scale_image_to_voxelsize(image: np.ndarray,
                              input_voxel_size: list[float, float, float],
                              output_voxel_size: list[float, float, float],
-                             order: int = 0) -> np.array:
+                             order: int = 0) -> np.ndarray:
     """
     scale an image from a given voxel size
     """
@@ -34,7 +34,7 @@ def scale_image_to_voxelsize(image: np.array,
     return image_rescale(image, factor, order=order)
 
 
-def image_rescale(image: np.array, factor: list[float, float, float], order: int) -> np.array:
+def image_rescale(image: np.ndarray, factor: list[float, float, float], order: int) -> np.ndarray:
     """
     scale an image from a given scaling factor
     """
@@ -44,7 +44,7 @@ def image_rescale(image: np.array, factor: list[float, float, float], order: int
         return zoom(image, zoom=factor, order=order)
 
 
-def image_median(image: np.array, radius: int) -> np.array:
+def image_median(image: np.ndarray, radius: int) -> np.ndarray:
     """
     apply median smoothing on an image
     """
@@ -56,7 +56,7 @@ def image_median(image: np.array, radius: int) -> np.array:
         return median(image, ball(radius))
 
 
-def image_gaussian_smoothing(image: np.array, sigma: float) -> np.array:
+def image_gaussian_smoothing(image: np.ndarray, sigma: float) -> np.ndarray:
     """
     apply gaussian smoothing on an image
     """
@@ -66,7 +66,7 @@ def image_gaussian_smoothing(image: np.array, sigma: float) -> np.array:
     return gaussianSmoothing(image, sigma)
 
 
-def image_crop(image: np.array, crop_str: str) -> np.array:
+def image_crop(image: np.ndarray, crop_str: str) -> np.array:
     """
     crop image from a crop string like [:, 10:30:, 10:20]
     """
@@ -77,7 +77,7 @@ def image_crop(image: np.array, crop_str: str) -> np.array:
     return image[slices]
 
 
-def fix_input_shape(data: np.array, ndim=3) -> np.array:
+def fix_input_shape(data: np.ndarray, ndim=3) -> np.array:
     assert ndim in [3, 4]
     if ndim == 3:
         return fix_input_shape_to_3D(data)
@@ -85,7 +85,7 @@ def fix_input_shape(data: np.array, ndim=3) -> np.array:
         return fix_input_shape_to_4D(data)
 
 
-def fix_input_shape_to_3D(data: np.array) -> np.array:
+def fix_input_shape_to_3D(data: np.ndarray) -> np.array:
     """
     fix array ndim to be always 3
     """
@@ -102,7 +102,7 @@ def fix_input_shape_to_3D(data: np.array) -> np.array:
         raise RuntimeError(f"Expected input data to be 2d, 3d or 4d, but got {data.ndim}d input")
 
 
-def fix_input_shape_to_4D(data: np.array) -> np.array:
+def fix_input_shape_to_4D(data: np.ndarray) -> np.array:
     """
     Fix array ndim to be 4 and return it in (C x Z x Y x X) e.g. 2 x 1 x 512 x 512
 
@@ -121,7 +121,7 @@ def fix_input_shape_to_4D(data: np.array) -> np.array:
         raise RuntimeError(f"Expected input data to be 3d or 4d, but got {data.ndim}d input")
 
 
-def normalize_01(data: np.array) -> np.array:
+def normalize_01(data: np.ndarray) -> np.array:
     """
     normalize a numpy array between 0 and 1
     """

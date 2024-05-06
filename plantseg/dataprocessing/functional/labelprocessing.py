@@ -2,7 +2,7 @@ import numpy as np
 from skimage import measure
 
 
-def relabel_segmentation(segmentation_image: np.array) -> np.array:
+def relabel_segmentation(segmentation_image: np.ndarray) -> np.array:
     """
     Relabel contiguously a segmentation image, non-touching instances with same id will be relabeled differently.
     To be noted that measure.label is different from ndimage.label
@@ -16,7 +16,7 @@ def relabel_segmentation(segmentation_image: np.array) -> np.array:
     return measure.label(segmentation_image)
 
 
-def set_background_to_value(segmentation_image: np.array, value: int = 0) -> np.array:
+def set_background_to_value(segmentation_image: np.ndarray, value: int = 0) -> np.array:
     """
     Set the largest segment (usually this is the background but not always) to a certain value
 

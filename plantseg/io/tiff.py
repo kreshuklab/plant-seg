@@ -143,7 +143,7 @@ def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.array
     return file, infos
 
 
-def create_tiff(path: str, stack: np.array, voxel_size: list[float, float, float], voxel_size_unit: str = 'um') -> None:
+def create_tiff(path: str, stack: np.ndarray, voxel_size: list[float, float, float], voxel_size_unit: str = 'um') -> None:
     """
     Create a tiff file from a numpy array
 

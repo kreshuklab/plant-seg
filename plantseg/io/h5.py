@@ -27,7 +27,7 @@ def read_h5_voxel_size(f, h5key: str) -> list[float, float, float]:
 
 def _find_input_key(h5_file) -> str:
     f"""
-    returns the first matching key in H5_KEYS or only one dataset is found the key to that dataset 
+    returns the first matching key in H5_KEYS or only one dataset is found the key to that dataset
     """
     found_datasets = []
 
@@ -84,7 +84,7 @@ def load_h5(path: str,
 
 
 def create_h5(path: str,
-              stack: np.array,
+              stack: np.ndarray,
               key: str,
               voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
               mode: str = 'a') -> None:

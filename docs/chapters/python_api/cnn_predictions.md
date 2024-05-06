@@ -5,7 +5,7 @@ In this section we will describe how to use the PlantSeg CNN Predictions workflo
 ## API-Reference: [plantseg.predictions.functional.predictions](https://github.com/hci-unihd/plant-seg/blob/master/plantseg/predictions/functional/predictions.py)
 ### ***unet_predictions***
 ```python
-def unet_predictions(raw: np.array,
+def unet_predictions(raw: np.ndarray,
                      model_name: str,
                      patch: Tuple[int, int, int] = (80, 160, 160),
                      stride: Union[str, Tuple[int, int, int]] = 'Accurate (slowest)',
@@ -13,12 +13,12 @@ def unet_predictions(raw: np.array,
                      version: str = 'best',
                      model_update: bool = False,
                      mirror_padding: Tuple[int, int, int] = (16, 32, 32),
-                     disable_tqdm: bool = False) -> np.array:
+                     disable_tqdm: bool = False) -> np.ndarray:
     """
     Predict boundaries predictions from raw data using a 3D U-Net model.
 
     Args:
-        raw (np.array): raw data, must be a 3D array of shape (Z, Y, X) normalized between 0 and 1.
+        raw (np.ndarray): raw data, must be a 3D array of shape (Z, Y, X) normalized between 0 and 1.
         model_name (str): name of the model to use. A complete list of available models can be found here:
         patch (tuple[int, int, int], optional): patch size to use for prediction. Defaults to (80, 160, 160).
         stride (Union[str, tuple[int, int, int]], optional): stride to use for prediction.
@@ -32,7 +32,7 @@ def unet_predictions(raw: np.array,
         disable_tqdm (bool, optional): if True will disable tqdm progress bar. Defaults to False.
 
     Returns:
-        np.array: predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.
+        np.ndarray: predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.
 
     """
 

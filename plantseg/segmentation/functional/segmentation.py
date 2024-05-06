@@ -19,7 +19,7 @@ except ImportError:
     sitk_installed = False
 
 
-def dt_watershed(boundary_pmaps: np.array,
+def dt_watershed(boundary_pmaps: np.ndarray,
                  threshold: float = 0.5,
                  sigma_seeds: float = 1.,
                  stacked: bool = False,
@@ -29,7 +29,7 @@ def dt_watershed(boundary_pmaps: np.array,
                  pixel_pitch: tuple[int, ...] = None,
                  apply_nonmax_suppression: bool = False,
                  n_threads: int = None,
-                 mask: np.array = None) -> np.array:
+                 mask: np.ndarray = None) -> np.array:
     """ Wrapper around elf.distance_transform_watershed
 
     Args:
@@ -71,8 +71,8 @@ def dt_watershed(boundary_pmaps: np.array,
     return ws
 
 
-def gasp(boundary_pmaps: np.array,
-         superpixels: np.array = None,
+def gasp(boundary_pmaps: np.ndarray,
+         superpixels: np.ndarray = None,
          gasp_linkage_criteria: str = 'average',
          beta: float = 0.5,
          post_minsize: int = 100,
@@ -137,8 +137,8 @@ def gasp(boundary_pmaps: np.array,
     return segmentation
 
 
-def mutex_ws(boundary_pmaps: np.array,
-             superpixels: np.array = None,
+def mutex_ws(boundary_pmaps: np.ndarray,
+             superpixels: np.ndarray = None,
              beta: float = 0.5,
              post_minsize: int = 100,
              n_threads: int = 6) -> np.array:
@@ -166,8 +166,8 @@ def mutex_ws(boundary_pmaps: np.array,
                 n_threads=n_threads)
 
 
-def multicut(boundary_pmaps: np.array,
-             superpixels: np.array,
+def multicut(boundary_pmaps: np.ndarray,
+             superpixels: np.ndarray,
              beta: float = 0.5,
              post_minsize: int = 50) -> np.array:
 
@@ -207,9 +207,9 @@ def multicut(boundary_pmaps: np.array,
     return segmentation
 
 
-def lifted_multicut_from_nuclei_pmaps(boundary_pmaps: np.array,
-                                      nuclei_pmaps: np.array,
-                                      superpixels: np.array,
+def lifted_multicut_from_nuclei_pmaps(boundary_pmaps: np.ndarray,
+                                      nuclei_pmaps: np.ndarray,
+                                      superpixels: np.ndarray,
                                       beta: float = 0.5,
                                       post_minsize: int = 50) -> np.array:
     """
@@ -255,9 +255,9 @@ def lifted_multicut_from_nuclei_pmaps(boundary_pmaps: np.array,
     return segmentation
 
 
-def lifted_multicut_from_nuclei_segmentation(boundary_pmaps: np.array,
-                                             nuclei_seg: np.array,
-                                             superpixels: np.array,
+def lifted_multicut_from_nuclei_segmentation(boundary_pmaps: np.ndarray,
+                                             nuclei_seg: np.ndarray,
+                                             superpixels: np.ndarray,
                                              beta: float = 0.5,
                                              post_minsize: int = 50) -> np.array:
     """
@@ -299,7 +299,7 @@ def lifted_multicut_from_nuclei_segmentation(boundary_pmaps: np.array,
     return segmentation
 
 
-def simple_itk_watershed(boundary_pmaps: np.array,
+def simple_itk_watershed(boundary_pmaps: np.ndarray,
                          threshold: float = 0.5,
                          sigma: float = 1.0,
                          minsize: int = 100) -> np.array:
@@ -337,8 +337,8 @@ def simple_itk_watershed(boundary_pmaps: np.array,
     return segmentation
 
 
-def simple_itk_watershed_from_markers(boundary_pmaps: np.array,
-                                      seeds: np.array):
+def simple_itk_watershed_from_markers(boundary_pmaps: np.ndarray,
+                                      seeds: np.ndarray):
     if not sitk_installed:
         raise ValueError('please install sitk before running this process')
 
