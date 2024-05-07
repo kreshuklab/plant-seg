@@ -35,7 +35,7 @@ def read_zarr_voxel_size(f, zarrkey: str) -> list[float, float, float]:
 
 def _find_input_key(zarr_file) -> str:
     f"""
-    returns the first matching key in ZARR_KEYS or only one dataset is found the key to that dataset 
+    returns the first matching key in ZARR_KEYS or only one dataset is found the key to that dataset
     """
     found_datasets = []
 
@@ -92,7 +92,7 @@ def load_zarr(path: str,
 
 
 def create_zarr(path: str,
-                stack: np.array,
+                stack: np.ndarray,
                 key: str,
                 voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
                 mode: str = 'a') -> None:

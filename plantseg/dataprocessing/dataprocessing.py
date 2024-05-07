@@ -52,7 +52,7 @@ class DataPostProcessing3D(GenericPipelineStep):
         # count processed images
         self.img_count = 0
 
-    def process(self, image: np.array) -> np.array:
+    def process(self, image: np.ndarray) -> np.ndarray:
         gui_logger.info("Postprocessing files...")
 
         if self.output_shapes is not None:
@@ -117,7 +117,7 @@ class DataPreProcessing3D(GenericPipelineStep):
             self.filter = _no_filter
             self.filter_param = 0
 
-    def process(self, image: np.array) -> np.array:
+    def process(self, image: np.ndarray) -> np.ndarray:
         gui_logger.info(f"Preprocessing files...")
         if self.crop is not None:
             gui_logger.info(f"Cropping input image to: {self.crop}")
