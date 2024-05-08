@@ -117,7 +117,7 @@ def read_tiff_voxel_size(file_path: str) -> tuple[list[float, float, float], str
         return [z, y, x], voxel_size_unit
 
 
-def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.array, tuple]]:
+def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.ndarray, tuple]]:
     """
     Load a dataset from a tiff file and returns some meta info about it.
     Args:
@@ -125,7 +125,7 @@ def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.array
         info_only (bool): if true will return a tuple with infos such as voxel resolution, units and shape.
 
     Returns:
-        Union[tuple, tuple[np.array, tuple]]: dataset as numpy array and infos
+        Union[tuple, tuple[np.ndarray, tuple]]: dataset as numpy array and infos
     """
     file = tifffile.imread(path)
     try:
@@ -149,7 +149,7 @@ def create_tiff(path: str, stack: np.ndarray, voxel_size: list[float, float, flo
 
     Args:
         path (str): path of the new file
-        stack (np.array): numpy array to save as tiff
+        stack (np.ndarray): numpy array to save as tiff
         voxel_size (list or tuple): tuple of the voxel size
         voxel_size_unit (str): units of the voxel size
     Returns:

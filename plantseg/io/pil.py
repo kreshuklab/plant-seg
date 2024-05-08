@@ -6,7 +6,7 @@ from typing import Union
 PIL_EXTENSIONS = ['.png', '.jpg', '.jpeg']
 
 
-def load_pill(path: str, info_only=False) -> Union[tuple, tuple[np.array, tuple]]:
+def load_pill(path: str, info_only=False) -> Union[tuple, tuple[np.ndarray, tuple]]:
     """
     Load a tiff file using PIL
 
@@ -15,7 +15,7 @@ def load_pill(path: str, info_only=False) -> Union[tuple, tuple[np.array, tuple]
         info_only (bool, optional): if true will return a tuple with the default infos.
             true infos can not be extracted from a PIL image. Defaults to False.
     Returns:
-        Union[tuple, tuple[np.array, tuple]]: loaded data as numpy array and infos
+        Union[tuple, tuple[np.ndarray, tuple]]: loaded data as numpy array and infos
     """
 
     image = Image.open(path)

@@ -29,7 +29,7 @@ def dt_watershed(boundary_pmaps: np.ndarray,
                  pixel_pitch: tuple[int, ...] = None,
                  apply_nonmax_suppression: bool = False,
                  n_threads: int = None,
-                 mask: np.ndarray = None) -> np.array:
+                 mask: np.ndarray = None) -> np.ndarray:
     """ Wrapper around elf.distance_transform_watershed
 
     Args:
@@ -76,7 +76,7 @@ def gasp(boundary_pmaps: np.ndarray,
          gasp_linkage_criteria: str = 'average',
          beta: float = 0.5,
          post_minsize: int = 100,
-         n_threads: int = 6) -> np.array:
+         n_threads: int = 6) -> np.ndarray:
     """
     Implementation of the GASP algorithm for segmentation from affinities.
 
@@ -141,7 +141,7 @@ def mutex_ws(boundary_pmaps: np.ndarray,
              superpixels: np.ndarray = None,
              beta: float = 0.5,
              post_minsize: int = 100,
-             n_threads: int = 6) -> np.array:
+             n_threads: int = 6) -> np.ndarray:
     """
     Wrapper around gasp with mutex_watershed as linkage criteria.
 
@@ -169,7 +169,7 @@ def mutex_ws(boundary_pmaps: np.ndarray,
 def multicut(boundary_pmaps: np.ndarray,
              superpixels: np.ndarray,
              beta: float = 0.5,
-             post_minsize: int = 50) -> np.array:
+             post_minsize: int = 50) -> np.ndarray:
 
     """
     Multicut segmentation from boundary predictions.
@@ -211,13 +211,13 @@ def lifted_multicut_from_nuclei_pmaps(boundary_pmaps: np.ndarray,
                                       nuclei_pmaps: np.ndarray,
                                       superpixels: np.ndarray,
                                       beta: float = 0.5,
-                                      post_minsize: int = 50) -> np.array:
+                                      post_minsize: int = 50) -> np.ndarray:
     """
     Lifted Multicut segmentation from boundary predictions and nuclei predictions.
 
     Args:
         boundary_pmaps (np.ndarray): cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.
-        nuclei_pmaps (np.array): nuclei predictions. Must have the same shape as boundary_pmaps and
+        nuclei_pmaps (np.ndarray): nuclei predictions. Must have the same shape as boundary_pmaps and
             with values between 0 and 1.
         superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
         beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards
@@ -259,13 +259,13 @@ def lifted_multicut_from_nuclei_segmentation(boundary_pmaps: np.ndarray,
                                              nuclei_seg: np.ndarray,
                                              superpixels: np.ndarray,
                                              beta: float = 0.5,
-                                             post_minsize: int = 50) -> np.array:
+                                             post_minsize: int = 50) -> np.ndarray:
     """
     Lifted Multicut segmentation from boundary predictions and nuclei segmentation.
 
     Args:
         boundary_pmaps (np.ndarray): cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.
-        nuclei_seg (np.array): Nuclei segmentation. Must have the same shape as boundary_pmaps.
+        nuclei_seg (np.ndarray): Nuclei segmentation. Must have the same shape as boundary_pmaps.
         superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
         beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards
         under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
@@ -302,7 +302,7 @@ def lifted_multicut_from_nuclei_segmentation(boundary_pmaps: np.ndarray,
 def simple_itk_watershed(boundary_pmaps: np.ndarray,
                          threshold: float = 0.5,
                          sigma: float = 1.0,
-                         minsize: int = 100) -> np.array:
+                         minsize: int = 100) -> np.ndarray:
     """
     Simple itk watershed segmentation.
 

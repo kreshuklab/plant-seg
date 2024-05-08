@@ -54,7 +54,7 @@ def _find_input_key(h5_file) -> str:
 def load_h5(path: str,
             key: str,
             slices: Optional[slice] = None,
-            info_only: bool = False) -> Union[tuple, tuple[np.array, tuple]]:
+            info_only: bool = False) -> Union[tuple, tuple[np.ndarray, tuple]]:
     """
     Load a dataset from a h5 file and returns some meta info about it.
     Args:
@@ -65,7 +65,7 @@ def load_h5(path: str,
         Defaults to False.
 
     Returns:
-        Union[tuple, tuple[np.array, tuple]]: dataset as numpy array and infos
+        Union[tuple, tuple[np.ndarray, tuple]]: dataset as numpy array and infos
     """
     with h5py.File(path, 'r') as f:
         if key is None:
@@ -92,7 +92,7 @@ def create_h5(path: str,
     Helper function to create a dataset inside a h5 file
     Args:
         path (str): file path
-        stack (np.array): numpy array to save as dataset in the h5 file
+        stack (np.ndarray): numpy array to save as dataset in the h5 file
         key (str): key of the dataset in the h5 file
         voxel_size (tuple[float, float, float]: voxel size in micrometers
         mode (str): mode to open the h5 file ['w', 'a']

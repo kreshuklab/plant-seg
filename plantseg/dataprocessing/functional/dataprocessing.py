@@ -66,7 +66,7 @@ def image_gaussian_smoothing(image: np.ndarray, sigma: float) -> np.ndarray:
     return gaussianSmoothing(image, sigma)
 
 
-def image_crop(image: np.ndarray, crop_str: str) -> np.array:
+def image_crop(image: np.ndarray, crop_str: str) -> np.ndarray:
     """
     crop image from a crop string like [:, 10:30:, 10:20]
     """
@@ -77,7 +77,7 @@ def image_crop(image: np.ndarray, crop_str: str) -> np.array:
     return image[slices]
 
 
-def fix_input_shape(data: np.ndarray, ndim=3) -> np.array:
+def fix_input_shape(data: np.ndarray, ndim=3) -> np.ndarray:
     assert ndim in [3, 4]
     if ndim == 3:
         return fix_input_shape_to_3D(data)
@@ -85,7 +85,7 @@ def fix_input_shape(data: np.ndarray, ndim=3) -> np.array:
         return fix_input_shape_to_4D(data)
 
 
-def fix_input_shape_to_3D(data: np.ndarray) -> np.array:
+def fix_input_shape_to_3D(data: np.ndarray) -> np.ndarray:
     """
     fix array ndim to be always 3
     """
@@ -102,7 +102,7 @@ def fix_input_shape_to_3D(data: np.ndarray) -> np.array:
         raise RuntimeError(f"Expected input data to be 2d, 3d or 4d, but got {data.ndim}d input")
 
 
-def fix_input_shape_to_4D(data: np.ndarray) -> np.array:
+def fix_input_shape_to_4D(data: np.ndarray) -> np.ndarray:
     """
     Fix array ndim to be 4 and return it in (C x Z x Y x X) e.g. 2 x 1 x 512 x 512
 
@@ -121,7 +121,7 @@ def fix_input_shape_to_4D(data: np.ndarray) -> np.array:
         raise RuntimeError(f"Expected input data to be 3d or 4d, but got {data.ndim}d input")
 
 
-def normalize_01(data: np.ndarray) -> np.array:
+def normalize_01(data: np.ndarray) -> np.ndarray:
     """
     normalize a numpy array between 0 and 1
     """
