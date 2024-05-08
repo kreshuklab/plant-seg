@@ -87,3 +87,13 @@ def check_version(current_version: str, plantseg_url: str = 'https://api.github.
             print(f"You are using the latest version of PlantSeg: {current_version}.")
     except requests.RequestException as e:
         warn(f"Could not check for new version. Error: {e}")
+
+
+def get_class(class_name, modules):
+    """Get a class by name from a list of modules."""
+    for module in modules:
+        m = importlib.import_module(module)
+        clazz = getattr(m, class_name, None)
+        if clazz is not None:
+            return clazz
+    raise RuntimeError(f'Unsupported class: {class_name}')

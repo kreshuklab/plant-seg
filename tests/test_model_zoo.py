@@ -2,7 +2,7 @@ import pytest
 import torch
 
 from plantseg.training.model import UNet2D
-from plantseg.predictions.functional.utils import get_model_config
+from plantseg.models.zoo import model_zoo
 
 # test some modes (3D and 2D)
 MODEL_NAMES = ['confocal_2D_unet_ovules_ds2x',
@@ -15,7 +15,7 @@ class TestModelZoo:
     @pytest.mark.skip("github workflows do not allow to download models for security reason")
     def test_model_zoo(self):
         for model_name in MODEL_NAMES:
-            model, _, model_path = get_model_config(model_name, model_update=True)
+            model, _, model_path = model_zoo.get_model_config(model_name, model_update=True)
             state = torch.load(model_path, map_location='cpu')
             model.load_state_dict(state)
             model.eval()

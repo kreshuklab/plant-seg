@@ -2,10 +2,11 @@ import numpy as np
 import torch
 
 from plantseg.io.io import load_shape
+from plantseg.models.zoo import model_zoo
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep
 from plantseg.predictions.functional.array_predictor import ArrayPredictor
-from plantseg.predictions.functional.utils import get_array_dataset, get_model_config, get_patch_halo
+from plantseg.predictions.functional.utils import get_array_dataset, get_patch_halo
 
 
 def _check_patch_size(paths, patch_size):
@@ -55,7 +56,7 @@ class UnetPredictions(GenericPipelineStep):
                          file_suffix='_predictions',
                          h5_output_key=h5_output_key)
 
-        model, model_config, model_path = get_model_config(model_name, model_update=model_update)
+        model, model_config, model_path = model_zoo.get_model_config(model_name, model_update=model_update)
         state = torch.load(model_path, map_location='cpu')
 
         # ensure compatibility with models trained with pytorch-3dunet

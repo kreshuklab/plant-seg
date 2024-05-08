@@ -3,13 +3,14 @@ from typing import Tuple
 import numpy as np
 import torch
 
+from plantseg.models.zoo import model_zoo
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.augment.transforms import get_test_augmentations
 from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape_to_3D, fix_input_shape_to_4D
 from plantseg.predictions.functional.array_dataset import ArrayDataset
 from plantseg.predictions.functional.array_predictor import ArrayPredictor
 from plantseg.predictions.functional.slice_builder import SliceBuilder
-from plantseg.predictions.functional.utils import get_model_config, get_patch_halo, get_stride_shape
+from plantseg.predictions.functional.utils import get_patch_halo, get_stride_shape
 
 def unet_predictions(
     raw: np.ndarray,
@@ -40,7 +41,7 @@ def unet_predictions(
     Returns:
         np.ndarray: The predicted boundaries as a 3D (Z, Y, X) or 4D (C, Z, Y, X) array, normalized between 0 and 1.
     """
-    model, model_config, model_path = get_model_config(model_name, model_update=model_update)
+    model, model_config, model_path = model_zoo.get_model_config(model_name, model_update=model_update)
     state = torch.load(model_path, map_location='cpu')
 
     if 'model_state_dict' in state:  # Model weights format may vary between versions

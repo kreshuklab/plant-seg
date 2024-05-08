@@ -1,6 +1,5 @@
-from plantseg import PATH_PREDICT_TEMPLATE, PATH_PLANTSEG_MODELS, FILE_BEST_MODEL_PYTORCH
+from plantseg import PATH_PREDICT_TEMPLATE
 from plantseg.augment.transforms import get_test_augmentations
-from plantseg.training.model import get_model
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset
 from plantseg.predictions.functional.slice_builder import SliceBuilder
@@ -11,15 +10,6 @@ from plantseg.utils import load_config
 def get_predict_template():
     predict_template = load_config(PATH_PREDICT_TEMPLATE)
     return predict_template
-
-
-def get_model_config(model_name, model_update=False):
-    model_zoo.check_models(model_name, update_files=model_update)
-    config_train = model_zoo.get_train_config(model_name)
-    model_config = config_train.pop('model')
-    model = get_model(model_config)
-    model_path = PATH_PLANTSEG_MODELS / model_name / FILE_BEST_MODEL_PYTORCH
-    return model, model_config, model_path
 
 
 def get_array_dataset(raw, model_name, patch, stride_ratio, halo_shape, global_normalization=True):

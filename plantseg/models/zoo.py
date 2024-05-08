@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, AliasChoices, model_validator
 
 from plantseg import PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM, PATH_PLANTSEG_MODELS
 from plantseg import FILE_CONFIG_TRAIN_YAML, FILE_BEST_MODEL_PYTORCH, FILE_LAST_MODEL_PYTORCH
-from plantseg.utils import load_config, save_config, download_files
+from plantseg.utils import get_class, load_config, save_config, download_files
 
 AUTHOR_PLANTSEG = 'plantseg'
 AUTHOR_USER = 'user'
@@ -263,6 +263,20 @@ class ModelZoo:
         self.check_models(model_name, config_only=True)
         train_config_path = PATH_PLANTSEG_MODELS / model_name / FILE_CONFIG_TRAIN_YAML
         return load_config(train_config_path)
+
+    def _get_model(self, model_config):
+        """Load a model from a configuration dictionary."""
+        model_class = get_class(model_config['name'], modules=['plantseg.training.model'])
+        return model_class(**model_config)
+
+    def get_model_config(self, model_name, model_update=False):
+        """Load a model configuration and return the model, configuration and path."""
+        self.check_models(model_name, update_files=model_update)
+        config_train = self.get_train_config(model_name)
+        model_config = config_train.pop('model')
+        model = self._get_model(model_config)
+        model_path = PATH_PLANTSEG_MODELS / model_name / FILE_BEST_MODEL_PYTORCH
+        return model, model_config, model_path
 
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)
