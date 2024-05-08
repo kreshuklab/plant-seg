@@ -15,7 +15,7 @@ class TestModelZoo:
     @pytest.mark.skip("github workflows do not allow to download models for security reason")
     def test_model_zoo(self):
         for model_name in MODEL_NAMES:
-            model, _, model_path = model_zoo.get_model_config(model_name, model_update=True)
+            model, _, model_path = model_zoo.get_model_by_name(model_name, model_update=True)
             state = torch.load(model_path, map_location='cpu')
             model.load_state_dict(state)
             model.eval()

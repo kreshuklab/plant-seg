@@ -34,7 +34,7 @@ def get_patch_halo(model_name):
     predict_template = get_predict_template()
     patch_halo = predict_template['predictor']['patch_halo']
 
-    config_train = model_zoo.get_train_config(model_name)
+    config_train = model_zoo.get_model_config_by_name(model_name)
     if config_train["model"]["name"] == "UNet2D":
         patch_halo[0] = 0
 

@@ -41,7 +41,7 @@ def unet_predictions(
     Returns:
         np.ndarray: The predicted boundaries as a 3D (Z, Y, X) or 4D (C, Z, Y, X) array, normalized between 0 and 1.
     """
-    model, model_config, model_path = model_zoo.get_model_config(model_name, model_update=model_update)
+    model, model_config, model_path = model_zoo.get_model_by_name(model_name, model_update=model_update)
     state = torch.load(model_path, map_location='cpu')
 
     if 'model_state_dict' in state:  # Model weights format may vary between versions

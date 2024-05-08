@@ -56,7 +56,7 @@ class UnetPredictions(GenericPipelineStep):
                          file_suffix='_predictions',
                          h5_output_key=h5_output_key)
 
-        model, model_config, model_path = model_zoo.get_model_config(model_name, model_update=model_update)
+        model, model_config, model_path = model_zoo.get_model_by_name(model_name, model_update=model_update)
         state = torch.load(model_path, map_location='cpu')
 
         # ensure compatibility with models trained with pytorch-3dunet

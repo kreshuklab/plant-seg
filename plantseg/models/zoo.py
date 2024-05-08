@@ -258,25 +258,36 @@ class ModelZoo:
             else:
                 warn(f"Model {model_name} not found in the models zoo configuration.")
 
-    def get_train_config(self, model_name: str) -> dict:
-        """Load the training configuration for a specified model."""
+    def _get_model_config_path_by_name(self, model_name: str) -> Path:
+        """Return the path to the training configuration for a model in zoo."""
         self.check_models(model_name, config_only=True)
-        train_config_path = PATH_PLANTSEG_MODELS / model_name / FILE_CONFIG_TRAIN_YAML
-        return load_config(train_config_path)
+        return PATH_PLANTSEG_MODELS / model_name / FILE_CONFIG_TRAIN_YAML
 
-    def _get_model(self, model_config):
-        """Load a model from a configuration dictionary."""
+    def get_model_config_by_name(self, model_name: str) -> dict:
+        """Load the training configuration for a model in zoo."""
+        config_path = self._get_model_config_path_by_name(model_name)
+        return load_config(config_path)
+
+    def _create_model_by_config(self, model_config: dict):
+        """Create a model instance from a configuration."""
         model_class = get_class(model_config['name'], modules=['plantseg.training.model'])
         return model_class(**model_config)
 
-    def get_model_config(self, model_name, model_update=False):
-        """Load a model configuration and return the model, configuration and path."""
-        self.check_models(model_name, update_files=model_update)
-        config_train = self.get_train_config(model_name)
+    def get_model_by_config_path(self, config_path: Path, model_weights_path: Optional[Path] = None):
+        """Create a safari model (may or may not be in zoo) from a configuration file."""
+        config_train = load_config(config_path)
         model_config = config_train.pop('model')
-        model = self._get_model(model_config)
-        model_path = PATH_PLANTSEG_MODELS / model_name / FILE_BEST_MODEL_PYTORCH
-        return model, model_config, model_path
+        model = self._create_model_by_config(model_config)
+        if model_weights_path is None:
+            model_weights_path = config_path.parent / FILE_BEST_MODEL_PYTORCH
+        return model, model_config, model_weights_path
+
+    def get_model_by_name(self, model_name: str, model_update: bool = False):
+        """Load configuration for a model in zoo; return the model, configuration and path."""
+        self.check_models(model_name, update_files=model_update)
+        config_path = self._get_model_config_path_by_name(model_name)
+        model_weights_path = PATH_PLANTSEG_MODELS / model_name / FILE_BEST_MODEL_PYTORCH
+        return self.get_model_by_config_path(config_path, model_weights_path)
 
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)
