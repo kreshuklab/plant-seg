@@ -22,13 +22,13 @@ class DataPostProcessing3D(GenericPipelineStep):
                  input_type: str = "labels",
                  output_type: str = "labels",
                  save_directory: str = "PostProcessing",
-                 factor: Optional[list[float, float, float]] = None,
+                 factor: Optional[tuple[float, float, float]] = None,
                  out_ext: str = ".h5",
                  state: bool = True,
                  save_raw: bool = False,
                  output_shapes: Optional[list] = None):
         if factor is None:
-            factor = [1, 1, 1]
+            factor = (1, 1, 1)
 
         h5_output_key = "segmentation" if input_type == "labels" else "predictions"
 
@@ -76,7 +76,7 @@ class DataPreProcessing3D(GenericPipelineStep):
                  input_type: str = "data_float32",
                  output_type: str = "data_uint8",
                  save_directory: str = "PreProcessing",
-                 factor: Optional[list[float, float, float]] = None,
+                 factor: Optional[tuple[float, float, float]] = None,
                  filter_type: Optional[str] = None,
                  filter_param: Optional = None,
                  state: bool = True,
@@ -93,7 +93,7 @@ class DataPreProcessing3D(GenericPipelineStep):
                          h5_output_key='raw')
 
         if factor is None:
-            factor = [1, 1, 1]
+            factor = (1, 1, 1)
 
         self.crop = crop
 

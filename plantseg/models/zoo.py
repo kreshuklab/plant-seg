@@ -24,10 +24,10 @@ class ModelZooRecord(BaseModel):
     path: Optional[str] = None
     id: Optional[str] = None
     description: Optional[str] = None
-    resolution: Optional[List[float]] = None
+    resolution: Optional[Tuple[float, float, float]] = None
     dimensionality: Optional[str] = None
     modality: Optional[str] = None
-    recommended_patch_size: Optional[List[int]] = None
+    recommended_patch_size: Optional[Tuple[float, float, float]] = None
     output_type: Optional[str] = None
     doi: Optional[str] = None
     added_by: Optional[str] = None
@@ -146,10 +146,10 @@ class ModelZoo:
     def get_model_description(self, model_name: str) -> Optional[str]:
         return self._get_model_record(model_name).description
 
-    def get_model_resolution(self, model_name: str) -> Optional[List[float]]:
+    def get_model_resolution(self, model_name: str) -> Optional[Tuple[float, float, float]]:
         return self._get_model_record(model_name).resolution
 
-    def get_model_patch_size(self, model_name: str) -> Optional[List[int]]:
+    def get_model_patch_size(self, model_name: str) -> Optional[Tuple[float, float, float]]:
         return self._get_model_record(model_name).recommended_patch_size
 
     def _get_unique_metadata(self, metadata_key: str) -> List[str]:

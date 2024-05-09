@@ -8,7 +8,7 @@ import tifffile
 TIFF_EXTENSIONS = [".tiff", ".tif"]
 
 
-def _read_imagej_meta(tiff) -> tuple[list[float, float, float], str]:
+def _read_imagej_meta(tiff) -> tuple[tuple[float, float, float], str]:
     """
     Implemented based on information found in https://pypi.org/project/tifffile
     Returns the voxel size and the voxel units
@@ -31,10 +31,10 @@ def _read_imagej_meta(tiff) -> tuple[list[float, float, float], str]:
     y = _xy_voxel_size(tags, 'YResolution')
     x = _xy_voxel_size(tags, 'XResolution')
     # return voxel size
-    return [z, y, x], voxel_size_unit
+    return (z, y, x), voxel_size_unit
 
 
-def _read_ome_meta(tiff) -> tuple[list[float, float, float], str]:
+def _read_ome_meta(tiff) -> tuple[tuple[float, float, float], str]:
     """
     Returns the voxels size and the voxel units
     """
@@ -47,7 +47,7 @@ def _read_ome_meta(tiff) -> tuple[list[float, float, float], str]:
     else:
         warnings.warn(f'Error parsing omero tiff meta Image. '
                       f'Reverting to default voxel size (1., 1., 1.) um')
-        return [1., 1., 1.], 'um'
+        return (1., 1., 1.), 'um'
 
     pixels_element = [pixels for pixels in image_element if pixels.tag.find('Pixels') != -1]
     if pixels_element:
@@ -55,7 +55,7 @@ def _read_ome_meta(tiff) -> tuple[list[float, float, float], str]:
     else:
         warnings.warn(f'Error parsing omero tiff meta Pixels. '
                       f'Reverting to default voxel size (1., 1., 1.) um')
-        return [1., 1., 1.], 'um'
+        return (1., 1., 1.), 'um'
 
     units = []
     x, y, z, voxel_size_unit = None, None, None, 'um'
@@ -93,7 +93,7 @@ def _read_ome_meta(tiff) -> tuple[list[float, float, float], str]:
         warnings.warn(f'Error parsing omero tiff meta. '
                       f'Reverting to default voxel size z = 1.')
 
-    return [z, y, x], voxel_size_unit
+    return (z, y, x), voxel_size_unit
 
 
 def read_tiff_voxel_size(file_path: str) -> tuple[list[float, float, float], str]:
@@ -114,7 +114,7 @@ def read_tiff_voxel_size(file_path: str) -> tuple[list[float, float, float], str
             x, y, z = 1., 1., 1.
             voxel_size_unit = 'um'
 
-        return [z, y, x], voxel_size_unit
+        return (z, y, x), voxel_size_unit
 
 
 def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.ndarray, tuple]]:
@@ -133,7 +133,7 @@ def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.ndarr
     except:
         # ZeroDivisionError could happen while reading the voxel size
         warnings.warn('Voxel size not found, returning default [1.0, 1.0. 1.0]', RuntimeWarning)
-        voxel_size = [1.0, 1.0, 1.0]
+        voxel_size = (1.0, 1.0, 1.0)
         voxel_size_unit = 'um'
 
     infos = (voxel_size, file.shape, None, voxel_size_unit)
@@ -143,7 +143,7 @@ def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.ndarr
     return file, infos
 
 
-def create_tiff(path: str, stack: np.ndarray, voxel_size: list[float, float, float], voxel_size_unit: str = 'um') -> None:
+def create_tiff(path: str, stack: np.ndarray, voxel_size: tuple[float, float, float], voxel_size_unit: str = 'um') -> None:
     """
     Create a tiff file from a numpy array
 

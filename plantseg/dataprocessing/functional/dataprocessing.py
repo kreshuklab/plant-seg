@@ -5,27 +5,29 @@ from skimage.morphology import disk, ball
 from vigra import gaussianSmoothing
 
 
-def compute_scaling_factor(input_voxel_size: list[float, float, float],
-                           output_voxel_size: list[float, float, float]) -> list[float, float, float]:
+def compute_scaling_factor(input_voxel_size: tuple[float, float, float],
+                           output_voxel_size: tuple[float, float, float]) -> tuple[float, float, float]:
     """
     compute the scaling factor between two voxel sizes
     """
-    scaling = [i_size / o_size for i_size, o_size in zip(input_voxel_size, output_voxel_size)]
+    scaling = tuple(i_size / o_size for i_size, o_size in zip(input_voxel_size, output_voxel_size))
+    assert len(scaling) == 3, f"Expected scaling factor to be 3d, but got {len(scaling)}d input"
     return scaling
 
 
-def compute_scaling_voxelsize(input_voxel_size: list[float, float, float],
-                              scaling_factor: list[float, float, float]) -> list[float, float, float]:
+def compute_scaling_voxelsize(input_voxel_size: tuple[float, float, float],
+                              scaling_factor: tuple[float, float, float]) -> tuple[float, float, float]:
     """
     compute the output voxel size given the scaling factor
     """
-    output_voxel_size = [i_size / s_size for i_size, s_size in zip(input_voxel_size, scaling_factor)]
+    output_voxel_size = tuple(i_size / s_size for i_size, s_size in zip(input_voxel_size, scaling_factor))
+    assert len(output_voxel_size) == 3, f"Expected output voxel size to be 3d, but got {len(output_voxel_size)}d input"
     return output_voxel_size
 
 
 def scale_image_to_voxelsize(image: np.ndarray,
-                             input_voxel_size: list[float, float, float],
-                             output_voxel_size: list[float, float, float],
+                             input_voxel_size: tuple[float, float, float],
+                             output_voxel_size: tuple[float, float, float],
                              order: int = 0) -> np.ndarray:
     """
     scale an image from a given voxel size
@@ -34,7 +36,7 @@ def scale_image_to_voxelsize(image: np.ndarray,
     return image_rescale(image, factor, order=order)
 
 
-def image_rescale(image: np.ndarray, factor: list[float, float, float], order: int) -> np.ndarray:
+def image_rescale(image: np.ndarray, factor: tuple[float, float, float], order: int) -> np.ndarray:
     """
     scale an image from a given scaling factor
     """

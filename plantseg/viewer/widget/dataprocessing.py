@@ -102,10 +102,10 @@ def widget_rescaling(viewer: Viewer,
         raise ValueError(f'{type(image)} cannot be rescaled, please use Image layers or Labels layers')
 
     current_resolution = image.scale
-    rescaling_factor = [float(x) for x in rescaling_factor]
+    rescaling_factor = tuple(float(x) for x in rescaling_factor) # type: ignore
 
     if image.data.ndim == 2:
-        rescaling_factor[0] = 1.
+        rescaling_factor = (1.,) + rescaling_factor[1:]
 
     out_voxel_size = compute_scaling_voxelsize(current_resolution, scaling_factor=rescaling_factor)
 

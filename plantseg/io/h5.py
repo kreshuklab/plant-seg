@@ -9,7 +9,7 @@ H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]
 H5_KEYS = ["raw", "predictions", "segmentation"]
 
 
-def read_h5_voxel_size(f, h5key: str) -> list[float, float, float]:
+def read_h5_voxel_size(f, h5key: str) -> tuple[float, float, float]:
     """
     :returns the voxels size stored in a h5 dataset (if absent returns [1, 1, 1])
     """
@@ -17,12 +17,10 @@ def read_h5_voxel_size(f, h5key: str) -> list[float, float, float]:
 
     # parse voxel_size
     if 'element_size_um' in ds.attrs:
-        voxel_size = ds.attrs['element_size_um']
+        return ds.attrs['element_size_um']
     else:
         warnings.warn('Voxel size not found, returning default [1.0, 1.0. 1.0]', RuntimeWarning)
-        voxel_size = [1.0, 1.0, 1.0]
-
-    return voxel_size
+        return (1.0, 1.0, 1.0)
 
 
 def _find_input_key(h5_file) -> str:
