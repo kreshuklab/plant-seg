@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 import numpy as np
 from skimage.transform import resize
@@ -78,9 +78,9 @@ class DataPreProcessing3D(GenericPipelineStep):
                  save_directory: str = "PreProcessing",
                  factor: Optional[tuple[float, float, float]] = None,
                  filter_type: Optional[str] = None,
-                 filter_param: Optional = None,
+                 filter_param: Optional[Any] = None,
                  state: bool = True,
-                 crop: str = None):
+                 crop: Optional[str] = None):
 
         super().__init__(input_paths,
                          input_type=input_type,
@@ -118,7 +118,7 @@ class DataPreProcessing3D(GenericPipelineStep):
             self.filter_param = 0
 
     def process(self, image: np.ndarray) -> np.ndarray:
-        gui_logger.info(f"Preprocessing files...")
+        gui_logger.info("Preprocessing files...")
         if self.crop is not None:
             gui_logger.info(f"Cropping input image to: {self.crop}")
             image = image_crop(image, self.crop)

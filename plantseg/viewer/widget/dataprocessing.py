@@ -104,6 +104,7 @@ def widget_rescaling(viewer: Viewer,
     current_resolution = image.scale
     rescaling_factor = tuple(float(x) for x in rescaling_factor) # type: ignore
 
+    assert isinstance(image.data, np.ndarray), "Only numpy arrays are supported for rescaling."
     if image.data.ndim == 2:
         rescaling_factor = (1.,) + rescaling_factor[1:]
 
@@ -137,7 +138,7 @@ def widget_rescaling(viewer: Viewer,
 
 
 @widget_rescaling.image.changed.connect
-def _on_image_changed(image: Layer):
+def _on_rescaling_image_changed(image: Layer):
     image = return_value_if_widget(image)
     widget_rescaling.out_voxel_size.value = image.scale
 
@@ -161,6 +162,8 @@ def _on_reference_layer_changed(reference_layer: Layer):
 def _on_reference_model_changed(reference_model: str):
     reference_model = return_value_if_widget(reference_model)
     out_voxel_size = model_zoo.get_model_resolution(reference_model)
+    if out_voxel_size is None:
+        raise ValueError(f"Model {reference_model} does not have a resolution defined.")
     rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, out_voxel_size)
     widget_rescaling.rescaling_factor.value = rescaling_factor
     widget_rescaling.out_voxel_size.value = out_voxel_size
@@ -230,6 +233,7 @@ def widget_cropping(viewer: Viewer,
     else:
         rectangle = None
 
+    assert isinstance(image.data, np.ndarray), "Only numpy arrays are supported for cropping."
     crop_slices = _compute_slices(rectangle, crop_z, image.data.shape)
 
     return start_threading_process(_cropping,
@@ -252,7 +256,7 @@ def widget_cropping(viewer: Viewer,
 
 
 @widget_cropping.image.changed.connect
-def _on_image_changed(image: Layer):
+def _on_cropping_image_changed(image: Layer):
     image = return_value_if_widget(image)
     image_shape = image.data.shape
 

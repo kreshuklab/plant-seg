@@ -24,7 +24,7 @@ def read_h5_voxel_size(f, h5key: str) -> tuple[float, float, float]:
 
 
 def _find_input_key(h5_file) -> str:
-    f"""
+    """
     returns the first matching key in H5_KEYS or only one dataset is found the key to that dataset
     """
     found_datasets = []
@@ -70,13 +70,17 @@ def load_h5(path: str,
             key = _find_input_key(f)
 
         voxel_size = read_h5_voxel_size(f, key)
-        file_shape = f[key].shape
+
+        ds = f[key]
+        if not isinstance(ds, h5py.Dataset):
+            raise ValueError(f"'{key}' is not a h5py.Dataset.")
+        file_shape = ds.shape
 
         infos = (voxel_size, file_shape, key, 'um')
         if info_only:
             return infos
 
-        file = f[key][...] if slices is None else f[key][slices]
+        file = ds[...] if slices is None else ds[slices]
 
     return file, infos
 

@@ -45,16 +45,16 @@ def _read_ome_meta(tiff) -> tuple[tuple[float, float, float], str]:
     if image_element:
         image_element = image_element[0]
     else:
-        warnings.warn(f'Error parsing omero tiff meta Image. '
-                      f'Reverting to default voxel size (1., 1., 1.) um')
+        warnings.warn('Error parsing omero tiff meta Image. '
+                      'Reverting to default voxel size (1., 1., 1.) um')
         return (1., 1., 1.), 'um'
 
     pixels_element = [pixels for pixels in image_element if pixels.tag.find('Pixels') != -1]
     if pixels_element:
         pixels_element = pixels_element[0]
     else:
-        warnings.warn(f'Error parsing omero tiff meta Pixels. '
-                      f'Reverting to default voxel size (1., 1., 1.) um')
+        warnings.warn('Error parsing omero tiff meta Pixels. '
+                      'Reverting to default voxel size (1., 1., 1.) um')
         return (1., 1., 1.), 'um'
 
     units = []
@@ -75,28 +75,28 @@ def _read_ome_meta(tiff) -> tuple[tuple[float, float, float], str]:
 
     if units:
         voxel_size_unit = units[0]
-        if not np.alltrue([_value == units[0] for _value in units]):
-            warnings.warn(f'Units are not homogeneous: {units}')
+        if not all(unit == voxel_size_unit for unit in units):
+            warnings.warn('Units are not homogeneous: {units}')
 
     if x is None:
         x = 1.
-        warnings.warn(f'Error parsing omero tiff meta. '
-                      f'Reverting to default voxel size x = 1.')
+        warnings.warn('Error parsing omero tiff meta. '
+                      'Reverting to default voxel size x = 1.')
 
     if y is None:
         y = 1.
-        warnings.warn(f'Error parsing omero tiff meta. '
-                      f'Reverting to default voxel size y = 1.')
+        warnings.warn('Error parsing omero tiff meta. '
+                      'Reverting to default voxel size y = 1.')
 
     if z is None:
         z = 1.
-        warnings.warn(f'Error parsing omero tiff meta. '
-                      f'Reverting to default voxel size z = 1.')
+        warnings.warn('Error parsing omero tiff meta. '
+                      'Reverting to default voxel size z = 1.')
 
     return (z, y, x), voxel_size_unit
 
 
-def read_tiff_voxel_size(file_path: str) -> tuple[list[float, float, float], str]:
+def read_tiff_voxel_size(file_path: str) -> tuple[tuple[float, float, float], str]:
     """
     Returns the voxels size and the voxel units for imagej and ome style tiff (if absent returns [1, 1, 1], um)
     """
@@ -109,8 +109,8 @@ def read_tiff_voxel_size(file_path: str) -> tuple[list[float, float, float], str
 
         else:
             # default voxel size
-            warnings.warn(f'No metadata found. '
-                          f'Reverting to default voxel size (1., 1., 1.) um')
+            warnings.warn('No metadata found. '
+                          'Reverting to default voxel size (1., 1., 1.) um')
             x, y, z = 1., 1., 1.
             voxel_size_unit = 'um'
 
@@ -130,7 +130,7 @@ def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.ndarr
     file = tifffile.imread(path)
     try:
         voxel_size, voxel_size_unit = read_tiff_voxel_size(path)
-    except:
+    except ZeroDivisionError:
         # ZeroDivisionError could happen while reading the voxel size
         warnings.warn('Voxel size not found, returning default [1.0, 1.0. 1.0]', RuntimeWarning)
         voxel_size = (1.0, 1.0, 1.0)
