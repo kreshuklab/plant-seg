@@ -1,8 +1,7 @@
 """
 Reading and writing zarrs. Created in the same format as h5.py
-Author: Samia Mohinta
-Affiliation: Cardona lab, Cambridge University
 """
+
 import warnings
 from typing import Optional, Union
 
@@ -15,7 +14,7 @@ ZARR_EXTENSIONS = [".zarr"]
 ZARR_KEYS = ["raw", "predictions", "segmentation"]
 
 
-def read_zarr_voxel_size(f, zarrkey: str) -> list[float, float, float]:
+def read_zarr_voxel_size(f, zarrkey: str) -> tuple[float, float, float]:
     """
     :returns the voxels size stored in a zarr dataset (if absent returns [1, 1, 1])
     """
@@ -23,24 +22,22 @@ def read_zarr_voxel_size(f, zarrkey: str) -> list[float, float, float]:
 
     # parse voxel_size
     if 'element_size_um' in ds.attrs:
-        voxel_size = ds.attrs['element_size_um']
+        return ds.attrs['element_size_um']
     elif 'resolution' in ds.attrs:
-        voxel_size = ds.attrs['resolution']
+        return ds.attrs['resolution']
     else:
         warnings.warn('Voxel size not found, returning default [1.0, 1.0. 1.0]', RuntimeWarning)
-        voxel_size = [1.0, 1.0, 1.0]
-
-    return voxel_size
+        return (1.0, 1.0, 1.0)
 
 
 def _find_input_key(zarr_file) -> str:
-    f"""
+    """
     returns the first matching key in ZARR_KEYS or only one dataset is found the key to that dataset
     """
     found_datasets = []
 
     def visitor_func(name, node):
-        if isinstance(node, zarr.core.Array):
+        if isinstance(node, zarr.Array):
             found_datasets.append(name)
 
     zarr_file.visititems(visitor_func)
@@ -75,18 +72,18 @@ def load_zarr(path: str,
     Returns:
         Union[tuple, tuple[np.ndarray, tuple]]: dataset as numpy array and infos
     """
-    with zarr.open(path, 'r') as f:
-        if key is None:
-            key = _find_input_key(f)
+    f = zarr.open(path, 'r')
+    if key is None:
+        key = _find_input_key(f)
 
-        voxel_size = read_zarr_voxel_size(f, key)
-        file_shape = f[key].shape
+    voxel_size = read_zarr_voxel_size(f, key)
+    file_shape = f[key].shape
 
-        infos = (voxel_size, file_shape, key, 'um')
-        if info_only:
-            return infos
+    infos = (voxel_size, file_shape, key, 'um')
+    if info_only:
+        return infos
 
-        file = f[key][...] if slices is None else f[key][slices]
+    file = f[key][...] if slices is None else f[key][slices]
 
     return file, infos
 
@@ -109,10 +106,11 @@ def create_zarr(path: str,
         None
     """
 
-    with zarr.open(path, mode) as f:
-        f.create_dataset(key, data=stack, compression='gzip', overwrite=True)
-        # save voxel_size
-        f[key].attrs['element_size_um'] = voxel_size
+    f = zarr.open(path, mode)
+    assert isinstance(f, zarr.Group), "Zarr file is not a group"
+    f.create_dataset(key, data=stack, compression='gzip', overwrite=True)
+    # save voxel_size
+    f[key].attrs['element_size_um'] = voxel_size
 
 
 def list_keys(path):
@@ -124,6 +122,7 @@ def list_keys(path):
     Returns:
         list of keys
     """
+
     def _recursive_find_keys(f, base: Path = Path('/')):
         _list_keys = []
         for key, dataset in f.items():
@@ -136,22 +135,22 @@ def list_keys(path):
                 _list_keys.append(new_key)
         return _list_keys
 
-    with zarr.open(path, 'r') as zarr_f:
-        return _recursive_find_keys(zarr_f)
+    zarr_f = zarr.open(path, 'r')
+    return _recursive_find_keys(zarr_f)
 
 
 def del_zarr_key(path: str, key: str, mode: str = 'a') -> None:
     """
     helper function to delete a dataset from a zarrfile
     """
-    with zarr.open(path, mode) as f:
-        if key in f:
-            del f[key]
+    f = zarr.open(path, mode)
+    if key in f:
+        del f[key]  # FIXME: "__delitem__" method not defined on type "Array"
 
 
 def rename_zarr_key(path: str, old_key: str, new_key: str, mode='r+') -> None:
-    """ Rename the 'old_key' dataset to 'new_key' """
-    with zarr.open(path, mode) as f:
-        if old_key in f:
-            f[new_key] = f[old_key]
-            del f[old_key]
+    """Rename the 'old_key' dataset to 'new_key'"""
+    f = zarr.open(path, mode)
+    if old_key in f:
+        f[new_key] = f[old_key]
+        del f[old_key]  # FIXME: "__delitem__" method not defined on type "Array"

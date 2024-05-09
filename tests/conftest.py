@@ -31,9 +31,9 @@ def input_path(tmpdir):
 def input_path_zarr(tmpdir):
     import zarr
     path = os.path.join(tmpdir, 'test.zarr')
-    with zarr.open(path, 'w') as f:
-        f.create_dataset('volumes/raw', data=np.random.rand(32, 128, 128))
-        f['volumes/raw'].attrs['element_size_um'] = VOXEL_SIZE
+    f = zarr.open(path, 'w')
+    f.create_dataset('volumes/raw', data=np.random.rand(32, 128, 128))
+    f['volumes/raw'].attrs['element_size_um'] = VOXEL_SIZE
     return path
 
 
