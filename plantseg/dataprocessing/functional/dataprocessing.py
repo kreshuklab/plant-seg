@@ -62,8 +62,8 @@ def image_gaussian_smoothing(image: np.ndarray, sigma: float) -> np.ndarray:
     """
     image = image.astype('float32')
     max_sigma = (np.array(image.shape) - 1) / 3
-    sigma = np.minimum(max_sigma, np.ones(max_sigma.ndim) * sigma)
-    return gaussianSmoothing(image, sigma)
+    sigma_array = np.minimum(max_sigma, np.ones(max_sigma.ndim) * sigma)
+    return gaussianSmoothing(image, sigma_array)
 
 
 def image_crop(image: np.ndarray, crop_str: str) -> np.ndarray:
@@ -80,12 +80,12 @@ def image_crop(image: np.ndarray, crop_str: str) -> np.ndarray:
 def fix_input_shape(data: np.ndarray, ndim=3) -> np.ndarray:
     assert ndim in [3, 4]
     if ndim == 3:
-        return fix_input_shape_to_3D(data)
+        return fix_input_shape_to_ZYX(data)
     else:
-        return fix_input_shape_to_4D(data)
+        return fix_input_shape_to_CZYX(data)
 
 
-def fix_input_shape_to_3D(data: np.ndarray) -> np.ndarray:
+def fix_input_shape_to_ZYX(data: np.ndarray) -> np.ndarray:
     """
     fix array ndim to be always 3
     """
@@ -102,20 +102,15 @@ def fix_input_shape_to_3D(data: np.ndarray) -> np.ndarray:
         raise RuntimeError(f"Expected input data to be 2d, 3d or 4d, but got {data.ndim}d input")
 
 
-def fix_input_shape_to_4D(data: np.ndarray) -> np.ndarray:
+def fix_input_shape_to_CZYX(data: np.ndarray) -> np.ndarray:
     """
     Fix array ndim to be 4 and return it in (C x Z x Y x X) e.g. 2 x 1 x 512 x 512
-
-    Only used for multi-channel network output, e.g. 2-channel 3D pmaps.
     """
     if data.ndim == 4:
         return data
 
     elif data.ndim == 3:
         return data.reshape(data.shape[0], 1, data.shape[1], data.shape[2])
-
-    # elif data.ndim == 2:
-    #     return data.reshape(1, 1, data.shape[0], data.shape[1])
 
     else:
         raise RuntimeError(f"Expected input data to be 3d or 4d, but got {data.ndim}d input")

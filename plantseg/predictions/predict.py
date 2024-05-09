@@ -69,6 +69,7 @@ class UnetPredictions(GenericPipelineStep):
             patch_halo = get_patch_halo(model_name)
         self.halo_shape = patch_halo
         is_embedding = not model_config.get('is_segmentation', True)
+        self.multichannel_input = int(model_config['in_channels']) > 1
         self.predictor = ArrayPredictor(model=model, in_channels=model_config['in_channels'],
                                         out_channels=model_config['out_channels'], device=device, patch=self.patch,
                                         patch_halo=patch_halo, single_batch_mode=False, headless=True,
@@ -81,6 +82,7 @@ class UnetPredictions(GenericPipelineStep):
             patch=self.patch,
             stride_ratio=self.stride_ratio,
             halo_shape=self.halo_shape,
+            multichannel=self.multichannel_input,
         )
         pmaps = self.predictor(dataset)
         return pmaps

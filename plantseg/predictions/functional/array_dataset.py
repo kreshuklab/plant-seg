@@ -9,15 +9,27 @@ from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.slice_builder import SliceBuilder
 
 
-def mirror_pad(image, padding_shape):
+def mirror_pad(image: np.ndarray, padding_shape: tuple[int, int, int], multichannel: bool) -> np.ndarray:
     """
     Pad the image with a mirror reflection of itself.
 
-    This function is used on data in its original shape before it is split into patches.
+    Ideally, the padding shape should correspond to the spatial dimensions of the image, i.e.
+    - If the image is 2D   (YX), the padding_shape should be a tuple of two integers.
+    - If the image is 3D  (CYX), the padding_shape should be a tuple of two integers.
+    - If the image is 3D  (ZYX), the padding_shape should be a tuple of three integers.
+    - If the image is 4D (CZYX), the padding_shape should be a tuple of three integers.
+
+    In other parts of this repo, the padding_shape is assumed to be 3D (ZYX/CYX).
+    But one cannot know if the first dimension is channel for 3D images. Thus,
+    `multichannel` is used to determine if the first dimension is channel or not.
+
+    This function is used on data in its original/full shape before it is patchified.
+    Halo should be the real surrounding of the patch, not the mirror padding of itself.
 
     Args:
         image (np.ndarray): The input image array to be padded.
         padding_shape (tuple of int): Specifies the amount of padding for each dimension, should be YX or ZYX.
+        multichannel (bool, optional): Whether the image is multichannel or not.
 
     Returns:
         np.ndarray: The mirror-padded image.
@@ -31,7 +43,18 @@ def mirror_pad(image, padding_shape):
     if all(p == 0 for p in padding_shape):
         return image
 
+    if image.shape[0] == 1 and padding_shape[0] != 0:  # handle 1YX cases where padding is ZYX
+        raise ValueError("Cannot pad a single-channel image (1YX) along the channel dimension")
+
     pad_width = [(p, p) for p in padding_shape]
+
+    if multichannel:
+        if len(image.shape) == 3:  # CYX image
+            if padding_shape[0] != 0:  # given 3D (CYX) padding shape, C has to be 0
+                raise ValueError("Cannot pad a 2D multichannel image (CYX) along C")
+        if len(image.shape) == 4:  # CZYX image
+            pad_width = [(0, 0)] + pad_width  # given 3D (ZYX) padding shape, has to add 0 C padding
+
     return np.pad(image, pad_width, mode='reflect')
 
 
@@ -68,6 +91,7 @@ class ArrayDataset(Dataset):
         slice_builder: SliceBuilder,
         augs: Callable[[np.ndarray], torch.Tensor],
         halo_shape: Optional[Tuple[int, int, int]] = None,
+        multichannel: bool = False,
         verbose_logging: bool = True,
     ):
         """
@@ -84,7 +108,7 @@ class ArrayDataset(Dataset):
         if halo_shape is None:
             halo_shape = (0, 0, 0)
         self.halo_shape = halo_shape
-        self.raw_padded = mirror_pad(self.raw, self.halo_shape)
+        self.raw_padded = mirror_pad(self.raw, self.halo_shape, multichannel)
 
         if verbose_logging:
             gui_logger.info(f'Number of patches: {len(self.raw_slices)}')
@@ -94,7 +118,13 @@ class ArrayDataset(Dataset):
             raise StopIteration
 
         raw_idx = self.raw_slices[idx]
-        raw_idx_padded = tuple(slice(index.start, index.stop + 2 * halo, None) for index, halo in zip(raw_idx, self.halo_shape))
+        if len(raw_idx) == 4:
+            halo_shape = (0,) + self.halo_shape
+        else:
+            halo_shape = self.halo_shape
+        assert len(raw_idx) == len(halo_shape), f"raw_idx {len(raw_idx)} and halo_shape {len(halo_shape)} must have the same length."
+
+        raw_idx_padded = tuple(slice(index.start, index.stop + 2 * halo, None) for index, halo in zip(raw_idx, halo_shape))
         raw_patch = self.raw_padded[raw_idx_padded]
         raw_patch_transformed = self.augs(raw_patch)
 
