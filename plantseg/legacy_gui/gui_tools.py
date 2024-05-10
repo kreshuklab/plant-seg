@@ -558,39 +558,43 @@ class ListEntry:
 
 
 class Files2Process:
-    def __init__(self, config):
-        """ Browse for file and directory """
+    """Browse for file and directory"""
+    def __init__(self, config: dict) -> None:
         self.config = config
-        self.files = tkinter.StringVar(value=config.get("path", PATH_HOME))
+        self.files = tkinter.StringVar(value=config.get("path", str(PATH_HOME)))
 
-    def browse_for_file(self):
-        """ Open a file dialog to browse for a file, and update the configuration. """
-        current_file_dir = Path(self.files.get()).parent
-        # Fallback to PATH_HOME if the current directory path is not valid or shorter than PATH_HOME
-        current_file_dir = PATH_HOME if len(PATH_HOME) > len(current_file_dir) else current_file_dir
+    def _get_valid_initial_dir(self) -> str:
+        """Get a valid initial directory to start the file/directory dialog."""
+        try:
+            current_file_dir = Path(self.files.get()).parent
+            if not current_file_dir.exists() or len(str(current_file_dir)) < len(str(PATH_HOME)):
+                return str(PATH_HOME)
+            return str(current_file_dir)
+        except Exception:
+            return str(PATH_HOME)
 
-        # Define file types for selection
+    def browse_for_file(self) -> None:
+        """Open a file dialog to browse for a file, and update the configuration."""
         file_types = [("h5 files", "*.h5"), ("hdf files", "*.hdf"),
                       ("tiff files", "*.tiff"), ("tif files", "*.tif")]
-        # Ask user to select a file
-        file_name = filedialog.askopenfilename(initialdir=current_file_dir,
-                                               title="Select file",
-                                               filetypes=file_types)
-        # Update tkinter variable and configuration if a file is selected
+
+        file_name = filedialog.askopenfilename(
+            initialdir=self._get_valid_initial_dir(),
+            title="Select File",
+            filetypes=file_types
+        )
+
         if file_name:
             self.files.set(file_name)
             self.config["path"] = file_name
 
-    def browse_for_directory(self):
-        """ Open a directory dialog to browse for a directory, and update the configuration. """
-        current_file_dir = Path(self.files.get()).parent
-        # Fallback to PATH_HOME if the current directory path is not valid or shorter than PATH_HOME
-        current_file_dir = PATH_HOME if len(PATH_HOME) > len(current_file_dir) else current_file_dir
+    def browse_for_directory(self) -> None:
+        """Open a directory dialog to browse for a directory, and update the configuration."""
+        dire_name = filedialog.askdirectory(
+            initialdir=self._get_valid_initial_dir(),
+            title="Select Directory"
+        )
 
-        # Ask user to select a directory
-        dire_name = filedialog.askdirectory(initialdir=current_file_dir,
-                                            title="Select directory")
-        # Update tkinter variable and configuration if a directory is selected
         if dire_name:
             self.files.set(dire_name)
             self.config["path"] = dire_name
@@ -847,11 +851,12 @@ class LoadModelPopup:
 
     def load_model(self):
         # Model path
-        path = self.file_dialog.files.get()
+        path = Path(self.file_dialog.files.get())
         # Get name
         model_name = str(self.simple_entry1.tk_value.get())
         # Get resolution
-        resolution = [float(value.get()) for value in self.list_entry.tk_value]
+        resolution = tuple(float(value.get()) for value in self.list_entry.tk_value)
+        assert len(resolution) == 3, "Resolution must be a triplet."
         # Get description
         description = str(self.simple_entry2.tk_value.get())
 
