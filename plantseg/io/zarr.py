@@ -5,13 +5,10 @@ Notes:
 1. Although the function is called "open", there is no need to close an array: data is automatically flushed to disk, and files are automatically closed whenever an array is modified. [Ref](https://zarr.readthedocs.io/en/stable/tutorial.html#persistent-arrays).
 2. An open file either gives a `zarr.Array` or `zarr.Group` object. In PlantSeg, `zarr.open` is expected to return a `zarr.Group` object.
 3. Zarr works with string paths, not `pathlib.Path` objects. No need to upgrade to `pathlib`.
-
-This module can still be greatly improved with more native Zarr functions, such as `zarr.open_group`, `zarr.open_array`.
-See tests for this module for examples of how to use the functions.
 """
 
 import warnings
-from typing import Optional, Union
+from typing import Optional, Union, Any
 from pathlib import Path
 
 import zarr
@@ -77,9 +74,12 @@ def _find_input_key(zarr_file: zarr.Group) -> str:
 
 
 def load_zarr(path: str,
-              key: str,
+              key: Optional[str],
               slices: Optional[slice] = None,
-              info_only: bool = False) -> Union[tuple, tuple[np.ndarray, tuple]]:
+              info_only: bool = False,
+              # ) -> tuple[Optional[np.ndarray], tuple[tuple[float, float, float], Any, str, str]]:
+              ) -> Union[tuple[tuple[float, float, float], Any, str, str],
+                         tuple[np.ndarray, tuple[tuple[float, float, float], Any, str, str]]]:
     """Load a dataset from a Zarr file and return it or its meta-information.
 
     Args:
@@ -91,8 +91,7 @@ def load_zarr(path: str,
     Returns:
         Union[tuple, tuple[np.ndarray, tuple]]: The dataset as a NumPy array, and meta-information.
     """
-    zarr_file = zarr.open(path, 'r')
-    assert isinstance(zarr_file, zarr.Group), "Zarr file is not a `zarr.Group`."
+    zarr_file = zarr.open_group(path, mode='r')
 
     if key is None:
         key = _find_input_key(zarr_file)
@@ -104,7 +103,8 @@ def load_zarr(path: str,
     if info_only:
         return infos
 
-    data = zarr_file[key][...] if slices is None else zarr_file[key][slices]
+    zarr_array = zarr.open_array(path, mode='r', path=key)
+    data = zarr_array[...] if slices is None else zarr_array[slices]
     return data, infos
 
 
@@ -125,8 +125,7 @@ def create_zarr(path: str,
     Returns:
         None
     """
-    zarr_file = zarr.open(path, mode)
-    assert isinstance(zarr_file, zarr.Group), "Zarr file is not a group."
+    zarr_file = zarr.open_group(path, mode)
     zarr_file.create_dataset(key, data=stack, compression='gzip', overwrite=True)
     zarr_file[key].attrs['element_size_um'] = voxel_size
 
@@ -140,7 +139,7 @@ def list_keys(path: str) -> list[str]:
     Returns:
         list[str]: A list of keys in the Zarr file.
     """
-    def _recursive_find_keys(zarr_group: zarr.Group, base: Path = Path('/')) -> list[str]:
+    def _recursive_find_keys(zarr_group: zarr.Group, base: Path = Path('')) -> list[str]:
         _list_keys = []
         for key, dataset in zarr_group.items():
             if isinstance(dataset, zarr.Group):
@@ -150,8 +149,7 @@ def list_keys(path: str) -> list[str]:
                 _list_keys.append(str(base / key))
         return _list_keys
 
-    zarr_file = zarr.open(path, 'r')
-    assert isinstance(zarr_file, zarr.Group), "Zarr file is not a group."
+    zarr_file = zarr.open_group(path, 'r')
     return _recursive_find_keys(zarr_file)
 
 
@@ -166,8 +164,7 @@ def del_zarr_key(path: str, key: str, mode: str = 'a') -> None:
     Returns:
         None
     """
-    zarr_file = zarr.open(path, mode)
-    assert isinstance(zarr_file, zarr.Group), "Zarr file is not a group."
+    zarr_file = zarr.open_group(path, mode)
     if key in zarr_file:
         del zarr_file[key]
 
@@ -184,8 +181,7 @@ def rename_zarr_key(path: str, old_key: str, new_key: str, mode='r+') -> None:
     Returns:
         None
     """
-    zarr_file = zarr.open(path, mode)
-    assert isinstance(zarr_file, zarr.Group), "Zarr file is not a group."
+    zarr_file = zarr.open_group(path, mode)
     if old_key in zarr_file:
         zarr_file[new_key] = zarr_file[old_key]
         del zarr_file[old_key]
