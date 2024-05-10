@@ -12,12 +12,14 @@ from plantseg.pipeline import gui_logger
 
 def load_config(config_path: Path) -> dict:
     """Load a YAML configuration file into a dictionary."""
+    config_path = Path(config_path)
     with config_path.open('r') as file:
         return yaml.load(file, Loader=yaml.FullLoader)
 
 
 def save_config(config: dict, config_path: Path) -> None:
     """Save a dictionary to a YAML configuration file."""
+    config_path = Path(config_path)
     with config_path.open('w') as file:
         yaml.dump(config, file)
 
@@ -36,6 +38,7 @@ def download_file(url: str, filename: Path) -> None:
 
 def download_files(urls: dict, out_dir: Path) -> None:
     """Download files from URLs to a specified directory."""
+    out_dir = Path(out_dir)
     if not out_dir.exists():
         out_dir.mkdir(parents=True)  # Create the directory and any parent directories
 
@@ -56,7 +59,8 @@ def download_files(urls: dict, out_dir: Path) -> None:
 def clean_models() -> None:
     """Delete all models in the model zoo after confirmation from the user."""
     for _ in range(3):
-        answer = input("This will delete all models in the model zoo. " "Ensure you've backed up custom models. Continue? (y/n): ").strip().lower()
+        answer = input("This will delete all models in the model zoo."
+                       "Ensure you've backed up custom models. Continue? (y/n): ").strip().lower()
         if answer == 'y':
             try:
                 rmtree(PATH_PLANTSEG_MODELS, ignore_errors=True)
