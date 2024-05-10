@@ -40,16 +40,15 @@ def find_batch_size(
     if device == 'cpu':
         return 1
 
-    if isinstance(model, UNet2D):
-        patch_shape = patch_shape[1:]
+    actual_patch_shape = tuple(patch_shape[i] + 2 * patch_halo[i] for i in range(3))
+    actual_patch_shape = actual_patch_shape[1:] if isinstance(model, UNet2D) else actual_patch_shape
 
     model = model.to(device)
     model.eval()
     with torch.no_grad():
         for batch_size in [2, 4, 8, 16, 32, 64, 128]:
             try:
-                x = torch.randn((batch_size, in_channels) + patch_shape).to(device)
-                x = mirror_pad(x, patch_halo)
+                x = torch.randn((batch_size, in_channels) + actual_patch_shape).to(device)
                 _ = model(x)
             except RuntimeError:
                 batch_size //= 2
@@ -122,7 +121,7 @@ class ArrayPredictor:
 
     def __call__(self, test_dataset: Dataset) -> np.ndarray:
         assert isinstance(test_dataset, ArrayDataset)
-        assert self.patch_halo == test_dataset.halo_shape
+        assert self.patch_halo == test_dataset.halo_shape, f'Predictor halo shape {self.patch_halo} does not match dataset halo shape {test_dataset.halo_shape}'
 
         test_loader = DataLoader(
             test_dataset,
