@@ -1,38 +1,58 @@
 """
-Reading and writing zarrs. Created in the same format as h5.py
+Reading and writing zarrs. Created in the same format as h5.py.
+
+Notes:
+1. Although the function is called "open", there is no need to close an array: data is automatically flushed to disk, and files are automatically closed whenever an array is modified. [Ref](https://zarr.readthedocs.io/en/stable/tutorial.html#persistent-arrays).
+2. An open file either gives a `zarr.Array` or `zarr.Group` object. In PlantSeg, `zarr.open` is expected to return a `zarr.Group` object.
+3. Zarr works with string paths, not `pathlib.Path` objects. No need to upgrade to `pathlib`.
+
+This module can still be greatly improved with more native Zarr functions, such as `zarr.open_group`, `zarr.open_array`.
+See tests for this module for examples of how to use the functions.
 """
 
 import warnings
 from typing import Optional, Union
+from pathlib import Path
 
 import zarr
 import numpy as np
-from pathlib import Path
 
-# allowed zarr keys
 ZARR_EXTENSIONS = [".zarr"]
 ZARR_KEYS = ["raw", "predictions", "segmentation"]
 
 
-def read_zarr_voxel_size(f, zarrkey: str) -> tuple[float, float, float]:
-    """
-    :returns the voxels size stored in a zarr dataset (if absent returns [1, 1, 1])
-    """
-    ds = f[zarrkey]
+def read_zarr_voxel_size(zarr_file: zarr.Group, zarr_key: str) -> tuple[float, float, float]:
+    """Get the voxel size stored in a Zarr dataset.
 
-    # parse voxel_size
-    if 'element_size_um' in ds.attrs:
-        return ds.attrs['element_size_um']
-    elif 'resolution' in ds.attrs:
-        return ds.attrs['resolution']
+    Args:
+        zarr_file (zarr.Group): The Zarr file (or group) containing the dataset.
+        zarr_key (str): The key identifying the desired dataset.
+
+    Returns:
+        tuple[float, float, float]: The voxel size in the dataset, or (1.0, 1.0, 1.0) if not found.
+    """
+    zarr_array = zarr_file[zarr_key]
+
+    if 'element_size_um' in zarr_array.attrs:
+        return zarr_array.attrs['element_size_um']
+    elif 'resolution' in zarr_array.attrs:
+        return zarr_array.attrs['resolution']
     else:
-        warnings.warn('Voxel size not found, returning default [1.0, 1.0. 1.0]', RuntimeWarning)
+        warnings.warn('Voxel size not found, returning default (1.0, 1.0, 1.0)', RuntimeWarning)
         return (1.0, 1.0, 1.0)
 
 
-def _find_input_key(zarr_file) -> str:
-    """
-    returns the first matching key in ZARR_KEYS or only one dataset is found the key to that dataset
+def _find_input_key(zarr_file: zarr.Group) -> str:
+    """Return the first matching key in `ZARR_KEYS` or the key to the only dataset if just one is found.
+
+    Args:
+        zarr_file (zarr.Group): The Zarr file (or group) containing datasets.
+
+    Returns:
+        str: The key of the matching dataset.
+
+    Raises:
+        RuntimeError: If no datasets are found or the dataset is ambiguous.
     """
     found_datasets = []
 
@@ -43,7 +63,7 @@ def _find_input_key(zarr_file) -> str:
     zarr_file.visititems(visitor_func)
 
     if not found_datasets:
-        raise RuntimeError(f"No datasets found - verify'{zarr_file.tree()}'")
+        raise RuntimeError(f"No datasets found - verify '{zarr_file.tree()}'.")
 
     if len(found_datasets) == 1:
         return found_datasets[0]
@@ -53,39 +73,39 @@ def _find_input_key(zarr_file) -> str:
                 return zarr_key
 
         raise RuntimeError(f"Ambiguous datasets '{found_datasets}' in {zarr_file}. "
-                           f"plantseg expects only one dataset to be present in input Zarr.")
+                           f"PlantSeg expects only one dataset in the input Zarr.")
 
 
 def load_zarr(path: str,
               key: str,
               slices: Optional[slice] = None,
               info_only: bool = False) -> Union[tuple, tuple[np.ndarray, tuple]]:
-    """
-    Load a dataset from a zarr file and returns some meta info about it.
+    """Load a dataset from a Zarr file and return it or its meta-information.
+
     Args:
-        path (str): Path to the zarrfile
-        key (str): internal key of the desired dataset
-        slices (Optional[slice], optional): Optional, slice to load. Defaults to None.
-        info_only (bool, optional): if true will return a tuple with infos such as voxel resolution, units and shape. \
-        Defaults to False.
+        path (str): The path to the Zarr file.
+        key (str): The internal key of the desired dataset.
+        slices (Optional[slice], optional): Slice to load. Defaults to None.
+        info_only (bool, optional): If True, return only the meta-information.
 
     Returns:
-        Union[tuple, tuple[np.ndarray, tuple]]: dataset as numpy array and infos
+        Union[tuple, tuple[np.ndarray, tuple]]: The dataset as a NumPy array, and meta-information.
     """
-    f = zarr.open(path, 'r')
-    if key is None:
-        key = _find_input_key(f)
+    zarr_file = zarr.open(path, 'r')
+    assert isinstance(zarr_file, zarr.Group), "Zarr file is not a `zarr.Group`."
 
-    voxel_size = read_zarr_voxel_size(f, key)
-    file_shape = f[key].shape
+    if key is None:
+        key = _find_input_key(zarr_file)
+
+    voxel_size = read_zarr_voxel_size(zarr_file, key)
+    file_shape = zarr_file[key].shape
 
     infos = (voxel_size, file_shape, key, 'um')
     if info_only:
         return infos
 
-    file = f[key][...] if slices is None else f[key][slices]
-
-    return file, infos
+    data = zarr_file[key][...] if slices is None else zarr_file[key][slices]
+    return data, infos
 
 
 def create_zarr(path: str,
@@ -93,64 +113,79 @@ def create_zarr(path: str,
                 key: str,
                 voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
                 mode: str = 'a') -> None:
-    """
-    Helper function to create a dataset inside a zarr file
+    """Create a dataset inside a Zarr file.
+
     Args:
-        path (str): file path
-        stack (np.ndarray): numpy array to save as dataset in the zarr file
-        key (str): key of the dataset in the zarr file
-        voxel_size (tuple[float, float, float]: voxel size in micrometers
-        mode (str): mode to open the zarr file ['w', 'a']
+        path (str): The file path to the Zarr file.
+        stack (np.ndarray): The NumPy array to save as a dataset.
+        key (str): The internal key of the desired dataset.
+        voxel_size (tuple[float, float, float]): The voxel size in micrometers.
+        mode (str): The mode to open the Zarr file ['w', 'a'].
 
     Returns:
         None
     """
-
-    f = zarr.open(path, mode)
-    assert isinstance(f, zarr.Group), "Zarr file is not a group"
-    f.create_dataset(key, data=stack, compression='gzip', overwrite=True)
-    # save voxel_size
-    f[key].attrs['element_size_um'] = voxel_size
+    zarr_file = zarr.open(path, mode)
+    assert isinstance(zarr_file, zarr.Group), "Zarr file is not a group."
+    zarr_file.create_dataset(key, data=stack, compression='gzip', overwrite=True)
+    zarr_file[key].attrs['element_size_um'] = voxel_size
 
 
-def list_keys(path):
-    """
-    List all keys in a zarr file
+def list_keys(path: str) -> list[str]:
+    """List all keys in a Zarr file.
+
     Args:
-        path: path to the zarr file
+        path (str): The path to the Zarr file.
 
     Returns:
-        list of keys
+        list[str]: A list of keys in the Zarr file.
     """
-
-    def _recursive_find_keys(f, base: Path = Path('/')):
+    def _recursive_find_keys(zarr_group: zarr.Group, base: Path = Path('/')) -> list[str]:
         _list_keys = []
-        for key, dataset in f.items():
+        for key, dataset in zarr_group.items():
             if isinstance(dataset, zarr.Group):
                 new_base = base / key
-                _list_keys += _recursive_find_keys(dataset, new_base)
-
+                _list_keys.extend(_recursive_find_keys(dataset, new_base))
             elif isinstance(dataset, zarr.Array):
-                new_key = str(base / key)
-                _list_keys.append(new_key)
+                _list_keys.append(str(base / key))
         return _list_keys
 
-    zarr_f = zarr.open(path, 'r')
-    return _recursive_find_keys(zarr_f)
+    zarr_file = zarr.open(path, 'r')
+    assert isinstance(zarr_file, zarr.Group), "Zarr file is not a group."
+    return _recursive_find_keys(zarr_file)
 
 
 def del_zarr_key(path: str, key: str, mode: str = 'a') -> None:
+    """Delete a dataset from a Zarr file.
+
+    Args:
+        path (str): The path to the Zarr file.
+        key (str): The internal key of the dataset to be deleted.
+        mode (str): The mode to open the Zarr file ['w', 'a'].
+
+    Returns:
+        None
     """
-    helper function to delete a dataset from a zarrfile
-    """
-    f = zarr.open(path, mode)
-    if key in f:
-        del f[key]  # FIXME: "__delitem__" method not defined on type "Array"
+    zarr_file = zarr.open(path, mode)
+    assert isinstance(zarr_file, zarr.Group), "Zarr file is not a group."
+    if key in zarr_file:
+        del zarr_file[key]
 
 
 def rename_zarr_key(path: str, old_key: str, new_key: str, mode='r+') -> None:
-    """Rename the 'old_key' dataset to 'new_key'"""
-    f = zarr.open(path, mode)
-    if old_key in f:
-        f[new_key] = f[old_key]
-        del f[old_key]  # FIXME: "__delitem__" method not defined on type "Array"
+    """Rename a dataset in a Zarr file.
+
+    Args:
+        path (str): The path to the Zarr file.
+        old_key (str): The current key of the dataset.
+        new_key (str): The new key for the dataset.
+        mode (str): The mode to open the Zarr file ['r+'].
+
+    Returns:
+        None
+    """
+    zarr_file = zarr.open(path, mode)
+    assert isinstance(zarr_file, zarr.Group), "Zarr file is not a group."
+    if old_key in zarr_file:
+        zarr_file[new_key] = zarr_file[old_key]
+        del zarr_file[old_key]
