@@ -5,27 +5,29 @@ from skimage.morphology import disk, ball
 from vigra import gaussianSmoothing
 
 
-def compute_scaling_factor(input_voxel_size: list[float, float, float],
-                           output_voxel_size: list[float, float, float]) -> list[float, float, float]:
+def compute_scaling_factor(input_voxel_size: tuple[float, float, float],
+                           output_voxel_size: tuple[float, float, float]) -> tuple[float, float, float]:
     """
     compute the scaling factor between two voxel sizes
     """
-    scaling = [i_size / o_size for i_size, o_size in zip(input_voxel_size, output_voxel_size)]
+    scaling = tuple(i_size / o_size for i_size, o_size in zip(input_voxel_size, output_voxel_size))
+    assert len(scaling) == 3, f"Expected scaling factor to be 3d, but got {len(scaling)}d input"
     return scaling
 
 
-def compute_scaling_voxelsize(input_voxel_size: list[float, float, float],
-                              scaling_factor: list[float, float, float]) -> list[float, float, float]:
+def compute_scaling_voxelsize(input_voxel_size: tuple[float, float, float],
+                              scaling_factor: tuple[float, float, float]) -> tuple[float, float, float]:
     """
     compute the output voxel size given the scaling factor
     """
-    output_voxel_size = [i_size / s_size for i_size, s_size in zip(input_voxel_size, scaling_factor)]
+    output_voxel_size = tuple(i_size / s_size for i_size, s_size in zip(input_voxel_size, scaling_factor))
+    assert len(output_voxel_size) == 3, f"Expected output voxel size to be 3d, but got {len(output_voxel_size)}d input"
     return output_voxel_size
 
 
 def scale_image_to_voxelsize(image: np.ndarray,
-                             input_voxel_size: list[float, float, float],
-                             output_voxel_size: list[float, float, float],
+                             input_voxel_size: tuple[float, float, float],
+                             output_voxel_size: tuple[float, float, float],
                              order: int = 0) -> np.ndarray:
     """
     scale an image from a given voxel size
@@ -34,7 +36,7 @@ def scale_image_to_voxelsize(image: np.ndarray,
     return image_rescale(image, factor, order=order)
 
 
-def image_rescale(image: np.ndarray, factor: list[float, float, float], order: int) -> np.ndarray:
+def image_rescale(image: np.ndarray, factor: tuple[float, float, float], order: int) -> np.ndarray:
     """
     scale an image from a given scaling factor
     """
@@ -62,11 +64,11 @@ def image_gaussian_smoothing(image: np.ndarray, sigma: float) -> np.ndarray:
     """
     image = image.astype('float32')
     max_sigma = (np.array(image.shape) - 1) / 3
-    sigma = np.minimum(max_sigma, np.ones(max_sigma.ndim) * sigma)
-    return gaussianSmoothing(image, sigma)
+    sigma_array = np.minimum(max_sigma, np.ones(max_sigma.ndim) * sigma)
+    return gaussianSmoothing(image, sigma_array)
 
 
-def image_crop(image: np.ndarray, crop_str: str) -> np.array:
+def image_crop(image: np.ndarray, crop_str: str) -> np.ndarray:
     """
     crop image from a crop string like [:, 10:30:, 10:20]
     """
@@ -77,15 +79,15 @@ def image_crop(image: np.ndarray, crop_str: str) -> np.array:
     return image[slices]
 
 
-def fix_input_shape(data: np.ndarray, ndim=3) -> np.array:
+def fix_input_shape(data: np.ndarray, ndim=3) -> np.ndarray:
     assert ndim in [3, 4]
     if ndim == 3:
-        return fix_input_shape_to_3D(data)
+        return fix_input_shape_to_ZYX(data)
     else:
-        return fix_input_shape_to_4D(data)
+        return fix_input_shape_to_CZYX(data)
 
 
-def fix_input_shape_to_3D(data: np.ndarray) -> np.array:
+def fix_input_shape_to_ZYX(data: np.ndarray) -> np.ndarray:
     """
     fix array ndim to be always 3
     """
@@ -102,11 +104,9 @@ def fix_input_shape_to_3D(data: np.ndarray) -> np.array:
         raise RuntimeError(f"Expected input data to be 2d, 3d or 4d, but got {data.ndim}d input")
 
 
-def fix_input_shape_to_4D(data: np.ndarray) -> np.array:
+def fix_input_shape_to_CZYX(data: np.ndarray) -> np.ndarray:
     """
     Fix array ndim to be 4 and return it in (C x Z x Y x X) e.g. 2 x 1 x 512 x 512
-
-    Only used for multi-channel network output, e.g. 2-channel 3D pmaps.
     """
     if data.ndim == 4:
         return data
@@ -114,14 +114,11 @@ def fix_input_shape_to_4D(data: np.ndarray) -> np.array:
     elif data.ndim == 3:
         return data.reshape(data.shape[0], 1, data.shape[1], data.shape[2])
 
-    # elif data.ndim == 2:
-    #     return data.reshape(1, 1, data.shape[0], data.shape[1])
-
     else:
         raise RuntimeError(f"Expected input data to be 3d or 4d, but got {data.ndim}d input")
 
 
-def normalize_01(data: np.ndarray) -> np.array:
+def normalize_01(data: np.ndarray) -> np.ndarray:
     """
     normalize a numpy array between 0 and 1
     """

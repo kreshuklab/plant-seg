@@ -1,7 +1,7 @@
 import torch
 
 from plantseg.training.embeddings import embeddings_to_affinities
-from plantseg.training.model import UNet2D, get_spoco
+from plantseg.training.model import UNet2D, SpocoNet
 
 
 class TestModelPrediction:
@@ -14,7 +14,7 @@ class TestModelPrediction:
         assert torch.all(y >= 0) and torch.all(y <= 1)
 
     def test_SpocoNet(self):
-        model = get_spoco(in_channels=1, out_channels=8, f_maps=[16, 32, 64, 128, 256])
+        model = SpocoNet.from_unet_params(in_channels=1, out_channels=8, f_maps=[16, 32, 64, 128, 256])
         model.eval()
         x1 = torch.randn(4, 1, 260, 260)
         x2 = torch.rand(4, 1, 260, 260)

@@ -3,8 +3,7 @@ import time
 from pathlib import Path
 from typing import List, Tuple
 
-from dask.distributed import LocalCluster
-from dask.distributed import Client
+from dask.distributed import LocalCluster, Client
 from magicgui import magicgui
 from tqdm import tqdm
 
@@ -12,66 +11,61 @@ from plantseg.viewer.dag_handler import DagHandler
 from plantseg.viewer.widget.predictions import ALL_DEVICES, ALL_CUDA_DEVICES
 
 all_gpus_str = f'all gpus: {len(ALL_CUDA_DEVICES)}'
-ALL_GPUS = [all_gpus_str] if len(ALL_CUDA_DEVICES) > 0 else []
+ALL_GPUS = [all_gpus_str] if ALL_CUDA_DEVICES else []
 ALL_DEVICES_HEADLESS = ALL_DEVICES + ALL_GPUS
-
-MAX_WORKERS = len(ALL_CUDA_DEVICES) if len(ALL_CUDA_DEVICES) > 0 else multiprocessing.cpu_count()
-
-
-def _parse_input_paths(inputs, path_suffix='_path'):
-    list_input_paths = [_input for _input in inputs if _input[-len(path_suffix):] == path_suffix]
-    input_hints = tuple([Path for _ in list_input_paths])
-    input_names = '/'.join([_input.replace(path_suffix, '') for _input in list_input_paths])
-    return list_input_paths, input_names, List[Tuple[input_hints]]
+MAX_WORKERS = len(ALL_CUDA_DEVICES) if ALL_CUDA_DEVICES else multiprocessing.cpu_count()
 
 
-def run_workflow_headless(path):
+def parse_input_paths(inputs: List[str], path_suffix: str = '_path') -> Tuple[List[str], str]:
+    input_paths = [_input for _input in inputs if _input.endswith(path_suffix)]
+    input_hints = tuple([Path] * len(input_paths))
+    input_names = '/'.join(input.replace(path_suffix, '') for input in input_paths)
+    return input_paths, input_names
+
+
+def run_workflow_headless(path: Path):
     dag = DagHandler.from_pickle(path)
-    # nicely print the dag
     print(dag)
-    list_input_paths, input_names, input_hints = _parse_input_paths(dag.inputs)
+    input_paths, input_names = parse_input_paths(dag.inputs)
 
     @magicgui(list_inputs={'label': input_names,
                            'layout': 'vertical'},
               out_directory={'label': 'Export directory',
                              'mode': 'd',
-                             'tooltip': 'Select the directory where the files will be exported'},
+                             'tooltip': 'Select export directory'},
               device={'label': 'Device',
                       'choices': ALL_DEVICES_HEADLESS},
               num_workers={'label': '# Workers',
                            'widget_type': 'IntSlider',
-                           'tooltip': 'Define the size of the gaussian smoothing kernel. '
-                                      'The larger the more blurred will be the output image.',
+                           'tooltip': 'Set number of workers.',
                            'max': MAX_WORKERS, 'min': 1},
               scheduler={'label': 'Scheduler',
-                         'choices': ['multiprocessing', 'threaded']
-                         },
-              call_button='Run PlantSeg'
-              )
-    def run(list_inputs: input_hints,
+                         'choices': ['multiprocessing', 'threaded']},
+              call_button='Run PlantSeg')
+    def run(list_inputs: List[Tuple[Path, ...]],
             out_directory: Path = Path.home(),
             device: str = ALL_DEVICES_HEADLESS[0],
             num_workers: int = MAX_WORKERS,
             scheduler: str = 'multiprocessing'):
-        dict_of_jobs = {}
-        cluster = LocalCluster(n_workers=num_workers, threads_per_worker=1)
-        client = Client(cluster)
-        print(f"You can check the execution of the workflow at: \n{client.dashboard_link}\n")
+        with LocalCluster(n_workers=num_workers, threads_per_worker=1) as cluster, Client(cluster) as client:
+            print(f"Dashboard link: \n{client.dashboard_link}\n")
+            print('Setting up jobs...')
+            jobs = {}
+            for i, inputs in enumerate(tqdm(list_inputs)):
+                if device == all_gpus_str:
+                    device = ALL_DEVICES[i % len(ALL_CUDA_DEVICES)]
+                job_dict: dict = dict(zip(input_paths, inputs))
+                job_dict.update({
+                    'out_stack_name': inputs[0].stem,
+                    'out_directory': out_directory,
+                    'device': device,
+                })
+                jobs[i] = dag.get_dag(job_dict, get_type=scheduler)
 
-        print('Setting up jobs...')
-        for i, _inputs in enumerate(tqdm(list_inputs)):
-            if device == all_gpus_str:
-                device = ALL_DEVICES[i % len(ALL_CUDA_DEVICES)]
-
-            input_dict = {_input_name: _input_path for _input_name, _input_path in zip(list_input_paths, _inputs)}
-            input_dict.update({'out_stack_name': _inputs[0].stem, 'out_directory': out_directory, 'device': device})
-            dict_of_jobs[i] = dag.get_dag(input_dict, get_type=scheduler)
-
-        timer = time.time()
-        print('Processing started...')
-        results = [client.compute(job) for job in dict_of_jobs.values()]
-        client.gather(results)
-        print(f'Process ended in: {time.time() - timer:.2f}s')
-        client.shutdown()
+            start_time = time.time()
+            print('Processing started...')
+            results = client.compute(list(jobs.values()))
+            client.gather(results)
+            print(f'Process ended in: {time.time() - start_time:.2f}s')
 
     run.show(run=True)

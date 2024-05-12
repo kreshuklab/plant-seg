@@ -277,7 +277,7 @@ def widget_iterative_unet_predictions(image: Image,
 @widget_iterative_unet_predictions.model_name.changed.connect
 def _on_model_name_changed_iterative(model_name: str):
     model_name = return_value_if_widget(model_name)
-    train_config = model_zoo.get_train_config(model_name)
+    train_config = model_zoo.get_model_config_by_name(model_name)
     patch_size = train_config['loaders']['train']['slice_builder']['patch_shape']
     widget_iterative_unet_predictions.patch_size.value = tuple(patch_size)
 

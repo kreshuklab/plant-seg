@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 import numpy as np
 from skimage.transform import resize
@@ -22,13 +22,13 @@ class DataPostProcessing3D(GenericPipelineStep):
                  input_type: str = "labels",
                  output_type: str = "labels",
                  save_directory: str = "PostProcessing",
-                 factor: Optional[list[float, float, float]] = None,
+                 factor: Optional[tuple[float, float, float]] = None,
                  out_ext: str = ".h5",
                  state: bool = True,
                  save_raw: bool = False,
                  output_shapes: Optional[list] = None):
         if factor is None:
-            factor = [1, 1, 1]
+            factor = (1, 1, 1)
 
         h5_output_key = "segmentation" if input_type == "labels" else "predictions"
 
@@ -76,11 +76,11 @@ class DataPreProcessing3D(GenericPipelineStep):
                  input_type: str = "data_float32",
                  output_type: str = "data_uint8",
                  save_directory: str = "PreProcessing",
-                 factor: Optional[list[float, float, float]] = None,
+                 factor: Optional[tuple[float, float, float]] = None,
                  filter_type: Optional[str] = None,
-                 filter_param: Optional = None,
+                 filter_param: Optional[Any] = None,
                  state: bool = True,
-                 crop: str = None):
+                 crop: Optional[str] = None):
 
         super().__init__(input_paths,
                          input_type=input_type,
@@ -93,7 +93,7 @@ class DataPreProcessing3D(GenericPipelineStep):
                          h5_output_key='raw')
 
         if factor is None:
-            factor = [1, 1, 1]
+            factor = (1, 1, 1)
 
         self.crop = crop
 
@@ -118,7 +118,7 @@ class DataPreProcessing3D(GenericPipelineStep):
             self.filter_param = 0
 
     def process(self, image: np.ndarray) -> np.ndarray:
-        gui_logger.info(f"Preprocessing files...")
+        gui_logger.info("Preprocessing files...")
         if self.crop is not None:
             gui_logger.info(f"Cropping input image to: {self.crop}")
             image = image_crop(image, self.crop)

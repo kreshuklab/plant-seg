@@ -1,15 +1,18 @@
-from typing import Tuple
+from typing import Tuple, Optional
+from pathlib import Path
 
 import numpy as np
 import torch
 
+from plantseg.models.zoo import model_zoo
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.augment.transforms import get_test_augmentations
-from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape_to_3D, fix_input_shape_to_4D
+from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape_to_ZYX, fix_input_shape_to_CZYX
 from plantseg.predictions.functional.array_dataset import ArrayDataset
 from plantseg.predictions.functional.array_predictor import ArrayPredictor
 from plantseg.predictions.functional.slice_builder import SliceBuilder
-from plantseg.predictions.functional.utils import get_model_config, get_patch_halo, get_stride_shape
+from plantseg.predictions.functional.utils import get_patch_halo, get_stride_shape
+
 
 def unet_predictions(
     raw: np.ndarray,
@@ -20,7 +23,9 @@ def unet_predictions(
     model_update: bool = False,
     disable_tqdm: bool = False,
     handle_multichannel: bool = False,
-    **kwargs
+    config_path: Optional[Path] = None,
+    model_weights_path: Optional[Path] = None,
+    **kwargs,
 ) -> np.ndarray:
     """Generate predictions from raw data using a specified 3D U-Net model.
 
@@ -40,14 +45,17 @@ def unet_predictions(
     Returns:
         np.ndarray: The predicted boundaries as a 3D (Z, Y, X) or 4D (C, Z, Y, X) array, normalized between 0 and 1.
     """
-    model, model_config, model_path = get_model_config(model_name, model_update=model_update)
+    if config_path is not None:
+        model, model_config, model_path = model_zoo.get_model_by_config_path(config_path, model_weights_path)
+    else:
+        model, model_config, model_path = model_zoo.get_model_by_name(model_name, model_update=model_update)
     state = torch.load(model_path, map_location='cpu')
 
     if 'model_state_dict' in state:  # Model weights format may vary between versions
         state = state['model_state_dict']
     model.load_state_dict(state)
 
-    patch_halo = kwargs.get('patch_halo', get_patch_halo(model_name))
+    patch_halo = kwargs['patch_halo'] if 'patch_halo' in kwargs else get_patch_halo(model_name)  # lazy else statement
 
     predictor = ArrayPredictor(
         model=model,
@@ -59,15 +67,20 @@ def unet_predictions(
         single_batch_mode=single_batch_mode,
         headless=False,
         verbose_logging=False,
-        disable_tqdm=disable_tqdm
+        disable_tqdm=disable_tqdm,
     )
 
-    raw = fix_input_shape_to_3D(raw)
+    if int(model_config['in_channels']) > 1:  # if multi-channel input
+        raw = fix_input_shape_to_CZYX(raw)
+        multichannel_input = True
+    else:
+        raw = fix_input_shape_to_ZYX(raw)
+        multichannel_input = False
     raw = raw.astype('float32')
     augs = get_test_augmentations(raw)  # using full raw to compute global normalization mean and std
     stride = get_stride_shape(patch)
     slice_builder = SliceBuilder(raw, label_dataset=None, patch_shape=patch, stride_shape=stride)
-    test_dataset = ArrayDataset(raw, slice_builder, augs, halo_shape=patch_halo, verbose_logging=False)
+    test_dataset = ArrayDataset(raw, slice_builder, augs, halo_shape=patch_halo, multichannel=multichannel_input, verbose_logging=False)
 
     pmaps = predictor(test_dataset)  # pmaps either (C, Z, Y, X) or (C, Y, X)
 
@@ -75,10 +88,10 @@ def unet_predictions(
         napari_formatted_logging(
             f'`unet_predictions()` has `handle_multichannel`={handle_multichannel}',
             thread="unet_predictions",
-            level='warning'
+            level='warning',
         )
-        pmaps = fix_input_shape_to_4D(pmaps)  # make (C, Y, X) to (C, 1, Y, X) and keep (C, Z, Y, X) unchanged
-    else: # otherwise use old mechanism
-        pmaps = fix_input_shape_to_3D(pmaps[0])
+        pmaps = fix_input_shape_to_CZYX(pmaps)  # make (C, Y, X) to (C, 1, Y, X) and keep (C, Z, Y, X) unchanged
+    else:  # otherwise use old mechanism
+        pmaps = fix_input_shape_to_ZYX(pmaps[0])
 
     return pmaps

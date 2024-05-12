@@ -9,7 +9,7 @@ H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]
 H5_KEYS = ["raw", "predictions", "segmentation"]
 
 
-def read_h5_voxel_size(f, h5key: str) -> list[float, float, float]:
+def read_h5_voxel_size(f, h5key: str) -> tuple[float, float, float]:
     """
     :returns the voxels size stored in a h5 dataset (if absent returns [1, 1, 1])
     """
@@ -17,16 +17,14 @@ def read_h5_voxel_size(f, h5key: str) -> list[float, float, float]:
 
     # parse voxel_size
     if 'element_size_um' in ds.attrs:
-        voxel_size = ds.attrs['element_size_um']
+        return ds.attrs['element_size_um']
     else:
         warnings.warn('Voxel size not found, returning default [1.0, 1.0. 1.0]', RuntimeWarning)
-        voxel_size = [1.0, 1.0, 1.0]
-
-    return voxel_size
+        return (1.0, 1.0, 1.0)
 
 
 def _find_input_key(h5_file) -> str:
-    f"""
+    """
     returns the first matching key in H5_KEYS or only one dataset is found the key to that dataset
     """
     found_datasets = []
@@ -54,7 +52,7 @@ def _find_input_key(h5_file) -> str:
 def load_h5(path: str,
             key: str,
             slices: Optional[slice] = None,
-            info_only: bool = False) -> Union[tuple, tuple[np.array, tuple]]:
+            info_only: bool = False) -> Union[tuple, tuple[np.ndarray, tuple]]:
     """
     Load a dataset from a h5 file and returns some meta info about it.
     Args:
@@ -65,20 +63,24 @@ def load_h5(path: str,
         Defaults to False.
 
     Returns:
-        Union[tuple, tuple[np.array, tuple]]: dataset as numpy array and infos
+        Union[tuple, tuple[np.ndarray, tuple]]: dataset as numpy array and infos
     """
     with h5py.File(path, 'r') as f:
         if key is None:
             key = _find_input_key(f)
 
         voxel_size = read_h5_voxel_size(f, key)
-        file_shape = f[key].shape
+
+        ds = f[key]
+        if not isinstance(ds, h5py.Dataset):
+            raise ValueError(f"'{key}' is not a h5py.Dataset.")
+        file_shape = ds.shape
 
         infos = (voxel_size, file_shape, key, 'um')
         if info_only:
             return infos
 
-        file = f[key][...] if slices is None else f[key][slices]
+        file = ds[...] if slices is None else ds[slices]
 
     return file, infos
 
@@ -92,7 +94,7 @@ def create_h5(path: str,
     Helper function to create a dataset inside a h5 file
     Args:
         path (str): file path
-        stack (np.array): numpy array to save as dataset in the h5 file
+        stack (np.ndarray): numpy array to save as dataset in the h5 file
         key (str): key of the dataset in the h5 file
         voxel_size (tuple[float, float, float]: voxel size in micrometers
         mode (str): mode to open the h5 file ['w', 'a']

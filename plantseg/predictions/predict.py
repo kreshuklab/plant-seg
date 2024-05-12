@@ -2,10 +2,11 @@ import numpy as np
 import torch
 
 from plantseg.io.io import load_shape
+from plantseg.models.zoo import model_zoo
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep
 from plantseg.predictions.functional.array_predictor import ArrayPredictor
-from plantseg.predictions.functional.utils import get_array_dataset, get_model_config, get_patch_halo
+from plantseg.predictions.functional.utils import get_array_dataset, get_patch_halo
 
 
 def _check_patch_size(paths, patch_size):
@@ -55,7 +56,7 @@ class UnetPredictions(GenericPipelineStep):
                          file_suffix='_predictions',
                          h5_output_key=h5_output_key)
 
-        model, model_config, model_path = get_model_config(model_name, model_update=model_update)
+        model, model_config, model_path = model_zoo.get_model_by_name(model_name, model_update=model_update)
         state = torch.load(model_path, map_location='cpu')
 
         # ensure compatibility with models trained with pytorch-3dunet
@@ -68,6 +69,7 @@ class UnetPredictions(GenericPipelineStep):
             patch_halo = get_patch_halo(model_name)
         self.halo_shape = patch_halo
         is_embedding = not model_config.get('is_segmentation', True)
+        self.multichannel_input = int(model_config['in_channels']) > 1
         self.predictor = ArrayPredictor(model=model, in_channels=model_config['in_channels'],
                                         out_channels=model_config['out_channels'], device=device, patch=tuple(self.patch),
                                         patch_halo=tuple(patch_halo), single_batch_mode=False, headless=True,
@@ -80,6 +82,7 @@ class UnetPredictions(GenericPipelineStep):
             patch=self.patch,
             stride_ratio=self.stride_ratio,
             halo_shape=self.halo_shape,
+            multichannel=self.multichannel_input,
         )
         pmaps = self.predictor(dataset)
         return pmaps

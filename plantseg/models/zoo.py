@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, AliasChoices, model_validator
 
 from plantseg import PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM, PATH_PLANTSEG_MODELS
 from plantseg import FILE_CONFIG_TRAIN_YAML, FILE_BEST_MODEL_PYTORCH, FILE_LAST_MODEL_PYTORCH
-from plantseg.utils import load_config, save_config, download_files
+from plantseg.utils import get_class, load_config, save_config, download_files
 
 AUTHOR_PLANTSEG = 'plantseg'
 AUTHOR_USER = 'user'
@@ -24,10 +24,10 @@ class ModelZooRecord(BaseModel):
     path: Optional[str] = None
     id: Optional[str] = None
     description: Optional[str] = None
-    resolution: Optional[List[float]] = None
+    resolution: Optional[Tuple[float, float, float]] = None
     dimensionality: Optional[str] = None
     modality: Optional[str] = None
-    recommended_patch_size: Optional[List[int]] = None
+    recommended_patch_size: Optional[Tuple[float, float, float]] = None
     output_type: Optional[str] = None
     doi: Optional[str] = None
     added_by: Optional[str] = None
@@ -146,10 +146,10 @@ class ModelZoo:
     def get_model_description(self, model_name: str) -> Optional[str]:
         return self._get_model_record(model_name).description
 
-    def get_model_resolution(self, model_name: str) -> Optional[List[float]]:
+    def get_model_resolution(self, model_name: str) -> Optional[Tuple[float, float, float]]:
         return self._get_model_record(model_name).resolution
 
-    def get_model_patch_size(self, model_name: str) -> Optional[List[int]]:
+    def get_model_patch_size(self, model_name: str) -> Optional[Tuple[float, float, float]]:
         return self._get_model_record(model_name).recommended_patch_size
 
     def _get_unique_metadata(self, metadata_key: str) -> List[str]:
@@ -258,11 +258,36 @@ class ModelZoo:
             else:
                 warn(f"Model {model_name} not found in the models zoo configuration.")
 
-    def get_train_config(self, model_name: str) -> dict:
-        """Load the training configuration for a specified model."""
+    def _get_model_config_path_by_name(self, model_name: str) -> Path:
+        """Return the path to the training configuration for a model in zoo."""
         self.check_models(model_name, config_only=True)
-        train_config_path = PATH_PLANTSEG_MODELS / model_name / FILE_CONFIG_TRAIN_YAML
-        return load_config(train_config_path)
+        return PATH_PLANTSEG_MODELS / model_name / FILE_CONFIG_TRAIN_YAML
+
+    def get_model_config_by_name(self, model_name: str) -> dict:
+        """Load the training configuration for a model in zoo."""
+        config_path = self._get_model_config_path_by_name(model_name)
+        return load_config(config_path)
+
+    def _create_model_by_config(self, model_config: dict):
+        """Create a model instance from a configuration."""
+        model_class = get_class(model_config['name'], modules=['plantseg.training.model'])
+        return model_class(**model_config)
+
+    def get_model_by_config_path(self, config_path: Path, model_weights_path: Optional[Path] = None):
+        """Create a safari model (may or may not be in zoo) from a configuration file."""
+        config_train = load_config(config_path)
+        model_config = config_train.pop('model')
+        model = self._create_model_by_config(model_config)
+        if model_weights_path is None:
+            model_weights_path = config_path.parent / FILE_BEST_MODEL_PYTORCH
+        return model, model_config, model_weights_path
+
+    def get_model_by_name(self, model_name: str, model_update: bool = False):
+        """Load configuration for a model in zoo; return the model, configuration and path."""
+        self.check_models(model_name, update_files=model_update)
+        config_path = self._get_model_config_path_by_name(model_name)
+        model_weights_path = PATH_PLANTSEG_MODELS / model_name / FILE_BEST_MODEL_PYTORCH
+        return self.get_model_by_config_path(config_path, model_weights_path)
 
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)

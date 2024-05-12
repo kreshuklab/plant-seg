@@ -1,6 +1,5 @@
-from plantseg import PATH_PREDICT_TEMPLATE, PATH_PLANTSEG_MODELS, FILE_BEST_MODEL_PYTORCH
+from plantseg import PATH_PREDICT_TEMPLATE
 from plantseg.augment.transforms import get_test_augmentations
-from plantseg.training.model import get_model
 from plantseg.pipeline import gui_logger
 from plantseg.predictions.functional.array_dataset import ArrayDataset
 from plantseg.predictions.functional.slice_builder import SliceBuilder
@@ -13,16 +12,7 @@ def get_predict_template():
     return predict_template
 
 
-def get_model_config(model_name, model_update=False):
-    model_zoo.check_models(model_name, update_files=model_update)
-    config_train = model_zoo.get_train_config(model_name)
-    model_config = config_train.pop('model')
-    model = get_model(model_config)
-    model_path = PATH_PLANTSEG_MODELS / model_name / FILE_BEST_MODEL_PYTORCH
-    return model, model_config, model_path
-
-
-def get_array_dataset(raw, model_name, patch, stride_ratio, halo_shape, global_normalization=True):
+def get_array_dataset(raw, model_name, patch, stride_ratio, halo_shape, multichannel, global_normalization=True):
     if model_name == 'UNet2D':
         if patch[0] != 1:
             gui_logger.warning(f"Incorrect z-dimension in the patch_shape for the 2D UNet prediction. {patch[0]}"
@@ -37,14 +27,14 @@ def get_array_dataset(raw, model_name, patch, stride_ratio, halo_shape, global_n
 
     stride = get_stride_shape(patch, stride_ratio)
     slice_builder = SliceBuilder(raw, label_dataset=None, patch_shape=patch, stride_shape=stride)
-    return ArrayDataset(raw, slice_builder, augs, halo_shape=halo_shape, verbose_logging=False)
+    return ArrayDataset(raw, slice_builder, augs, halo_shape=halo_shape, multichannel=multichannel, verbose_logging=False)
 
 
 def get_patch_halo(model_name):
     predict_template = get_predict_template()
     patch_halo = predict_template['predictor']['patch_halo']
 
-    config_train = model_zoo.get_train_config(model_name)
+    config_train = model_zoo.get_model_config_by_name(model_name)
     if config_train["model"]["name"] == "UNet2D":
         patch_halo[0] = 0
 

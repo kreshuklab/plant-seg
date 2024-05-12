@@ -1,16 +1,12 @@
-# Code copied from pytorch-3dunet package
+# Code ported from pytorch-3dunet package
 # https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/unet3d/model.py
 
-import importlib
-from typing import List
-
-import torch.nn as nn
-
+from typing import List, Self
 from functools import partial
 
 import torch
-from torch import nn as nn
-from torch.nn import functional as F
+import torch.nn as nn
+import torch.nn.functional as F
 
 
 def create_conv(in_channels, out_channels, kernel_size, order, num_groups, padding, is3d):
@@ -472,19 +468,26 @@ class SpocoNet(nn.Module):
     """
     Wrapper around the f-network and the moving average g-network.
     """
-
     def __init__(self, net_f, net_g, m=0.999, init_equal=True):
-        super(SpocoNet, self).__init__()
-
+        super().__init__()
         self.net_f = net_f
         self.net_g = net_g
         self.m = m
 
         if init_equal:
-            # initialize g weights to be equal to f weights
-            for param_f, param_g in zip(self.net_f.parameters(), self.net_g.parameters()):
-                param_g.data.copy_(param_f.data)  # initialize
-                param_g.requires_grad = False  # freeze g parameters
+            self._initialize_identical_weights()
+
+    @classmethod
+    def from_unet_params(cls, in_channels: int, out_channels: int, f_maps: List[int], layer_order='bcr',
+                         m=0.999, init_equal=True) -> Self:
+        net_f = UNet2D(in_channels, out_channels, f_maps=f_maps, layer_order=layer_order)
+        net_g = UNet2D(in_channels, out_channels, f_maps=f_maps, layer_order=layer_order)
+        return cls(net_f, net_g, m, init_equal)
+
+    def _initialize_identical_weights(self):
+        for param_f, param_g in zip(self.net_f.parameters(), self.net_g.parameters()):
+            param_g.data.copy_(param_f.data)  # initialize
+            param_g.requires_grad = False  # freeze g parameters
 
     @torch.no_grad()
     def _momentum_update(self):
@@ -508,20 +511,6 @@ class SpocoNet(nn.Module):
 
 def number_of_features_per_level(init_channel_number, num_levels):
     return [init_channel_number * 2 ** k for k in range(num_levels)]
-
-
-def get_class(class_name, modules):
-    for module in modules:
-        m = importlib.import_module(module)
-        clazz = getattr(m, class_name, None)
-        if clazz is not None:
-            return clazz
-    raise RuntimeError(f'Unsupported dataset class: {class_name}')
-
-
-def get_model(model_config):
-    model_class = get_class(model_config['name'], modules=['plantseg.training.model'])
-    return model_class(**model_config)
 
 
 def get_spoco(in_channels: int, out_channels: int, f_maps: List[int], layer_order='bcr') -> SpocoNet:

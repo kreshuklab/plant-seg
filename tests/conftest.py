@@ -1,52 +1,49 @@
-import os
+# pylint: disable=missing-docstring,import-outside-toplevel
+
+from pathlib import Path
 import shutil
 
 import h5py
+import zarr
 import numpy as np
 import pytest
 import yaml
 
-TEST_FILES = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    'resources',
-)
-
+TEST_FILES = Path(__file__).resolve().parent / 'resources'
 VOXEL_SIZE = (0.235, 0.15, 0.15)
+KEY_ZARR = 'volumes/new'
 
-
-# common fixtures aimed to reduce the boilerplate in tests
 
 @pytest.fixture
-def input_path(tmpdir):
-    path = os.path.join(tmpdir, 'test.h5')
+def path_file_hdf5(tmpdir):
+    """Create an HDF5 file using `h5py`'s API with an example dataset for testing purposes."""
+    path = Path(tmpdir) / 'test.h5'
     with h5py.File(path, 'w') as f:
         f.create_dataset('raw', data=np.random.rand(32, 128, 128))
         f['raw'].attrs['element_size_um'] = VOXEL_SIZE
         f.create_dataset('segmentation', data=np.random.randint(low=0, high=256, size=(32, 128, 128)))
         f['segmentation'].attrs['element_size_um'] = VOXEL_SIZE
+    return str(path)
+
+
+@pytest.fixture
+def path_file_zarr(tmpdir):
+    """Create a Zarr file using `zarr`'s API with an example dataset for testing purposes."""
+
+    path = Path(tmpdir) / 'test.zarr'
+    zarr.save_array(str(path), np.random.rand(32, 128, 128), path=KEY_ZARR)
+    zarr.open_array(path / KEY_ZARR, mode='a').attrs['element_size_um'] = VOXEL_SIZE
     return path
 
 
 @pytest.fixture
-def input_path_zarr(tmpdir):
-    import zarr
-    path = os.path.join(tmpdir, 'test.zarr')
-    with zarr.open(path, 'w') as f:
-        f.create_dataset('volumes/raw', data=np.random.rand(32, 128, 128))
-        f['volumes/raw'].attrs['element_size_um'] = VOXEL_SIZE
-    return path
-
-
-@pytest.fixture
-def preprocess_config(input_path):
-    """
-    Create pipeline config with only pre-processing (gaussian fileter) enabled
-    """
-    config_path = os.path.join(TEST_FILES, 'test_config.yaml')
-    config = yaml.full_load(open(config_path, 'r'))
-    # add file to process
-    config['path'] = input_path
-    # add gaussian smoothing just to do some work
+def preprocess_config(path_file_hdf5):
+    """Create pipeline config with only pre-processing (Gaussian filter) enabled."""
+    config_path = TEST_FILES / 'test_config.yaml'
+    config = yaml.full_load(config_path.read_text())
+    # Add the file path to process
+    config['path'] = path_file_hdf5
+    # Enable Gaussian smoothing for some work
     config['preprocessing']['state'] = True
     config['preprocessing']['filter']['state'] = True
     return config
@@ -54,21 +51,21 @@ def preprocess_config(input_path):
 
 @pytest.fixture
 def prediction_config(tmpdir):
-    """
-    Create pipeline config with Unet predictions enabled.
+    """Create pipeline config with Unet predictions enabled.
+
     Predictions will be executed on the `tests/resources/sample_ovules.h5`.
-    `sample_ovules.h5` is first copied to the tmp dir in order to avoid unnecessary files creation in `tests/resources`.
+    The `sample_ovules.h5` file is copied to the temporary directory to avoid
+    creating unnecessary files in `tests/resources`.
     """
-    # load test config
-    config_path = os.path.join(TEST_FILES, 'test_config.yaml')
-    config = yaml.full_load(open(config_path, 'r'))
-    # enable unet predictions
+    # Load the test configuration
+    config_path = TEST_FILES / 'test_config.yaml'
+    config = yaml.full_load(config_path.read_text())
+    # Enable Unet predictions
     config['cnn_prediction']['state'] = True
-    # copy sample_ovules.h5 to tmp dir
-    sample_ovule_path = os.path.join(TEST_FILES, 'sample_ovule.h5')
-    tmp_path = os.path.join(tmpdir, 'sample_ovule.h5')
+    # Copy `sample_ovule.h5` to the temporary directory
+    sample_ovule_path = TEST_FILES / 'sample_ovule.h5'
+    tmp_path = Path(tmpdir) / 'sample_ovule.h5'
     shutil.copy2(sample_ovule_path, tmp_path)
-    # add tmp_path to the config
-    config['path'] = tmp_path
-    # enable network predictions
+    # Add the temporary path to the config
+    config['path'] = str(tmp_path)  # Ensure the path is a string
     return config
