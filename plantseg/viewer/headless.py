@@ -1,7 +1,6 @@
 import multiprocessing
 import time
 from pathlib import Path
-from typing import List, Tuple
 
 from dask.distributed import LocalCluster, Client
 from magicgui import magicgui
@@ -16,9 +15,8 @@ ALL_DEVICES_HEADLESS = ALL_DEVICES + ALL_GPUS
 MAX_WORKERS = len(ALL_CUDA_DEVICES) if ALL_CUDA_DEVICES else multiprocessing.cpu_count()
 
 
-def parse_input_paths(inputs: List[str], path_suffix: str = '_path') -> Tuple[List[str], str]:
+def parse_input_paths(inputs: list[str], path_suffix: str = '_path') -> tuple[list[str], str]:
     input_paths = [_input for _input in inputs if _input.endswith(path_suffix)]
-    input_hints = tuple([Path] * len(input_paths))
     input_names = '/'.join(input.replace(path_suffix, '') for input in input_paths)
     return input_paths, input_names
 
@@ -42,7 +40,7 @@ def run_workflow_headless(path: Path):
               scheduler={'label': 'Scheduler',
                          'choices': ['multiprocessing', 'threaded']},
               call_button='Run PlantSeg')
-    def run(list_inputs: List[Tuple[Path, ...]],
+    def run(list_inputs: list[tuple[Path]],  # -> ListEdit; magicgui cannot handle `...` in type hints
             out_directory: Path = Path.home(),
             device: str = ALL_DEVICES_HEADLESS[0],
             num_workers: int = MAX_WORKERS,
@@ -67,5 +65,8 @@ def run_workflow_headless(path: Path):
             results = client.compute(list(jobs.values()))
             client.gather(results)
             print(f'Process ended in: {time.time() - start_time:.2f}s')
+
+    if hasattr(run.native, 'setWindowTitle'):
+        run.native.setWindowTitle('PlantSeg Headless')
 
     run.show(run=True)

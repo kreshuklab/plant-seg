@@ -84,18 +84,22 @@ def widget_unet_predictions(viewer: Viewer,
     layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
 
     layer_type = 'image'
-    step_kwargs = dict(model_name=model_name, patch=patch_size, patch_halo=patch_halo, single_batch_mode=single_patch)
+    step_kwargs = dict(model_name=model_name,
+                       patch=patch_size,
+                       patch_halo=patch_halo,
+                       single_batch_mode=single_patch,
+                       handle_multichannel=True)
 
     return start_prediction_process(unet_predictions_wrapper,
                                     runtime_kwargs={'raw': image.data,
-                                                    'device': device,
-                                                    'handle_multichannel': True},
+                                                    'device': device},
                                     statics_kwargs=step_kwargs,
                                     out_name=out_name,
                                     input_keys=inputs_names,
                                     layer_kwarg=layer_kwargs,
                                     layer_type=layer_type,
                                     step_name='UNet Predictions',
+                                    skip_dag=False,
                                     viewer=viewer,
                                     widgets_to_update=[widget_agglomeration.image,
                                                        widget_lifted_multicut.image,
@@ -359,4 +363,3 @@ if TOO_MANY_WIDGES:
         _widget.hide()
 
 # widget_extra_pred_manager.enabled=TOO_MANY_WIDGES
-

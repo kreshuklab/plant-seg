@@ -90,7 +90,12 @@ Ultimately you may download this repo and install it from source for the latest 
 
 ## Optional dependencies
 
-*(not fully tested on Windows)*
+If you want to use the headless mode of PlantSeg, you need to install `dask[distributed]`:
+
+```bash
+conda activate plant-seg
+mamba install dask distributed
+```
 
 Some types of compressed tiff files require an additional package to be load correctly (e.g.: Zlib, ZSTD, LZMA, ...).
 To run PlantSeg on those stacks, you need to install `imagecodecs`.
