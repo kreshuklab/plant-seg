@@ -66,5 +66,7 @@ def run_workflow_headless(path: Path):
             client.gather(results)
             print(f'Process ended in: {time.time() - start_time:.2f}s')
 
-    run.native.setWindowTitle('PlantSeg Headless')
+    if hasattr(run.native, 'setWindowTitle'):
+        run.native.setWindowTitle('PlantSeg Headless')
+
     run.show(run=True)
