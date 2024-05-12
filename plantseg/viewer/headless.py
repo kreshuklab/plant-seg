@@ -16,17 +16,17 @@ ALL_DEVICES_HEADLESS = ALL_DEVICES + ALL_GPUS
 MAX_WORKERS = len(ALL_CUDA_DEVICES) if ALL_CUDA_DEVICES else multiprocessing.cpu_count()
 
 
-def parse_input_paths(inputs: List[str], path_suffix: str = '_path') -> Tuple[List[str], str, Tuple[type, ...]]:
+def parse_input_paths(inputs: List[str], path_suffix: str = '_path') -> Tuple[List[str], str]:
     input_paths = [_input for _input in inputs if _input.endswith(path_suffix)]
     input_hints = tuple([Path] * len(input_paths))
     input_names = '/'.join(input.replace(path_suffix, '') for input in input_paths)
-    return input_paths, input_names, input_hints
+    return input_paths, input_names
 
 
 def run_workflow_headless(path: Path):
     dag = DagHandler.from_pickle(path)
     print(dag)
-    input_paths, input_names, input_hints = parse_input_paths(dag.inputs)
+    input_paths, input_names = parse_input_paths(dag.inputs)
 
     @magicgui(list_inputs={'label': input_names,
                            'layout': 'vertical'},
@@ -42,7 +42,7 @@ def run_workflow_headless(path: Path):
               scheduler={'label': 'Scheduler',
                          'choices': ['multiprocessing', 'threaded']},
               call_button='Run PlantSeg')
-    def run(list_inputs: input_hints,  # FIXME: This is wrong, maybe should be List[Path]
+    def run(list_inputs: List[Tuple[Path, ...]],
             out_directory: Path = Path.home(),
             device: str = ALL_DEVICES_HEADLESS[0],
             num_workers: int = MAX_WORKERS,
@@ -54,7 +54,7 @@ def run_workflow_headless(path: Path):
             for i, inputs in enumerate(tqdm(list_inputs)):
                 if device == all_gpus_str:
                     device = ALL_DEVICES[i % len(ALL_CUDA_DEVICES)]
-                job_dict = dict(zip(input_paths, inputs))
+                job_dict: dict = dict(zip(input_paths, inputs))
                 job_dict.update({
                     'out_stack_name': inputs[0].stem,
                     'out_directory': out_directory,
