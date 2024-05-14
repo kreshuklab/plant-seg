@@ -9,7 +9,7 @@ copyright: Copyright &copy; 2019 - 2024 Lorenzo Cerrone, Adrian Wolny, Qin Yu
 theme:
   name: material
   favicon: images/favicon.ico
-  logo: logo_white.png
+  logo: logos/logo_white.png
   icon:
     repo: fontawesome/brands/github
   palette:

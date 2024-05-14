@@ -1,4 +1,4 @@
-![alt text](plantseg/legacy_gui/logo.png)
+![alt text](docs/logos/logo.png)
 
 [![doc build status](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-book.yml/badge.svg)](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-book.yml)
 [![package build status](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-on-conda.yml/badge.svg)](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-on-conda.yml)
