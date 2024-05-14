@@ -2,11 +2,28 @@
 
 This section provides solutions to common issues you might encounter while using PlantSeg. Click on a problem to jump to its specific solution.
 
+* [Font size problems in GUI](#font-size-problems-in-gui)
 * [Problems with `--headless` and `dask[distributed]`](#problems-with---headless-and-daskdistributed)
 * [Could not load library `libcudnn_ops_infer.so.8`](#could-not-load-library-libcudnn_ops_inferso8)
 * [Missing configuration key errors](#missing-configuration-key-errors)
 * [Cannot import `lifted_problem_from_probabilities`](#cannot-import-lifted_problem_from_probabilities)
 * [Other issues](#other-issues)
+
+----
+
+## Font size problems in GUI
+
+If you find the font size varies within either Napari or Legacy GUIs, or some buttons or texts are not visible, it might relate to your system's DPI settings or sreen resolution. To fix this, you can try to reset the resolution of your system.
+
+Related discussions:
+
+* [`plantseg --gui`, no buttons to begin the workflow #241](https://github.com/hci-unihd/plant-seg/issues/241)
+
+Other references:
+
+* [tkinter not recognizing screen resolution correctly](https://stackoverflow.com/questions/36381225/tkinter-not-recognizing-screen-resolution-correctly)
+  * [High DPI Desktop Application Development on Windows](https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows)
+  * [SetProcessDpiAwareness function (shellscalingapi.h)](https://learn.microsoft.com/en-us/windows/win32/api/shellscalingapi/nf-shellscalingapi-setprocessdpiawareness#remarks)
 
 ----
 
@@ -24,6 +41,8 @@ Please install `dask[distributed]` to enable headless mode in PlantSeg. Run the 
 mamba activate plant-seg
 mamba install -c pytorch -c nvidia -c conda-forge dask distributed
 ```
+
+----
 
 ## Could not load library `libcudnn_ops_infer.so.8`
 
