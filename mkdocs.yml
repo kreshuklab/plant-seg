@@ -66,13 +66,12 @@ markdown_extensions:
 nav:
   - Overview: index.md
   - Getting Started:
+    - chapters/getting_started/index.md
     - Installation: chapters/getting_started/installation.md
-    - Quick Start: chapters/getting_started/quick_start.md
     - Contributing: chapters/getting_started/contributing.md
     - Troubleshooting: chapters/getting_started/troubleshooting.md
-  - Models and data:
-    - Official Models: chapters/plantseg_models/models.md
-    - Official Data: chapters/plantseg_models/data.md
+  - Models and Data:
+    - chapters/plantseg_models/index.md
     - Training: chapters/plantseg_models/training.md
   - Usage:
     - chapters/plantseg_interactive_napari/index.md

@@ -2,7 +2,18 @@
 
 For training new models we rely on the [pytorch-3dunet](https://github.com/wolny/pytorch-3dunet).
 A similar configuration file can be used for training on new data and all the instructions can be found in the repo.
-When the network is trained it is enough to create `~/.plantseg_models/MY_MODEL_NAME` directory
+
+## Adding Models
+
+1. Put these three files in one directory:
+      1. configuration file used for training: `config_train.yml`
+      2. snapshot of the best model across training: `best_checkpoint.pytorch`
+      3. snapshot of the last model saved during training: `last_checkpoint.pytorch`
+2. Click "Add Custom Model" in the GUI and follow the instruction
+
+### Alternative Old Method
+
+When the network is trained, it is enough to create `~/.plantseg_models/MY_MODEL_NAME` directory
 and copy the following files into it:
 
 * configuration file used for training: `config_train.yml`
