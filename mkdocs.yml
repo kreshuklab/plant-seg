@@ -47,6 +47,22 @@ extra:
       link: https://github.com/pyapp-kit/magicgui
       name: PlantSeg on GitHub
 
+markdown_extensions:
+  - abbr
+  - attr_list
+  - md_in_html
+  - admonition
+  - pymdownx.extra
+  - pymdownx.details
+  - pymdownx.snippets
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
 nav:
   - Overview: index.md
   - Getting Started:
@@ -54,6 +70,10 @@ nav:
     - Quick Start: chapters/getting_started/quick_start.md
     - Contributing: chapters/getting_started/contributing.md
     - Troubleshooting: chapters/getting_started/troubleshooting.md
+  - Models and data:
+    - Official Models: chapters/plantseg_models/models.md
+    - Official Data: chapters/plantseg_models/data.md
+    - Training: chapters/plantseg_models/training.md
   - Usage:
     - chapters/plantseg_interactive_napari/index.md
     - Data Processing: chapters/plantseg_interactive_napari/data_processing.md
@@ -74,19 +94,3 @@ nav:
     - Data Processing: chapters/python_api/data_processing.md
     - Prediction: chapters/python_api/cnn_predictions.md
     - Segmentation: chapters/python_api/segmentation.md
-
-markdown_extensions:
-  - abbr
-  - attr_list
-  - md_in_html
-  - admonition
-  - pymdownx.extra
-  - pymdownx.details
-  - pymdownx.snippets
-  - pymdownx.highlight
-  - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
