@@ -5,7 +5,7 @@ Currently the GUI does not allow to visualize or interact with the data.
 We recommend using [MorphographX](https://www.mpipz.mpg.de/MorphoGraphX) or
 [Fiji](https://fiji.sc/) in order to assert the success and quality of the pipeline results.
 
-![alt text](https://github.com/hci-unihd/plant-seg/raw/assets/images/plantseg_overview.png)
+![alt text](https://github.com/kreshuklab/plant-seg/raw/assets/images/plantseg_overview.png)
 
 ## File Browser Widget
 The file browser can be used to select the input files for the pipeline.

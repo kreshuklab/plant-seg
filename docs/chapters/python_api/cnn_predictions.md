@@ -2,7 +2,7 @@
 
 In this section we will describe how to use the PlantSeg CNN Predictions workflow from the python API.
 
-## API-Reference: [plantseg.predictions.functional.predictions](https://github.com/hci-unihd/plant-seg/blob/master/plantseg/predictions/functional/predictions.py)
+## API-Reference: [plantseg.predictions.functional.predictions](https://github.com/kreshuklab/plant-seg/blob/master/plantseg/predictions/functional/predictions.py)
 ### ***unet_predictions***
 ```python
 def unet_predictions(raw: np.ndarray,

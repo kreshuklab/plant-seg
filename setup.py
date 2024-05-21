@@ -8,6 +8,6 @@ setup(
     include_package_data=True,
     description='PlantSeg is a tool for cell instance aware segmentation in densely packed 3D volumetric images.',
     author='Lorenzo Cerrone, Adrian Wolny',
-    url='https://github.com/hci-unihd/plant-seg',
+    url='https://github.com/kreshuklab/plant-seg',
     author_email='lorenzo.cerrone@iwr.uni-heidelberg.de',
 )

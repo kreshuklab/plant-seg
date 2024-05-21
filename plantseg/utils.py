@@ -78,7 +78,7 @@ def clean_models() -> None:
             print("Invalid input, please type 'y' or 'n'.")
 
 
-def check_version(current_version: str, plantseg_url: str = 'https://api.github.com/repos/hci-unihd/plant-seg/releases/latest') -> None:
+def check_version(current_version: str, plantseg_url: str = 'https://api.github.com/repos/kreshuklab/plant-seg/releases/latest') -> None:
     """Check for the latest version of PlantSeg available on GitHub."""
     try:
         response = requests.get(plantseg_url)

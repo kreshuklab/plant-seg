@@ -1,8 +1,8 @@
 site_name: PlantSeg
-site_url: https://hci-unihd.github.io/plant-seg/
+site_url: https://kreshuklab.github.io/plant-seg/
 site_description: Cell instance aware segmentation in densely packed 3D volumetric images
-repo_name: hci-unihd/plant-seg
-repo_url: https://github.com/hci-unihd/plant-seg
+repo_name: kreshuklab/plant-seg
+repo_url: https://github.com/kreshuklab/plant-seg
 edit_uri: edit/main/docs/
 copyright: Copyright &copy; 2019 - 2024 Lorenzo Cerrone, Adrian Wolny, Qin Yu
 

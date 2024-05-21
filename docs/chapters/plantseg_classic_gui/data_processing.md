@@ -1,6 +1,6 @@
 # Classic Data Processing
 
-![alt text](https://github.com/hci-unihd/plant-seg/raw/assets/images/preprocessing.png)
+![alt text](https://github.com/kreshuklab/plant-seg/raw/assets/images/preprocessing.png)
 **PlantSeg** includes essential utilities for data pre-processing and post-processing.
 
 ## Pre-Processing

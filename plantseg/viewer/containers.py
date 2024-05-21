@@ -39,7 +39,7 @@ def get_data_io():
     container = MainWindow(widgets=[widget_open_file,
                                     widget_export_stacks],
                            labels=False)
-    container = setup_menu(container, path='https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/index.html')
+    container = setup_menu(container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/index.html')
     return container
 
 
@@ -51,7 +51,7 @@ def get_preprocessing_workflow():
                                     widget_add_layers,
                                     widget_label_processing],
                            labels=False)
-    container = setup_menu(container, path='https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/data_processing.html')
+    container = setup_menu(container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/data_processing.html')
     return container
 
 
@@ -60,7 +60,7 @@ def get_gasp_workflow():
                                     widget_simple_dt_ws,
                                     widget_agglomeration],
                            labels=False)
-    container = setup_menu(container, path='https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/unet_gasp_workflow.html')
+    container = setup_menu(container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/unet_gasp_workflow.html')
     return container
 
 
@@ -71,7 +71,7 @@ def get_extra_pred():
                                     widget_iterative_unet_predictions,
                                     widget_add_custom_model],
                            labels=False)
-    container = setup_menu(container, path='https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/extra_pred.html')
+    container = setup_menu(container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/extra_pred.html')
     return container
 
 
@@ -81,7 +81,7 @@ def get_extra_seg():
                                     widget_dt_ws,
                                     widget_lifted_multicut],
                            labels=False)
-    container = setup_menu(container, path='https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/extra_seg.html')
+    container = setup_menu(container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/extra_seg.html')
     return container
 
 
@@ -94,5 +94,5 @@ def get_proofreading():
                                     widget_clean_scribble,
                                     widget_filter_segmentation],
                            labels=False)
-    container = setup_menu(container, path='https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/extra_seg.html')
+    container = setup_menu(container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/extra_seg.html')
     return container

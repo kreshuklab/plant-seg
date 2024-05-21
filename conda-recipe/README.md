@@ -20,9 +20,9 @@ conda build -c conda-forge conda-recipe1.8.3
 
 ## Release new version on `conda-forge` channel
 
-1. Make a new release on GitHub (https://github.com/hci-unihd/plant-seg/releases)
+1. Make a new release on GitHub (https://github.com/kreshuklab/plant-seg/releases)
 2. (Optional) Make sure that the new release version is in sync with the version in `.bumpversion.cfg` and `__version__.py` (see above)
-3. Generate the checksums for the new release using: `curl -sL https://github.com/hci-unihd/plant-seg/archive/refs/tags/VERSION.tar.gz | openssl sha256`. Replace `VERSION` with the new release version
+3. Generate the checksums for the new release using: `curl -sL https://github.com/kreshuklab/plant-seg/archive/refs/tags/VERSION.tar.gz | openssl sha256`. Replace `VERSION` with the new release version
 4. Fork the `conda-forge` feedstock  repository (https://github.com/conda-forge/plant-seg-feedstock)
 5. Clone the forked repository and create a new PR with the following changes:
     - Update the `version` in `recipe/meta.yaml` to the new release version

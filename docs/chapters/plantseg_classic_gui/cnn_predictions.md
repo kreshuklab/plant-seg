@@ -1,6 +1,6 @@
 # CNN Predictions
 
-![alt text](https://github.com/hci-unihd/plant-seg/raw/assets/images/cnn-predictions.png)
+![alt text](https://github.com/kreshuklab/plant-seg/raw/assets/images/cnn-predictions.png)
 
 The CNN predictions widget process the stacks at hand with a Convolutional Neural Network. The output is
 a boundary classification image, where every voxel gets a value between 0 (not a cell boundary) and 1 (cell boundary).
@@ -10,11 +10,11 @@ The input image can be a raw stack "tiff"/"h5" or the output of the PreProcessin
 * The **Model Name** menu shows all available models. There are two main basic models available
     1. **Generic confocal**is a generic model for all confocal datasets.
     Some examples:
-    ![alt text](https://github.com/hci-unihd/plant-seg/raw/assets/images/confocal.png)
+    ![alt text](https://github.com/kreshuklab/plant-seg/raw/assets/images/confocal.png)
 
     2. **Generic lightsheet** this is a generic model for all lightsheet datasets.
      Some examples:
-     ![alt text](https://github.com/hci-unihd/plant-seg/raw/assets/images/cos_root_mc_raw.png)
+     ![alt text](https://github.com/kreshuklab/plant-seg/raw/assets/images/cos_root_mc_raw.png)
 
 * Due to memory constraints, usually a complete stack does not fit the GPUs memory,
  therefore the **Patch size** can be used to optimize the performance of the pipeline.

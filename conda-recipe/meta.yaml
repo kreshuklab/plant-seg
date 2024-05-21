@@ -42,5 +42,5 @@ test:
   run:
     - pytest
 about:
-  home: https://github.com/hci-unihd/plant-seg
+  home: https://github.com/kreshuklab/plant-seg
   license: MIT

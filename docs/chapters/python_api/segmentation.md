@@ -2,7 +2,7 @@
 
 In this section we will describe how to use the PlantSeg segmentation workflows from the python API.
 
-## API-Reference: [plantseg.predictions.functional.segmentation](https://github.com/hci-unihd/plant-seg/blob/master/plantseg/segmentation/functional/segmentation.py)
+## API-Reference: [plantseg.predictions.functional.segmentation](https://github.com/kreshuklab/plant-seg/blob/master/plantseg/segmentation/functional/segmentation.py)
 * ***dt_watershed***
 ```python
 def dt_watershed(boundary_pmaps: np.ndarray,
@@ -38,7 +38,7 @@ def dt_watershed(boundary_pmaps: np.ndarray,
     ...
 ```
 
-https://github.com/hci-unihd/plant-seg/blob/de397694f523f142d67a38d5611acefd03e33137/plantseg/segmentation/functional/segmentation.py#L23-L122
+https://github.com/kreshuklab/plant-seg/blob/de397694f523f142d67a38d5611acefd03e33137/plantseg/segmentation/functional/segmentation.py#L23-L122
 * ***gasp***
 ```python
 def gasp(boundary_pmaps: np.ndarray,

@@ -17,7 +17,7 @@ If you find the font size varies within either Napari or Legacy GUIs, or some bu
 
 Related discussions:
 
-* [`plantseg --gui`, no buttons to begin the workflow #241](https://github.com/hci-unihd/plant-seg/issues/241)
+* [`plantseg --gui`, no buttons to begin the workflow #241](https://github.com/kreshuklab/plant-seg/issues/241)
 
 Other references:
 

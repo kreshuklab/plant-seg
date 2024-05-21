@@ -614,7 +614,7 @@ def report_error(data, font=None, depth=3):
 
     default = "The complete error message is reported in the terminal." \
               " If the error persists, please let us know by opening an issue on" \
-              " https://github.com/hci-unihd/plant-seg."
+              " https://github.com/kreshuklab/plant-seg."
 
     popup = tkinter.Tk()
     popup.title("Error")
@@ -966,7 +966,7 @@ def version_popup():
 
     text = f"PlantSeg version: {__version__}\n \n" \
            f"Visit our source page for more info \n \n" \
-           f"https://github.com/hci-unihd/plant-seg"
+           f"https://github.com/kreshuklab/plant-seg"
 
     label = tkinter.Label(popup_frame, bg="white", text=text)
     label.grid(column=0,

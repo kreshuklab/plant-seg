@@ -2,7 +2,7 @@
 
 The segmentation widget allows using very powerful graph partitioning techniques to obtain a segmentation from the
 input stacks.
-The input of this widget should be the output of the [CNN-predictions widget](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_predictions.html).
+The input of this widget should be the output of the [CNN-predictions widget](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_predictions.html).
 If the boundary prediction stage fails for any reason, a raw image could be used (especially if the cell boundaries are
  very sharp, and the noise is low) but usually does not yield satisfactory results.
 
