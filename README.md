@@ -2,8 +2,8 @@
 
 ![alt text](docs/logos/logo.png)
 
-[![doc build status](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-book.yml/badge.svg)](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-book.yml)
-[![package build status](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-on-conda.yml/badge.svg)](https://github.com/hci-unihd/plant-seg/actions/workflows/build-deploy-on-conda.yml)
+[![doc build status](https://github.com/kreshuklab/plant-seg/actions/workflows/build-deploy-book.yml/badge.svg)](https://github.com/kreshuklab/plant-seg/actions/workflows/build-deploy-book.yml)
+[![package build status](https://github.com/kreshuklab/plant-seg/actions/workflows/build-deploy-on-conda.yml/badge.svg)](https://github.com/kreshuklab/plant-seg/actions/workflows/build-deploy-on-conda.yml)
 
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/version.svg)](https://anaconda.org/conda-forge/plant-seg)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/plant-seg)
@@ -19,22 +19,22 @@ Pre-trained models are provided.
 
 ## Table of Contents  <!-- omit in toc -->
 
-* [Getting Started](#getting-started)
-* [Installation](#installation)
-* [Repository Index](#repository-index)
-* [Citation](#citation)
+- [Getting Started](#getting-started)
+- [Installation](#installation)
+- [Repository Index](#repository-index)
+- [Citation](#citation)
 
 ## Getting Started
 
-For detailed usage checkout our [**documentation** 📖](https://hci-unihd.github.io/plant-seg/).
+For detailed usage checkout our [**documentation** 📖](https://kreshuklab.github.io/plant-seg/).
 
 | Documentation                                                                                                       | Napari GUI                                                                                                                                              | Legacy GUI                                                                                                                                          | Command Line                                                                                                                                     |
 | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [![doc build status](https://img.shields.io/badge/Documentation-Home-blue)](https://hci-unihd.github.io/plant-seg/) | [![doc build status](https://img.shields.io/badge/Documentation-GUI-blue)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/) | [![doc build status](https://img.shields.io/badge/Documentation-Lecagy-blue)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/) | [![doc build status](https://img.shields.io/badge/Documentation-CLI-blue)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_cli/) |
+| [![doc build status](https://img.shields.io/badge/Documentation-Home-blue)](https://kreshuklab.github.io/plant-seg/) | [![doc build status](https://img.shields.io/badge/Documentation-GUI-blue)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/) | [![doc build status](https://img.shields.io/badge/Documentation-Lecagy-blue)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/) | [![doc build status](https://img.shields.io/badge/Documentation-CLI-blue)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_cli/) |
 
 ## Installation
 
-Please go to the [documentation](https://hci-unihd.github.io/plant-seg/chapters/getting_started/installation.html) for more detailed instructions. In short, we recommend using `mamba` to install PlantSeg, which is currently supported on Linux and Windows.
+Please go to the [documentation](https://kreshuklab.github.io/plant-seg/chapters/getting_started/installation.html) for more detailed instructions. In short, we recommend using `mamba` to install PlantSeg, which is currently supported on Linux and Windows.
 
 * GPU version, CUDA=12.x
 
