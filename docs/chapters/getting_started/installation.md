@@ -2,46 +2,38 @@
 
 ## Prerequisites for Conda package
 
-* Linux or Windows
-* (Optional) Nvidia GPU with official Nvidia drivers installed
-* Native MacOS installation (not yet M1) coming soon.
+* Linux, Windows, MacOS (not all features are available on MacOS)
+* (Optional) Nvidia GPU with official Nvidia drivers installed for GPU acceleration
 
 ## Install Mamba
-
-Fist step is to install `mamba`, which is a faster alternative to `conda`.
-If you have Anaconda/Miniconda installed, you can install Mamba in your base environment.
-Otherwise we suggest to use Miniconda, because it is lighter than Anaconda and install fewer unnecessary packages.
-Check the [Mamba documentation](https://mamba.readthedocs.io/en/latest/ "Mamba is officially recommended to be installed without Conda, but if you even know this you don't need to read this part of PlantSeg installation guide.") for more details.
+The easiest way to install PlantSeg is by using the [conda (Anaconda)](https://www.anaconda.com/) or 
+[mamba (Miniforge)](https://mamba.readthedocs.io/en/latest/index.html) package manager. We recomend using `mamba` because it is faster and usually more consistent than `conda`.
 
 === "Linux"
 
-    To download Miniconda open a terminal and type:
+    To download Miniforge open a terminal and type:
 
     ```bash
-    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+    bash Miniforge3-$(uname)-$(uname -m).sh
     ```
 
     Then install by typing:
 
     ```bash
-    bash ./Miniconda3-latest-Linux-x86_64.sh
+    bash Miniforge3-$(uname)-$(uname -m).sh
     ```
 
     and follow the installation instructions.
-    The `Miniconda3-latest-Linux-x86_64.sh` file can be deleted now.
+    Please refer to the [Miniforge repo](https://github.com/conda-forge/miniforge) for more information, troubleshooting and uninstallation instructions.
+    The miniforge installation file `Miniforge3-*.sh` can be deleted now. 
 
-=== "Windows"
 
-    Miniconda can be downloaded from [miniconda](https://docs.conda.io/en/latest/miniconda.html).
-    Download the executable `.exe` for your Windows version and follow the installation instructions.
-
-When the Miniconda installation is complete, run:
-
-```bash
-conda install -c conda-forge mamba
-```
+=== "Windows/MacOS"
+    The first step required to use the pipeline is installing mamba. The installation can be done by downloading the installer from the [Miniforge repo](https://github.com/conda-forge/miniforge). There you can find the download links for the latest version of Miniforge, troubleshooting and uninstallation instructions.
 
 ## Install PlantSeg using Mamba
+PlantSeg can be installed directly by executing in the terminal (or PowerShell on Windows). For `conda` users, the command is identical, just replace `mamba` with `conda`.
 
 * GPU version, CUDA=12.x
 
@@ -63,30 +55,7 @@ conda install -c conda-forge mamba
 
 The above command will create new conda environment `plant-seg` together with all required dependencies.
 
-## Install Newer Versions
-
-If you want to install a specific version of PlantSeg that is not available on `conda-forge`,
-you can install it from the `lcerrone` channel. For example, you can run the following command:
-
-```bash
-mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge -c lcerrone pytorch pytorch-cuda=12.1 pyqt plantseg
-```
-
-Difference between `conda-forge` and `lcerrone` channels:
-
-* conda-forge/plant-seg:
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/version.svg)](https://anaconda.org/conda-forge/plant-seg)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/plant-seg)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/downloads.svg)](https://anaconda.org/conda-forge/plant-seg)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/license.svg)](https://anaconda.org/conda-forge/plant-seg)
-
-* lcerrone/plantseg:
-[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/version.svg)](https://anaconda.org/lcerrone/plantseg)
-[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/latest_release_date.svg)](https://anaconda.org/lcerrone/plantseg)
-[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/downloads.svg)](https://anaconda.org/lcerrone/plantseg)
-[![Anaconda-Server Badge](https://anaconda.org/lcerrone/plantseg/badges/license.svg)](https://anaconda.org/lcerrone/plantseg)
-
-Ultimately you may download this repo and install it from source for the latest version.
+Please refer to the [PyTorch](https://pytorch.org/get-started/locally/) website for more information on the available versions of PyTorch and the required CUDA version. The GPU version of Pytorch will also work on CPU only machines but has a much larger installation on disk.
 
 ## Optional dependencies
 
