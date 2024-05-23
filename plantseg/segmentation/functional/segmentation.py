@@ -48,7 +48,7 @@ def dt_watershed(boundary_pmaps: np.ndarray,
         mask (np.ndarray)
 
     Returns:
-        np.ndarray: watershed segmentation
+        segmentation (np.ndarray): watershed segmentation
     """
 
     boundary_pmaps = boundary_pmaps.astype('float32')
@@ -90,7 +90,7 @@ def gasp(boundary_pmaps: np.ndarray,
         n_threads (int): number of threads used for GASP. (default: 6)
 
     Returns:
-        np.ndarray: GASP output segmentation
+        segmentation (np.ndarray): GASP output segmentation
 
     """
     if superpixels is not None:
@@ -155,7 +155,7 @@ def mutex_ws(boundary_pmaps: np.ndarray,
         n_threads (int): number of threads used for GASP. (default: 6)
 
     Returns:
-        np.ndarray: GASP output segmentation
+        segmentation (np.ndarray): MutexWS output segmentation
 
     """
     return gasp(boundary_pmaps=boundary_pmaps,
@@ -182,7 +182,7 @@ def multicut(boundary_pmaps: np.ndarray,
         post_minsize (int): minimal size of the segments after Multicut. (default: 100)
 
     Returns:
-        np.ndarray: Multicut output segmentation
+        segmentation (np.ndarray): Multicut output segmentation
     """
 
     rag = compute_rag(superpixels)
@@ -225,7 +225,7 @@ def lifted_multicut_from_nuclei_pmaps(boundary_pmaps: np.ndarray,
         post_minsize (int): minimal size of the segments after Multicut. (default: 100)
 
     Returns:
-        np.ndarray: Multicut output segmentation
+        segmentation (np.ndarray): Multicut output segmentation
     """
     # compute the region adjacency graph
     rag = compute_rag(superpixels)
@@ -272,7 +272,7 @@ def lifted_multicut_from_nuclei_segmentation(boundary_pmaps: np.ndarray,
         post_minsize (int): minimal size of the segments after Multicut. (default: 100)
 
     Returns:
-        np.ndarray: Multicut output segmentation
+        segmentation (np.ndarray): Multicut output segmentation
     """
     # compute the region adjacency graph
     rag = compute_rag(superpixels)
@@ -313,7 +313,7 @@ def simple_itk_watershed(boundary_pmaps: np.ndarray,
         minsize (int): minimal size of the segments after segmentation. (default: 100)
 
     Returns:
-        np.ndarray: simple itk output segmentation
+        segmentation (np.ndarray): watershed output segmentation (using SimpleITK)
 
     """
     if not sitk_installed:
