@@ -145,7 +145,7 @@ def mutex_ws(boundary_pmaps: np.ndarray,
     """
     Wrapper around gasp with mutex_watershed as linkage criteria.
 
-    Args:
+    Args:magicgui
         boundary_pmaps (np.ndarray): cell boundary predictions. 3D array of shape (Z, Y, X) with values between 0 and 1.
         superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
             If None, GASP will be run from the pixels. (default: None)
