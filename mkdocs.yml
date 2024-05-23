@@ -44,7 +44,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/pyapp-kit/magicgui
+      link: https://github.com/kreshuklab/plant-seg
       name: PlantSeg on GitHub
 
 markdown_extensions:
