@@ -98,7 +98,7 @@ nav:
   - API:
     - chapters/python_api/index.md
     - plantseg.io: chapters/python_api/io.md
-    - Data Processing: chapters/python_api/data_processing.md
+    - plantseg.dataprocessing: chapters/python_api/data_processing.md
     - Prediction: chapters/python_api/cnn_predictions.md
     - Segmentation: chapters/python_api/segmentation.md
 
