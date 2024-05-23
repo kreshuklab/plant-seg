@@ -99,6 +99,14 @@ def _read_ome_meta(tiff) -> tuple[tuple[float, float, float], str]:
 def read_tiff_voxel_size(file_path: str) -> tuple[tuple[float, float, float], str]:
     """
     Returns the voxels size and the voxel units for imagej and ome style tiff (if absent returns [1, 1, 1], um)
+    
+    Args:
+        file_path (str): path to the tiff file
+        
+    Returns:
+        voxel size
+        voxel size unit
+        
     """
     with tifffile.TiffFile(file_path) as tiff:
         if tiff.imagej_metadata is not None:
@@ -125,7 +133,8 @@ def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.ndarr
         info_only (bool): if true will return a tuple with infos such as voxel resolution, units and shape.
 
     Returns:
-        Union[tuple, tuple[np.ndarray, tuple]]: dataset as numpy array and infos
+        stack (np.ndarray): numpy array with the data
+        infos (tuple): tuple with the voxel size, shape, metadata and voxel size unit (if info_only is True)
     """
     file = tifffile.imread(path)
     try:
@@ -152,8 +161,7 @@ def create_tiff(path: str, stack: np.ndarray, voxel_size: tuple[float, float, fl
         stack (np.ndarray): numpy array to save as tiff
         voxel_size (list or tuple): tuple of the voxel size
         voxel_size_unit (str): units of the voxel size
-    Returns:
-        None
+    
     """
     # taken from: https://pypi.org/project/tifffile docs
     z, y, x = stack.shape

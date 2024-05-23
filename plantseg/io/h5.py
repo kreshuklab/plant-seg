@@ -11,7 +11,7 @@ H5_KEYS = ["raw", "predictions", "segmentation"]
 
 def read_h5_voxel_size(f, h5key: str) -> tuple[float, float, float]:
     """
-    :returns the voxels size stored in a h5 dataset (if absent returns [1, 1, 1])
+    returns the voxels size stored in a h5 dataset (if absent returns [1, 1, 1])
     """
     ds = f[h5key]
 
@@ -55,6 +55,7 @@ def load_h5(path: str,
             info_only: bool = False) -> Union[tuple, tuple[np.ndarray, tuple]]:
     """
     Load a dataset from a h5 file and returns some meta info about it.
+    
     Args:
         path (str): Path to the h5file
         key (str): internal key of the desired dataset
@@ -91,16 +92,15 @@ def create_h5(path: str,
               voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
               mode: str = 'a') -> None:
     """
-    Helper function to create a dataset inside a h5 file
+    Create a dataset inside a h5 file from a numpy array.
+    
     Args:
-        path (str): file path
-        stack (np.ndarray): numpy array to save as dataset in the h5 file
-        key (str): key of the dataset in the h5 file
-        voxel_size (tuple[float, float, float]: voxel size in micrometers
-        mode (str): mode to open the h5 file ['w', 'a']
+        path (str): file path.
+        stack (np.ndarray): numpy array to save as dataset in the h5 file.
+        key (str): key of the dataset in the h5 file.
+        voxel_size (tuple[float, float, float]: voxel size in micrometers.
+        mode (str): mode to open the h5 file ['w', 'a'].
 
-    Returns:
-        None
     """
 
     with h5py.File(path, mode) as f:
@@ -111,14 +111,16 @@ def create_h5(path: str,
         f[key].attrs['element_size_um'] = voxel_size
 
 
-def list_keys(path):
+def list_keys(path: str) -> list[str]:
     """
     List all keys in a h5 file
+    
     Args:
-        path: path to the h5 file
+        path (str): path to the h5 file
 
     Returns:
-        list of keys
+        keys (list[str]): A list of keys in the h5 file.
+        
     """
     def _recursive_find_keys(f, base='/'):
         _list_keys = []
@@ -138,6 +140,12 @@ def list_keys(path):
 def del_h5_key(path: str, key: str, mode: str = 'a') -> None:
     """
     helper function to delete a dataset from a h5file
+    
+    Args:
+        path (str): path to the h5file
+        key (str): key of the dataset to delete
+        mode (str): mode to open the h5 file ['r', 'r+']
+    
     """
     with h5py.File(path, mode) as f:
         if key in f:
@@ -146,7 +154,16 @@ def del_h5_key(path: str, key: str, mode: str = 'a') -> None:
 
 
 def rename_h5_key(path: str, old_key: str, new_key: str, mode='r+') -> None:
-    """ Rename the 'old_key' dataset to 'new_key' """
+    """ 
+    Rename the 'old_key' dataset to 'new_key' 
+    
+    Args:
+        path (str): path to the h5 file
+        old_key (str): old key name
+        new_key (str): new key name
+        mode (str): mode to open the h5 file ['r', 'r+']
+    
+    """
     with h5py.File(path, mode) as f:
         if old_key in f:
             f[new_key] = f[old_key]

@@ -113,7 +113,8 @@ def create_zarr(path: str,
                 key: str,
                 voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
                 mode: str = 'a') -> None:
-    """Create a dataset inside a Zarr file.
+    """
+    Create a Zarr array from a NumPy array.
 
     Args:
         path (str): The file path to the Zarr file.
@@ -122,8 +123,6 @@ def create_zarr(path: str,
         voxel_size (tuple[float, float, float]): The voxel size in micrometers.
         mode (str): The mode to open the Zarr file ['w', 'a'].
 
-    Returns:
-        None
     """
     zarr_file = zarr.open_group(path, mode)
     zarr_file.create_dataset(key, data=stack, compression='gzip', overwrite=True)
@@ -131,13 +130,14 @@ def create_zarr(path: str,
 
 
 def list_keys(path: str) -> list[str]:
-    """List all keys in a Zarr file.
+    """
+    List all keys in a Zarr file.
 
     Args:
         path (str): The path to the Zarr file.
 
     Returns:
-        list[str]: A list of keys in the Zarr file.
+        keys (list[str]): A list of keys in the Zarr file.
     """
     def _recursive_find_keys(zarr_group: zarr.Group, base: Path = Path('')) -> list[str]:
         _list_keys = []
@@ -154,15 +154,14 @@ def list_keys(path: str) -> list[str]:
 
 
 def del_zarr_key(path: str, key: str, mode: str = 'a') -> None:
-    """Delete a dataset from a Zarr file.
+    """
+    Delete a dataset from a Zarr file.
 
     Args:
         path (str): The path to the Zarr file.
         key (str): The internal key of the dataset to be deleted.
         mode (str): The mode to open the Zarr file ['w', 'a'].
 
-    Returns:
-        None
     """
     zarr_file = zarr.open_group(path, mode)
     if key in zarr_file:
@@ -170,7 +169,8 @@ def del_zarr_key(path: str, key: str, mode: str = 'a') -> None:
 
 
 def rename_zarr_key(path: str, old_key: str, new_key: str, mode='r+') -> None:
-    """Rename a dataset in a Zarr file.
+    """
+    Rename a dataset in a Zarr file.
 
     Args:
         path (str): The path to the Zarr file.
@@ -178,8 +178,6 @@ def rename_zarr_key(path: str, old_key: str, new_key: str, mode='r+') -> None:
         new_key (str): The new key for the dataset.
         mode (str): The mode to open the Zarr file ['r+'].
 
-    Returns:
-        None
     """
     zarr_file = zarr.open_group(path, mode)
     if old_key in zarr_file:
