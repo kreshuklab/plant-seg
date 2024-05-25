@@ -326,10 +326,14 @@ class ModelZoo:
             model_description.validation_summary.display()
             raise ValueError(f"Failed to load {model_id}")
         elif not isinstance(model_description, ModelDescr_v0_4) and not isinstance(model_description, ModelDescr_v0_5):
-            raise ValueError("This notebook expects a model description")
+            raise ValueError(f"Model description {model_id} is not a valid v0.4 or v0.5 BioImage.IO model description")
 
+        if model_description.weights.pytorch_state_dict is None:
+            raise ValueError(f"Model {model_id} does not have PyTorch weights")
+        architecture = str(model_description.weights.pytorch_state_dict.architecture)
+        architecture = 'UNet3D' if 'UNet3D' in architecture else 'UNet2D'
         model_config = {
-            'name': 'UNet3D',
+            'name': architecture,
             'in_channels': 1,
             'out_channels': 1,
             'layer_order': 'gcr',
@@ -339,7 +343,10 @@ class ModelZoo:
         }
         if not model_description.weights.pytorch_state_dict:
             raise ValueError(f"Model {model_id} does not have PyTorch weights")
-        model_config.update(model_description.weights.pytorch_state_dict.kwargs)
+        try:
+            model_config.update(model_description.weights.pytorch_state_dict.kwargs)
+        except AttributeError:
+            zoo_logger.warning(f"Model {model_id} does not come with architecture configs. Using default.")
         model = self._create_model_by_config(model_config)
         model_weights_path = download(model_description.weights.pytorch_state_dict.source).path
 
