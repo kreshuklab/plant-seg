@@ -1,7 +1,7 @@
 from concurrent.futures import Future
 from functools import partial
 from pathlib import Path
-from typing import Tuple, List
+from typing import Optional
 
 import torch.cuda
 from magicgui import magicgui
@@ -24,6 +24,7 @@ ALL = 'All'
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
 ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ['cpu']
+PREDICTION_MODEDS = ('PlantSeg Zoo', 'BioImage.IO Zoo')
 
 
 def unet_predictions_wrapper(raw, device, **kwargs):
@@ -35,6 +36,11 @@ def unet_predictions_wrapper(raw, device, **kwargs):
 
 
 @magicgui(call_button='Run Predictions',
+          mode={'label': 'Mode',
+                'tooltip': 'Select the mode to run the predictions.',
+                'widget_type': 'RadioButtons',
+                'orientation': 'horizontal',
+                'choices': PREDICTION_MODEDS},
           image={'label': 'Image',
                  'tooltip': 'Raw image to be processed with a neural network.'},
           dimensionality={'label': 'Dimensionality',
@@ -51,11 +57,11 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                        'tooltip': 'Type of prediction (e.g. cell boundaries predictions or nuclei...).'
                                   ' If unsure, select "All".',
                        'choices': [ALL] + model_zoo.get_unique_output_types()},
-          model_name={'label': 'Select model',
+          model_name={'label': 'PlantSeg model',
                       'tooltip': f'Select a pretrained model. '
                                  f'Current model description: {model_zoo.get_model_description(model_zoo.list_models()[0])}',
                       'choices': model_zoo.list_models()},
-          model_id={'label': 'Select model',
+          model_id={'label': 'BioImage.IO model',
                     'tooltip': 'Select a model from BioImage.IO model zoo.'},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
@@ -68,16 +74,23 @@ def unet_predictions_wrapper(raw, device, **kwargs):
           )
 def widget_unet_predictions(viewer: Viewer,
                             image: Image,
-                            model_name: str = model_zoo.list_models()[0],
-                            model_id: str = '',
+                            mode: str = PREDICTION_MODEDS[0],
+                            model_name: Optional[str] = model_zoo.list_models()[0],
+                            model_id: Optional[str] = 'efficient-chipmunk',
                             dimensionality: str = ALL,
                             modality: str = ALL,
                             output_type: str = ALL,
-                            patch_size: Tuple[int, int, int] = (80, 170, 170),
-                            patch_halo: Tuple[int, int, int] = (8, 16, 16),
+                            patch_size: tuple[int, int, int] = (80, 170, 170),
+                            patch_halo: tuple[int, int, int] = (8, 16, 16),
                             single_patch: bool = True,
                             device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
-    out_name = create_layer_name(image.name, model_name)
+    if mode == 'PlantSeg Zoo':
+        model_id = None
+        out_name = create_layer_name(image.name, model_name)
+    else:
+        model_name = None
+        out_name = create_layer_name(image.name, model_id)
+
     inputs_names = (image.name, 'device')
 
     layer_kwargs = layer_properties(name=out_name,
@@ -110,6 +123,16 @@ def widget_unet_predictions(viewer: Viewer,
                                                        widget_simple_dt_ws.image,
                                                        widget_split_and_merge_from_scribbles.image]
                                     )
+
+
+@widget_unet_predictions.mode.changed.connect
+def _on_widget_unet_predictions_mode_change(mode: str):
+    if mode == 'PlantSeg Zoo':
+        widget_unet_predictions.model_name.show()
+        widget_unet_predictions.model_id.hide()
+    else:
+        widget_unet_predictions.model_name.hide()
+        widget_unet_predictions.model_id.show()
 
 
 @widget_unet_predictions.image.changed.connect
@@ -165,8 +188,8 @@ def _compute_multiple_predictions(image, patch_size, patch_halo, device, use_cus
         layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
         layer_type = 'image'
         try:
-            pmap = unet_predictions(raw=image.data, model_name=model_name, patch=patch_size, single_batch_mode=True,
-                                    device=device, patch_halo=patch_halo)
+            pmap = unet_predictions(raw=image.data, model_name=model_name, model_id=None, patch=patch_size,
+                                    single_batch_mode=True, device=device, patch_halo=patch_halo)
             out_layers.append((pmap, layer_kwargs, layer_type))
 
         except Exception as e:
@@ -188,10 +211,10 @@ def _compute_multiple_predictions(image, patch_size, patch_halo, device, use_cus
                              'tooltip': 'If True, custom models will also be used.'}
           )
 def widget_test_all_unet_predictions(image: Image,
-                                     patch_size: Tuple[int, int, int] = (80, 170, 170),
-                                     patch_halo: Tuple[int, int, int] = (2, 4, 4),
+                                     patch_size: tuple[int, int, int] = (80, 170, 170),
+                                     patch_halo: tuple[int, int, int] = (2, 4, 4),
                                      device: str = ALL_DEVICES[0],
-                                     use_custom_models: bool = True) -> Future[List[LayerDataTuple]]:
+                                     use_custom_models: bool = True) -> Future[list[LayerDataTuple]]:
     func = thread_worker(partial(_compute_multiple_predictions,
                                  image=image,
                                  patch_size=patch_size,
@@ -253,8 +276,8 @@ def widget_iterative_unet_predictions(image: Image,
                                       model_name: str,
                                       num_iterations: int = 2,
                                       sigma: float = 1.0,
-                                      patch_size: Tuple[int, int, int] = (80, 170, 170),
-                                      patch_halo: Tuple[int, int, int] = (8, 16, 16),
+                                      patch_size: tuple[int, int, int] = (80, 170, 170),
+                                      patch_halo: tuple[int, int, int] = (8, 16, 16),
                                       single_patch: bool = True,
                                       device: str = ALL_DEVICES[0]) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, f'iterative-{model_name}-x{num_iterations}')
@@ -318,7 +341,7 @@ def _on_widget_iterative_unet_predictions_image_change(image: Image):
           )
 def widget_add_custom_model(new_model_name: str = 'custom_model',
                             model_location: Path = Path.home(),
-                            resolution: Tuple[float, float, float] = (1., 1., 1.),
+                            resolution: tuple[float, float, float] = (1., 1., 1.),
                             description: str = 'New custom model',
                             dimensionality: str = model_zoo.get_unique_dimensionalities()[0],
                             modality: str = model_zoo.get_unique_modalities()[0],
