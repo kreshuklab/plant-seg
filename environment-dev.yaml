@@ -19,8 +19,9 @@ dependencies:
   - pytorch-cuda=12.1
   - cuda-version=12.3
   - python-elf
+  - pytest
   - pyqt
   - napari
   - python-graphviz
-  - bioimageio.core>=0.6.1
+  - bioimageio.core>=0.6.5
 # then `pip install -e .`

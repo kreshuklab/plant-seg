@@ -1,19 +1,29 @@
 """Model Zoo Singleton"""
 
+import json
 from warnings import warn
 from pathlib import Path
 from shutil import copy2
 from typing import List, Tuple, Optional, Self
 
+import pooch
 from pandas import DataFrame, concat
 from pydantic import BaseModel, Field, AliasChoices, model_validator
+from bioimageio.spec import InvalidDescr, load_description
+from bioimageio.spec.model.v0_4 import ModelDescr as ModelDescr_v0_4
+from bioimageio.spec.model.v0_5 import ModelDescr as ModelDescr_v0_5
+from bioimageio.spec.utils import download
 
 from plantseg import PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM, PATH_PLANTSEG_MODELS
 from plantseg import FILE_CONFIG_TRAIN_YAML, FILE_BEST_MODEL_PYTORCH, FILE_LAST_MODEL_PYTORCH
 from plantseg.utils import get_class, load_config, save_config, download_files
+from plantseg.models import zoo_logger
+
 
 AUTHOR_PLANTSEG = 'plantseg'
 AUTHOR_USER = 'user'
+
+BIOIMAGE_IO_COLLECTION_URL = "https://raw.githubusercontent.com/bioimage-io/collection-bioimage-io/gh-pages/collection.json"
 
 
 class ModelZooRecord(BaseModel):
@@ -59,6 +69,8 @@ class ModelZoo:
     path_zoo_custom: Path = PATH_MODEL_ZOO_CUSTOM
 
     models: DataFrame
+
+    bioimageio_url_dict: dict = {}
 
     def __new__(cls, path_zoo, path_zoo_custom):
         if cls._instance is None:
@@ -280,6 +292,7 @@ class ModelZoo:
         model = self._create_model_by_config(model_config)
         if model_weights_path is None:
             model_weights_path = config_path.parent / FILE_BEST_MODEL_PYTORCH
+        zoo_logger.info(f"Loaded model from user specified weights: {model_weights_path}")
         return model, model_config, model_weights_path
 
     def get_model_by_name(self, model_name: str, model_update: bool = False):
@@ -287,7 +300,58 @@ class ModelZoo:
         self.check_models(model_name, update_files=model_update)
         config_path = self._get_model_config_path_by_name(model_name)
         model_weights_path = PATH_PLANTSEG_MODELS / model_name / FILE_BEST_MODEL_PYTORCH
+        zoo_logger.info(f"Loaded model from PlantSeg zoo: {model_name}")
         return self.get_model_by_config_path(config_path, model_weights_path)
+
+    def get_model_by_id(self, model_id: str):
+        """Load model from BioImage.IO Model Zoo.
+
+        E.g. model_id = 'efficient-chipmunk', whose RDF URL is:
+        https://bioimage-io.github.io/collection-bioimage-io/rdfs/10.5281/zenodo.8401064/8429203/rdf.yaml
+        """
+
+        if not self.bioimageio_url_dict:
+            zoo_logger.info(f"Fetching BioImage.IO Model Zoo collection from {BIOIMAGE_IO_COLLECTION_URL}")
+            collection_path = Path(pooch.retrieve(BIOIMAGE_IO_COLLECTION_URL, known_hash=None))
+            with collection_path.open(encoding='utf-8') as f:
+                collection = json.load(f)
+            self.bioimageio_url_dict = {entry["nickname"]: entry["rdf_source"] for entry in collection["collection"] if entry["type"] == "model"}
+
+        if model_id not in self.bioimageio_url_dict:
+            raise ValueError(f"Model ID {model_id} not found in BioImage.IO Model Zoo")
+
+        rdf_url = self.bioimageio_url_dict[model_id]
+        model_description = load_description(rdf_url)
+        if isinstance(model_description, InvalidDescr):
+            model_description.validation_summary.display()
+            raise ValueError(f"Failed to load {model_id}")
+        elif not isinstance(model_description, ModelDescr_v0_4) and not isinstance(model_description, ModelDescr_v0_5):
+            raise ValueError(f"Model description {model_id} is not a valid v0.4 or v0.5 BioImage.IO model description")
+
+        if model_description.weights.pytorch_state_dict is None:
+            raise ValueError(f"Model {model_id} does not have PyTorch weights")
+        architecture = str(model_description.weights.pytorch_state_dict.architecture)
+        architecture = 'UNet3D' if 'UNet3D' in architecture else 'UNet2D'
+        model_config = {
+            'name': architecture,
+            'in_channels': 1,
+            'out_channels': 1,
+            'layer_order': 'gcr',
+            'f_maps': 32,
+            'num_groups': 8,
+            'final_sigmoid': True,
+        }
+        if not model_description.weights.pytorch_state_dict:
+            raise ValueError(f"Model {model_id} does not have PyTorch weights")
+        try:
+            model_config.update(model_description.weights.pytorch_state_dict.kwargs)
+        except AttributeError:
+            zoo_logger.warning(f"Model {model_id} does not come with architecture configs. Using default.")
+        model = self._create_model_by_config(model_config)
+        model_weights_path = download(model_description.weights.pytorch_state_dict.source).path
+
+        zoo_logger.info(f"Loaded model from BioImage.IO Model Zoo: {model_id}")
+        return model, model_config, model_weights_path
 
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)
