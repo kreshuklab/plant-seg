@@ -31,6 +31,7 @@ requirements:
     - python-elf
     - napari
     - python-graphviz
+    - bioimageio.core>=0.6.5
 
 test:
   imports:
