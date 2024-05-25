@@ -55,6 +55,8 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                       'tooltip': f'Select a pretrained model. '
                                  f'Current model description: {model_zoo.get_model_description(model_zoo.list_models()[0])}',
                       'choices': model_zoo.list_models()},
+          model_id={'label': 'Select model',
+                    'tooltip': 'Select a model from BioImage.IO model zoo.'},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
           patch_halo={'label': 'Patch halo',
@@ -67,6 +69,7 @@ def unet_predictions_wrapper(raw, device, **kwargs):
 def widget_unet_predictions(viewer: Viewer,
                             image: Image,
                             model_name: str = model_zoo.list_models()[0],
+                            model_id: str = '',
                             dimensionality: str = ALL,
                             modality: str = ALL,
                             output_type: str = ALL,
@@ -85,6 +88,7 @@ def widget_unet_predictions(viewer: Viewer,
 
     layer_type = 'image'
     step_kwargs = dict(model_name=model_name,
+                       model_id=model_id,
                        patch=patch_size,
                        patch_halo=patch_halo,
                        single_batch_mode=single_patch,
