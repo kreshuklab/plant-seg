@@ -40,7 +40,7 @@ class ModelZooRecord(BaseModel):
     """Model Zoo Record"""
 
     name: str
-    url: Optional[str] = Field(None, alias=AliasChoices('model_url', 'url'))  # type: ignore
+    url: Optional[str] = Field(None, validation_alias=AliasChoices('model_url', 'url'))
     path: Optional[str] = None
     id: Optional[str] = None
     description: Optional[str] = None
