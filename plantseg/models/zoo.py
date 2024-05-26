@@ -6,24 +6,34 @@ from pathlib import Path
 from shutil import copy2
 from typing import List, Tuple, Optional, Self
 
-import pooch
 from pandas import DataFrame, concat
 from pydantic import BaseModel, Field, AliasChoices, model_validator
+
+import pooch
 from bioimageio.spec import InvalidDescr, load_description
 from bioimageio.spec.model.v0_4 import ModelDescr as ModelDescr_v0_4
 from bioimageio.spec.model.v0_5 import ModelDescr as ModelDescr_v0_5
 from bioimageio.spec.utils import download
 
-from plantseg import PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM, PATH_PLANTSEG_MODELS
-from plantseg import FILE_CONFIG_TRAIN_YAML, FILE_BEST_MODEL_PYTORCH, FILE_LAST_MODEL_PYTORCH
 from plantseg.utils import get_class, load_config, save_config, download_files
 from plantseg.models import zoo_logger
 
+from plantseg import (
+    PATH_MODEL_ZOO,
+    PATH_MODEL_ZOO_CUSTOM,
+    PATH_PLANTSEG_MODELS,
+    FILE_CONFIG_TRAIN_YAML,
+    FILE_BEST_MODEL_PYTORCH,
+    FILE_LAST_MODEL_PYTORCH,
+)
 
+AUTHOR_BIOIMAGEIO = 'bioimage.io'
 AUTHOR_PLANTSEG = 'plantseg'
 AUTHOR_USER = 'user'
 
-BIOIMAGE_IO_COLLECTION_URL = "https://raw.githubusercontent.com/bioimage-io/collection-bioimage-io/gh-pages/collection.json"
+BIOIMAGE_IO_COLLECTION_URL = (
+    "https://raw.githubusercontent.com/bioimage-io/collection-bioimage-io/gh-pages/collection.json"
+)
 
 
 class ModelZooRecord(BaseModel):
@@ -64,13 +74,15 @@ class ModelZoo:
 
     _zoo_dict: dict = {}
     _zoo_custom_dict: dict = {}
+    _bioimageio_zoo_collection: dict = {}
+    _bioimageio_zoo_all_model_url_dict: dict = {}
+    _bioimageio_zoo_plantseg_model_url_dict: dict = {}
 
     path_zoo: Path = PATH_MODEL_ZOO
     path_zoo_custom: Path = PATH_MODEL_ZOO_CUSTOM
 
     models: DataFrame
-
-    bioimageio_url_dict: dict = {}
+    models_bioimageio: DataFrame
 
     def __new__(cls, path_zoo, path_zoo_custom):
         if cls._instance is None:
@@ -310,17 +322,13 @@ class ModelZoo:
         https://bioimage-io.github.io/collection-bioimage-io/rdfs/10.5281/zenodo.8401064/8429203/rdf.yaml
         """
 
-        if not self.bioimageio_url_dict:
-            zoo_logger.info(f"Fetching BioImage.IO Model Zoo collection from {BIOIMAGE_IO_COLLECTION_URL}")
-            collection_path = Path(pooch.retrieve(BIOIMAGE_IO_COLLECTION_URL, known_hash=None))
-            with collection_path.open(encoding='utf-8') as f:
-                collection = json.load(f)
-            self.bioimageio_url_dict = {entry["nickname"]: entry["rdf_source"] for entry in collection["collection"] if entry["type"] == "model"}
+        if not self._bioimageio_zoo_all_model_url_dict:
+            self.refresh_bioimageio_zoo_urls()
 
-        if model_id not in self.bioimageio_url_dict:
+        if model_id not in self._bioimageio_zoo_all_model_url_dict:
             raise ValueError(f"Model ID {model_id} not found in BioImage.IO Model Zoo")
 
-        rdf_url = self.bioimageio_url_dict[model_id]
+        rdf_url = self._bioimageio_zoo_all_model_url_dict[model_id]
         model_description = load_description(rdf_url)
         if isinstance(model_description, InvalidDescr):
             model_description.validation_summary.display()
@@ -352,6 +360,56 @@ class ModelZoo:
 
         zoo_logger.info(f"Loaded model from BioImage.IO Model Zoo: {model_id}")
         return model, model_config, model_weights_path
+
+    def refresh_bioimageio_zoo_urls(self):
+        """Initialize the BioImage.IO Model Zoo collection and URL dictionaries.
+
+        The BioImage.IO Model Zoo collection is not downloaded during ModelZoo initialization to avoid unnecessary
+        network requests. This method downloads the collection and extracts the model URLs for all models.
+        """
+        zoo_logger.info(f"Fetching BioImage.IO Model Zoo collection from {BIOIMAGE_IO_COLLECTION_URL}")
+        collection_path = Path(pooch.retrieve(BIOIMAGE_IO_COLLECTION_URL, known_hash=None))
+        with collection_path.open(encoding='utf-8') as f:
+            collection = json.load(f)
+        self._bioimageio_zoo_collection = collection
+        self._bioimageio_zoo_all_model_url_dict = {
+            entry["nickname"]: entry["rdf_source"] for entry in collection["collection"] if entry["type"] == "model"
+        }
+        self._bioimageio_zoo_plantseg_model_url_dict = {
+            entry["nickname"]: entry["rdf_source"]
+            for entry in collection["collection"]
+            if entry["type"] == "model" and self._is_plantseg_model(entry)
+        }
+
+    def _is_plantseg_model(self, collection_entry: dict) -> bool:
+        """Determines if the 'tags' field in a collection entry contains the keyword 'plantseg'."""
+        tags = collection_entry.get("tags")
+        if tags is None:
+            return False
+        if not isinstance(tags, list):
+            raise ValueError(f"Tags in a collection entry must be a list of strings, got {type(tags).__name__}")
+
+        # Normalize tags to lower case and remove non-alphanumeric characters
+        normalized_tags = ["".join(filter(str.isalnum, tag.lower())) for tag in tags]
+        return 'plantseg' in normalized_tags
+
+    def get_bioimageio_zoo_plantseg_model_names(self) -> List[str]:
+        """Return a list of model names in the BioImage.IO Model Zoo tagged with 'plantseg'."""
+        if not self._bioimageio_zoo_plantseg_model_url_dict:
+            self.refresh_bioimageio_zoo_urls()
+        return list(self._bioimageio_zoo_plantseg_model_url_dict.keys())
+
+    def get_bioimageio_zoo_all_model_names(self) -> List[str]:
+        """Return a list of all model names in the BioImage.IO Model Zoo."""
+        if not self._bioimageio_zoo_all_model_url_dict:
+            self.refresh_bioimageio_zoo_urls()
+        return list(self._bioimageio_zoo_all_model_url_dict.keys())
+
+    def get_bioimageio_zoo_other_model_names(self) -> List[str]:
+        """Return a list of model names in the BioImage.IO Model Zoo not tagged with 'plantseg'."""
+        return list(
+            set(self.get_bioimageio_zoo_all_model_names()) - set(self.get_bioimageio_zoo_plantseg_model_names())
+        )
 
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)

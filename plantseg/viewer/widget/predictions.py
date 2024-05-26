@@ -58,11 +58,12 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                                   ' If unsure, select "All".',
                        'choices': [ALL] + model_zoo.get_unique_output_types()},
           model_name={'label': 'PlantSeg model',
-                      'tooltip': f'Select a pretrained model. '
+                      'tooltip': f'Select a pretrained PlantSeg model. '
                                  f'Current model description: {model_zoo.get_model_description(model_zoo.list_models()[0])}',
                       'choices': model_zoo.list_models()},
           model_id={'label': 'BioImage.IO model',
-                    'tooltip': 'Select a model from BioImage.IO model zoo.'},
+                    'tooltip': 'Select a model from BioImage.IO model zoo.',
+                    'choices': model_zoo.get_bioimageio_zoo_plantseg_model_names() + model_zoo.get_bioimageio_zoo_other_model_names()},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
           patch_halo={'label': 'Patch halo',
@@ -76,7 +77,7 @@ def widget_unet_predictions(viewer: Viewer,
                             image: Image,
                             mode: str = PREDICTION_MODEDS[0],
                             model_name: Optional[str] = model_zoo.list_models()[0],
-                            model_id: Optional[str] = 'efficient-chipmunk',
+                            model_id: Optional[str] = model_zoo.get_bioimageio_zoo_plantseg_model_names()[0],
                             dimensionality: str = ALL,
                             modality: str = ALL,
                             output_type: str = ALL,
@@ -87,9 +88,11 @@ def widget_unet_predictions(viewer: Viewer,
     if mode == 'PlantSeg Zoo':
         model_id = None
         out_name = create_layer_name(image.name, model_name)
-    else:
+    elif mode == 'BioImage.IO Zoo':
         model_name = None
         out_name = create_layer_name(image.name, model_id)
+    else:
+        raise NotImplementedError(f'Mode {mode} not implemented yet.')
 
     inputs_names = (image.name, 'device')
 
@@ -128,11 +131,19 @@ def widget_unet_predictions(viewer: Viewer,
 @widget_unet_predictions.mode.changed.connect
 def _on_widget_unet_predictions_mode_change(mode: str):
     if mode == 'PlantSeg Zoo':
-        widget_unet_predictions.model_name.show()
         widget_unet_predictions.model_id.hide()
-    else:
-        widget_unet_predictions.model_name.hide()
+        widget_unet_predictions.model_name.show()
+        widget_unet_predictions.dimensionality.show()
+        widget_unet_predictions.modality.show()
+        widget_unet_predictions.output_type.show()
+    elif mode == 'BioImage.IO Zoo':
         widget_unet_predictions.model_id.show()
+        widget_unet_predictions.model_name.hide()
+        widget_unet_predictions.dimensionality.hide()
+        widget_unet_predictions.modality.hide()
+        widget_unet_predictions.output_type.hide()
+    else:
+        raise NotImplementedError(f'Mode {mode} not implemented yet.')
 
 
 @widget_unet_predictions.image.changed.connect
