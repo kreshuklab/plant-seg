@@ -397,19 +397,19 @@ class ModelZoo:
         """Return a list of model names in the BioImage.IO Model Zoo tagged with 'plantseg'."""
         if not self._bioimageio_zoo_plantseg_model_url_dict:
             self.refresh_bioimageio_zoo_urls()
-        return list(self._bioimageio_zoo_plantseg_model_url_dict.keys())
+        return sorted(list(self._bioimageio_zoo_plantseg_model_url_dict.keys()))
 
     def get_bioimageio_zoo_all_model_names(self) -> List[str]:
         """Return a list of all model names in the BioImage.IO Model Zoo."""
         if not self._bioimageio_zoo_all_model_url_dict:
             self.refresh_bioimageio_zoo_urls()
-        return list(self._bioimageio_zoo_all_model_url_dict.keys())
+        return sorted(list(self._bioimageio_zoo_all_model_url_dict.keys()))
 
     def get_bioimageio_zoo_other_model_names(self) -> List[str]:
         """Return a list of model names in the BioImage.IO Model Zoo not tagged with 'plantseg'."""
-        return list(
+        return sorted(list(
             set(self.get_bioimageio_zoo_all_model_names()) - set(self.get_bioimageio_zoo_plantseg_model_names())
-        )
+        ))
 
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)
