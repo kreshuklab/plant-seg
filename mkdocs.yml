@@ -64,37 +64,38 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
 nav:
-  - Overview: index.md
+  - Overview: 
+    - index.md
+    
   - Getting Started:
     - chapters/getting_started/index.md
     - Installation: chapters/getting_started/installation.md
     - Contributing: chapters/getting_started/contributing.md
     - Troubleshooting: chapters/getting_started/troubleshooting.md
-  - PlantSeg Functionalities:
-    - XXX
-    - Data Processing: XXX
-    - Prediction: XXX
-    - Models: XXX
-    - Segmentation: XXX
-  - Dataset and Training:
-    - chapters/plantseg_models/index.md
-    - Custom Datasets: XXX
-    - Training: chapters/plantseg_models/training.md
+
   - Napari GUI:
     - chapters/plantseg_interactive_napari/index.md
     - Data Processing: chapters/plantseg_interactive_napari/data_processing.md
     - Main Workflow: chapters/plantseg_interactive_napari/unet_gasp_workflow.md
-    - Training: chapters/plantseg_interactive_napari/unet_training.md
-    - Prediction: chapters/plantseg_interactive_napari/extra_pred.md
-    - Segmentation: chapters/plantseg_interactive_napari/extra_seg.md
+    - Extra Workflows: chapters/plantseg_interactive_napari/extra.md
+    - Proofreading: chapters/plantseg_interactive_napari/proofreading.md
     - Batch Processing: chapters/plantseg_interactive_napari/headless_batch_processing.md
+    - Training: chapters/plantseg_interactive_napari/unet_training.md
+
+  - Dataset and Training:
+    - chapters/plantseg_models/index.md
+    - Custom Datasets: XXX
+    - Training: chapters/plantseg_models/training.md
+
   - Classic GUI:
     - chapters/plantseg_classic_gui/index.md
     - Data Processing: chapters/plantseg_classic_gui/data_processing.md
     - Prediction: chapters/plantseg_classic_gui/cnn_predictions.md
     - Segmentation: chapters/plantseg_classic_gui/segmentation.md
+
   - Classic CLI:
     - chapters/plantseg_classic_cli/index.md
+
   - API:
     - chapters/python_api/index.md
     - plantseg.io: chapters/python_api/io.md
