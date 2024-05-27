@@ -62,7 +62,7 @@ The PlantSeg repository is organised as follows:
 
 * **plantseg**: Contains the source code of PlantSeg.
 * **conda-reicpe**: Contains all necessary code and configuration to create the anaconda package.
-* **Documentation-GUI**: Contains a more in-depth documentation of PlantSeg functionality.
+* **docs**: Contains the documentation of PlantSeg.
 * **evaluation**: Contains all script required to reproduce the quantitative evaluation in
 [Wolny et al.](https://doi.org/10.7554/eLife.57613).
 * **examples**: Contains the files required to test PlantSeg.

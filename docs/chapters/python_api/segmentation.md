@@ -20,4 +20,3 @@ The PlantSeg segmentation module implements all segmentation routine in plantseg
 * ***Simple ITK Watershed***
 ::: plantseg.segmentation.functional.segmentation.simple_itk_watershed
 
-
