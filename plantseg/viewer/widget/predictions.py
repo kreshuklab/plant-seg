@@ -1,6 +1,5 @@
 from concurrent.futures import Future
 from functools import partial
-from pathlib import Path
 from typing import Tuple, List
 
 import torch.cuda
@@ -81,7 +80,8 @@ def widget_unet_predictions(viewer: Viewer,
                                     scale=image.scale,
                                     metadata=image.metadata)
 
-    layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
+    # this is used to warn the user that the layer is a pmap
+    layer_kwargs['metadata']['pmap'] = True
 
     layer_type = 'image'
     step_kwargs = dict(model_name=model_name,
@@ -124,9 +124,12 @@ def _on_any_metadata_changed(modality, output_type, dimensionality):
     )
 
 
-widget_unet_predictions.modality.changed.connect(lambda value: _on_any_metadata_changed(value, widget_unet_predictions.output_type.value, widget_unet_predictions.dimensionality.value))
-widget_unet_predictions.output_type.changed.connect(lambda value: _on_any_metadata_changed(widget_unet_predictions.modality.value, value, widget_unet_predictions.dimensionality.value))
-widget_unet_predictions.dimensionality.changed.connect(lambda value: _on_any_metadata_changed(widget_unet_predictions.modality.value, widget_unet_predictions.output_type.value, value))
+widget_unet_predictions.modality.changed.connect(lambda value: _on_any_metadata_changed(
+    value, widget_unet_predictions.output_type.value, widget_unet_predictions.dimensionality.value))
+widget_unet_predictions.output_type.changed.connect(lambda value: _on_any_metadata_changed(
+    widget_unet_predictions.modality.value, value, widget_unet_predictions.dimensionality.value))
+widget_unet_predictions.dimensionality.changed.connect(lambda value: _on_any_metadata_changed(
+    widget_unet_predictions.modality.value, widget_unet_predictions.output_type.value, value))
 
 
 @widget_unet_predictions.model_name.changed.connect
@@ -158,7 +161,8 @@ def _compute_multiple_predictions(image, patch_size, patch_halo, device, use_cus
         layer_kwargs = layer_properties(name=out_name,
                                         scale=image.scale,
                                         metadata=image.metadata)
-        layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
+        # this is used to warn the user that the layer is a pmap
+        layer_kwargs['metadata']['pmap'] = True
         layer_type = 'image'
         try:
             pmap = unet_predictions(raw=image.data, model_name=model_name, patch=patch_size, single_batch_mode=True,
@@ -184,8 +188,10 @@ def _compute_multiple_predictions(image, patch_size, patch_halo, device, use_cus
                              'tooltip': 'If True, custom models will also be used.'}
           )
 def widget_test_all_unet_predictions(image: Image,
-                                     patch_size: Tuple[int, int, int] = (80, 170, 170),
-                                     patch_halo: Tuple[int, int, int] = (2, 4, 4),
+                                     patch_size: Tuple[int, int, int] = (
+                                         80, 170, 170),
+                                     patch_halo: Tuple[int, int, int] = (
+                                         2, 4, 4),
                                      device: str = ALL_DEVICES[0],
                                      use_custom_models: bool = True) -> Future[List[LayerDataTuple]]:
     func = thread_worker(partial(_compute_multiple_predictions,
@@ -249,16 +255,20 @@ def widget_iterative_unet_predictions(image: Image,
                                       model_name: str,
                                       num_iterations: int = 2,
                                       sigma: float = 1.0,
-                                      patch_size: Tuple[int, int, int] = (80, 170, 170),
-                                      patch_halo: Tuple[int, int, int] = (8, 16, 16),
+                                      patch_size: Tuple[int, int, int] = (
+                                          80, 170, 170),
+                                      patch_halo: Tuple[int, int, int] = (
+                                          8, 16, 16),
                                       single_patch: bool = True,
                                       device: str = ALL_DEVICES[0]) -> Future[LayerDataTuple]:
-    out_name = create_layer_name(image.name, f'iterative-{model_name}-x{num_iterations}')
+    out_name = create_layer_name(
+        image.name, f'iterative-{model_name}-x{num_iterations}')
     inputs_names = (image.name,)
     layer_kwargs = layer_properties(name=out_name,
                                     scale=image.scale,
                                     metadata=image.metadata)
-    layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
+    # this is used to warn the user that the layer is a pmap
+    layer_kwargs['metadata']['pmap'] = True
     layer_type = 'image'
     step_kwargs = dict(model_name=model_name,
                        num_iterations=num_iterations,
@@ -289,77 +299,3 @@ def _on_model_name_changed_iterative(model_name: str):
 @widget_iterative_unet_predictions.image.changed.connect
 def _on_widget_iterative_unet_predictions_image_change(image: Image):
     _on_prediction_input_image_change(widget_iterative_unet_predictions, image)
-
-
-@magicgui(call_button='Add Custom Model',
-          new_model_name={'label': 'New model name'},
-          model_location={'label': 'Model location',
-                          'mode': 'd'},
-          resolution={'label': 'Resolution', 'options': {'step': 0.00001}},
-          description={'label': 'Description'},
-          dimensionality={'label': 'Dimensionality',
-                          'tooltip': 'Dimensionality of the model (2D or 3D). '
-                                     'Any 2D model can be used for 3D data.',
-                          'widget_type': 'ComboBox',
-                          'choices': model_zoo.get_unique_dimensionalities()},
-          modality={'label': 'Microscopy modality',
-                    'tooltip': 'Modality of the model (e.g. confocal, light-sheet ...).',
-                    'widget_type': 'ComboBox',
-                    'choices': model_zoo.get_unique_modalities()},
-          output_type={'label': 'Prediction type',
-                       'widget_type': 'ComboBox',
-                       'tooltip': 'Type of prediction (e.g. cell boundaries predictions or nuclei...).',
-                       'choices': model_zoo.get_unique_output_types()},
-
-          )
-def widget_add_custom_model(new_model_name: str = 'custom_model',
-                            model_location: Path = Path.home(),
-                            resolution: Tuple[float, float, float] = (1., 1., 1.),
-                            description: str = 'New custom model',
-                            dimensionality: str = model_zoo.get_unique_dimensionalities()[0],
-                            modality: str = model_zoo.get_unique_modalities()[0],
-                            output_type: str = model_zoo.get_unique_output_types()[0]) -> None:
-    finished, error_msg = model_zoo.add_custom_model(new_model_name=new_model_name,
-                                                     location=model_location,
-                                                     resolution=resolution,
-                                                     description=description,
-                                                     dimensionality=dimensionality,
-                                                     modality=modality,
-                                                     output_type=output_type)
-
-    if finished:
-        napari_formatted_logging(f'New model {new_model_name} added to the list of available models.',
-                                 level='info',
-                                 thread='Add Custom Model')
-        widget_unet_predictions.model_name.choices = model_zoo.list_models()
-    else:
-        napari_formatted_logging(f'Error adding new model {new_model_name} to the list of available models: '
-                                 f'{error_msg}',
-                                 level='error',
-                                 thread='Add Custom Model')
-
-
-registered_extra_pred_widgets = {"Test all UNet": widget_test_all_unet_predictions,
-                                 "Iterative UNet": widget_iterative_unet_predictions,
-                                 "Add Custom Model": widget_add_custom_model}
-
-
-@magicgui(auto_call=True,
-          widget_name={'label': 'Widget Selection',
-                       'tooltip': 'Show only one widget if the Napari interface is too long.',
-                       'choices': list(registered_extra_pred_widgets.keys())})
-def widget_extra_pred_manager(widget_name: str) -> None:
-    napari_formatted_logging(f'Showing widget: {widget_name}', thread='Extra-Pred', level='info')
-    for key, value in registered_extra_pred_widgets.items():
-        if key == widget_name:
-            value.show()
-        else:
-            value.hide()
-
-TOO_MANY_WIDGES = False  # Set to True if there are too many widgets to show
-
-if TOO_MANY_WIDGES:
-    for _widget in registered_extra_pred_widgets.values():
-        _widget.hide()
-
-# widget_extra_pred_manager.enabled=TOO_MANY_WIDGES

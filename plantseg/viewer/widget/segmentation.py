@@ -57,7 +57,8 @@ def _generic_clustering(image: Image, labels: Labels,
                                    layer_type=layer_type,
                                    step_name=f'{name} Clustering',
                                    viewer=viewer,
-                                   widgets_to_update=[widget_split_and_merge_from_scribbles.segmentation]
+                                   widgets_to_update=[
+                                       widget_split_and_merge_from_scribbles.segmentation]
                                    )
 
 
@@ -189,6 +190,10 @@ def dtws_wrapper(boundary_pmaps,
                      'widget_type': 'FloatSlider', 'max': 1., 'min': 0.},
           min_size={'label': 'Min-size',
                     'tooltip': 'Minimum segment size allowed in voxels.'},
+          # Advanced parameters
+          show_advanced={'label': 'Show Advanced Parameters',
+                         'tooltip': 'Show advanced parameters for the Watershed algorithm.',
+                         'widget_type': 'CheckBox'},
           sigma_seeds={'label': 'Sigma seeds'},
           sigma_weights={'label': 'Sigma weights'},
           alpha={'label': 'Alpha'},
@@ -201,6 +206,7 @@ def widget_dt_ws(image: Image,
                  stacked: str = '2D',
                  threshold: float = 0.5,
                  min_size: int = 100,
+                 show_advanced: bool = False,
                  sigma_seeds: float = .2,
                  sigma_weights: float = 2.,
                  alpha: float = 1.,
@@ -231,7 +237,8 @@ def widget_dt_ws(image: Image,
                        nuclei=nuclei)
 
     return start_threading_process(dtws_wrapper,
-                                   runtime_kwargs={'boundary_pmaps': image.data},
+                                   runtime_kwargs={
+                                       'boundary_pmaps': image.data},
                                    statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
@@ -239,6 +246,35 @@ def widget_dt_ws(image: Image,
                                    layer_type=layer_type,
                                    step_name=f'Watershed Segmentation',
                                    )
+
+
+widget_dt_ws.sigma_seeds.hide()
+widget_dt_ws.sigma_weights.hide()
+widget_dt_ws.alpha.hide()
+widget_dt_ws.use_pixel_pitch.hide()
+widget_dt_ws.pixel_pitch.hide()
+widget_dt_ws.apply_nonmax_suppression.hide()
+widget_dt_ws.nuclei.hide()
+
+
+@widget_dt_ws.show_advanced.changed.connect
+def _on_show_advanced_changed(state: bool):
+    if state:
+        widget_dt_ws.sigma_seeds.show()
+        widget_dt_ws.sigma_weights.show()
+        widget_dt_ws.alpha.show()
+        widget_dt_ws.use_pixel_pitch.show()
+        widget_dt_ws.pixel_pitch.show()
+        widget_dt_ws.apply_nonmax_suppression.show()
+        widget_dt_ws.nuclei.show()
+    else:
+        widget_dt_ws.sigma_seeds.hide()
+        widget_dt_ws.sigma_weights.hide()
+        widget_dt_ws.alpha.hide()
+        widget_dt_ws.use_pixel_pitch.hide()
+        widget_dt_ws.pixel_pitch.hide()
+        widget_dt_ws.apply_nonmax_suppression.hide()
+        widget_dt_ws.nuclei.hide()
 
 
 @magicgui(call_button='Run Watershed',
@@ -278,7 +314,8 @@ def widget_simple_dt_ws(image: Image,
                        pixel_pitch=None)
 
     return start_threading_process(dtws_wrapper,
-                                   runtime_kwargs={'boundary_pmaps': image.data},
+                                   runtime_kwargs={
+                                       'boundary_pmaps': image.data},
                                    statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
@@ -309,7 +346,8 @@ def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
     if boundary_pmaps is not None:
         if 'pmap' not in boundary_pmaps.metadata:
             _pmap_warn("Fix Over/Under Segmentation from Nuclei Widget")
-        inputs_names = (cell_segmentation.name, nuclei_segmentation.name, boundary_pmaps.name)
+        inputs_names = (cell_segmentation.name,
+                        nuclei_segmentation.name, boundary_pmaps.name)
         func_kwargs = {'cell_seg': cell_segmentation.data,
                        'nuclei_seg': nuclei_segmentation.data,
                        'boundary': boundary_pmaps.data}
@@ -322,7 +360,8 @@ def widget_fix_over_under_segmentation_from_nuclei(cell_segmentation: Labels,
                                     scale=cell_segmentation.scale,
                                     metadata=cell_segmentation.metadata)
     layer_type = 'labels'
-    step_kwargs = dict(threshold_merge=threshold_merge, threshold_split=threshold_split, quantiles_nuclei=quantile)
+    step_kwargs = dict(threshold_merge=threshold_merge,
+                       threshold_split=threshold_split, quantiles_nuclei=quantile)
 
     return start_threading_process(fix_over_under_segmentation_from_nuclei,
                                    runtime_kwargs=func_kwargs,
@@ -364,30 +403,3 @@ def widget_fix_false_positive_from_foreground_pmap(segmentation: Labels,
                                    layer_type=layer_type,
                                    step_name='Reduce False Positives',
                                    )
-
-
-register_extra_seg_widgets = {"Watershed": widget_dt_ws,
-                              "Lifted MultiCut": widget_lifted_multicut}
-
-
-@magicgui(auto_call=True,
-          widget_name={'label': 'Widget Selection',
-                       'tooltip': 'Show only one widget if the Napari interface is too long.',
-                       'choices': list(register_extra_seg_widgets.keys())})
-def widget_extra_seg_manager(widget_name: str) -> None:
-    napari_formatted_logging(f'Showing {widget_name} widget',
-                             thread='Extra Segmentation Manager',
-                             level='info')
-    for key, value in register_extra_seg_widgets.items():
-        if key == widget_name:
-            value.show()
-        else:
-            value.hide()
-
-TOO_MANY_WIDGES = False  # Set to True if there are too many widgets to show
-
-if TOO_MANY_WIDGES:
-    for _widget in register_extra_seg_widgets.values():
-        _widget.hide()
-
-# widget_extra_seg_manager.enabled=TOO_MANY_WIDGES
