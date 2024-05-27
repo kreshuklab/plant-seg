@@ -69,6 +69,7 @@ nav:
     
   - Getting Started:
     - chapters/getting_started/index.md
+    - Import/Export: chapters/getting_started/import_export.md
     - Installation: chapters/getting_started/installation.md
     - Contributing: chapters/getting_started/contributing.md
     - Troubleshooting: chapters/getting_started/troubleshooting.md

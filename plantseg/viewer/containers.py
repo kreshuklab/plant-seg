@@ -40,7 +40,7 @@ def get_data_io():
                                     widget_export_stacks],
                            labels=False)
     container = setup_menu(
-        container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/index.html')
+        container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/data_io.html')
     return container
 
 
