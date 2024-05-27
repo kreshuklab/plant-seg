@@ -330,15 +330,34 @@ class ModelZoo:
 
         rdf_url = self._bioimageio_zoo_all_model_url_dict[model_id]
         model_description = load_description(rdf_url)
+
+        # Check if description is `ResourceDescr`
         if isinstance(model_description, InvalidDescr):
             model_description.validation_summary.display()
             raise ValueError(f"Failed to load {model_id}")
-        elif not isinstance(model_description, ModelDescr_v0_4) and not isinstance(model_description, ModelDescr_v0_5):
-            raise ValueError(f"Model description {model_id} is not a valid v0.4 or v0.5 BioImage.IO model description")
 
+        # Check `model_description` has `weights`
+        if not isinstance(model_description, ModelDescr_v0_4) and not isinstance(model_description, ModelDescr_v0_5):
+            raise ValueError(
+                f"Model description {model_id} is not in v0.4 or v0.5 BioImage.IO model description format. "
+                "Only v0.4 and v0.5 formats are supported by BioImage.IO Spec and PlantSeg."
+            )
+
+        # Check `model_description.weights` has `pytorch_state_dict`
         if model_description.weights.pytorch_state_dict is None:
             raise ValueError(f"Model {model_id} does not have PyTorch weights")
-        architecture = str(model_description.weights.pytorch_state_dict.architecture)
+
+        # Spec format version v0.4 and v0.5 have different designs to store model architecture
+        if isinstance(model_description, ModelDescr_v0_4):  # then `pytorch_state_dict.architecture` is nn.Module
+            architecture_callable = model_description.weights.pytorch_state_dict.architecture
+            architecture_kwargs = model_description.weights.pytorch_state_dict.kwargs
+        elif isinstance(model_description, ModelDescr_v0_5):  # then it is `ArchitectureDescr` with `callable`
+            architecture_callable = model_description.weights.pytorch_state_dict.architecture.callable
+            architecture_kwargs = model_description.weights.pytorch_state_dict.architecture.kwargs
+        zoo_logger.info(f"Got {architecture_callable} model with kwargs {architecture_kwargs}.")
+
+        # Create model from architecture and kwargs
+        architecture = str(architecture_callable)  # e.g. 'plantseg.models.model.UNet3D'
         architecture = 'UNet3D' if 'UNet3D' in architecture else 'UNet2D'
         model_config = {
             'name': architecture,
@@ -349,15 +368,11 @@ class ModelZoo:
             'num_groups': 8,
             'final_sigmoid': True,
         }
-        if not model_description.weights.pytorch_state_dict:
-            raise ValueError(f"Model {model_id} does not have PyTorch weights")
-        try:
-            model_config.update(model_description.weights.pytorch_state_dict.kwargs)
-        except AttributeError:
-            zoo_logger.warning(f"Model {model_id} does not come with architecture configs. Using default.")
+        model_config.update(architecture_kwargs)
         model = self._create_model_by_config(model_config)
         model_weights_path = download(model_description.weights.pytorch_state_dict.source).path
 
+        zoo_logger.info(f"Created {architecture} model with kwargs {model_config}.")
         zoo_logger.info(f"Loaded model from BioImage.IO Model Zoo: {model_id}")
         return model, model_config, model_weights_path
 
@@ -407,9 +422,9 @@ class ModelZoo:
 
     def get_bioimageio_zoo_other_model_names(self) -> List[str]:
         """Return a list of model names in the BioImage.IO Model Zoo not tagged with 'plantseg'."""
-        return sorted(list(
-            set(self.get_bioimageio_zoo_all_model_names()) - set(self.get_bioimageio_zoo_plantseg_model_names())
-        ))
+        return sorted(
+            list(set(self.get_bioimageio_zoo_all_model_names()) - set(self.get_bioimageio_zoo_plantseg_model_names()))
+        )
 
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)
