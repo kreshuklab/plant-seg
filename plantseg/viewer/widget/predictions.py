@@ -30,7 +30,7 @@ PREDICTION_MODE_B = 'BioImage.IO Zoo'
 PREDICTION_MODES = (PREDICTION_MODE_P, PREDICTION_MODE_B)  # PREDICTION_MODES will not be binary, thus not boolean
 
 BIOIMAGEIO_FILTER = [("PlantSeg Only", True), ("All", False)]
-
+SINGLE_PATCH_MODE = [("Find Batch Size", False), ("Single Patch", True)]
 
 def unet_predictions_wrapper(raw, device, **kwargs):
     """
@@ -78,8 +78,11 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                       'tooltip': 'Patch size use to processed the data.'},
           patch_halo={'label': 'Patch halo',
                       'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
-          single_patch={'label': 'Single Patch',
-                        'tooltip': 'If True, a single patch will be processed at a time to save memory.'},
+          single_patch={'label': 'Batch Size',
+                        'tooltip': 'Single patch = batch size 1 (lower memory usage);\nFind Batch Size = find the biggest batch size.',
+                        'widget_type': 'RadioButtons',
+                        'orientation': 'horizontal',
+                        'choices': SINGLE_PATCH_MODE},
           device={'label': 'Device',
                   'choices': ALL_DEVICES}
           )
@@ -94,7 +97,7 @@ def widget_unet_predictions(viewer: Viewer,
                             output_type: str = ALL,
                             patch_size: tuple[int, int, int] = (80, 170, 170),
                             patch_halo: tuple[int, int, int] = (8, 16, 16),
-                            single_patch: bool = True,
+                            single_patch: bool = False,
                             device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
     if mode == PREDICTION_MODE_P:
         out_name = create_layer_name(image.name, model_name)
