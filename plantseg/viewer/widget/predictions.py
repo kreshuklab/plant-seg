@@ -24,8 +24,13 @@ ALL = 'All'
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
 ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ['cpu']
-PREDICTION_MODEDS = ('PlantSeg Zoo', 'BioImage.IO Zoo')
 
+PREDICTION_MODE_P = 'PlantSeg Zoo'
+PREDICTION_MODE_B = 'BioImage.IO Zoo'
+PREDICTION_MODES = (PREDICTION_MODE_P, PREDICTION_MODE_B)  # PREDICTION_MODES will not be binary, thus not boolean
+
+BIOIMAGEIO_FILTER = [("PlantSeg Only", True), ("All", False)]
+SINGLE_PATCH_MODE = [("Auto", False), ("One (lower VRAM usage)", True)]
 
 def unet_predictions_wrapper(raw, device, **kwargs):
     """
@@ -40,7 +45,7 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                 'tooltip': 'Select the mode to run the predictions.',
                 'widget_type': 'RadioButtons',
                 'orientation': 'horizontal',
-                'choices': PREDICTION_MODEDS},
+                'choices': PREDICTION_MODES},
           image={'label': 'Image',
                  'tooltip': 'Raw image to be processed with a neural network.'},
           dimensionality={'label': 'Dimensionality',
@@ -48,7 +53,7 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                                      'Any 2D model can be used for 3D data. If unsure, select "All".',
                           'widget_type': 'ComboBox',
                           'choices': [ALL] + model_zoo.get_unique_dimensionalities()},
-          modality={'label': 'Microscopy Modality',
+          modality={'label': 'Microscopy modality',
                     'tooltip': 'Modality of the model (e.g. confocal, light-sheet ...). If unsure, select "All".',
                     'widget_type': 'ComboBox',
                     'choices': [ALL] + model_zoo.get_unique_modalities()},
@@ -58,38 +63,48 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                                   ' If unsure, select "All".',
                        'choices': [ALL] + model_zoo.get_unique_output_types()},
           model_name={'label': 'PlantSeg model',
-                      'tooltip': f'Select a pretrained model. '
+                      'tooltip': f'Select a pretrained PlantSeg model. '
                                  f'Current model description: {model_zoo.get_model_description(model_zoo.list_models()[0])}',
                       'choices': model_zoo.list_models()},
           model_id={'label': 'BioImage.IO model',
-                    'tooltip': 'Select a model from BioImage.IO model zoo.'},
+                    'tooltip': 'Select a model from BioImage.IO model zoo.',
+                    'choices': model_zoo.get_bioimageio_zoo_plantseg_model_names()},
+          plantseg_filter={'label': 'Model filter',
+                           'tooltip': 'Choose to only show models tagged with `plantseg`.',
+                           'widget_type': 'RadioButtons',
+                           'orientation': 'horizontal',
+                           'choices': BIOIMAGEIO_FILTER},
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
           patch_halo={'label': 'Patch halo',
                       'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
-          single_patch={'label': 'Single Patch',
-                        'tooltip': 'If True, a single patch will be processed at a time to save memory.'},
+          single_patch={'label': 'Batch size',
+                        'tooltip': 'Single patch = batch size 1 (lower GPU memory usage);\nFind Batch Size = find the biggest batch size.',
+                        'widget_type': 'RadioButtons',
+                        'orientation': 'horizontal',
+                        'choices': SINGLE_PATCH_MODE},
           device={'label': 'Device',
                   'choices': ALL_DEVICES}
           )
 def widget_unet_predictions(viewer: Viewer,
                             image: Image,
-                            mode: str = PREDICTION_MODEDS[0],
-                            model_name: Optional[str] = model_zoo.list_models()[0],
-                            model_id: Optional[str] = 'efficient-chipmunk',
+                            mode: str = PREDICTION_MODE_P,
+                            plantseg_filter: bool = True,
+                            model_name: str = model_zoo.list_models()[0],
+                            model_id: str = model_zoo.get_bioimageio_zoo_plantseg_model_names()[0],
                             dimensionality: str = ALL,
                             modality: str = ALL,
                             output_type: str = ALL,
                             patch_size: tuple[int, int, int] = (80, 170, 170),
                             patch_halo: tuple[int, int, int] = (8, 16, 16),
-                            single_patch: bool = True,
+                            single_patch: bool = False,
                             device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
-    if mode == 'PlantSeg Zoo':
-        model_id = None
+    if mode == PREDICTION_MODE_P:
         out_name = create_layer_name(image.name, model_name)
-    else:
-        model_name = None
+    elif mode == PREDICTION_MODE_B:
         out_name = create_layer_name(image.name, model_id)
+    else:
+        raise NotImplementedError(f'Mode {mode} not implemented yet.')
 
     inputs_names = (image.name, 'device')
 
@@ -100,8 +115,8 @@ def widget_unet_predictions(viewer: Viewer,
     layer_kwargs['metadata']['pmap'] = True  # this is used to warn the user that the layer is a pmap
 
     layer_type = 'image'
-    step_kwargs = dict(model_name=model_name,
-                       model_id=model_id,
+    step_kwargs = dict(model_name=model_name if mode == PREDICTION_MODE_P else None,
+                       model_id=model_id if mode == PREDICTION_MODE_B else None,
                        patch=patch_size,
                        patch_halo=patch_halo,
                        single_batch_mode=single_patch,
@@ -127,12 +142,36 @@ def widget_unet_predictions(viewer: Viewer,
 
 @widget_unet_predictions.mode.changed.connect
 def _on_widget_unet_predictions_mode_change(mode: str):
-    if mode == 'PlantSeg Zoo':
-        widget_unet_predictions.model_name.show()
-        widget_unet_predictions.model_id.hide()
+    widgets_p = [
+        widget_unet_predictions.model_name,
+        widget_unet_predictions.dimensionality,
+        widget_unet_predictions.modality,
+        widget_unet_predictions.output_type,
+    ]
+    widgets_b = [
+        widget_unet_predictions.model_id,
+        widget_unet_predictions.plantseg_filter,
+    ]
+    if mode == PREDICTION_MODE_P:
+        for widget in widgets_p:
+            widget.show()
+        for widget in widgets_b:
+            widget.hide()
+    elif mode == PREDICTION_MODE_B:
+        for widget in widgets_p:
+            widget.hide()
+        for widget in widgets_b:
+            widget.show()
     else:
-        widget_unet_predictions.model_name.hide()
-        widget_unet_predictions.model_id.show()
+        raise NotImplementedError(f'Mode {mode} not implemented yet.')
+
+
+@widget_unet_predictions.plantseg_filter.changed.connect
+def _on_widget_unet_predictions_plantseg_filter_change(plantseg_filter: bool):
+    if plantseg_filter:
+        widget_unet_predictions.model_id.choices = model_zoo.get_bioimageio_zoo_plantseg_model_names()
+    else:
+        widget_unet_predictions.model_id.choices = model_zoo.get_bioimageio_zoo_all_model_names()
 
 
 @widget_unet_predictions.image.changed.connect
@@ -267,8 +306,11 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
                       'tooltip': 'Patch size use to processed the data.'},
           patch_halo={'label': 'Patch halo',
                       'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
-          single_patch={'label': 'Single Patch',
-                        'tooltip': 'If True, a single patch will be processed at a time to save memory.'},
+          single_patch={'label': 'Batch size',
+                        'tooltip': 'Single patch = batch size 1 (lower GPU memory usage);\nFind Batch Size = find the biggest batch size.',
+                        'widget_type': 'RadioButtons',
+                        'orientation': 'horizontal',
+                        'choices': SINGLE_PATCH_MODE},
           device={'label': 'Device',
                   'choices': ALL_DEVICES}
           )
