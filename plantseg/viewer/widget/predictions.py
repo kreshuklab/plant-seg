@@ -30,7 +30,7 @@ PREDICTION_MODE_B = 'BioImage.IO Zoo'
 PREDICTION_MODES = (PREDICTION_MODE_P, PREDICTION_MODE_B)  # PREDICTION_MODES will not be binary, thus not boolean
 
 BIOIMAGEIO_FILTER = [("PlantSeg Only", True), ("All", False)]
-SINGLE_PATCH_MODE = [("Find Batch Size", False), ("Single Patch", True)]
+SINGLE_PATCH_MODE = [("Auto", False), ("One (lower VRAM usage)", True)]
 
 def unet_predictions_wrapper(raw, device, **kwargs):
     """
@@ -53,7 +53,7 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                                      'Any 2D model can be used for 3D data. If unsure, select "All".',
                           'widget_type': 'ComboBox',
                           'choices': [ALL] + model_zoo.get_unique_dimensionalities()},
-          modality={'label': 'Microscopy Modality',
+          modality={'label': 'Microscopy modality',
                     'tooltip': 'Modality of the model (e.g. confocal, light-sheet ...). If unsure, select "All".',
                     'widget_type': 'ComboBox',
                     'choices': [ALL] + model_zoo.get_unique_modalities()},
@@ -69,7 +69,7 @@ def unet_predictions_wrapper(raw, device, **kwargs):
           model_id={'label': 'BioImage.IO model',
                     'tooltip': 'Select a model from BioImage.IO model zoo.',
                     'choices': model_zoo.get_bioimageio_zoo_plantseg_model_names()},
-          plantseg_filter={'label': 'Filter Models',
+          plantseg_filter={'label': 'Model filter',
                            'tooltip': 'Choose to only show models tagged with `plantseg`.',
                            'widget_type': 'RadioButtons',
                            'orientation': 'horizontal',
@@ -78,8 +78,8 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                       'tooltip': 'Patch size use to processed the data.'},
           patch_halo={'label': 'Patch halo',
                       'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
-          single_patch={'label': 'Batch Size',
-                        'tooltip': 'Single patch = batch size 1 (lower memory usage);\nFind Batch Size = find the biggest batch size.',
+          single_patch={'label': 'Batch size',
+                        'tooltip': 'Single patch = batch size 1 (lower GPU memory usage);\nFind Batch Size = find the biggest batch size.',
                         'widget_type': 'RadioButtons',
                         'orientation': 'horizontal',
                         'choices': SINGLE_PATCH_MODE},
@@ -306,8 +306,11 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
                       'tooltip': 'Patch size use to processed the data.'},
           patch_halo={'label': 'Patch halo',
                       'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
-          single_patch={'label': 'Single Patch',
-                        'tooltip': 'If True, a single patch will be processed at a time to save memory.'},
+          single_patch={'label': 'Batch size',
+                        'tooltip': 'Single patch = batch size 1 (lower GPU memory usage);\nFind Batch Size = find the biggest batch size.',
+                        'widget_type': 'RadioButtons',
+                        'orientation': 'horizontal',
+                        'choices': SINGLE_PATCH_MODE},
           device={'label': 'Device',
                   'choices': ALL_DEVICES}
           )
