@@ -27,7 +27,8 @@ channels_stack_layouts = [f'Z{channel_token}XY (usually tiff)',
 no_channels_stack_layouts = ['ZXY',
                              'XY']
 manual_slicing = 'Manual Slicing'
-all_layouts = channels_stack_layouts + no_channels_stack_layouts + [manual_slicing]
+all_layouts = channels_stack_layouts + \
+    no_channels_stack_layouts + [manual_slicing]
 
 
 def select_channel(data: np.ndarray, layout: str, channel: int, m_slicing: str = '[:, :, :]') -> np.ndarray:
@@ -48,7 +49,8 @@ def select_channel(data: np.ndarray, layout: str, channel: int, m_slicing: str =
         return data[:, channel, ...]
 
     else:
-        raise ValueError(f'channel index out of range, error in formatting channel_stack_layout')
+        raise ValueError(
+            f'channel index out of range, error in formatting channel_stack_layout')
 
 
 def open_file(path: Path,
@@ -61,7 +63,8 @@ def open_file(path: Path,
     path = str(path)
 
     if ext not in allowed_data_format:
-        raise ValueError(f'File extension is {ext} but should be one of {allowed_data_format}')
+        raise ValueError(
+            f'File extension is {ext} but should be one of {allowed_data_format}')
 
     if ext in H5_EXTENSIONS:
         if key == '':
@@ -82,7 +85,8 @@ def open_file(path: Path,
     else:
         raise NotImplementedError()
 
-    data = select_channel(data=data, channel=channel, layout=stack_layout, m_slicing=m_slicing)
+    data = select_channel(data=data, channel=channel,
+                          layout=stack_layout, m_slicing=m_slicing)
     data = fix_input_shape(data)
 
     if layer_type == 'image':
@@ -236,6 +240,12 @@ def _on_stack_layout_changed(stack_layout: str):
         widget_open_file.m_slicing.hide()
 
 
+# For some reson after the widget is called the keys are deleted, so we need to reassign them after the widget is called
+@widget_open_file.called.connect
+def _on_done(*args):
+    _on_path_changed(widget_open_file.path.value)
+
+
 def export_stack_as_tiff(data,
                          name,
                          directory,
@@ -257,7 +267,8 @@ def export_stack_as_tiff(data,
     out_path = directory / f'{stack_name}.tiff'
     data = fix_input_shape(data)
     data = safe_typecast(data, dtype, stack_type)
-    create_tiff(path=out_path, stack=data[...], voxel_size=voxel_size, voxel_size_unit=voxel_size_unit)
+    create_tiff(
+        path=out_path, stack=data[...], voxel_size=voxel_size, voxel_size_unit=voxel_size_unit)
     return out_path
 
 
@@ -380,9 +391,11 @@ def widget_export_stacks(images: List[Tuple[Layer, str]],
             stack_type = 'labels'
             dtype = 'uint16'
             if data_type != 'uint16':
-                warn(f"{data_type} is not a valid type for Labels, please use uint8 or uint16")
+                warn(
+                    f"{data_type} is not a valid type for Labels, please use uint8 or uint16")
         else:
-            raise ValueError(f'{type(image)} cannot be exported, please use Image layers or Labels layers')
+            raise ValueError(
+                f'{type(image)} cannot be exported, please use Image layers or Labels layers')
 
         if export_format == 'tiff':
             export_function = export_stack_as_tiff
@@ -391,7 +404,8 @@ def widget_export_stacks(images: List[Tuple[Layer, str]],
         elif export_format == 'zarr':
             export_function = export_stack_as_zarr
         else:
-            raise ValueError(f'{export_format} is not a valid export format, please use tiff or h5')
+            raise ValueError(
+                f'{export_format} is not a valid export format, please use tiff or h5')
 
         # parse metadata in the layer
         if rescale_to_original_resolution and 'original_voxel_size' in image.metadata.keys():
@@ -454,7 +468,8 @@ def widget_export_stacks(images: List[Tuple[Layer, str]],
 
         out_path = directory / f'{workflow_name}.pkl'
         dag_manager.export_dag(out_path, final_export_check)
-        napari_formatted_logging(f'Workflow correctly exported', thread='Export stack')
+        napari_formatted_logging(
+            f'Workflow correctly exported', thread='Export stack')
 
 
 widget_export_stacks.directory.hide()
