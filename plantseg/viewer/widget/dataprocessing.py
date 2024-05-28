@@ -13,10 +13,11 @@ from plantseg.dataprocessing.functional.dataprocessing import compute_scaling_fa
 from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation as _relabel_segmentation
 from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
 from plantseg.viewer.widget.predictions import widget_unet_predictions
-from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
+from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_dt_ws
 from plantseg.viewer.widget.utils import return_value_if_widget
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
 from plantseg.models.zoo import model_zoo
+
 
 @magicgui(call_button='Run Gaussian Smoothing',
           image={'label': 'Image',
@@ -35,7 +36,8 @@ def widget_gaussian_smoothing(viewer: Viewer,
     inputs_kwarg = {'image': image.data}
     step_kwargs = {'sigma': sigma}
     inputs_names = (image.name,)
-    layer_kwargs = layer_properties(name=out_name, scale=image.scale, metadata=image.metadata)
+    layer_kwargs = layer_properties(
+        name=out_name, scale=image.scale, metadata=image.metadata)
     layer_type = 'image'
 
     return start_threading_process(image_gaussian_smoothing,
@@ -50,7 +52,7 @@ def widget_gaussian_smoothing(viewer: Viewer,
                                    widgets_to_update=[widget_unet_predictions.image,
                                                       widget_agglomeration.image,
                                                       widget_lifted_multicut.image,
-                                                      widget_simple_dt_ws.image,
+                                                      widget_dt_ws.image,
                                                       widget_rescaling.image,
                                                       widget_cropping.image]
                                    )
@@ -84,7 +86,8 @@ class RescaleType(Enum):
                  })
 def widget_rescaling(viewer: Viewer,
                      image: Layer,
-                     rescaling_factor: Tuple[float, float, float] = (1., 1., 1.),
+                     rescaling_factor: Tuple[float,
+                                             float, float] = (1., 1., 1.),
                      out_voxel_size: Tuple[float, float, float] = (1., 1., 1.),
                      reference_layer: Union[None, Layer] = None,
                      reference_model: str = model_zoo.list_models()[0],
@@ -99,16 +102,20 @@ def widget_rescaling(viewer: Viewer,
         order = 0
 
     else:
-        raise ValueError(f'{type(image)} cannot be rescaled, please use Image layers or Labels layers')
+        raise ValueError(
+            f'{type(image)} cannot be rescaled, please use Image layers or Labels layers')
 
     current_resolution = image.scale
-    rescaling_factor = tuple(float(x) for x in rescaling_factor) # type: ignore
+    rescaling_factor = tuple(float(x)
+                             for x in rescaling_factor)  # type: ignore
 
-    assert isinstance(image.data, np.ndarray), "Only numpy arrays are supported for rescaling."
+    assert isinstance(
+        image.data, np.ndarray), "Only numpy arrays are supported for rescaling."
     if image.data.ndim == 2:
         rescaling_factor = (1.,) + rescaling_factor[1:]
 
-    out_voxel_size = compute_scaling_voxelsize(current_resolution, scaling_factor=rescaling_factor)
+    out_voxel_size = compute_scaling_voxelsize(
+        current_resolution, scaling_factor=rescaling_factor)
 
     out_name = create_layer_name(image.name, 'Rescaled')
     inputs_kwarg = {'image': image.data}
@@ -131,7 +138,7 @@ def widget_rescaling(viewer: Viewer,
                                    widgets_to_update=[widget_unet_predictions.image,
                                                       widget_agglomeration.image,
                                                       widget_lifted_multicut.image,
-                                                      widget_simple_dt_ws.image,
+                                                      widget_dt_ws.image,
                                                       widget_cropping.image,
                                                       widget_gaussian_smoothing.image]
                                    )
@@ -146,14 +153,16 @@ def _on_rescaling_image_changed(image: Layer):
 @widget_rescaling.out_voxel_size.changed.connect
 def _on_voxel_size_changed(voxel_size: Tuple[float, float, float]):
     voxel_size = return_value_if_widget(voxel_size)
-    rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, voxel_size)
+    rescaling_factor = compute_scaling_factor(
+        widget_rescaling.image.value.scale, voxel_size)
     widget_rescaling.rescaling_factor.value = rescaling_factor
 
 
 @widget_rescaling.reference_layer.changed.connect
 def _on_reference_layer_changed(reference_layer: Layer):
     reference_layer = return_value_if_widget(reference_layer)
-    rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, reference_layer.scale)
+    rescaling_factor = compute_scaling_factor(
+        widget_rescaling.image.value.scale, reference_layer.scale)
     widget_rescaling.rescaling_factor.value = rescaling_factor
     widget_rescaling.out_voxel_size.value = reference_layer.scale
 
@@ -163,8 +172,10 @@ def _on_reference_model_changed(reference_model: str):
     reference_model = return_value_if_widget(reference_model)
     out_voxel_size = model_zoo.get_model_resolution(reference_model)
     if out_voxel_size is None:
-        raise ValueError(f"Model {reference_model} does not have a resolution defined.")
-    rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, out_voxel_size)
+        raise ValueError(
+            f"Model {reference_model} does not have a resolution defined.")
+    rescaling_factor = compute_scaling_factor(
+        widget_rescaling.image.value.scale, out_voxel_size)
     widget_rescaling.rescaling_factor.value = rescaling_factor
     widget_rescaling.out_voxel_size.value = out_voxel_size
 
@@ -210,7 +221,8 @@ def widget_cropping(viewer: Viewer,
                     crop_z: tuple[int, int] = (0, 100),
                     ) -> Future[LayerDataTuple]:
     if crop_roi is not None:
-        assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
+        assert len(
+            crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
         assert crop_roi.shape_type[0] == 'rectangle', "Only a rectangle shape should be used for cropping"
 
     if isinstance(image, Image):
@@ -220,7 +232,8 @@ def widget_cropping(viewer: Viewer,
         layer_type = 'labels'
 
     else:
-        raise ValueError(f'{type(image)} cannot be cropped, please use Image layers or Labels layers')
+        raise ValueError(
+            f'{type(image)} cannot be cropped, please use Image layers or Labels layers')
 
     out_name = create_layer_name(image.name, 'cropped')
     inputs_names = (image.name,)
@@ -233,7 +246,8 @@ def widget_cropping(viewer: Viewer,
     else:
         rectangle = None
 
-    assert isinstance(image.data, np.ndarray), "Only numpy arrays are supported for cropping."
+    assert isinstance(
+        image.data, np.ndarray), "Only numpy arrays are supported for cropping."
     crop_slices = _compute_slices(rectangle, crop_z, image.data.shape)
 
     return start_threading_process(_cropping,
@@ -249,7 +263,7 @@ def widget_cropping(viewer: Viewer,
                                    widgets_to_update=[widget_unet_predictions.image,
                                                       widget_agglomeration.image,
                                                       widget_lifted_multicut.image,
-                                                      widget_simple_dt_ws.image,
+                                                      widget_dt_ws.image,
                                                       widget_rescaling.image,
                                                       widget_gaussian_smoothing.image]
                                    )
@@ -310,7 +324,8 @@ def widget_add_layers(viewer: Viewer,
     assert image1.data.shape == image2.data.shape
 
     return start_threading_process(_two_layers_operation,
-                                   runtime_kwargs={'data1': image1.data, 'data2': image2.data},
+                                   runtime_kwargs={
+                                       'data1': image1.data, 'data2': image2.data},
                                    statics_kwargs=step_kwargs,
                                    out_name=out_name,
                                    input_keys=inputs_names,
@@ -321,7 +336,7 @@ def widget_add_layers(viewer: Viewer,
                                    widgets_to_update=[widget_unet_predictions.image,
                                                       widget_agglomeration.image,
                                                       widget_lifted_multicut.image,
-                                                      widget_simple_dt_ws.image]
+                                                      widget_dt_ws.image]
                                    )
 
 
@@ -366,7 +381,8 @@ def widget_label_processing(segmentation: Labels,
                                     scale=segmentation.scale,
                                     metadata=segmentation.metadata)
     layer_type = 'labels'
-    step_kwargs = dict(set_bg_to_0=set_bg_to_0, relabel_segmentation=relabel_segmentation)
+    step_kwargs = dict(set_bg_to_0=set_bg_to_0,
+                       relabel_segmentation=relabel_segmentation)
 
     return start_threading_process(_label_processing,
                                    runtime_kwargs=inputs_kwarg,

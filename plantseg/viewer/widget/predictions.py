@@ -13,7 +13,7 @@ from plantseg.dataprocessing.functional import image_gaussian_smoothing
 from plantseg.predictions.functional import unet_predictions
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
-from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_simple_dt_ws
+from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_dt_ws
 from plantseg.viewer.widget.utils import return_value_if_widget, create_layer_name, layer_properties
 from plantseg.viewer.widget.utils import start_threading_process, start_prediction_process
 from plantseg.viewer.widget.validation import _on_prediction_input_image_change
@@ -103,7 +103,7 @@ def widget_unet_predictions(viewer: Viewer,
                                     viewer=viewer,
                                     widgets_to_update=[widget_agglomeration.image,
                                                        widget_lifted_multicut.image,
-                                                       widget_simple_dt_ws.image,
+                                                       widget_dt_ws.image,
                                                        widget_split_and_merge_from_scribbles.image]
                                     )
 
