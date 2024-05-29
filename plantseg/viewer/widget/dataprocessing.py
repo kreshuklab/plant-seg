@@ -15,7 +15,12 @@ from plantseg.dataprocessing.functional.labelprocessing import set_background_to
 from plantseg.viewer.widget.predictions import widget_unet_predictions
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_dt_ws
 from plantseg.viewer.widget.utils import return_value_if_widget
-from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties
+from plantseg.viewer.widget.utils import (
+    start_threading_process,
+    create_layer_name,
+    layer_properties,
+    napari_formatted_logging,
+)
 from plantseg.models.zoo import model_zoo
 
 
@@ -70,9 +75,23 @@ class RescaleType(Enum):
     bilinear = 2
 
 
+class RescaleModes(Enum):
+    from_factor = "From factor"
+    to_layer_voxel_size = "To layer voxel size"
+    to_layer_shape = "To layer shape"
+    to_model_voxel_size = "To model voxel size"
+    to_voxel_size = "To voxel size"
+    set_shape = "To shape"
+    set_voxel_size = "Set voxel size"
+
+
+RESCALE_MODES = [mode.value for mode in RescaleModes]
+
+
 @magicgui(
     call_button="Run Image Rescaling",
     image={"label": "Image or Label", "tooltip": "Layer to apply the rescaling."},
+    mode={"label": "Rescale mode", "choices": RESCALE_MODES},
     rescaling_factor={
         "label": "Rescaling factor",
         "tooltip": "Define the scaling factor to use for resizing the input image.",
@@ -84,12 +103,16 @@ class RescaleType(Enum):
         '(if units are missing default is "um").',
         "options": {"step": 0.00001},
     },
-    reference_layer={"label": "Reference layer", "tooltip": "Rescale to same voxel size as selected layer."},
+    reference_layer={
+        "label": "Reference layer",
+        "tooltip": "Rescale to same voxel size as selected layer.",
+    },
     reference_model={
         "label": "Reference model",
         "tooltip": "Rescale to same voxel size as selected model.",
         "choices": model_zoo.list_models(),
     },
+    reference_shape={"label": "Out shape", "tooltip": "Rescale to a manually selected shape."},
     order={
         "label": "Interpolation order",
         "widget_type": "ComboBox",
@@ -100,12 +123,15 @@ class RescaleType(Enum):
 def widget_rescaling(
     viewer: Viewer,
     image: Layer,
+    mode: str = RESCALE_MODES[0],
     rescaling_factor: Tuple[float, float, float] = (1.0, 1.0, 1.0),
     out_voxel_size: Tuple[float, float, float] = (1.0, 1.0, 1.0),
     reference_layer: Union[Layer, None] = None,
     reference_model: str = model_zoo.list_models()[0],
+    reference_shape: Tuple[int, int, int] = (1, 1, 1),
     order=RescaleType.linear,
 ) -> Future[LayerDataTuple]:
+
     if isinstance(image, Image):
         layer_type = "image"
         order = order.value
@@ -117,14 +143,69 @@ def widget_rescaling(
     else:
         raise ValueError(f"{type(image)} cannot be rescaled, please use Image layers or Labels layers")
 
-    current_resolution = image.scale
-    rescaling_factor = tuple(float(x) for x in rescaling_factor)  # type: ignore
-
     assert isinstance(image.data, np.ndarray), "Only numpy arrays are supported for rescaling."
+
     if image.data.ndim == 2:
         rescaling_factor = (1.0,) + rescaling_factor[1:]
 
-    out_voxel_size = compute_scaling_voxelsize(current_resolution, scaling_factor=rescaling_factor)
+    current_resolution = image.scale
+    mode = RescaleModes(mode)  # type: ignore
+    match mode:
+        case RescaleModes.from_factor:
+            rescaling_factor = tuple(float(x) for x in rescaling_factor)  # type: ignore
+            out_voxel_size = compute_scaling_voxelsize(current_resolution, scaling_factor=rescaling_factor)
+
+        case RescaleModes.to_layer_voxel_size:
+            assert reference_layer is not None, "Please select a reference layer to rescale to."
+            out_voxel_size = reference_layer.scale
+            rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
+
+        case RescaleModes.to_model_voxel_size:
+            out_voxel_size = model_zoo.get_model_resolution(reference_model)  # type: ignore
+            if out_voxel_size is None:
+                raise ValueError(f"Model {reference_model} does not have a resolution defined.")
+
+            rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
+
+        case RescaleModes.to_voxel_size:
+            out_voxel_size = tuple(float(x) for x in out_voxel_size)  # type: ignore
+            rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
+
+        case RescaleModes.to_layer_shape:
+            assert reference_layer is not None, "Please select a reference layer to rescale to."
+            current_shape = image.data.shape
+            out_shape = reference_layer.data.shape
+            rescaling_factor = tuple(o / c for o, c in zip(out_shape, current_shape))  # type: ignore
+            out_voxel_size = tuple(i / s for i, s in zip(current_resolution, rescaling_factor))  # type: ignore
+
+        case RescaleModes.set_shape:
+            current_shape = image.data.shape
+            out_shape = reference_shape
+            rescaling_factor = tuple(o / c for o, c in zip(out_shape, current_shape))  # type: ignore
+            out_voxel_size = tuple(i / s for i, s in zip(current_resolution, rescaling_factor))  # type: ignore
+
+        # This is the only case where we don't need to rescale the image data
+        # we just need to update the metadata, no need to add this to the DAG.
+        # Maybe this will change in the future implementation of the headless mode.
+        case RescaleModes.set_voxel_size:
+            out_voxel_size = tuple(float(x) for x in out_voxel_size)  # type: ignore
+            image.scale = out_voxel_size
+            result = Future()
+            result.set_result(
+                (
+                    image.data,
+                    layer_properties(
+                        name=image.name,
+                        scale=out_voxel_size,
+                        metadata={**image.metadata, **{"original_voxel_size": current_resolution}},
+                    ),
+                    layer_type,
+                )
+            )
+            return result
+
+        case _:
+            raise ValueError(f"{mode} is not implemented yet.")
 
     out_name = create_layer_name(image.name, "Rescaled")
     inputs_kwarg = {"image": image.data}
@@ -155,36 +236,91 @@ def widget_rescaling(
     )
 
 
+widget_rescaling.out_voxel_size.hide()
+widget_rescaling.reference_layer.hide()
+widget_rescaling.reference_model.hide()
+widget_rescaling.reference_shape.hide()
+widget_rescaling.reference_shape[0].max = 10000
+widget_rescaling.reference_shape[1].max = 10000
+widget_rescaling.reference_shape[2].max = 10000
+
+
+@widget_rescaling.mode.changed.connect
+def _rescale_update_visibility(mode: str):
+    mode = return_value_if_widget(mode)
+
+    all_widgets = [
+        widget_rescaling.out_voxel_size,
+        widget_rescaling.reference_layer,
+        widget_rescaling.reference_model,
+        widget_rescaling.rescaling_factor,
+        widget_rescaling.reference_shape,
+    ]
+
+    for widget in all_widgets:
+        widget.hide()
+
+    mode = RescaleModes(mode)  # type: ignore
+    match mode:
+        case RescaleModes.from_factor:
+            widget_rescaling.rescaling_factor.show()
+
+        case RescaleModes.to_layer_voxel_size:
+            widget_rescaling.reference_layer.show()
+
+        case RescaleModes.to_model_voxel_size:
+            widget_rescaling.reference_model.show()
+
+        case RescaleModes.to_voxel_size:
+            widget_rescaling.out_voxel_size.show()
+
+        case RescaleModes.to_layer_shape:
+            widget_rescaling.reference_layer.show()
+
+        case RescaleModes.set_shape:
+            widget_rescaling.reference_shape.show()
+
+        case RescaleModes.set_voxel_size:
+            widget_rescaling.out_voxel_size.show()
+
+        case _:
+            raise ValueError(f"{mode} is not implemented yet.")
+
+
 @widget_rescaling.image.changed.connect
 def _on_rescaling_image_changed(image: Layer):
     image = return_value_if_widget(image)
-    widget_rescaling.out_voxel_size.value = image.scale
+
+    if image.data.ndim == 2 or (image.data.ndim == 3 and image.data.shape[0] == 1):
+        widget_rescaling.rescaling_factor[0].hide()
+        widget_rescaling.reference_shape[0].hide()
+        widget_rescaling.out_voxel_size[0].hide()
+    else:
+        widget_rescaling.rescaling_factor[0].show()
+        widget_rescaling.reference_shape[0].show()
+        widget_rescaling.out_voxel_size[0].show()
+
+    for i, (shape, scale) in enumerate(zip(image.data.shape, image.scale)):
+        widget_rescaling.out_voxel_size[i].value = scale
+        widget_rescaling.reference_shape[i].value = shape
+
+    if isinstance(image, Labels):
+        widget_rescaling.order.value = RescaleType.nearest
 
 
-@widget_rescaling.out_voxel_size.changed.connect
-def _on_voxel_size_changed(voxel_size: Tuple[float, float, float]):
-    voxel_size = return_value_if_widget(voxel_size)
-    rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, voxel_size)
-    widget_rescaling.rescaling_factor.value = rescaling_factor
+@widget_rescaling.order.changed.connect
+def _on_rescale_order_changed(order: RescaleType):
+    order = return_value_if_widget(order)
+    current_image = widget_rescaling.image.value
 
+    if current_image is None:
+        return None
 
-@widget_rescaling.reference_layer.changed.connect
-def _on_reference_layer_changed(reference_layer: Layer):
-    reference_layer = return_value_if_widget(reference_layer)
-    rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, reference_layer.scale)
-    widget_rescaling.rescaling_factor.value = rescaling_factor
-    widget_rescaling.out_voxel_size.value = reference_layer.scale
-
-
-@widget_rescaling.reference_model.changed.connect
-def _on_reference_model_changed(reference_model: str):
-    reference_model = return_value_if_widget(reference_model)
-    out_voxel_size = model_zoo.get_model_resolution(reference_model)
-    if out_voxel_size is None:
-        raise ValueError(f"Model {reference_model} does not have a resolution defined.")
-    rescaling_factor = compute_scaling_factor(widget_rescaling.image.value.scale, out_voxel_size)
-    widget_rescaling.rescaling_factor.value = rescaling_factor
-    widget_rescaling.out_voxel_size.value = out_voxel_size
+    if isinstance(current_image, Labels) and order != RescaleType.nearest:
+        napari_formatted_logging(
+            "Labels can only be rescaled with nearest interpolation", thread="Rescaling", level="warning"
+        )
+        widget_rescaling.order.value = RescaleType.nearest
 
 
 def _compute_slices(rectangle, crop_z, shape):
