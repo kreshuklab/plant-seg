@@ -17,3 +17,4 @@ dependencies:
   - python-elf
   - napari
   - python-graphviz
+  - bioimageio.core>=0.6.5

@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from plantseg.pipeline import gui_logger
 from plantseg.models.zoo import model_zoo
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.augment.transforms import get_test_augmentations
@@ -16,7 +17,8 @@ from plantseg.predictions.functional.utils import get_patch_halo, get_stride_sha
 
 def unet_predictions(
     raw: np.ndarray,
-    model_name: str,
+    model_name: Optional[str],
+    model_id: Optional[str],
     patch: Tuple[int, int, int] = (80, 160, 160),
     single_batch_mode: bool = True,
     device: str = 'cuda',
@@ -45,10 +47,17 @@ def unet_predictions(
     Returns:
         pmap (np.ndarray): The predicted boundaries as a 3D (Z, Y, X) or 4D (C, Z, Y, X) array, normalized between 0 and 1.
     """
-    if config_path is not None:
+    if config_path is not None:  # Safari mode for custom models outside zoos
+        gui_logger.info('Safari prediction: Running model from custom config path.')
         model, model_config, model_path = model_zoo.get_model_by_config_path(config_path, model_weights_path)
-    else:
+    elif model_id is not None:  # BioImage.IO zoo mode
+        gui_logger.info('BioImage.IO prediction: Running model from BioImage.IO model zoo.')
+        model, model_config, model_path = model_zoo.get_model_by_id(model_id)
+    elif model_name is not None:  # PlantSeg zoo mode
+        gui_logger.info('Zoo prediction: Running model from PlantSeg official zoo.')
         model, model_config, model_path = model_zoo.get_model_by_name(model_name, model_update=model_update)
+    else:
+        raise ValueError('Either `model_name` or `model_id` or `model_path` must be provided.')
     state = torch.load(model_path, map_location='cpu')
 
     if 'model_state_dict' in state:  # Model weights format may vary between versions
