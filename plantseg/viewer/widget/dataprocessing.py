@@ -24,6 +24,34 @@ from plantseg.viewer.widget.utils import (
 from plantseg.models.zoo import model_zoo
 
 
+class RescaleType(Enum):
+    NEAREST = (0, "Nearest")
+    LINEAR = (1, "Linear")
+    BILINEAR = (2, "Bilinear")
+
+    def __init__(self, int_val, str_val):
+        self.int_val = int_val
+        self.str_val = str_val
+
+    @classmethod
+    def to_choices(cls):
+        return [(mode.str_val, mode.int_val) for mode in cls]
+
+
+class RescaleModes(Enum):
+    FROM_FACTOR = "From factor"
+    TO_LAYER_VOXEL_SIZE = "To layer voxel size"
+    TO_LAYER_SHAPE = "To layer shape"
+    TO_MODEL_VOXEL_SIZE = "To model voxel size"
+    TO_VOXEL_SIZE = "To voxel size"
+    SET_SHAPE = "To shape"
+    SET_VOXEL_SIZE = "Set voxel size"
+
+    @classmethod
+    def to_choices(cls):
+        return [(mode.value, mode) for mode in RescaleModes]
+
+
 @magicgui(
     call_button="Run Gaussian Smoothing",
     image={
@@ -71,30 +99,6 @@ def widget_gaussian_smoothing(
             widget_cropping.image,
         ],
     )
-
-
-class RescaleType(Enum):
-    NEAREST = 0
-    LINEAR = 1
-    BILINEAR = 2
-
-    @classmethod
-    def to_choices(cls):
-        return [(mode.value, mode) for mode in RescaleType]
-
-
-class RescaleModes(Enum):
-    FROM_FACTOR = "From factor"
-    TO_LAYER_VOXEL_SIZE = "To layer voxel size"
-    TO_LAYER_SHAPE = "To layer shape"
-    TO_MODEL_VOXEL_SIZE = "To model voxel size"
-    TO_VOXEL_SIZE = "To voxel size"
-    SET_SHAPE = "To shape"
-    SET_VOXEL_SIZE = "Set voxel size"
-
-    @classmethod
-    def to_choices(cls):
-        return [(mode.value, mode) for mode in RescaleModes]
 
 
 @magicgui(
@@ -147,13 +151,12 @@ def widget_rescaling(
     reference_layer: Union[Layer, None] = None,
     reference_model: str = model_zoo.list_models()[0],
     reference_shape: Tuple[int, int, int] = (1, 1, 1),
-    order=RescaleType.LINEAR,
+    order: int = 0,
 ) -> Future[LayerDataTuple]:
     """Rescale an image or label layer to a new voxel size or shape."""
 
     if isinstance(image, Image):
         layer_type = "image"
-        order = order.value
 
     elif isinstance(image, Labels):
         layer_type = "labels"
@@ -200,8 +203,16 @@ def widget_rescaling(
             out_shape = reference_layer.data.shape
             assert len(out_shape) == 3, "Reference layer must be a 3D layer. Please submit an issue on GitHub."
             assert len(current_shape) == 3, "Current layer must be a 3D layer. Please submit an issue on GitHub."
-            rescaling_factor = tuple(o / c for o, c in zip(out_shape, current_shape))
-            out_voxel_size = tuple(i / s for i, s in zip(current_resolution, rescaling_factor))
+            rescaling_factor = (
+                out_shape[0] / current_shape[0],
+                out_shape[1] / current_shape[1],
+                out_shape[2] / current_shape[2],
+            )
+            out_voxel_size = (
+                current_resolution[0] / rescaling_factor[0],
+                current_resolution[1] / rescaling_factor[1],
+                current_resolution[2] / rescaling_factor[2],
+            )
 
         case RescaleModes.SET_SHAPE:
             current_shape = image.data.shape
@@ -213,7 +224,11 @@ def widget_rescaling(
                 out_shape[1] / current_shape[1],
                 out_shape[2] / current_shape[2],
             )
-            out_voxel_size = tuple(i / s for i, s in zip(current_resolution, rescaling_factor))
+            out_voxel_size = (
+                current_resolution[0] / rescaling_factor[0],
+                current_resolution[1] / rescaling_factor[1],
+                current_resolution[2] / rescaling_factor[2],
+            )
 
         # This is the only case where we don't need to rescale the image data
         # we just need to update the metadata, no need to add this to the DAG.
@@ -335,22 +350,22 @@ def _on_rescaling_image_changed(image: Layer):
         widget_rescaling.reference_shape[i].value = shape
 
     if isinstance(image, Labels):
-        widget_rescaling.order.value = RescaleType.NEAREST
+        widget_rescaling.order.value = RescaleType.NEAREST.int_val
 
 
 @widget_rescaling.order.changed.connect
-def _on_rescale_order_changed(order: RescaleType):
+def _on_rescale_order_changed(order):
     order = return_value_if_widget(order)
     current_image = widget_rescaling.image.value
 
     if current_image is None:
         return None
 
-    if isinstance(current_image, Labels) and order != RescaleType.NEAREST:
+    if isinstance(current_image, Labels) and order != RescaleType.NEAREST.int_val:
         napari_formatted_logging(
             "Labels can only be rescaled with nearest interpolation", thread="Rescaling", level="warning"
         )
-        widget_rescaling.order.value = RescaleType.NEAREST
+        widget_rescaling.order.value = RescaleType.NEAREST.int_val
 
 
 def _compute_slices(rectangle, crop_z, shape):
