@@ -9,9 +9,15 @@ permissions:
   contents: write
 jobs:
   deploy-book:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+    env:
+      DISPLAY: ':99.0'
     steps:
       - uses: actions/checkout@v4
+      - uses: tlambert03/setup-qt-libs@v1
+      - name: Build display
+        run: |
+            /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
       - name: Set PlantSeg version name
         run: echo "RELEASE_VERSION=DOC_RELESE" >> $GITHUB_ENV
       - name: Print PlantSeg version name
