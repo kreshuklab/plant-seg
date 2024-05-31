@@ -40,7 +40,7 @@ jobs:
             conda build -c conda-forge conda-recipe
       - name: Create PlantSeg env
         run: |
-            conda create -n plant-seg -c local -c conda-forge plantseg
+            conda create -n plant-seg -c local -c conda-forge pyqt plantseg
       - name: Activate PlantSeg env
         shell: bash -l {0}
         run: |
