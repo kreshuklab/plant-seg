@@ -5,7 +5,6 @@ on:
       - master
       - main
       - qy/migrate-to-mkdocs
-      - debug_ci
 permissions:
   contents: write
 jobs:
@@ -53,12 +52,14 @@ jobs:
         run: |
             conda activate plant-seg
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
-      - run: which python
       - uses: actions/cache@v4
         with:
           key: mkdocs-material-${{ env.cache_id }}
           path: .cache
           restore-keys: |
             mkdocs-material-
-      - run: pip install mkdocs-material mkdocstrings[python] mkdocs-autorefs markdown-exec
-      - run: mkdocs gh-deploy --force
+      - name: install mkdoks
+        shell: bash -l {0}
+        run: |
+          pip install mkdocs-material mkdocstrings[python] mkdocs-autorefs markdown-exec
+          mkdocs gh-deploy --force
