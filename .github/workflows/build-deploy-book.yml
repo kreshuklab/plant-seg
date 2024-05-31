@@ -5,6 +5,8 @@ on:
       - master
       - main
       - qy/migrate-to-mkdocs
+      - debug_ci
+
 permissions:
   contents: write
 jobs:
@@ -58,5 +60,11 @@ jobs:
           path: .cache
           restore-keys: |
             mkdocs-material-
-      - run: pip install mkdocs-material mkdocstrings[python] mkdocs-autorefs markdown-exec
-      - run: mkdocs gh-deploy --force
+      - name: install mkdoks
+        shell: bash -l {0}
+        run: |
+          conda activate plant-seg
+          pip install mkdocs-material mkdocstrings[python] mkdocs-autorefs markdown-exec
+          mkdocs gh-deploy --force
+          
+
