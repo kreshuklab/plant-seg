@@ -14,8 +14,8 @@ from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentat
 from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
 from plantseg.viewer.widget.predictions import widget_unet_predictions
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_dt_ws
-from plantseg.viewer.widget.utils import return_value_if_widget
 from plantseg.viewer.widget.utils import (
+    return_value_if_widget,
     start_threading_process,
     create_layer_name,
     layer_properties,
@@ -24,9 +24,40 @@ from plantseg.viewer.widget.utils import (
 from plantseg.models.zoo import model_zoo
 
 
+class RescaleType(Enum):
+    NEAREST = (0, "Nearest")
+    LINEAR = (1, "Linear")
+    BILINEAR = (2, "Bilinear")
+
+    def __init__(self, int_val, str_val):
+        self.int_val = int_val
+        self.str_val = str_val
+
+    @classmethod
+    def to_choices(cls):
+        return [(mode.str_val, mode.int_val) for mode in cls]
+
+
+class RescaleModes(Enum):
+    FROM_FACTOR = "From factor"
+    TO_LAYER_VOXEL_SIZE = "To layer voxel size"
+    TO_LAYER_SHAPE = "To layer shape"
+    TO_MODEL_VOXEL_SIZE = "To model voxel size"
+    TO_VOXEL_SIZE = "To voxel size"
+    SET_SHAPE = "To shape"
+    SET_VOXEL_SIZE = "Set voxel size"
+
+    @classmethod
+    def to_choices(cls):
+        return [(mode.value, mode) for mode in RescaleModes]
+
+
 @magicgui(
     call_button="Run Gaussian Smoothing",
-    image={"label": "Image", "tooltip": "Image layer to apply the smoothing."},
+    image={
+        "label": "Image",
+        "tooltip": "Image layer to apply the smoothing.",
+    },
     sigma={
         "label": "Sigma",
         "widget_type": "FloatSlider",
@@ -70,32 +101,15 @@ def widget_gaussian_smoothing(
     )
 
 
-class RescaleType(Enum):
-    nearest = 0
-    linear = 1
-    bilinear = 2
-
-
-class RescaleModes(Enum):
-    from_factor = "From factor"
-    to_layer_voxel_size = "To layer voxel size"
-    to_layer_shape = "To layer shape"
-    to_model_voxel_size = "To model voxel size"
-    to_voxel_size = "To voxel size"
-    set_shape = "To shape"
-    set_voxel_size = "Set voxel size"
-
-
-RESCALE_MODES = [mode.value for mode in RescaleModes]
-
-
 @magicgui(
     call_button="Run Image Rescaling",
-    image={"label": "Image or Label", "tooltip": "Layer to apply the rescaling."},
+    image={
+        "label": "Image or Label",
+        "tooltip": "Layer to apply the rescaling.",
+    },
     mode={
         "label": "Rescale mode",
-        "choices": RESCALE_MODES,
-        "tooltip": f"Select the mode to rescale the image or label.",
+        "choices": RescaleModes.to_choices(),
     },
     rescaling_factor={
         "label": "Rescaling factor",
@@ -117,30 +131,32 @@ RESCALE_MODES = [mode.value for mode in RescaleModes]
         "tooltip": "Rescale to same voxel size as selected model.",
         "choices": model_zoo.list_models(),
     },
-    reference_shape={"label": "Out shape", "tooltip": "Rescale to a manually selected shape."},
+    reference_shape={
+        "label": "Out shape",
+        "tooltip": "Rescale to a manually selected shape.",
+    },
     order={
         "label": "Interpolation order",
         "widget_type": "ComboBox",
-        "choices": RescaleType,
+        "choices": RescaleType.to_choices(),
         "tooltip": "0 for nearest neighbours (default for labels), 1 for linear, 2 for bilinear.",
     },
 )
 def widget_rescaling(
     viewer: Viewer,
     image: Layer,
-    mode: str = RESCALE_MODES[0],
+    mode: RescaleModes = RescaleModes.FROM_FACTOR,
     rescaling_factor: Tuple[float, float, float] = (1.0, 1.0, 1.0),
     out_voxel_size: Tuple[float, float, float] = (1.0, 1.0, 1.0),
     reference_layer: Union[Layer, None] = None,
     reference_model: str = model_zoo.list_models()[0],
     reference_shape: Tuple[int, int, int] = (1, 1, 1),
-    order=RescaleType.linear,
+    order: int = 0,
 ) -> Future[LayerDataTuple]:
     """Rescale an image or label layer to a new voxel size or shape."""
 
     if isinstance(image, Image):
         layer_type = "image"
-        order = order.value
 
     elif isinstance(image, Labels):
         layer_type = "labels"
@@ -153,48 +169,72 @@ def widget_rescaling(
 
     if image.data.ndim == 2:
         rescaling_factor = (1.0,) + rescaling_factor[1:]
+    assert (
+        len(rescaling_factor) == 3
+    ), "Rescaling factor must be a tuple of 3 elements. Please submit an issue on GitHub."
+    rescaling_factor = float(rescaling_factor[0]), float(rescaling_factor[1]), float(rescaling_factor[2])
 
     current_resolution = image.scale
-    mode = RescaleModes(mode)  # type: ignore
     match mode:
-        case RescaleModes.from_factor:
-            rescaling_factor = tuple(float(x) for x in rescaling_factor)  # type: ignore
+        case RescaleModes.FROM_FACTOR:
             out_voxel_size = compute_scaling_voxelsize(current_resolution, scaling_factor=rescaling_factor)
 
-        case RescaleModes.to_layer_voxel_size:
-            assert reference_layer is not None, "Please select a reference layer to rescale to."
+        case RescaleModes.TO_LAYER_VOXEL_SIZE:
+            if reference_layer is None:
+                raise ValueError("Please select a reference layer to rescale to.")
+
             out_voxel_size = reference_layer.scale
             rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
 
-        case RescaleModes.to_model_voxel_size:
-            out_voxel_size = model_zoo.get_model_resolution(reference_model)  # type: ignore
-            if out_voxel_size is None:
+        case RescaleModes.TO_MODEL_VOXEL_SIZE:
+            model_voxel_size = model_zoo.get_model_resolution(reference_model)
+            if model_voxel_size is None:
                 raise ValueError(f"Model {reference_model} does not have a resolution defined.")
 
+            rescaling_factor = compute_scaling_factor(current_resolution, model_voxel_size)
+
+        case RescaleModes.TO_VOXEL_SIZE:
             rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
 
-        case RescaleModes.to_voxel_size:
-            out_voxel_size = tuple(float(x) for x in out_voxel_size)  # type: ignore
-            rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
-
-        case RescaleModes.to_layer_shape:
-            assert reference_layer is not None, "Please select a reference layer to rescale to."
+        case RescaleModes.TO_LAYER_SHAPE:
+            if reference_layer is None:
+                raise ValueError("Please select a reference layer to rescale to.")
             current_shape = image.data.shape
             out_shape = reference_layer.data.shape
-            rescaling_factor = tuple(o / c for o, c in zip(out_shape, current_shape))  # type: ignore
-            out_voxel_size = tuple(i / s for i, s in zip(current_resolution, rescaling_factor))  # type: ignore
+            assert len(out_shape) == 3, "Reference layer must be a 3D layer. Please submit an issue on GitHub."
+            assert len(current_shape) == 3, "Current layer must be a 3D layer. Please submit an issue on GitHub."
+            rescaling_factor = (
+                out_shape[0] / current_shape[0],
+                out_shape[1] / current_shape[1],
+                out_shape[2] / current_shape[2],
+            )
+            out_voxel_size = (
+                current_resolution[0] / rescaling_factor[0],
+                current_resolution[1] / rescaling_factor[1],
+                current_resolution[2] / rescaling_factor[2],
+            )
 
-        case RescaleModes.set_shape:
+        case RescaleModes.SET_SHAPE:
             current_shape = image.data.shape
             out_shape = reference_shape
-            rescaling_factor = tuple(o / c for o, c in zip(out_shape, current_shape))  # type: ignore
-            out_voxel_size = tuple(i / s for i, s in zip(current_resolution, rescaling_factor))  # type: ignore
+            assert len(out_shape) == 3, "Reference layer must be a 3D layer. Please submit an issue on GitHub."
+            assert len(current_shape) == 3, "Current layer must be a 3D layer. Please submit an issue on GitHub."
+            rescaling_factor = (
+                out_shape[0] / current_shape[0],
+                out_shape[1] / current_shape[1],
+                out_shape[2] / current_shape[2],
+            )
+            out_voxel_size = (
+                current_resolution[0] / rescaling_factor[0],
+                current_resolution[1] / rescaling_factor[1],
+                current_resolution[2] / rescaling_factor[2],
+            )
 
         # This is the only case where we don't need to rescale the image data
         # we just need to update the metadata, no need to add this to the DAG.
         # Maybe this will change in the future implementation of the headless mode.
-        case RescaleModes.set_voxel_size:
-            out_voxel_size = tuple(float(x) for x in out_voxel_size)  # type: ignore
+        case RescaleModes.SET_VOXEL_SIZE:
+            out_voxel_size = float(out_voxel_size[0]), float(out_voxel_size[1]), float(out_voxel_size[2])
             image.scale = out_voxel_size
             result = Future()
             result.set_result(
@@ -252,7 +292,7 @@ widget_rescaling.reference_shape[2].max = 10000
 
 
 @widget_rescaling.mode.changed.connect
-def _rescale_update_visibility(mode: str):
+def _rescale_update_visibility(mode: RescaleModes):
     mode = return_value_if_widget(mode)
 
     all_widgets = [
@@ -266,27 +306,26 @@ def _rescale_update_visibility(mode: str):
     for widget in all_widgets:
         widget.hide()
 
-    mode = RescaleModes(mode)  # type: ignore
     match mode:
-        case RescaleModes.from_factor:
+        case RescaleModes.FROM_FACTOR:
             widget_rescaling.rescaling_factor.show()
 
-        case RescaleModes.to_layer_voxel_size:
+        case RescaleModes.TO_LAYER_VOXEL_SIZE:
             widget_rescaling.reference_layer.show()
 
-        case RescaleModes.to_model_voxel_size:
+        case RescaleModes.TO_MODEL_VOXEL_SIZE:
             widget_rescaling.reference_model.show()
 
-        case RescaleModes.to_voxel_size:
+        case RescaleModes.TO_VOXEL_SIZE:
             widget_rescaling.out_voxel_size.show()
 
-        case RescaleModes.to_layer_shape:
+        case RescaleModes.TO_LAYER_SHAPE:
             widget_rescaling.reference_layer.show()
 
-        case RescaleModes.set_shape:
+        case RescaleModes.SET_SHAPE:
             widget_rescaling.reference_shape.show()
 
-        case RescaleModes.set_voxel_size:
+        case RescaleModes.SET_VOXEL_SIZE:
             widget_rescaling.out_voxel_size.show()
 
         case _:
@@ -311,22 +350,22 @@ def _on_rescaling_image_changed(image: Layer):
         widget_rescaling.reference_shape[i].value = shape
 
     if isinstance(image, Labels):
-        widget_rescaling.order.value = RescaleType.nearest
+        widget_rescaling.order.value = RescaleType.NEAREST.int_val
 
 
 @widget_rescaling.order.changed.connect
-def _on_rescale_order_changed(order: RescaleType):
+def _on_rescale_order_changed(order):
     order = return_value_if_widget(order)
     current_image = widget_rescaling.image.value
 
     if current_image is None:
         return None
 
-    if isinstance(current_image, Labels) and order != RescaleType.nearest:
+    if isinstance(current_image, Labels) and order != RescaleType.NEAREST.int_val:
         napari_formatted_logging(
             "Labels can only be rescaled with nearest interpolation", thread="Rescaling", level="warning"
         )
-        widget_rescaling.order.value = RescaleType.nearest
+        widget_rescaling.order.value = RescaleType.NEAREST.int_val
 
 
 def _compute_slices(rectangle, crop_z, shape):
@@ -353,7 +392,10 @@ def _cropping(data, crop_slices):
 
 @magicgui(
     call_button="Run Cropping",
-    image={"label": "Image or Label", "tooltip": "Layer to apply the rescaling."},
+    image={
+        "label": "Image or Label",
+        "tooltip": "Layer to apply the rescaling.",
+    },
     crop_roi={
         "label": "Crop ROI",
         "tooltip": "This must be a shape layer with a rectangle XY overlaying the area to crop.",
@@ -461,7 +503,12 @@ def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
         "orientation": "horizontal",
         "choices": ["Mean", "Maximum", "Minimum"],
     },
-    weights={"label": "Mean weights", "widget_type": "FloatSlider", "max": 1.0, "min": 0.0},
+    weights={
+        "label": "Mean weights",
+        "widget_type": "FloatSlider",
+        "max": 1.0,
+        "min": 0.0,
+    },
 )
 def widget_add_layers(
     viewer: Viewer,
@@ -517,8 +564,14 @@ def _label_processing(segmentation, set_bg_to_0, relabel_segmentation):
 
 @magicgui(
     call_button="Run Label processing",
-    segmentation={"label": "Segmentation", "tooltip": "Segmentation can be any label layer."},
-    set_bg_to_0={"label": "Set background to 0", "tooltip": "Set the largest idx in the image to zero."},
+    segmentation={
+        "label": "Segmentation",
+        "tooltip": "Segmentation can be any label layer.",
+    },
+    set_bg_to_0={
+        "label": "Set background to 0",
+        "tooltip": "Set the largest idx in the image to zero.",
+    },
     relabel_segmentation={
         "label": "Relabel Segmentation",
         "tooltip": "Relabel segmentation contiguously to avoid labels clash.",
