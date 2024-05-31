@@ -82,7 +82,7 @@ def _format_widget(name="", images="", doc_str="", param_doc_str="") -> str:
         """
 
 
-def render_widget(widget, skip_name=False) -> str:
+def render_widget(widget, skip_name=True) -> str:
     widget_name = get_widget_title(widget) if not skip_name else ""
     widget_images = get_widget_images(widget)
     widget_doc = get_doc_string(widget)

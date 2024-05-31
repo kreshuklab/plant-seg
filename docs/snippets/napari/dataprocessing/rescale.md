@@ -1,4 +1,3 @@
-## Widget: Run Image Rescaling
 
 === "From factor"
     Using the `From factor` mode, the user can rescale the image by a multiplicate factor. 
@@ -26,9 +25,7 @@
 
     sys.path.append("docs/snippets")
     from napari_widgets_render import render_widget
-
-    sys.path.append("plantseg")
-    from viewer.widget.dataprocessing import widget_rescaling
+    from plantseg.viewer.widget.dataprocessing import widget_rescaling
 
     widget_rescaling.mode.value = "To layer voxel size"
 
@@ -45,8 +42,7 @@
     sys.path.append("docs/snippets")
     from napari_widgets_render import render_widget
 
-    sys.path.append("plantseg")
-    from viewer.widget.dataprocessing import widget_rescaling
+    from plantseg.viewer.widget.dataprocessing import widget_rescaling
 
     widget_rescaling.mode.value = "To layer shape"
 
@@ -63,9 +59,7 @@
 
     sys.path.append("docs/snippets")
     from napari_widgets_render import render_widget
-
-    sys.path.append("plantseg")
-    from viewer.widget.dataprocessing import widget_rescaling
+    from plantseg.viewer.widget.dataprocessing import widget_rescaling
 
     widget_rescaling.mode.value = "To model voxel size"
 
@@ -81,9 +75,7 @@
 
     sys.path.append("docs/snippets")
     from napari_widgets_render import render_widget
-
-    sys.path.append("plantseg")
-    from viewer.widget.dataprocessing import widget_rescaling
+    from plantseg.viewer.widget.dataprocessing import widget_rescaling
 
     widget_rescaling.mode.value = "To voxel size"
 
@@ -117,10 +109,8 @@
 
     sys.path.append("docs/snippets")
     from napari_widgets_render import render_widget
-
-    sys.path.append("plantseg")
-    from viewer.widget.dataprocessing import widget_rescaling
-
+    from plantseg.viewer.widget.dataprocessing import widget_rescaling
+s
     widget_rescaling.mode.value = "Set voxel size"
 
     html = render_widget(widget_rescaling, skip_name=True)
