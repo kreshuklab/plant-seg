@@ -168,3 +168,19 @@ class TestWidgetRescaling:
         expected_scale = np.array(old_layer.scale) / scaling_factor
 
         np.testing.assert_allclose(new_layer.scale, expected_scale, rtol=1e-5)
+
+    def test_rescaling_set_voxel_size(self, make_napari_viewer_proxy, sample_image):
+        viewer = make_napari_viewer_proxy()
+        viewer.add_image(**sample_image)
+
+        target_voxel_size = (2.0, 2.0, 2.0)
+        widget_rescaling(
+            viewer=viewer,
+            image=viewer.layers[sample_image['name']],
+            mode=RescaleModes.SET_VOXEL_SIZE,
+            out_voxel_size=target_voxel_size,
+            update_other_widgets=False,
+        )
+
+        old_layer = viewer.layers[sample_image['name']]
+        np.testing.assert_allclose(old_layer.scale, target_voxel_size, rtol=1e-5)

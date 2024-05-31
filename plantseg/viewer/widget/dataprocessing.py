@@ -1,6 +1,6 @@
 from concurrent.futures import Future
 from enum import Enum
-from typing import Tuple, Union
+from typing import Union
 
 import numpy as np
 from magicgui import magicgui
@@ -171,11 +171,11 @@ def widget_rescaling(
     viewer: napari.Viewer,
     image: Layer,
     mode: RescaleModes = RescaleModes.FROM_FACTOR,
-    rescaling_factor: Tuple[float, float, float] = (1.0, 1.0, 1.0),
-    out_voxel_size: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+    rescaling_factor: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    out_voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
     reference_layer: Union[Layer, None] = None,
     reference_model: str = model_zoo.list_models()[0],
-    reference_shape: Tuple[int, int, int] = (1, 1, 1),
+    reference_shape: tuple[int, int, int] = (1, 1, 1),
     order: int = 0,
     update_other_widgets: bool = True,
 ) -> Future[LayerDataTuple]:
@@ -261,7 +261,10 @@ def widget_rescaling(
         # Maybe this will change in the future implementation of the headless mode.
         case RescaleModes.SET_VOXEL_SIZE:
             out_voxel_size = float(out_voxel_size[0]), float(out_voxel_size[1]), float(out_voxel_size[2])
+            image.metadata["original_voxel_size"] = current_resolution
             image.scale = out_voxel_size
+
+            # The return type still has to be Future[LayerDataTuple], otherwise other modes fails in the tests.
             result = Future()
             result.set_result(
                 (
@@ -269,7 +272,7 @@ def widget_rescaling(
                     layer_properties(
                         name=image.name,
                         scale=out_voxel_size,
-                        metadata={**image.metadata, **{"original_voxel_size": current_resolution}},
+                        metadata={**image.metadata},
                     ),
                     layer_type,
                 )
