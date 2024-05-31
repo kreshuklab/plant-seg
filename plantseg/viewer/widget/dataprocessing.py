@@ -79,11 +79,16 @@ class RescaleModes(Enum):
         "max": 10.0,
         "min": 0.1,
     },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
 )
 def widget_gaussian_smoothing(
     viewer: napari.Viewer,
     image: Image,
     sigma: float = 1.0,
+    update_other_widgets: bool = True,
 ) -> Future[LayerDataTuple]:
     out_name = create_layer_name(image.name, WidgetName.SMOOTHING.layer_suffix)
     inputs_kwarg = {"image": image.data}
@@ -102,14 +107,18 @@ def widget_gaussian_smoothing(
         layer_type=layer_type,
         step_name=WidgetName.SMOOTHING.step_name,
         viewer=viewer,
-        widgets_to_update=[
-            widget_unet_predictions.image,
-            widget_agglomeration.image,
-            widget_lifted_multicut.image,
-            widget_dt_ws.image,
-            widget_rescaling.image,
-            widget_cropping.image,
-        ],
+        widgets_to_update=(
+            [
+                widget_unet_predictions.image,
+                widget_agglomeration.image,
+                widget_lifted_multicut.image,
+                widget_dt_ws.image,
+                widget_rescaling.image,
+                widget_cropping.image,
+            ]
+            if update_other_widgets
+            else None
+        ),
     )
 
 
@@ -153,6 +162,10 @@ def widget_gaussian_smoothing(
         "choices": RescaleType.to_choices(),
         "tooltip": "0 for nearest neighbours (default for labels), 1 for linear, 2 for bilinear.",
     },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
 )
 def widget_rescaling(
     viewer: napari.Viewer,
@@ -164,6 +177,7 @@ def widget_rescaling(
     reference_model: str = model_zoo.list_models()[0],
     reference_shape: Tuple[int, int, int] = (1, 1, 1),
     order: int = 0,
+    update_other_widgets: bool = True,
 ) -> Future[LayerDataTuple]:
 
     if isinstance(image, Image):
@@ -203,6 +217,7 @@ def widget_rescaling(
                 raise ValueError(f"Model {reference_model} does not have a resolution defined.")
 
             rescaling_factor = compute_scaling_factor(current_resolution, model_voxel_size)
+            out_voxel_size = model_voxel_size
 
         case RescaleModes.TO_VOXEL_SIZE:
             rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
@@ -282,14 +297,18 @@ def widget_rescaling(
         step_name=WidgetName.RESCALING.step_name,
         layer_type=layer_type,
         viewer=viewer,
-        widgets_to_update=[
-            widget_unet_predictions.image,
-            widget_agglomeration.image,
-            widget_lifted_multicut.image,
-            widget_dt_ws.image,
-            widget_cropping.image,
-            widget_gaussian_smoothing.image,
-        ],
+        widgets_to_update=(
+            [
+                widget_unet_predictions.image,
+                widget_agglomeration.image,
+                widget_lifted_multicut.image,
+                widget_dt_ws.image,
+                widget_cropping.image,
+                widget_gaussian_smoothing.image,
+            ]
+            if update_other_widgets
+            else None  # for unit tests there is no other widgets to update
+        ),
     )
 
 
@@ -425,12 +444,17 @@ def _cropping(data, crop_slices):
         "readout": False,
         "tracking": False,
     },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
 )
 def widget_cropping(
     viewer: napari.Viewer,
     image: Layer,
     crop_roi: Union[Shapes, None] = None,
     crop_z: tuple[int, int] = (0, 100),
+    update_other_widgets: bool = True,
 ) -> Future[LayerDataTuple]:
     if crop_roi is not None:
         assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
@@ -468,14 +492,18 @@ def widget_cropping(
         step_name=WidgetName.CROPPING.step_name,
         skip_dag=True,
         viewer=viewer,
-        widgets_to_update=[
-            widget_unet_predictions.image,
-            widget_agglomeration.image,
-            widget_lifted_multicut.image,
-            widget_dt_ws.image,
-            widget_rescaling.image,
-            widget_gaussian_smoothing.image,
-        ],
+        widgets_to_update=(
+            [
+                widget_unet_predictions.image,
+                widget_agglomeration.image,
+                widget_lifted_multicut.image,
+                widget_dt_ws.image,
+                widget_rescaling.image,
+                widget_gaussian_smoothing.image,
+            ]
+            if update_other_widgets
+            else None
+        ),
     )
 
 
@@ -522,6 +550,10 @@ def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
         "max": 1.0,
         "min": 0.0,
     },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
 )
 def widget_merge_layers(
     viewer: napari.Viewer,
@@ -529,6 +561,7 @@ def widget_merge_layers(
     image2: Image,
     operation: str = "Maximum",
     weights: float = 0.5,
+    update_other_widgets: bool = True,
 ) -> Future[LayerDataTuple]:
     out_name = create_layer_name(f"{image1.name}-{image2.name}", operation)
     inputs_names = (image1.name, image2.name)
@@ -547,12 +580,16 @@ def widget_merge_layers(
         layer_type=layer_type,
         step_name=WidgetName.MERGING.step_name,
         viewer=viewer,
-        widgets_to_update=[
-            widget_unet_predictions.image,
-            widget_agglomeration.image,
-            widget_lifted_multicut.image,
-            widget_dt_ws.image,
-        ],
+        widgets_to_update=(
+            [
+                widget_unet_predictions.image,
+                widget_agglomeration.image,
+                widget_lifted_multicut.image,
+                widget_dt_ws.image,
+            ]
+            if update_other_widgets
+            else None
+        ),
     )
 
 
