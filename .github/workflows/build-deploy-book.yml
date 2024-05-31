@@ -5,6 +5,7 @@ on:
       - master
       - main
       - qy/migrate-to-mkdocs
+      - debug_ci
 permissions:
   contents: write
 jobs:

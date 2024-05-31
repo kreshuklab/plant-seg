@@ -1,6 +1,7 @@
-from napari._qt.qt_resources import get_stylesheet
+# from napari._qt.qt_resources import get_stylesheet
 
 from PyQt5 import QtGui, QtCore, QtWidgets
+from napari._qt.qt_resources import get_stylesheet
 import base64
 
 css_style = """
