@@ -63,11 +63,8 @@ jobs:
       - name: install mkdoks
         shell: bash -l {0}
         run: |
-          which python
           conda activate plant-seg
-          which python
           pip install mkdocs-material mkdocstrings[python] mkdocs-autorefs markdown-exec
           mkdocs gh-deploy --force
-          which python
           
 
