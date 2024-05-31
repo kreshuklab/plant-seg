@@ -5,43 +5,47 @@ on: [push]
 jobs:
   build-linux:
     runs-on: ubuntu-latest
-
+    env:
+      DISPLAY: ':99.0'
     steps:
-    - uses: actions/checkout@v2
-    - name: Set PlantSeg version name
-      run: echo "RELEASE_VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
-    - name: Print PlantSeg version name
-      run: |
-        echo $RELEASE_VERSION
-    - uses: conda-incubator/setup-miniconda@v2
-      with:
-        auto-activate-base: true
-        activate-environment: ""
-        channels: local,conda-forge,defaults
-        channel-priority: false
-
-    - shell: bash -l {0}
-      run: |
-        conda info --envs
-    - name: Build PlantSeg
-      shell: bash -l {0}
-      run: |
+      - uses: actions/checkout@v4
+      - uses: tlambert03/setup-qt-libs@v1
+      - name: Build display
+        run: |
+          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+      - name: Set PlantSeg version name
+        run: echo "RELEASE_VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+      - name: Print PlantSeg version name
+        run: |
+          echo $RELEASE_VERSION
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: true
+          activate-environment: ''
+          channels: local,conda-forge,defaults
+          channel-priority: false
+      - shell: bash -l {0}
+        run: |
+          conda info --envs
+      - name: Build PlantSeg
+        shell: bash -l {0}
+        run: |
           conda install -q conda-build
           conda build -c conda-forge conda-recipe
-    - name: Create PlantSeg env
-      run: |
-          conda create -n plant-seg -c local -c conda-forge plantseg pytest
-    - name: Run pytest
-      shell: bash -l {0}
-      run: |
-        conda activate plant-seg
-        pytest
-        conda deactivate
-    - name: Deploy on conda
-      if: ${{ startsWith( github.ref, 'refs/tags/') && success() }}
-      env:
-        ANACONDA_SECRET: ${{ secrets.ANACONDA_TOKEN }}
-      shell: bash -l {0}
-      run: |
-        conda install -q anaconda-client
-        anaconda -t $ANACONDA_SECRET upload $CONDA/conda-bld/**/plantseg-*.tar.bz2
+      - name: Create PlantSeg env
+        run: |
+          conda create -n plant-seg -c local -c conda-forge pyqt plantseg pytest pytest-qt
+      - name: Run pytest
+        shell: bash -l {0}
+        run: |
+          conda activate plant-seg
+          pytest
+          conda deactivate
+      - name: Deploy on conda
+        if: ${{ startsWith( github.ref, 'refs/tags/') && success() }}
+        env:
+          ANACONDA_SECRET: ${{ secrets.ANACONDA_TOKEN }}
+        shell: bash -l {0}
+        run: |
+          conda install -q anaconda-client
+          anaconda -t $ANACONDA_SECRET upload $CONDA/conda-bld/**/plantseg-*.tar.bz2
