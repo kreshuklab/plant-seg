@@ -62,6 +62,9 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.snippets:
+      base_path: docs/snippets
+      check_paths: true
 
 nav:
   - Overview: 
@@ -85,7 +88,7 @@ nav:
 
   - Dataset and Training:
     - chapters/plantseg_models/index.md
-    - Custom Datasets: XXX
+    - Custom Datasets: chapters/plantseg_models/custom_datasets.md
     - Training: chapters/plantseg_models/training.md
 
   - Classic GUI:
@@ -107,6 +110,7 @@ nav:
 plugins: 
   - search
   - autorefs
+  - markdown-exec
   - mkdocstrings:
       handlers:
         python:

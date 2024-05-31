@@ -72,6 +72,7 @@ def widget_gaussian_smoothing(
     image: Image,
     sigma: float = 1.0,
 ) -> Future[LayerDataTuple]:
+    """Apply Gaussian smoothing to an image layer."""
     out_name = create_layer_name(image.name, "GaussianSmoothing")
     inputs_kwarg = {"image": image.data}
     step_kwargs = {"sigma": sigma}
@@ -152,6 +153,7 @@ def widget_rescaling(
     reference_shape: Tuple[int, int, int] = (1, 1, 1),
     order: int = 0,
 ) -> Future[LayerDataTuple]:
+    """Rescale an image or label layer to a new voxel size or shape."""
 
     if isinstance(image, Image):
         layer_type = "image"
