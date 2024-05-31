@@ -41,6 +41,7 @@ def widget_gaussian_smoothing(
     image: Image,
     sigma: float = 1.0,
 ) -> Future[LayerDataTuple]:
+    """Apply Gaussian smoothing to an image layer."""
     out_name = create_layer_name(image.name, "GaussianSmoothing")
     inputs_kwarg = {"image": image.data}
     step_kwargs = {"sigma": sigma}
@@ -91,7 +92,11 @@ RESCALE_MODES = [mode.value for mode in RescaleModes]
 @magicgui(
     call_button="Run Image Rescaling",
     image={"label": "Image or Label", "tooltip": "Layer to apply the rescaling."},
-    mode={"label": "Rescale mode", "choices": RESCALE_MODES},
+    mode={
+        "label": "Rescale mode",
+        "choices": RESCALE_MODES,
+        "tooltip": f"Select the mode to rescale the image or label.",
+    },
     rescaling_factor={
         "label": "Rescaling factor",
         "tooltip": "Define the scaling factor to use for resizing the input image.",
@@ -131,6 +136,7 @@ def widget_rescaling(
     reference_shape: Tuple[int, int, int] = (1, 1, 1),
     order=RescaleType.linear,
 ) -> Future[LayerDataTuple]:
+    """Rescale an image or label layer to a new voxel size or shape."""
 
     if isinstance(image, Image):
         layer_type = "image"
