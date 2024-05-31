@@ -45,7 +45,7 @@ def unet_predictions(
         handle_multichannel (bool, optional): If True, handles multi-channel output properly. Defaults to False.
 
     Returns:
-        np.ndarray: The predicted boundaries as a 3D (Z, Y, X) or 4D (C, Z, Y, X) array, normalized between 0 and 1.
+        pmap (np.ndarray): The predicted boundaries as a 3D (Z, Y, X) or 4D (C, Z, Y, X) array, normalized between 0 and 1.
     """
     if config_path is not None:  # Safari mode for custom models outside zoos
         gui_logger.info('Safari prediction: Running model from custom config path.')

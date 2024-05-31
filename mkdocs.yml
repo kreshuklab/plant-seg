@@ -44,7 +44,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/pyapp-kit/magicgui
+      link: https://github.com/kreshuklab/plant-seg
       name: PlantSeg on GitHub
 
 markdown_extensions:
@@ -62,34 +62,68 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.snippets:
+      base_path: docs/snippets
+      check_paths: true
 
 nav:
-  - Overview: index.md
+  - Overview: 
+    - index.md
+    
   - Getting Started:
     - chapters/getting_started/index.md
+    - Import/Export: chapters/getting_started/import_export.md
     - Installation: chapters/getting_started/installation.md
     - Contributing: chapters/getting_started/contributing.md
     - Troubleshooting: chapters/getting_started/troubleshooting.md
-  - Models and Data:
-    - chapters/plantseg_models/index.md
-    - Training: chapters/plantseg_models/training.md
-  - Usage:
+
+  - Napari GUI:
     - chapters/plantseg_interactive_napari/index.md
     - Data Processing: chapters/plantseg_interactive_napari/data_processing.md
     - Main Workflow: chapters/plantseg_interactive_napari/unet_gasp_workflow.md
-    - Training: chapters/plantseg_interactive_napari/unet_training.md
-    - Prediction: chapters/plantseg_interactive_napari/extra_pred.md
-    - Segmentation: chapters/plantseg_interactive_napari/extra_seg.md
+    - Extra Workflows: chapters/plantseg_interactive_napari/extra.md
+    - Proofreading: chapters/plantseg_interactive_napari/proofreading.md
     - Batch Processing: chapters/plantseg_interactive_napari/headless_batch_processing.md
+    - Training: chapters/plantseg_interactive_napari/unet_training.md
+
+  - Dataset and Training:
+    - chapters/plantseg_models/index.md
+    - Custom Datasets: chapters/plantseg_models/custom_datasets.md
+    - Training: chapters/plantseg_models/training.md
+
   - Classic GUI:
     - chapters/plantseg_classic_gui/index.md
     - Data Processing: chapters/plantseg_classic_gui/data_processing.md
     - Prediction: chapters/plantseg_classic_gui/cnn_predictions.md
     - Segmentation: chapters/plantseg_classic_gui/segmentation.md
+
   - Classic CLI:
     - chapters/plantseg_classic_cli/index.md
-  - Python API:
+
+  - API:
     - chapters/python_api/index.md
-    - Data Processing: chapters/python_api/data_processing.md
-    - Prediction: chapters/python_api/cnn_predictions.md
-    - Segmentation: chapters/python_api/segmentation.md
+    - plantseg.io: chapters/python_api/io.md
+    - plantseg.dataprocessing: chapters/python_api/data_processing.md
+    - plantseg.predictions: chapters/python_api/cnn_predictions.md
+    - plantseg.segmentation: chapters/python_api/segmentation.md
+
+plugins: 
+  - search
+  - autorefs
+  - markdown-exec
+  - mkdocstrings:
+      handlers:
+        python:
+          import:
+            - https://docs.python.org/3/objects.inv
+            - https://numpy.org/doc/stable/objects.inv
+          options:
+            docstring_style: google
+            show_source: true
+            show_signature_annotations: true
+            show_root_heading: true
+            show_root_full_path: true
+            show_bases: true
+            docstring_section_style: list
+
+

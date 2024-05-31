@@ -30,7 +30,16 @@ def scale_image_to_voxelsize(image: np.ndarray,
                              output_voxel_size: tuple[float, float, float],
                              order: int = 0) -> np.ndarray:
     """
-    scale an image from a given voxel size
+    Scale an image from a given voxel size to another voxel size.
+    
+    Args:
+        image (np.ndarray): Input image to scale
+        input_voxel_size (tuple[float, float, float]): Input voxel size
+        output_voxel_size (tuple[float, float, float]): Output voxel size
+        order (int): Interpolation order, must be 0 for segmentation and 1, 2 for images
+        
+    Returns:
+        scaled_image (np.ndarray): Scaled image as numpy array
     """
     factor = compute_scaling_factor(input_voxel_size, output_voxel_size)
     return image_rescale(image, factor, order=order)
@@ -38,7 +47,15 @@ def scale_image_to_voxelsize(image: np.ndarray,
 
 def image_rescale(image: np.ndarray, factor: tuple[float, float, float], order: int) -> np.ndarray:
     """
-    scale an image from a given scaling factor
+    Scale an image by a given factor in each dimension
+    
+    Args:
+        image (np.ndarray): Input image to scale
+        factor (tuple[float, float, float]): Scaling factor in each dimension
+        order (int): Interpolation order, must be 0 for segmentation and 1, 2 for images
+        
+    Returns:
+        scaled_image (np.ndarray): Scaled image as numpy array
     """
     if np.array_equal(factor, [1., 1., 1.]):
         return image
@@ -48,7 +65,14 @@ def image_rescale(image: np.ndarray, factor: tuple[float, float, float], order: 
 
 def image_median(image: np.ndarray, radius: int) -> np.ndarray:
     """
-    apply median smoothing on an image
+    Apply median smoothing on an image with a given radius.
+    
+    Args:
+        image (np.ndarray): Input image to apply median smoothing
+        radius (int): Radius of the median filter
+        
+    Returns:
+        median_image (np.ndarray): Median smoothed image as numpy array
     """
     if image.shape[0] == 1:
         shape = image.shape
@@ -60,7 +84,14 @@ def image_median(image: np.ndarray, radius: int) -> np.ndarray:
 
 def image_gaussian_smoothing(image: np.ndarray, sigma: float) -> np.ndarray:
     """
-    apply gaussian smoothing on an image
+    Apply gaussian smoothing on an image with a given sigma.
+    
+    Args:
+        image (np.ndarray): Input image to apply gaussian smoothing
+        sigma (float): Sigma value for gaussian smoothing
+        
+    Returns:
+        smoothed_image (np.ndarray): Gaussian smoothed image as numpy array
     """
     image = image.astype('float32')
     max_sigma = (np.array(image.shape) - 1) / 3
@@ -70,7 +101,14 @@ def image_gaussian_smoothing(image: np.ndarray, sigma: float) -> np.ndarray:
 
 def image_crop(image: np.ndarray, crop_str: str) -> np.ndarray:
     """
-    crop image from a crop string like [:, 10:30:, 10:20]
+    Crop an image from a crop string like [:, 10:30:, 10:20]
+    
+    Args:
+        image (np.ndarray): Input image to crop
+        crop_str (str): Crop string
+    
+    Returns:
+        cropped_image (np.ndarray): Cropped image as numpy array
     """
     crop_str = crop_str.replace('[', '').replace(']', '')
     slices = tuple((slice(*(int(i)
@@ -120,6 +158,12 @@ def fix_input_shape_to_CZYX(data: np.ndarray) -> np.ndarray:
 
 def normalize_01(data: np.ndarray) -> np.ndarray:
     """
-    normalize a numpy array between 0 and 1
+    Normalize a numpy array between 0 and 1 and converts it to float32.
+    
+    Args:
+        data (np.ndarray): Input numpy array
+    
+    Returns:
+        normalized_data (np.ndarray): Normalized numpy array
     """
     return (data - np.min(data)) / (np.max(data) - np.min(data) + 1e-12).astype('float32')

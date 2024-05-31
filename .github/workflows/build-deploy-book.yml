@@ -16,9 +16,30 @@ jobs:
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-      - uses: actions/setup-python@v5
+      # - uses: actions/setup-python@v5
+      #   with:
+      #    python-version: 3.x
+      - uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: 3.x
+          auto-activate-base: true
+          activate-environment: ""
+          channels: local,conda-forge,defaults
+          channel-priority: false
+      - shell: bash -l {0}
+        run: |
+          conda info --envs
+      - name: Build PlantSeg
+        shell: bash -l {0}
+        run: |
+            conda install -q conda-build
+            conda build -c conda-forge conda-recipe
+      - name: Create PlantSeg env
+        run: |
+            conda create -n plant-seg -c local -c conda-forge plantseg
+      - name: Activate PlantSeg env
+        shell: bash -l {0}
+        run: |
+            conda activate plant-seg
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
       - uses: actions/cache@v4
         with:
@@ -26,5 +47,5 @@ jobs:
           path: .cache
           restore-keys: |
             mkdocs-material-
-      - run: pip install mkdocs-material
+      - run: pip install mkdocs-material mkdocstrings[python] mkdocs-autorefs markdown-exec
       - run: mkdocs gh-deploy --force
