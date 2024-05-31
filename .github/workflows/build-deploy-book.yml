@@ -12,6 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set PlantSeg version name
+        run: echo "RELEASE_VERSION=DOC_RELESE" >> $GITHUB_ENV
+      - name: Print PlantSeg version name
+        run: |
+          echo $RELEASE_VERSION
       - name: Configure Git Credentials
         run: |
           git config user.name github-actions[bot]
