@@ -20,6 +20,7 @@ dependencies:
   - cuda-version=12.3
   - python-elf
   - pytest
+  - pytest-qt
   - pyqt
   - napari
   - python-graphviz
