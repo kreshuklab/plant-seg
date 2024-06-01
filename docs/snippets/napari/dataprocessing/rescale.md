@@ -1,6 +1,5 @@
-
 === "From factor"
-    Using the `From factor` mode, the user can rescale the image by a multiplicate factor. 
+    Using the `From factor` mode, the user can rescale the image by a multiplicate factor.
     For example, if the image has a shape `(10, 10, 10)` and the user wants to rescale it by a factor of `(2, 2, 2)`, the new size will be `(20, 20, 20)`.
 
     ```python exec="1" html="1"
@@ -8,9 +7,9 @@
 
     sys.path.append("docs/snippets")
     from napari_widgets_render import render_widget
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling
+    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
 
-    widget_rescaling.mode.value = "From factor"
+    widget_rescaling.mode.value = RescaleModes.FROM_FACTOR
 
     html = render_widget(widget_rescaling, skip_name=True)
     print(html)
@@ -25,9 +24,9 @@
 
     sys.path.append("docs/snippets")
     from napari_widgets_render import render_widget
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling
+    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
 
-    widget_rescaling.mode.value = "To layer voxel size"
+    widget_rescaling.mode.value = RescaleModes.TO_LAYER_VOXEL_SIZE
 
     html = render_widget(widget_rescaling, skip_name=True)
     print(html)
@@ -42,16 +41,16 @@
     sys.path.append("docs/snippets")
     from napari_widgets_render import render_widget
 
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling
+    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
 
-    widget_rescaling.mode.value = "To layer shape"
+    widget_rescaling.mode.value = RescaleModes.TO_LAYER_SHAPE
 
     html = render_widget(widget_rescaling, skip_name=True)
     print(html)
     ```
 
 === "To model voxel size"
-    Using the `To model voxel size` mode, the user can rescale the image to the voxel size of the model. 
+    Using the `To model voxel size` mode, the user can rescale the image to the voxel size of the model.
     For example, if the model has been trained with data at voxel size of `(0.1, 0.1, 0.1)um`, the user can rescale the image to this voxel size.
 
     ```python exec="1" html="1"
@@ -59,9 +58,9 @@
 
     sys.path.append("docs/snippets")
     from napari_widgets_render import render_widget
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling
+    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
 
-    widget_rescaling.mode.value = "To model voxel size"
+    widget_rescaling.mode.value = RescaleModes.TO_MODEL_VOXEL_SIZE
 
     html = render_widget(widget_rescaling, skip_name=True)
     print(html)
@@ -75,9 +74,9 @@
 
     sys.path.append("docs/snippets")
     from napari_widgets_render import render_widget
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling
+    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
 
-    widget_rescaling.mode.value = "To voxel size"
+    widget_rescaling.mode.value = RescaleModes.TO_VOXEL_SIZE
 
     html = render_widget(widget_rescaling, skip_name=True)
     print(html)
@@ -91,11 +90,9 @@
 
     sys.path.append("docs/snippets")
     from napari_widgets_render import render_widget
+    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
 
-    sys.path.append("plantseg")
-    from viewer.widget.dataprocessing import widget_rescaling
-
-    widget_rescaling.mode.value = "To shape"
+    widget_rescaling.mode.value = RescaleModes.TO_SHAPE
 
     html = render_widget(widget_rescaling, skip_name=True)
     print(html)
@@ -109,9 +106,9 @@
 
     sys.path.append("docs/snippets")
     from napari_widgets_render import render_widget
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling
-s
-    widget_rescaling.mode.value = "Set voxel size"
+    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
+
+    widget_rescaling.mode.value = RescaleModes.SET_VOXEL_SIZE
 
     html = render_widget(widget_rescaling, skip_name=True)
     print(html)

@@ -25,4 +25,9 @@ dependencies:
   - napari
   - python-graphviz
   - bioimageio.core>=0.6.5
+  - mkdocs-material
+  - mkdocstrings-python
+  - mkdocs-autorefs
+  - pip:
+      - markdown-exec
 # then `pip install -e .`

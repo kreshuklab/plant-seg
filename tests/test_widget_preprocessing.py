@@ -152,7 +152,7 @@ class TestWidgetRescaling:
         widget_rescaling(
             viewer=viewer,
             image=viewer.layers[sample_image['name']],
-            mode=RescaleModes.SET_SHAPE,
+            mode=RescaleModes.TO_SHAPE,
             reference_shape=target_shape,
             update_other_widgets=False,
         )
