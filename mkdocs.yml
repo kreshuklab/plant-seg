@@ -66,6 +66,30 @@ markdown_extensions:
       base_path: docs/snippets
       check_paths: true
 
+plugins:
+  - search
+  - autorefs
+  - markdown-exec
+  - mkdocstrings:
+      handlers:
+        python:
+          import:
+            - https://docs.python.org/3/objects.inv
+            - https://numpy.org/doc/stable/objects.inv
+          options:
+            docstring_style: google
+            show_source: true
+            show_signature_annotations: true
+            show_root_heading: true
+            show_root_full_path: true
+            show_bases: true
+            docstring_section_style: list
+  - git-revision-date-localized:
+      enable_creation_date: true
+  - git-committers:
+      repository: kreshuklab/plant-seg
+      branch: master
+
 nav:
   - Overview:
       - index.md
@@ -106,22 +130,3 @@ nav:
       - plantseg.dataprocessing: chapters/python_api/data_processing.md
       - plantseg.predictions: chapters/python_api/cnn_predictions.md
       - plantseg.segmentation: chapters/python_api/segmentation.md
-
-plugins:
-  - search
-  - autorefs
-  - markdown-exec
-  - mkdocstrings:
-      handlers:
-        python:
-          import:
-            - https://docs.python.org/3/objects.inv
-            - https://numpy.org/doc/stable/objects.inv
-          options:
-            docstring_style: google
-            show_source: true
-            show_signature_annotations: true
-            show_root_heading: true
-            show_root_full_path: true
-            show_bases: true
-            docstring_section_style: list
