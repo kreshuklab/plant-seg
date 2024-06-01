@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - qy/mkdocs-author
 
 permissions:
   contents: write
@@ -58,5 +59,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate plant-seg
-          pip install mkdocs-material mkdocstrings[python] mkdocs-autorefs markdown-exec
+          pip install mkdocs-material mkdocs-git-revision-date-localized-plugin mkdocs-git-committers-plugin-2 mkdocs-autorefs mkdocstrings[python] markdown-exec
           mkdocs gh-deploy --force
+        env:
+          MKDOCS_GIT_COMMITTERS_APIKEY: ${{ secrets.MKDOCS_GIT_COMMITTERS_APIKEY }}
