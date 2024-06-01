@@ -67,47 +67,47 @@ markdown_extensions:
       check_paths: true
 
 nav:
-  - Overview: 
-    - index.md
-    
+  - Overview:
+      - index.md
+
   - Getting Started:
-    - chapters/getting_started/index.md
-    - Import/Export: chapters/getting_started/import_export.md
-    - Installation: chapters/getting_started/installation.md
-    - Contributing: chapters/getting_started/contributing.md
-    - Troubleshooting: chapters/getting_started/troubleshooting.md
+      - chapters/getting_started/index.md
+      - Installation: chapters/getting_started/installation.md
+      - Contributing: chapters/getting_started/contributing.md
+      - Troubleshooting: chapters/getting_started/troubleshooting.md
 
   - Napari GUI:
-    - chapters/plantseg_interactive_napari/index.md
-    - Data Processing: chapters/plantseg_interactive_napari/data_processing.md
-    - Main Workflow: chapters/plantseg_interactive_napari/unet_gasp_workflow.md
-    - Extra Workflows: chapters/plantseg_interactive_napari/extra.md
-    - Proofreading: chapters/plantseg_interactive_napari/proofreading.md
-    - Batch Processing: chapters/plantseg_interactive_napari/headless_batch_processing.md
-    - Training: chapters/plantseg_interactive_napari/unet_training.md
+      - chapters/plantseg_interactive_napari/index.md
+      - Import/Export: chapters/plantseg_interactive_napari/import_export.md
+      - Data Processing: chapters/plantseg_interactive_napari/data_processing.md
+      - Main Workflow: chapters/plantseg_interactive_napari/unet_gasp_workflow.md
+      - Extra Workflows: chapters/plantseg_interactive_napari/extra.md
+      - Proofreading: chapters/plantseg_interactive_napari/proofreading.md
+      - Batch Processing: chapters/plantseg_interactive_napari/headless_batch_processing.md
+      - Training: chapters/plantseg_interactive_napari/unet_training.md
 
   - Dataset and Training:
-    - chapters/plantseg_models/index.md
-    - Custom Datasets: chapters/plantseg_models/custom_datasets.md
-    - Training: chapters/plantseg_models/training.md
+      - chapters/plantseg_models/index.md
+      - Custom Datasets: chapters/plantseg_models/custom_datasets.md
+      - Training: chapters/plantseg_models/training.md
 
   - Classic GUI:
-    - chapters/plantseg_classic_gui/index.md
-    - Data Processing: chapters/plantseg_classic_gui/data_processing.md
-    - Prediction: chapters/plantseg_classic_gui/cnn_predictions.md
-    - Segmentation: chapters/plantseg_classic_gui/segmentation.md
+      - chapters/plantseg_classic_gui/index.md
+      - Data Processing: chapters/plantseg_classic_gui/data_processing.md
+      - Prediction: chapters/plantseg_classic_gui/cnn_predictions.md
+      - Segmentation: chapters/plantseg_classic_gui/segmentation.md
 
   - Classic CLI:
-    - chapters/plantseg_classic_cli/index.md
+      - chapters/plantseg_classic_cli/index.md
 
   - API:
-    - chapters/python_api/index.md
-    - plantseg.io: chapters/python_api/io.md
-    - plantseg.dataprocessing: chapters/python_api/data_processing.md
-    - plantseg.predictions: chapters/python_api/cnn_predictions.md
-    - plantseg.segmentation: chapters/python_api/segmentation.md
+      - chapters/python_api/index.md
+      - plantseg.io: chapters/python_api/io.md
+      - plantseg.dataprocessing: chapters/python_api/data_processing.md
+      - plantseg.predictions: chapters/python_api/cnn_predictions.md
+      - plantseg.segmentation: chapters/python_api/segmentation.md
 
-plugins: 
+plugins:
   - search
   - autorefs
   - markdown-exec
@@ -125,5 +125,3 @@ plugins:
             show_root_full_path: true
             show_bases: true
             docstring_section_style: list
-
-

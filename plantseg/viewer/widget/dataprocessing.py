@@ -57,7 +57,7 @@ class RescaleModes(Enum):
     TO_LAYER_SHAPE = "To layer shape"
     TO_MODEL_VOXEL_SIZE = "To model voxel size"
     TO_VOXEL_SIZE = "To voxel size"
-    SET_SHAPE = "To shape"
+    TO_SHAPE = "To shape"
     SET_VOXEL_SIZE = "Set voxel size"
 
     @classmethod
@@ -242,7 +242,7 @@ def widget_rescaling(
                 current_resolution[2] / rescaling_factor[2],
             )
 
-        case RescaleModes.SET_SHAPE:
+        case RescaleModes.TO_SHAPE:
             current_shape = image.data.shape
             out_shape = reference_shape
             assert len(out_shape) == 3, "Reference layer must be a 3D layer. Please submit an issue on GitHub."
@@ -357,7 +357,7 @@ def _rescale_update_visibility(mode: RescaleModes):
         case RescaleModes.TO_LAYER_SHAPE:
             widget_rescaling.reference_layer.show()
 
-        case RescaleModes.SET_SHAPE:
+        case RescaleModes.TO_SHAPE:
             widget_rescaling.reference_shape.show()
 
         case RescaleModes.SET_VOXEL_SIZE:
