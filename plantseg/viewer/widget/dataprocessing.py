@@ -1,10 +1,11 @@
 from concurrent.futures import Future
 from enum import Enum
-from typing import Tuple, Union
+from typing import Union
 
 import numpy as np
 from magicgui import magicgui
-from napari import Viewer
+
+import napari  # Napari import is lazy.
 from napari.layers import Image, Labels, Shapes, Layer
 from napari.types import LayerDataTuple
 
@@ -22,6 +23,18 @@ from plantseg.viewer.widget.utils import (
     napari_formatted_logging,
 )
 from plantseg.models.zoo import model_zoo
+
+
+class WidgetName(Enum):
+    RESCALING = ("Rescaling", "Rescaled")
+    SMOOTHING = ("Gaussian Smoothing", "Smoothed")
+    CROPPING = ("Cropping", "Cropped")
+    MERGING = ("Layer Merging", None)  # Merged image has special layer names
+    CLEANING_LABEL = ("Label Cleaning", "Cleaned")
+
+    def __init__(self, step_name, layer_suffix):
+        self.step_name = step_name
+        self.layer_suffix = layer_suffix
 
 
 class RescaleType(Enum):
@@ -66,14 +79,19 @@ class RescaleModes(Enum):
         "max": 10.0,
         "min": 0.1,
     },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
 )
 def widget_gaussian_smoothing(
-    viewer: Viewer,
+    viewer: napari.Viewer,
     image: Image,
     sigma: float = 1.0,
+    update_other_widgets: bool = True,
 ) -> Future[LayerDataTuple]:
     """Apply Gaussian smoothing to an image layer."""
-    out_name = create_layer_name(image.name, "GaussianSmoothing")
+    out_name = create_layer_name(image.name, WidgetName.SMOOTHING.layer_suffix)
     inputs_kwarg = {"image": image.data}
     step_kwargs = {"sigma": sigma}
     inputs_names = (image.name,)
@@ -88,21 +106,25 @@ def widget_gaussian_smoothing(
         input_keys=inputs_names,
         layer_kwarg=layer_kwargs,
         layer_type=layer_type,
-        step_name="Gaussian Smoothing",
+        step_name=WidgetName.SMOOTHING.step_name,
         viewer=viewer,
-        widgets_to_update=[
-            widget_unet_predictions.image,
-            widget_agglomeration.image,
-            widget_lifted_multicut.image,
-            widget_dt_ws.image,
-            widget_rescaling.image,
-            widget_cropping.image,
-        ],
+        widgets_to_update=(
+            [
+                widget_unet_predictions.image,
+                widget_agglomeration.image,
+                widget_lifted_multicut.image,
+                widget_dt_ws.image,
+                widget_rescaling.image,
+                widget_cropping.image,
+            ]
+            if update_other_widgets
+            else None
+        ),
     )
 
 
 @magicgui(
-    call_button="Run Image Rescaling",
+    call_button=f"Run {WidgetName.RESCALING.step_name}",
     image={
         "label": "Image or Label",
         "tooltip": "Layer to apply the rescaling.",
@@ -141,17 +163,22 @@ def widget_gaussian_smoothing(
         "choices": RescaleType.to_choices(),
         "tooltip": "0 for nearest neighbours (default for labels), 1 for linear, 2 for bilinear.",
     },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
 )
 def widget_rescaling(
-    viewer: Viewer,
+    viewer: napari.Viewer,
     image: Layer,
     mode: RescaleModes = RescaleModes.FROM_FACTOR,
-    rescaling_factor: Tuple[float, float, float] = (1.0, 1.0, 1.0),
-    out_voxel_size: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+    rescaling_factor: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    out_voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
     reference_layer: Union[Layer, None] = None,
     reference_model: str = model_zoo.list_models()[0],
-    reference_shape: Tuple[int, int, int] = (1, 1, 1),
+    reference_shape: tuple[int, int, int] = (1, 1, 1),
     order: int = 0,
+    update_other_widgets: bool = True,
 ) -> Future[LayerDataTuple]:
     """Rescale an image or label layer to a new voxel size or shape."""
 
@@ -192,6 +219,7 @@ def widget_rescaling(
                 raise ValueError(f"Model {reference_model} does not have a resolution defined.")
 
             rescaling_factor = compute_scaling_factor(current_resolution, model_voxel_size)
+            out_voxel_size = model_voxel_size
 
         case RescaleModes.TO_VOXEL_SIZE:
             rescaling_factor = compute_scaling_factor(current_resolution, out_voxel_size)
@@ -235,7 +263,10 @@ def widget_rescaling(
         # Maybe this will change in the future implementation of the headless mode.
         case RescaleModes.SET_VOXEL_SIZE:
             out_voxel_size = float(out_voxel_size[0]), float(out_voxel_size[1]), float(out_voxel_size[2])
+            image.metadata["original_voxel_size"] = current_resolution
             image.scale = out_voxel_size
+
+            # The return type still has to be Future[LayerDataTuple], otherwise other modes fails in the tests.
             result = Future()
             result.set_result(
                 (
@@ -243,7 +274,7 @@ def widget_rescaling(
                     layer_properties(
                         name=image.name,
                         scale=out_voxel_size,
-                        metadata={**image.metadata, **{"original_voxel_size": current_resolution}},
+                        metadata={**image.metadata},
                     ),
                     layer_type,
                 )
@@ -253,7 +284,7 @@ def widget_rescaling(
         case _:
             raise ValueError(f"{mode} is not implemented yet.")
 
-    out_name = create_layer_name(image.name, "Rescaled")
+    out_name = create_layer_name(image.name, WidgetName.RESCALING.layer_suffix)
     inputs_kwarg = {"image": image.data}
     inputs_names = (image.name,)
     step_kwargs = {"factor": rescaling_factor, "order": order}
@@ -268,17 +299,21 @@ def widget_rescaling(
         out_name=out_name,
         input_keys=inputs_names,
         layer_kwarg=layer_kwargs,
-        step_name="Rescaling",
+        step_name=WidgetName.RESCALING.step_name,
         layer_type=layer_type,
         viewer=viewer,
-        widgets_to_update=[
-            widget_unet_predictions.image,
-            widget_agglomeration.image,
-            widget_lifted_multicut.image,
-            widget_dt_ws.image,
-            widget_cropping.image,
-            widget_gaussian_smoothing.image,
-        ],
+        widgets_to_update=(
+            [
+                widget_unet_predictions.image,
+                widget_agglomeration.image,
+                widget_lifted_multicut.image,
+                widget_dt_ws.image,
+                widget_cropping.image,
+                widget_gaussian_smoothing.image,
+            ]
+            if update_other_widgets
+            else None  # for unit tests there is no other widgets to update
+        ),
     )
 
 
@@ -363,7 +398,9 @@ def _on_rescale_order_changed(order):
 
     if isinstance(current_image, Labels) and order != RescaleType.NEAREST.int_val:
         napari_formatted_logging(
-            "Labels can only be rescaled with nearest interpolation", thread="Rescaling", level="warning"
+            "Labels can only be rescaled with nearest interpolation",
+            thread=WidgetName.RESCALING.step_name,
+            level="warning",
         )
         widget_rescaling.order.value = RescaleType.NEAREST.int_val
 
@@ -391,7 +428,7 @@ def _cropping(data, crop_slices):
 
 
 @magicgui(
-    call_button="Run Cropping",
+    call_button=f"Run {WidgetName.CROPPING.step_name}",
     image={
         "label": "Image or Label",
         "tooltip": "Layer to apply the rescaling.",
@@ -412,12 +449,17 @@ def _cropping(data, crop_slices):
         "readout": False,
         "tracking": False,
     },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
 )
 def widget_cropping(
-    viewer: Viewer,
+    viewer: napari.Viewer,
     image: Layer,
     crop_roi: Union[Shapes, None] = None,
     crop_z: tuple[int, int] = (0, 100),
+    update_other_widgets: bool = True,
 ) -> Future[LayerDataTuple]:
     if crop_roi is not None:
         assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
@@ -432,7 +474,7 @@ def widget_cropping(
     else:
         raise ValueError(f"{type(image)} cannot be cropped, please use Image layers or Labels layers")
 
-    out_name = create_layer_name(image.name, "cropped")
+    out_name = create_layer_name(image.name, WidgetName.CROPPING.layer_suffix)
     inputs_names = (image.name,)
     layer_kwargs = layer_properties(name=out_name, scale=image.scale, metadata=image.metadata)
 
@@ -452,17 +494,21 @@ def widget_cropping(
         input_keys=inputs_names,
         layer_kwarg=layer_kwargs,
         layer_type=layer_type,
-        step_name="Cropping",
+        step_name=WidgetName.CROPPING.step_name,
         skip_dag=True,
         viewer=viewer,
-        widgets_to_update=[
-            widget_unet_predictions.image,
-            widget_agglomeration.image,
-            widget_lifted_multicut.image,
-            widget_dt_ws.image,
-            widget_rescaling.image,
-            widget_gaussian_smoothing.image,
-        ],
+        widgets_to_update=(
+            [
+                widget_unet_predictions.image,
+                widget_agglomeration.image,
+                widget_lifted_multicut.image,
+                widget_dt_ws.image,
+                widget_rescaling.image,
+                widget_gaussian_smoothing.image,
+            ]
+            if update_other_widgets
+            else None
+        ),
     )
 
 
@@ -493,7 +539,7 @@ def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
 
 
 @magicgui(
-    call_button="Run Merge Layers",
+    call_button=f"Run {WidgetName.MERGING.step_name}",
     image1={"label": "Image 1"},
     image2={"label": "Image 2"},
     operation={
@@ -509,13 +555,18 @@ def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
         "max": 1.0,
         "min": 0.0,
     },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
 )
-def widget_add_layers(
-    viewer: Viewer,
+def widget_merge_layers(
+    viewer: napari.Viewer,
     image1: Image,
     image2: Image,
     operation: str = "Maximum",
     weights: float = 0.5,
+    update_other_widgets: bool = True,
 ) -> Future[LayerDataTuple]:
     out_name = create_layer_name(f"{image1.name}-{image2.name}", operation)
     inputs_names = (image1.name, image2.name)
@@ -532,24 +583,28 @@ def widget_add_layers(
         input_keys=inputs_names,
         layer_kwarg=layer_kwargs,
         layer_type=layer_type,
-        step_name="Merge Layers",
+        step_name=WidgetName.MERGING.step_name,
         viewer=viewer,
-        widgets_to_update=[
-            widget_unet_predictions.image,
-            widget_agglomeration.image,
-            widget_lifted_multicut.image,
-            widget_dt_ws.image,
-        ],
+        widgets_to_update=(
+            [
+                widget_unet_predictions.image,
+                widget_agglomeration.image,
+                widget_lifted_multicut.image,
+                widget_dt_ws.image,
+            ]
+            if update_other_widgets
+            else None
+        ),
     )
 
 
-@widget_add_layers.operation.changed.connect
+@widget_merge_layers.operation.changed.connect
 def _on_operation_changed(operation: str):
     operation = return_value_if_widget(operation)
     if operation == "Mean":
-        widget_add_layers.weights.show()
+        widget_merge_layers.weights.show()
     else:
-        widget_add_layers.weights.hide()
+        widget_merge_layers.weights.hide()
 
 
 def _label_processing(segmentation, set_bg_to_0, relabel_segmentation):
@@ -563,7 +618,7 @@ def _label_processing(segmentation, set_bg_to_0, relabel_segmentation):
 
 
 @magicgui(
-    call_button="Run Label processing",
+    call_button=f"Run {WidgetName.CLEANING_LABEL.step_name}",
     segmentation={
         "label": "Segmentation",
         "tooltip": "Segmentation can be any label layer.",
@@ -585,7 +640,7 @@ def widget_label_processing(
     if relabel_segmentation and "bboxes" in segmentation.metadata.keys():
         del segmentation.metadata["bboxes"]
 
-    out_name = create_layer_name(segmentation.name, "Processed")
+    out_name = create_layer_name(segmentation.name, WidgetName.CLEANING_LABEL.layer_suffix)
     inputs_kwarg = {"segmentation": segmentation.data}
     inputs_names = (segmentation.name,)
     layer_kwargs = layer_properties(name=out_name, scale=segmentation.scale, metadata=segmentation.metadata)
@@ -600,5 +655,5 @@ def widget_label_processing(
         input_keys=inputs_names,
         layer_kwarg=layer_kwargs,
         layer_type=layer_type,
-        step_name="Label Processing",
+        step_name=WidgetName.CLEANING_LABEL.step_name,
     )

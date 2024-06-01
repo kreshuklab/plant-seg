@@ -43,8 +43,8 @@ def start_threading_process(
     layer_type: str = "image",
     step_name: str = "",
     skip_dag: bool = False,
-    viewer: Viewer = None,
-    widgets_to_update: list = None,
+    viewer: Optional[Viewer] = None,
+    widgets_to_update: Optional[list] = None,
 ) -> Future:
     runtime_kwargs.update(statics_kwargs)
     thread_func = thread_worker(partial(func, **runtime_kwargs))
