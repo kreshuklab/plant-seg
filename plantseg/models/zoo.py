@@ -487,5 +487,9 @@ class ModelZoo:
         model, _, _ = self.get_model_by_name(model_name)
         return self.compute_3D_halo_for_pytorch3dunet(model)
 
+    def compute_3D_halo_for_bioimageio_models(self, model_id: str) -> tuple[int, int, int]:
+        model, _, _ = self.get_model_by_id(model_id)
+        return self.compute_3D_halo_for_pytorch3dunet(model)
+
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)

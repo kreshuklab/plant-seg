@@ -31,6 +31,7 @@ PREDICTION_MODES = (PREDICTION_MODE_P, PREDICTION_MODE_B)  # PREDICTION_MODES wi
 
 BIOIMAGEIO_FILTER = [("PlantSeg Only", True), ("All", False)]
 SINGLE_PATCH_MODE = [("Auto", False), ("One (lower VRAM usage)", True)]
+AUTO_REFRESH_HALO = [("Enable", True), ("Disable", False)]
 
 def unet_predictions_wrapper(raw, device, **kwargs):
     """
@@ -78,6 +79,11 @@ def unet_predictions_wrapper(raw, device, **kwargs):
                       'tooltip': 'Patch size use to processed the data.'},
           patch_halo={'label': 'Patch halo',
                       'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
+          recommend_halo={'label': 'Recommend halo',
+                        'tooltip': 'Refresh the halo based on the selected model.',
+                        'widget_type': 'RadioButtons',
+                        'orientation': 'horizontal',
+                        'choices': AUTO_REFRESH_HALO},
           single_patch={'label': 'Batch size',
                         'tooltip': 'Single patch = batch size 1 (lower GPU memory usage);\nFind Batch Size = find the biggest batch size.',
                         'widget_type': 'RadioButtons',
@@ -97,6 +103,7 @@ def widget_unet_predictions(viewer: Viewer,
                             output_type: str = ALL,
                             patch_size: tuple[int, int, int] = (80, 170, 170),
                             patch_halo: tuple[int, int, int] = model_zoo.compute_3D_halo_for_zoo_models(model_zoo.list_models()[0]),
+                            recommend_halo: bool = False,
                             single_patch: bool = False,
                             device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
     if mode == PREDICTION_MODE_P:
@@ -140,6 +147,24 @@ def widget_unet_predictions(viewer: Viewer,
                                     )
 
 
+def update_halo():
+    if widget_unet_predictions.recommend_halo.value:
+        napari_formatted_logging('Refreshing halo for the selected model; this might take a while...', thread='UNet Predictions', level='info')
+        if widget_unet_predictions.mode.value == PREDICTION_MODE_P:
+            widget_unet_predictions.patch_halo.value = model_zoo.compute_3D_halo_for_zoo_models(widget_unet_predictions.model_name.value)
+        elif widget_unet_predictions.mode.value == PREDICTION_MODE_B:
+            widget_unet_predictions.patch_halo.value = model_zoo.compute_3D_halo_for_bioimageio_models(widget_unet_predictions.model_id.value)
+        else:
+            raise NotImplementedError(f'Automatic halo not implemented for {widget_unet_predictions.mode.value} mode.')
+    else:
+        napari_formatted_logging('User selected another model but disabled halo recommendation.', thread='UNet Predictions', level='info')
+
+
+@widget_unet_predictions.recommend_halo.changed.connect
+def _on_widget_unet_predictions_refresh_halo_changed():
+    update_halo()
+
+
 @widget_unet_predictions.mode.changed.connect
 def _on_widget_unet_predictions_mode_change(mode: str):
     widgets_p = [
@@ -164,6 +189,7 @@ def _on_widget_unet_predictions_mode_change(mode: str):
             widget.show()
     else:
         raise NotImplementedError(f'Mode {mode} not implemented yet.')
+    update_halo()
 
 
 @widget_unet_predictions.plantseg_filter.changed.connect
@@ -210,7 +236,12 @@ def _on_model_name_changed(model_name: str):
     if description is None:
         description = 'No description available for this model.'
     widget_unet_predictions.model_name.tooltip = f'Select a pretrained model. Current model description: {description}'
-    widget_unet_predictions.patch_halo.value = model_zoo.compute_3D_halo_for_zoo_models(model_name)
+    update_halo()
+
+
+@widget_unet_predictions.model_id.changed.connect
+def _on_model_id_changed():
+    update_halo()
 
 
 def _compute_multiple_predictions(image, patch_size, patch_halo, device, use_custom_models=True):
