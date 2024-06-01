@@ -79,7 +79,8 @@ def unet_predictions_wrapper(raw, device, **kwargs):
           patch_size={'label': 'Patch size',
                       'tooltip': 'Patch size use to processed the data.'},
           patch_halo={'label': 'Patch halo',
-                      'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'},
+                      'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'
+                                 'The value is for one side of a given dimension.',},
           recommend_halo={'label': 'Recommend halo',
                         'tooltip': 'Refresh the halo based on the selected model.',
                         'widget_type': 'RadioButtons',
