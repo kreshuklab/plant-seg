@@ -96,7 +96,7 @@ def widget_unet_predictions(viewer: Viewer,
                             modality: str = ALL,
                             output_type: str = ALL,
                             patch_size: tuple[int, int, int] = (80, 170, 170),
-                            patch_halo: tuple[int, int, int] = (8, 16, 16),
+                            patch_halo: tuple[int, int, int] = model_zoo.compute_3D_halo_for_zoo_models(model_zoo.list_models()[0]),
                             single_patch: bool = False,
                             device: str = ALL_DEVICES[0], ) -> Future[LayerDataTuple]:
     if mode == PREDICTION_MODE_P:
@@ -210,6 +210,7 @@ def _on_model_name_changed(model_name: str):
     if description is None:
         description = 'No description available for this model.'
     widget_unet_predictions.model_name.tooltip = f'Select a pretrained model. Current model description: {description}'
+    widget_unet_predictions.patch_halo.value = model_zoo.compute_3D_halo_for_zoo_models(model_name)
 
 
 def _compute_multiple_predictions(image, patch_size, patch_halo, device, use_custom_models=True):

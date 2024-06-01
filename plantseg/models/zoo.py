@@ -15,8 +15,8 @@ from bioimageio.spec.model.v0_4 import ModelDescr as ModelDescr_v0_4
 from bioimageio.spec.model.v0_5 import ModelDescr as ModelDescr_v0_5
 from bioimageio.spec.utils import download
 
-from torch.nn import MaxPool3d, Conv3d, Module
-from plantseg.training.model import InterpolateUpsampling
+from torch.nn import MaxPool3d, MaxPool2d, Conv3d, Conv2d, Module
+from plantseg.training.model import InterpolateUpsampling, AbstractUNet, UNet2D, UNet3D
 
 from plantseg.utils import get_class, load_config, save_config, download_files
 from plantseg.models import zoo_logger
@@ -463,15 +463,29 @@ class ModelZoo:
         conv_contribution = []
 
         for mod in module_list:
-            if isinstance(mod, MaxPool3d):
+            if isinstance(mod, MaxPool3d) or isinstance(mod, MaxPool2d):
                 level += 1
             elif isinstance(mod, InterpolateUpsampling):
                 level -= 1
-            elif isinstance(mod, Conv3d):
+            elif isinstance(mod, Conv3d) or isinstance(mod, Conv2d):
                 conv_contribution.append(2**level * (mod.kernel_size[0] // 2))
 
         halo = sum(conv_contribution)
         return halo
+
+    def compute_3D_halo_for_pytorch3dunet(self, module: AbstractUNet) -> tuple[int, int, int]:
+        if isinstance(module, UNet3D):
+            halo = self.compute_halo(module)
+            return halo, halo, halo
+        elif isinstance(module, UNet2D):
+            halo = self.compute_halo(module)
+            return 1, halo, halo
+        else:
+            raise ValueError(f"Unsupported model type: {type(module).__name__}")
+
+    def compute_3D_halo_for_zoo_models(self, model_name: str) -> tuple[int, int, int]:
+        model, _, _ = self.get_model_by_name(model_name)
+        return self.compute_3D_halo_for_pytorch3dunet(model)
 
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)
