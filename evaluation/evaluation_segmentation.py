@@ -29,7 +29,7 @@ def load_config():
     parser.add_argument('--config', type=str, help='Path to the YAML config file', required=True)
     args = parser.parse_args()
 
-    config = ./(open(args.config, 'r'), yaml.SafeLoader)
+    config = yaml.load(open(args.config, 'r'), yaml.SafeLoader)
     return config
 
 
