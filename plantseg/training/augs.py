@@ -259,7 +259,7 @@ class AbstractLabelToBoundary:
         :param ignore_index: label to be ignored in the output, i.e. after computing the boundary the label ignore_index
             will be restored where is was in the patch originally
         :param aggregate_affinities: aggregate affinities with the same offset across Z,Y,X axes
-        :param append_label: if True append the orignal ground truth labels to the last channel
+        :param append_label: if True append the original ground truth labels to the last channel
         :param blur: Gaussian blur the boundaries
         :param sigma: standard deviation for Gaussian kernel
         """

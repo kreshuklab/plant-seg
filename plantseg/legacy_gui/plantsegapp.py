@@ -454,7 +454,7 @@ class PlantSegApp:
         RemovePopup(self.restart_program, self.font)
 
     def close(self):
-        """Thi function let the user decide if saving  the current config"""
+        """Let the user decide to save the current config"""
 
         def close_action():
             """simply close the app"""

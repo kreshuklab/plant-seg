@@ -69,7 +69,7 @@ def find_potential_under_seg(nuclei_counts: np.ndarray,
     returns for each cell idx a dict containing the overlap profile between said cell and the nuclei
     """
     nuclei_counts_mask = get_quantile_mask(nuclei_counts, quantiles_clip)
-    cell_assigment = {}
+    cell_assignment = {}
     for idx in range(cell_counts.shape[0]):
         n_idx = np.nonzero(intersection_counts[idx])[0]
         r_intersection = [intersection_counts[idx, _n_idx] / nuclei_counts[_n_idx] for _n_idx in n_idx]
@@ -82,11 +82,11 @@ def find_potential_under_seg(nuclei_counts: np.ndarray,
         is_under_seg = True if len(under_seg_n_idx) > 1 else False
 
         if is_under_seg:
-            cell_assigment[idx] = {'n_idx': n_idx,
+            cell_assignment[idx] = {'n_idx': n_idx,
                                    'under_seg_idx': under_seg_n_idx,
                                    'is_under_seg': is_under_seg,
                                    'r_intersection': r_intersection}
-    return cell_assigment
+    return cell_assignment
 
 
 def find_potential_over_seg(nuclei_counts: np.ndarray,
@@ -96,7 +96,7 @@ def find_potential_over_seg(nuclei_counts: np.ndarray,
     returns for each nucleus idx a dict containing the overlap profile between said nucleus and the segmentation
     """
 
-    nuclei_assigment = {}
+    nuclei_assignment = {}
     for idx in range(nuclei_counts.shape[0]):
         c_idx = np.nonzero(intersection_counts[:, idx])[0]
 
@@ -109,11 +109,11 @@ def find_potential_over_seg(nuclei_counts: np.ndarray,
 
         is_over_seg = True if len(over_seg_c_idx) > 1 else False
         if is_over_seg:
-            nuclei_assigment[idx] = {'c_idx': c_idx,
+            nuclei_assignment[idx] = {'c_idx': c_idx,
                                      'over_seg_idx': over_seg_c_idx,
                                      'is_over_seg': is_over_seg,
                                      'r_intersection': r_intersection}
-    return nuclei_assigment
+    return nuclei_assignment
 
 
 def split_from_seeds(segmentation: np.ndarray,

@@ -1,9 +1,9 @@
-SUPPORTED_ALGORITMS = ["GASP", "MutexWS", "DtWatershed", "MultiCut", "LiftedMulticut", "SimpleITK"]
+SUPPORTED_ALGORITHMS = ["GASP", "MutexWS", "DtWatershed", "MultiCut", "LiftedMulticut", "SimpleITK"]
 
 
 def configure_segmentation_step(predictions_paths, config):
     algorithm_name = config["name"]
-    assert algorithm_name in SUPPORTED_ALGORITMS, f"Unsupported algorithm name {algorithm_name}"
+    assert algorithm_name in SUPPORTED_ALGORITHMS, f"Unsupported algorithm name {algorithm_name}"
 
     # create a copy of the config to prevent changing the original
     config = config.copy()

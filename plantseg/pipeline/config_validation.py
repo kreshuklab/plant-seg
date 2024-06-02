@@ -8,7 +8,7 @@ import yaml
 from plantseg.pipeline import gui_logger
 from plantseg import PATH_RAW2SEG_TEMPLATE
 from plantseg.predictions.functional.utils import get_stride_shape
-from plantseg.segmentation.utils import SUPPORTED_ALGORITMS
+from plantseg.segmentation.utils import SUPPORTED_ALGORITHMS
 from plantseg.models.zoo import model_zoo
 
 
@@ -111,8 +111,8 @@ def check_cuda(key, value, fallback):
 
 
 def is_segmentation(key, value, fallback):
-    if value not in SUPPORTED_ALGORITMS:
-        _error_message(f"value must be one of {SUPPORTED_ALGORITMS}", key, value, fallback)
+    if value not in SUPPORTED_ALGORITHMS:
+        _error_message(f"value must be one of {SUPPORTED_ALGORITHMS}", key, value, fallback)
         return fallback
     else:
         return value

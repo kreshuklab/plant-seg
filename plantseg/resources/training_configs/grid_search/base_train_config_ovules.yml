@@ -63,7 +63,7 @@ loaders:
   num_workers: 8
   # path to the raw data within the H5
   raw_internal_path: /raw
-  # path to the the label data withtin the H5
+  # path to the the label data within the H5
   label_internal_path: /label
   # configuration of the train loader
   train:
@@ -148,7 +148,7 @@ loaders:
         - name: StandardLabelToBoundary
           # append original ground truth labels to the last channel (to be able to compute the eval metric)
           append_label: true
-          # guassian blur and threshold the boundary map in order to help with overfitting
+          # gaussian blur and threshold the boundary map in order to help with overfitting
           blur: true
           # stddev of Gaussian kernel
           sigma: 1.0

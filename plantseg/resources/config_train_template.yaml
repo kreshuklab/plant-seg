@@ -41,7 +41,7 @@ loaders:
   num_workers: 8
   # path to the raw data within the H5
   raw_internal_path: raw
-  # path to the label data withtin the H5
+  # path to the label data within the H5
   label_internal_path: label
   # configuration of the train loader
   train:

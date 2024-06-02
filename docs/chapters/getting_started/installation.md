@@ -7,7 +7,7 @@
 
 ## Install Mamba
 The easiest way to install PlantSeg is by using the [conda (Anaconda)](https://www.anaconda.com/) or 
-[mamba (Miniforge)](https://mamba.readthedocs.io/en/latest/index.html) package manager. We recomend using `mamba` because it is faster and usually more consistent than `conda`.
+[mamba (Miniforge)](https://mamba.readthedocs.io/en/latest/index.html) package manager. We recommend using `mamba` because it is faster and usually more consistent than `conda`.
 
 === "Linux"
 

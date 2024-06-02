@@ -240,7 +240,7 @@ def _on_stack_layout_changed(stack_layout: str):
         widget_open_file.m_slicing.hide()
 
 
-# For some reson after the widget is called the keys are deleted, so we need to reassign them after the widget is called
+# For some reason after the widget is called the keys are deleted, so we need to reassign them after the widget is called
 @widget_open_file.called.connect
 def _on_done(*args):
     _on_path_changed(widget_open_file.path.value)

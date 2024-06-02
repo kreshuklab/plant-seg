@@ -71,7 +71,7 @@ def embeddings_to_affinities(embeddings: torch.Tensor, offsets: list, delta: flo
     # before applying the shift
     offsets_ = invert_offsets(offsets)
     shifted = torch.cat([shift_tensor(embeddings, off).unsqueeze(1) for off in offsets_], dim=1)
-    # substract the embeddings from the shifted embeddings, take the norm and
+    # subtract the embeddings from the shifted embeddings, take the norm and
     # transform to affinities based on the delta distance
     affs = (2 * delta - torch.norm(embeddings.unsqueeze(1) - shifted, dim=2)) / (2 * delta)
     affs = torch.clamp(affs, min=0) ** 2

@@ -334,7 +334,7 @@ def _compute_iterative_predictions(pmap, model_name, num_iterations, sigma, patc
                       'tooltip': f'Select a pretrained model. {model_zoo.list_models()[0]}',
                       'choices': model_zoo.list_models()},
           num_iterations={'label': 'Num. of iterations',
-                          'tooltip': 'Nuber of iterations the model will run.'},
+                          'tooltip': 'Number of iterations the model will run.'},
           sigma={'label': 'Sigma',
                  'widget_type': 'FloatSlider',
                  'tooltip': 'Define the size of the gaussian smoothing kernel. '

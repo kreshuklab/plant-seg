@@ -441,7 +441,7 @@ def _cropping(data, crop_slices):
     # nice. maybe we should use a custom widget for this.
     crop_z={
         "label": "Z slices",
-        "tooltip": "Numer of z slices to take next to the current selection.",
+        "tooltip": "Number of z slices to take next to the current selection.",
         "widget_type": "FloatRangeSlider",
         "max": 100,
         "min": 0,
