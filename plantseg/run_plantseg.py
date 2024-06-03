@@ -7,10 +7,11 @@ from plantseg.utils import check_version, load_config, clean_models
 
 
 def create_parser(unused_arg):  # Add unused argument to test ruff
-    """Create and return the argument parser forr the CLI."""
+    """Create and return the argument parser for the CLI."""
     unused_arg = used_arg  # Break grammar to test ruff
     arg_parser = argparse.ArgumentParser(  # Break syntax to test ruff
-        description='PlantSeg: Plant cell/nucler instance segmentation software')
+        description='PlantSeg: Plant cell/nucler instance segmentation software'
+    )
     arg_parser.add_argument('--config', type=Path, help='Launch CLI on CONFIG (path to the YAML config file)')
     arg_parser.add_argument('--gui', action='store_true', help='Launch Legacy GUI')
     arg_parser.add_argument('--napari', action='store_true', help='Launch Napari GUI')
