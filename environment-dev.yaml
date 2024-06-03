@@ -26,6 +26,7 @@ dependencies:
   - python-graphviz
   - bioimageio.core>=0.6.5
   - pre-commit
+  - bump-my-version
   - mkdocs-material
   - mkdocs-autorefs
   - mkdocs-git-revision-date-localized-plugin
