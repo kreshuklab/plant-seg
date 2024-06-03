@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, Dataset
 from plantseg.training.embeddings import embeddings_to_affinities
 from plantseg.training.model import UNet2D
 from plantseg.pipeline import gui_logger
-from plantseg.predictions.functional.array_dataset import ArrayDataset, default_prediction_collate, mirror_pad, remove_padding
+from plantseg.predictions.functional.array_dataset import ArrayDataset, default_prediction_collate, remove_padding
 
 
 def _is_2d_model(model: nn.Module) -> bool:
@@ -202,7 +202,7 @@ class ArrayPredictor:
                     normalization_mask[index] += 1
 
         if self.verbose_logging:
-            gui_logger.info(f'Prediction finished')
+            gui_logger.info('Prediction finished')
 
         # normalize results and return
         return prediction_map / normalization_mask

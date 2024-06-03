@@ -1,8 +1,6 @@
 from concurrent.futures import Future
 from functools import partial
 
-from pathlib import Path
-from typing import Optional
 
 import torch.cuda
 from magicgui import magicgui
@@ -270,7 +268,7 @@ def _compute_multiple_predictions(image, patch_size, patch_halo, device, use_cus
                                     single_batch_mode=True, device=device, patch_halo=patch_halo)
             out_layers.append((pmap, layer_kwargs, layer_type))
 
-        except Exception as e:
+        except Exception:
             print(f'Error while processing: {model_name}')
 
     return out_layers

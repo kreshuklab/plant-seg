@@ -4,7 +4,6 @@ import h5py
 import numpy as np
 
 from plantseg.dataprocessing.dataprocessing import DataPostProcessing3D, DataPreProcessing3D
-from plantseg.dataprocessing.functional.dataprocessing import image_gaussian_smoothing
 
 
 class TestDataProcessing:

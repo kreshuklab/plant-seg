@@ -667,7 +667,7 @@ class AutoResPopup:
 
         all_text = [f"The model you currently selected is {self.net_name}",
                     f"The model was trained with data at voxel resolution of {self.net_resolution} (zxy \u03BCm)",
-                    f"It is generally useful to rescale your input data to match the resolution of the original data"]
+                    "It is generally useful to rescale your input data to match the resolution of the original data"]
 
         labels = [tkinter.Label(popup_instructions, bg="white", text=text, font=self.font) for text in all_text]
         [label.grid(column=0,
@@ -772,7 +772,7 @@ class LoadModelPopup:
         popup_instructions.grid(row=0, column=0, sticky=stick_all)
         popup_instructions.configure(bg="white")
 
-        all_text = [f"In order to load a custom model you need to create a directory with the following three files: ",
+        all_text = ["In order to load a custom model you need to create a directory with the following three files: ",
                     "- Configuration file used for training (name must be config_train.yml)",
                     "- Best networks parameters (name must be best_checkpoint.pytorch)",
                     "- Last networks parameters (name must be last_checkpoint.pytorch)",

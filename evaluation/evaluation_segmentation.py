@@ -10,7 +10,6 @@ from difflib import SequenceMatcher
 
 import h5py
 import numpy as np
-import vigra
 import yaml
 from scipy.ndimage import zoom
 

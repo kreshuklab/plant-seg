@@ -63,7 +63,7 @@ def is_list(key, value, fallback=None):
 
 def is_length3(key, value, fallback=None):
     if len(value) != 3:
-        _error_message(f"value must be a list of length 3", key, value, fallback)
+        _error_message("value must be a list of length 3", key, value, fallback)
         return fallback
     else:
         return value
@@ -105,7 +105,7 @@ def model_exist(key, value, fallback):
 
 def check_cuda(key, value, fallback):
     if value == 'cuda' and (not torch.cuda.is_available()):
-        _error_message(f"torch can not detect a valid cuda device", key, value, fallback)
+        _error_message("torch can not detect a valid cuda device", key, value, fallback)
         return fallback
     return value
 
@@ -120,7 +120,7 @@ def is_segmentation(key, value, fallback):
 
 def is_0to1(key, value, fallback):
     if value >= 1.0 or value <= 0:
-        _error_message(f"value must be between 0 and 1", key, value, fallback)
+        _error_message("value must be between 0 and 1", key, value, fallback)
         return fallback
     else:
         return value

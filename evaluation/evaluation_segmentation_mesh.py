@@ -7,7 +7,6 @@ import numpy as np
 from rand import adapted_rand
 from voi import voi
 
-from plyfile import PlyData, PlyElement
 
 
 def write_csv(output_path, results):

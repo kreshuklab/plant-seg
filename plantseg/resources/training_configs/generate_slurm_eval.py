@@ -1,4 +1,3 @@
-import yaml
 import os
 
 BASE_DIR = '/g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/'

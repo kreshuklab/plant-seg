@@ -30,8 +30,8 @@ def _check_patch_size(paths, patch_size):
             valid_paths.append(path)
 
     if len(valid_paths) == 0:
-        raise RuntimeError(f"No valid path found for the patch size specified in the PlantSeg config. \n"
-                           f" Patch size should be smaller or equal than the raw stack size.")
+        raise RuntimeError("No valid path found for the patch size specified in the PlantSeg config. \n"
+                           " Patch size should be smaller or equal than the raw stack size.")
     return valid_paths
 
 

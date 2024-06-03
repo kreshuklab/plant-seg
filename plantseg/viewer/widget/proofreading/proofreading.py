@@ -238,7 +238,7 @@ def initialize_proofreading(viewer: napari.Viewer, segmentation_layer: Labels) -
     return True
 
 
-@magicgui(call_button=f'Initialize Proofreading',
+@magicgui(call_button='Initialize Proofreading',
           segmentation={'label': 'Segmentation'},
           image={'label': 'Pmap/Image'})
 def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
@@ -290,7 +290,7 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
     worker.start()
 
 
-@magicgui(call_button=f'Extract correct labels')
+@magicgui(call_button='Extract correct labels')
 def widget_filter_segmentation() -> Future[LayerDataTuple]:
     if not segmentation_handler.status:
         napari_formatted_logging('Proofreading widget not initialized. Run the proofreading widget tool once first',

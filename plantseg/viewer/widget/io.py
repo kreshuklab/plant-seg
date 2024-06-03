@@ -50,7 +50,7 @@ def select_channel(data: np.ndarray, layout: str, channel: int, m_slicing: str =
 
     else:
         raise ValueError(
-            f'channel index out of range, error in formatting channel_stack_layout')
+            'channel index out of range, error in formatting channel_stack_layout')
 
 
 def open_file(path: Path,
@@ -469,7 +469,7 @@ def widget_export_stacks(images: List[Tuple[Layer, str]],
         out_path = directory / f'{workflow_name}.pkl'
         dag_manager.export_dag(out_path, final_export_check)
         napari_formatted_logging(
-            f'Workflow correctly exported', thread='Export stack')
+            'Workflow correctly exported', thread='Export stack')
 
 
 widget_export_stacks.directory.hide()
