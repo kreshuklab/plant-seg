@@ -1,7 +1,11 @@
 ci:
   autoupdate_schedule: monthly
-  autofix_commit_msg: "[pre-commit.ci] auto fixes"
-  autoupdate_commit_msg: "[pre-commit.ci] autoupdate"
+  autofix_commit_msg: "style(pre-commit.ci): auto fixes"
+  autoupdate_commit_msg: "ci(pre-commit.ci): autoupdate"
+
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
 
 repos:
   - repo: https://github.com/crate-ci/typos
@@ -18,3 +22,10 @@ repos:
       - id: ruff-format
         types_or: [python, pyi, jupyter]
         args: [--config=pyproject.toml]
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.2.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: []
