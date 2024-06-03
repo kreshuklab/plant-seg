@@ -71,13 +71,14 @@ class DagHandler:
             raise ValueError('get_type must me either threaded or multiprocessing.')
         return get(dask_dag, outputs)
 
-    def add_step(self, function: Callable,
-                 input_keys: Tuple[str, ...],
-                 output_key: str,
-                 static_params: dict = None,
-                 step_name: str = None
-                 ):
-
+    def add_step(
+        self,
+        function: Callable,
+        input_keys: Tuple[str, ...],
+        output_key: str,
+        static_params: dict = None,
+        step_name: str = None,
+    ):
         step_name = step_name if step_name is not None else 'unknown step'
         static_params = static_params if static_params is not None else {}
 
@@ -86,10 +87,12 @@ class DagHandler:
 
         if isinstance(input_keys, tuple):
             input_keys = list(input_keys)
-        self.complete_dag[output_key] = {'step-name': step_name,
-                                         'step-func': function,
-                                         'step_inputs': input_keys,
-                                         'static_params': static_params}
+        self.complete_dag[output_key] = {
+            'step-name': step_name,
+            'step-func': function,
+            'step_inputs': input_keys,
+            'static_params': static_params,
+        }
 
     def export_dag(self, path: Union[str, pathlib.Path], outputs=None):
         self.outputs = outputs

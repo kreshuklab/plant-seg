@@ -60,8 +60,14 @@ def download_files(urls: dict, out_dir: Path) -> None:
 def clean_models() -> None:
     """Delete all models in the model zoo after confirmation from the user."""
     for _ in range(3):
-        answer = input("This will delete all models in the model zoo."
-                       "Ensure you've backed up custom models. Continue? (y/n): ").strip().lower()
+        answer = (
+            input(
+                "This will delete all models in the model zoo."
+                "Ensure you've backed up custom models. Continue? (y/n): "
+            )
+            .strip()
+            .lower()
+        )
         if answer == 'y':
             try:
                 rmtree(PATH_PLANTSEG_MODELS, ignore_errors=True)
@@ -78,7 +84,9 @@ def clean_models() -> None:
             print("Invalid input, please type 'y' or 'n'.")
 
 
-def check_version(current_version: str, plantseg_url: str = 'https://api.github.com/repos/kreshuklab/plant-seg/releases/latest') -> None:
+def check_version(
+    current_version: str, plantseg_url: str = 'https://api.github.com/repos/kreshuklab/plant-seg/releases/latest'
+) -> None:
     """Check for the latest version of PlantSeg available on GitHub."""
     try:
         response = requests.get(plantseg_url)
@@ -86,7 +94,9 @@ def check_version(current_version: str, plantseg_url: str = 'https://api.github.
         latest_version = response.json()['tag_name']
 
         # Splitting the version string into components and comparing as tuples of integers
-        if tuple(map(int, latest_version.strip('v').split('.'))) > tuple(map(int, current_version.strip('v').split('.'))):
+        if tuple(map(int, latest_version.strip('v').split('.'))) > tuple(
+            map(int, current_version.strip('v').split('.'))
+        ):
             print(f"New version of PlantSeg available: {latest_version}. Please update to the latest version.")
         else:
             print(f"You are using the latest version of PlantSeg: {current_version}.")

@@ -4,13 +4,18 @@ import h5py
 import numpy as np
 
 from plantseg.dataprocessing.dataprocessing import DataPostProcessing3D, DataPreProcessing3D
-from plantseg.dataprocessing.functional.dataprocessing import image_gaussian_smoothing
 
 
 class TestDataProcessing:
     def test_preprocessing(self, path_file_hdf5):
-        pre = DataPreProcessing3D([path_file_hdf5], input_type="data_uint8", output_type="data_uint8",
-                                  save_directory="PreProcessing", filter_type="gaussian", filter_param=1.0)
+        pre = DataPreProcessing3D(
+            [path_file_hdf5],
+            input_type="data_uint8",
+            output_type="data_uint8",
+            save_directory="PreProcessing",
+            filter_type="gaussian",
+            filter_param=1.0,
+        )
 
         # run preprocessing
         output_paths = pre()
@@ -32,9 +37,15 @@ class TestDataProcessing:
             raw = f['raw'][...]
 
         target_shape = (raw.shape[0], 32, 32)
-        pre = DataPreProcessing3D([path_file_hdf5], input_type="data_uint8", output_type="data_uint8",
-                                  save_directory="PreProcessing", filter_type=None, filter_param=None,
-                                  crop='[:, :32, :32]')
+        pre = DataPreProcessing3D(
+            [path_file_hdf5],
+            input_type="data_uint8",
+            output_type="data_uint8",
+            save_directory="PreProcessing",
+            filter_type=None,
+            filter_param=None,
+            crop='[:, :32, :32]',
+        )
 
         output_paths = pre()
 

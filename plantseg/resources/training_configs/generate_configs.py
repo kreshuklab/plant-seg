@@ -13,15 +13,15 @@ arch_config_values = {
         'loaders/train/slice_builder/patch_shape': [80, 170, 170],
         'loaders/val/slice_builder/patch_shape': [80, 170, 170],
         'loaders/val/slice_builder/stride_shape': [80, 170, 170],
-        'loaders/test/slice_builder/patch_shape': [80, 170, 170]
+        'loaders/test/slice_builder/patch_shape': [80, 170, 170],
     },
     'resunet': {
         'model/name': 'ResidualUNet3D',
         'loaders/train/slice_builder/patch_shape': [80, 144, 144],
         'loaders/val/slice_builder/patch_shape': [80, 144, 144],
         'loaders/val/slice_builder/stride_shape': [80, 144, 144],
-        'loaders/test/slice_builder/patch_shape': [80, 144, 144]
-    }
+        'loaders/test/slice_builder/patch_shape': [80, 144, 144],
+    },
 }
 
 norm_config_values = {
@@ -34,30 +34,21 @@ norm_config_values = {
         'loaders/val/slice_builder/patch_shape': [48, 80, 80],
         'loaders/val/slice_builder/stride_shape': [48, 80, 80],
         'loaders/test/slice_builder/patch_shape': [48, 80, 80],
-        'loaders/test/slice_builder/stride_shape': [24, 40, 40]
+        'loaders/test/slice_builder/stride_shape': [24, 40, 40],
     },
-    'gn': {
-        'model/layer_order': 'gcr',
-        'model/num_groups': 8
-    }
+    'gn': {'model/layer_order': 'gcr', 'model/num_groups': 8},
 }
 
 loss_config_values = {
-    'bce': {
-        'loss/name': 'BCEWithLogitsLoss'
-    },
-    'dice': {
-        'loss/name': 'DiceLoss'
-    },
-    'bce_dice': {
-        'loss/name': 'BCEDiceLoss'
-    }
+    'bce': {'loss/name': 'BCEWithLogitsLoss'},
+    'dice': {'loss/name': 'DiceLoss'},
+    'bce_dice': {'loss/name': 'BCEDiceLoss'},
 }
 
 BASE_DIR = '/g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/'
 
 
-def create_config(conf, output_file, a, n, l, phase):
+def create_config(conf, output_file, a, n, l, phase):  # noqa: E741
     conf = copy.deepcopy(conf)
     updates = []
     updates.extend(arch_config_values[a].items())
@@ -99,7 +90,7 @@ def generate_configs():
             # generate train config
             for a in arch:
                 for n in norm:
-                    for l in loss:
+                    for l in loss:  # noqa: E741
                         output_dir = os.path.join(base_dir, ds_name, f'{a}_{n}_{l}')
                         output_path = os.path.join(output_dir, f'config_{phase}.yml')
                         os.makedirs(output_dir, exist_ok=True)

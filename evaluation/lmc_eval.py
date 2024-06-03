@@ -60,15 +60,14 @@ if __name__ == '__main__':
         '/g/kreshuk/wolny/Datasets/LateralRoot/predictions/unet_ds1x_bce_gcr/Marvelous_t00006_crop_x420_y620_gt_predictions.h5',
         '/g/kreshuk/wolny/Datasets/LateralRoot/predictions/unet_ds1x_bce_gcr/Marvelous_t00045_gt_predictions.h5',
         '/g/kreshuk/wolny/Datasets/LateralRoot/predictions/unet_ds1x_bce_gcr/Beautiful_T00010_crop_x40-1630_y520-970_gt_predictions.h5',
-        '/g/kreshuk/wolny/Datasets/LateralRoot/predictions/unet_ds1x_bce_gcr/Beautiful_T00020_crop_x40-1630_y520-970_gt_predictions.h5'
+        '/g/kreshuk/wolny/Datasets/LateralRoot/predictions/unet_ds1x_bce_gcr/Beautiful_T00020_crop_x40-1630_y520-970_gt_predictions.h5',
     ]
 
     nuclei_pmap_files = [
         '/g/kreshuk/wolny/Datasets/LateralRoot/nuclei/Test/Movie1_t00006_nuclei_predictions.h5',
         '/g/kreshuk/wolny/Datasets/LateralRoot/nuclei/Test/Movie1_t00045_nuclei_predictions.h5'
         '/g/kreshuk/wolny/Datasets/LateralRoot/nuclei/Test/Movie2_t00010_nuclei_predictions.h5',
-        '/g/kreshuk/wolny/Datasets/LateralRoot/nuclei/Test/Movie2_t00020_nuclei_predictions.h5'
-
+        '/g/kreshuk/wolny/Datasets/LateralRoot/nuclei/Test/Movie2_t00020_nuclei_predictions.h5',
     ]
 
     with futures.ThreadPoolExecutor(N_THREADS) as tp:

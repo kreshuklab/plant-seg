@@ -8,7 +8,7 @@ import yaml
 from plantseg.pipeline import gui_logger
 from plantseg import PATH_RAW2SEG_TEMPLATE
 from plantseg.predictions.functional.utils import get_stride_shape
-from plantseg.segmentation.utils import SUPPORTED_ALGORITMS
+from plantseg.segmentation.utils import SUPPORTED_ALGORITHMS
 from plantseg.models.zoo import model_zoo
 
 
@@ -63,7 +63,7 @@ def is_list(key, value, fallback=None):
 
 def is_length3(key, value, fallback=None):
     if len(value) != 3:
-        _error_message(f"value must be a list of length 3", key, value, fallback)
+        _error_message("value must be a list of length 3", key, value, fallback)
         return fallback
     else:
         return value
@@ -105,14 +105,14 @@ def model_exist(key, value, fallback):
 
 def check_cuda(key, value, fallback):
     if value == 'cuda' and (not torch.cuda.is_available()):
-        _error_message(f"torch can not detect a valid cuda device", key, value, fallback)
+        _error_message("torch can not detect a valid cuda device", key, value, fallback)
         return fallback
     return value
 
 
 def is_segmentation(key, value, fallback):
-    if value not in SUPPORTED_ALGORITMS:
-        _error_message(f"value must be one of {SUPPORTED_ALGORITMS}", key, value, fallback)
+    if value not in SUPPORTED_ALGORITHMS:
+        _error_message(f"value must be one of {SUPPORTED_ALGORITHMS}", key, value, fallback)
         return fallback
     else:
         return value
@@ -120,7 +120,7 @@ def is_segmentation(key, value, fallback):
 
 def is_0to1(key, value, fallback):
     if value >= 1.0 or value <= 0:
-        _error_message(f"value must be between 0 and 1", key, value, fallback)
+        _error_message("value must be between 0 and 1", key, value, fallback)
         return fallback
     else:
         return value
@@ -154,7 +154,7 @@ class Check(object):
 def load_template():
     def _check(loader, node):
         node = loader.construct_mapping(node, deep=True)
-        if type(node) is dict:
+        if isinstance(node, dict):
             return Check(node)
         else:
             raise NotImplementedError("!check constructor must be dict or list.")
@@ -170,13 +170,14 @@ def recursive_config_check(config, template):
         correct_key = deprecated_keys[d_key]
 
         if d_key in config.keys() and correct_key not in config.keys():
-            gui_logger.warning(f"Deprecated config warning. You are using an old version of the config file. "
-                               f"key: '{d_key}' has been renamed '{correct_key}'")
+            gui_logger.warning(
+                f"Deprecated config warning. You are using an old version of the config file. "
+                f"key: '{d_key}' has been renamed '{correct_key}'"
+            )
             config[correct_key] = config[d_key]
             del config[d_key]
 
     for key, value in template.items():
-
         # check if key exist
         if key not in config:
             config[key] = None
@@ -201,16 +202,20 @@ def check_scaling_factor(config):
     post_seg_rescaling = config["segmentation_postprocessing"]["factor"]
     pre_inverse_rescaling = [1.0 / f for f in pre_rescaling]
     if not np.allclose(pre_inverse_rescaling, post_pred_rescaling):
-        gui_logger.warning(f"Prediction post processing scaling is not set up correctly. "
-                           f"To avoid shape mismatch between input and output the "
-                           f"'factor' value is corrected to {pre_inverse_rescaling}")
+        gui_logger.warning(
+            f"Prediction post processing scaling is not set up correctly. "
+            f"To avoid shape mismatch between input and output the "
+            f"'factor' value is corrected to {pre_inverse_rescaling}"
+        )
 
         config["cnn_postprocessing"]["factor"] = pre_inverse_rescaling
 
     if not np.allclose(pre_inverse_rescaling, post_seg_rescaling):
-        gui_logger.warning(f"Segmentation post processing scaling is not set up correctly. "
-                           f"To avoid shape mismatch between input and output the "
-                           f"'factor' value is corrected to {pre_inverse_rescaling}")
+        gui_logger.warning(
+            f"Segmentation post processing scaling is not set up correctly. "
+            f"To avoid shape mismatch between input and output the "
+            f"'factor' value is corrected to {pre_inverse_rescaling}"
+        )
 
         config["segmentation_postprocessing"]["factor"] = pre_inverse_rescaling
 
@@ -231,9 +236,11 @@ def check_patch_and_stride(config):
         test_x = _ax == 'x' and _patch - _stride <= 16
         test_y = _ax == 'y' and _patch - _stride <= 16
         if test_z or test_x or test_y:
-            gui_logger.warning(f"Stride along {_ax} axis (axis order zxy) is too large, "
-                               f"this might lead to empty strides artifacts in the cnn predictions. "
-                               f"Please try to either reduce the stride or to increase the patch size.")
+            gui_logger.warning(
+                f"Stride along {_ax} axis (axis order zxy) is too large, "
+                f"this might lead to empty strides artifacts in the cnn predictions. "
+                f"Please try to either reduce the stride or to increase the patch size."
+            )
     return config
 
 

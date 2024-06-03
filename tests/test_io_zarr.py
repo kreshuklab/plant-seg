@@ -4,7 +4,6 @@ Tests the functionality of the `io.zarr` module.
 
 # pylint: disable=missing-docstring,import-outside-toplevel
 
-
 from pathlib import Path
 import numpy as np
 import zarr
@@ -37,12 +36,15 @@ class TestZarr:
         zarr_array_native = zarr.open_array(tmpfile_native / KEY_ZARR, 'r')
         zarr_array_plantseg = zarr.open_array(tmpfile_plantseg / KEY_ZARR, 'r')
         zarr_array_plantseg2 = zarr.open_array(tmpfile_plantseg / (KEY_ZARR + '2'), 'r')
+
+        # fmt: off
         assert np.array_equal(zarr_array_native[:], np.ones((32, 32, 32))), "Data read from Zarr file is not equal to the original data"
         assert np.array_equal(zarr_array_native[:], zarr_array_plantseg[:]), "PlantSeg saved data is not equal to the native saved data"
         assert np.array_equal(zarr_array_native[:], zarr_array_plantseg2[:]), "PlantSeg saved data with default voxel size is not equal to the native saved data"
         assert tuple(zarr_array_native.attrs['element_size_um']) == (1.0, 1.0, 1.0), "Voxel size read from Zarr file is not equal to the original voxel size"
         assert zarr_array_native.attrs['element_size_um'] == zarr_array_plantseg.attrs['element_size_um'], "Voxel size from PlantSeg saved data is not equal to the native saved data"
         assert zarr_array_native.attrs['element_size_um'] == zarr_array_plantseg2.attrs['element_size_um'], "Voxel size from PlantSeg saved data with default voxel size is not equal to the native saved data"
+        # fmt: on
 
     def test_load_zarr(self, path_file_zarr):
         from plantseg.io.zarr import load_zarr
@@ -61,11 +63,13 @@ class TestZarr:
         voxel_size_plantseg_3, _, _, _ = load_zarr(path=path_file_zarr, key=KEY_ZARR, info_only=True)
 
         # Check if loaded data are all the same
+        # fmt: off
         assert np.array_equal(file_array_native[:], file_array_plantseg[:]), "Data read from Zarr file is not equal to the original data"
         assert np.array_equal(file_array_native[:], file_array_plantseg_2[:]), "Data read from Zarr file with key=None is not equal to the original data"
         assert voxel_size_native == voxel_size_plantseg, "Voxel size read from Zarr file with a key is not equal to the original voxel size"
         assert voxel_size_native == voxel_size_plantseg_2, "Voxel size read from Zarr file with key=None is not equal to the original voxel size"
         assert voxel_size_native == voxel_size_plantseg_3, "Voxel size read from Zarr file with info_only=True is not equal to the original voxel size"
+        # fmt: on
 
     def test_list_keys(self, tmpdir):
         from plantseg.io.zarr import list_keys

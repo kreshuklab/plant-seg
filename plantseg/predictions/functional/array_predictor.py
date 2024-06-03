@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, Dataset
 from plantseg.training.embeddings import embeddings_to_affinities
 from plantseg.training.model import UNet2D
 from plantseg.pipeline import gui_logger
-from plantseg.predictions.functional.array_dataset import ArrayDataset, default_prediction_collate, mirror_pad, remove_padding
+from plantseg.predictions.functional.array_dataset import ArrayDataset, default_prediction_collate, remove_padding
 
 
 def _is_2d_model(model: nn.Module) -> bool:
@@ -94,10 +94,20 @@ class ArrayPredictor:
         is_embedding (bool): Flag to determine if the output should be treated as embeddings.
     """
 
-    def __init__(self, model: nn.Module, in_channels: int, out_channels: int, device: str, patch: Tuple[int, int, int],
-                 patch_halo: Tuple[int, int, int], single_batch_mode: bool, headless: bool, is_embedding: bool = False,
-                 verbose_logging: bool = False, disable_tqdm: bool = False):
-
+    def __init__(
+        self,
+        model: nn.Module,
+        in_channels: int,
+        out_channels: int,
+        device: str,
+        patch: Tuple[int, int, int],
+        patch_halo: Tuple[int, int, int],
+        single_batch_mode: bool,
+        headless: bool,
+        is_embedding: bool = False,
+        verbose_logging: bool = False,
+        disable_tqdm: bool = False,
+    ):
         self.device = device
         if single_batch_mode:
             self.batch_size = 1
@@ -107,8 +117,10 @@ class ArrayPredictor:
 
         if torch.cuda.device_count() > 1 and device != 'cpu' and headless:
             model = nn.DataParallel(model)
-            gui_logger.info(f'Using {torch.cuda.device_count()} GPUs for prediction. '
-                            f'Increasing batch size to {torch.cuda.device_count()} * {self.batch_size}')
+            gui_logger.info(
+                f'Using {torch.cuda.device_count()} GPUs for prediction. '
+                f'Increasing batch size to {torch.cuda.device_count()} * {self.batch_size}'
+            )
             self.batch_size *= torch.cuda.device_count()
             self.device = 'cuda'
 
@@ -121,7 +133,9 @@ class ArrayPredictor:
 
     def __call__(self, test_dataset: Dataset) -> np.ndarray:
         assert isinstance(test_dataset, ArrayDataset)
-        assert self.patch_halo == test_dataset.halo_shape, f'Predictor halo shape {self.patch_halo} does not match dataset halo shape {test_dataset.halo_shape}'
+        assert (
+            self.patch_halo == test_dataset.halo_shape
+        ), f'Predictor halo shape {self.patch_halo} does not match dataset halo shape {test_dataset.halo_shape}'
 
         test_loader = DataLoader(
             test_dataset,
@@ -202,7 +216,7 @@ class ArrayPredictor:
                     normalization_mask[index] += 1
 
         if self.verbose_logging:
-            gui_logger.info(f'Prediction finished')
+            gui_logger.info('Prediction finished')
 
         # normalize results and return
         return prediction_map / normalization_mask

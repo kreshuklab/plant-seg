@@ -25,7 +25,7 @@ current_segmentation = None
 
 
 class SimpleEntry:
-    """ Standard open entry widget """
+    """Standard open entry widget"""
 
     def __init__(self, frame, text="Text", large_bar=False, row=0, column=0, _type=str, _font=None):
         self.frame = tkinter.Frame(frame)
@@ -33,13 +33,14 @@ class SimpleEntry:
         self.text = f"{text}"
 
         self.type = _type
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [1, 1],
-                      "height": 4,
-                      }
+        self.style = {
+            "bg": "white",
+            "padx": 10,
+            "pady": 10,
+            "row_weights": [1],
+            "columns_weights": [1, 1],
+            "height": 4,
+        }
 
         self.frame["bg"] = self.style["bg"]
         self.font = _font
@@ -59,18 +60,10 @@ class SimpleEntry:
         self.tk_value = var_to_tkinter(self.type(value))
 
         label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=tkinter.W)
+        label1.grid(column=0, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=tkinter.W)
 
         entry1 = tkinter.Entry(self.frame, textvar=self.tk_value, font=self.font)
-        entry1.grid(column=1,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=self.stick)
+        entry1.grid(column=1, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=self.stick)
 
         obj_collection.append(label1)
         obj_collection.append(entry1)
@@ -78,24 +71,33 @@ class SimpleEntry:
 
 
 class SliderEntry:
-    """ Standard open entry widget """
+    """Standard open entry widget"""
 
-    def __init__(self,
-                 frame, text="Text", row=0, column=0, data_range=(0.01, 0.99, 0.01),
-                 is_not_in_dtws=False, _type=float, _font=None):
+    def __init__(
+        self,
+        frame,
+        text="Text",
+        row=0,
+        column=0,
+        data_range=(0.01, 0.99, 0.01),
+        is_not_in_dtws=False,
+        _type=float,
+        _font=None,
+    ):
         self.frame = tkinter.Frame(frame)
 
         self.text = f"{text}"
         self.min, self.max, self.interval = data_range
 
         self.type = _type
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [1, 1],
-                      "height": 4,
-                      }
+        self.style = {
+            "bg": "white",
+            "padx": 10,
+            "pady": 10,
+            "row_weights": [1],
+            "columns_weights": [1, 1],
+            "height": 4,
+        }
 
         self.frame["bg"] = self.style["bg"]
         self.font = _font
@@ -109,24 +111,17 @@ class SliderEntry:
     def __call__(self, value, obj_collection):
         global current_segmentation
         label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=tkinter.W)
+        label1.grid(column=0, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=tkinter.W)
 
-        entry1 = tkinter.Scale(self.frame, from_=self.min, to=self.max, resolution=self.interval,
-                               orient=tkinter.HORIZONTAL, font=self.font)
+        entry1 = tkinter.Scale(
+            self.frame, from_=self.min, to=self.max, resolution=self.interval, orient=tkinter.HORIZONTAL, font=self.font
+        )
         entry1.configure(bg="white")
         entry1.configure(troughcolor=convert_rgb(PLANTSEG_GREEN))
         entry1.configure(length=200)
         entry1.set(self.type(value))
 
-        entry1.grid(column=1,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=tkinter.E)
+        entry1.grid(column=1, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=tkinter.E)
 
         self.tk_value = entry1
 
@@ -136,22 +131,33 @@ class SliderEntry:
 
 
 class MenuEntry:
-    """ Standard menu widget """
+    """Standard menu widget"""
 
-    def __init__(self, frame, text="Text", row=0, column=0, menu=(),
-                 is_model=False, is_segmentation=False, default=None, font=None):
+    def __init__(
+        self,
+        frame,
+        text="Text",
+        row=0,
+        column=0,
+        menu=(),
+        is_model=False,
+        is_segmentation=False,
+        default=None,
+        font=None,
+    ):
         self.frame = tkinter.Frame(frame)
 
         self.text = f"{text}"
 
         self.menu = menu
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [1, 1],
-                      "height": 4,
-                      }
+        self.style = {
+            "bg": "white",
+            "padx": 10,
+            "pady": 10,
+            "row_weights": [1],
+            "columns_weights": [1, 1],
+            "height": 4,
+        }
 
         self.frame["bg"] = self.style["bg"]
         self.font = font
@@ -164,7 +170,7 @@ class MenuEntry:
         if default is None:
             self.tk_value.set(sorted(list(self.menu))[0])
         else:
-            if type(default) == bool:
+            if isinstance(default, bool):
                 default = "True" if default else "False"
             self.tk_value.set(default)
 
@@ -177,13 +183,8 @@ class MenuEntry:
             self.update_segmentation_name(default)
 
     def __call__(self, value, obj_collection):
-
         label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
+        label1.grid(column=0, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=stick_all)
 
         if self.is_model:
             entry1 = tkinter.OptionMenu(self.frame, self.tk_value, *self.menu, command=self.update_model_name)
@@ -197,11 +198,7 @@ class MenuEntry:
         entry1.config(font=self.font)
         entry1["menu"].config(bg="white")
         entry1.config(bg="white")
-        entry1.grid(column=1,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
+        entry1.grid(column=1, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=stick_all)
 
         obj_collection.append(label1)
         obj_collection.append(entry1)
@@ -217,20 +214,21 @@ class MenuEntry:
 
 
 class BoolEntry:
-    """ Standard boolean widget """
+    """Standard boolean widget"""
 
     def __init__(self, frame, text="Text", row=0, column=0, font=None):
         self.frame = tkinter.Frame(frame)
 
         self.text = f"{text}"
 
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [1, 1],
-                      "height": 4,
-                      }
+        self.style = {
+            "bg": "white",
+            "padx": 10,
+            "pady": 10,
+            "row_weights": [1],
+            "columns_weights": [1, 1],
+            "height": 4,
+        }
 
         self.frame["bg"] = self.style["bg"]
         self.font = font
@@ -245,18 +243,10 @@ class BoolEntry:
         self.tk_value = tkinter.BooleanVar(value)
 
         label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
+        label1.grid(column=0, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=stick_ew)
 
         entry1 = tkinter.Checkbutton(self.frame, variable=self.tk_value, bg=self.style["bg"], font=self.font)
-        entry1.grid(column=1,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
+        entry1.grid(column=1, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=stick_ew)
 
         obj_collection.append(label1)
         obj_collection.append(entry1)
@@ -264,20 +254,21 @@ class BoolEntry:
 
 
 class FilterEntry:
-    """ Special widget for filter """
+    """Special widget for filter"""
 
     def __init__(self, frame, text="Text", row=0, column=0, font=None):
         self.frame = tkinter.Frame(frame)
 
         self.text = f"{text}"
 
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [1, 1, 3, 1],
-                      "height": 4,
-                      }
+        self.style = {
+            "bg": "white",
+            "padx": 10,
+            "pady": 10,
+            "row_weights": [1],
+            "columns_weights": [1, 1, 3, 1],
+            "height": 4,
+        }
 
         self.frame["bg"] = self.style["bg"]
         self.font = font
@@ -295,36 +286,20 @@ class FilterEntry:
         self.tk_value[2].set(1.0)
 
         label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
+        label1.grid(column=0, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=stick_all)
 
         entry1 = tkinter.Checkbutton(self.frame, variable=self.tk_value[0], bg=self.style["bg"], font=self.font)
-        entry1.grid(column=1,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
+        entry1.grid(column=1, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=stick_all)
 
         entry2 = tkinter.OptionMenu(self.frame, self.tk_value[1], *{"median", "gaussian"})
         entry2["menu"].config(font=self.font)
         entry2["menu"].config(bg="white")
         entry2.config(font=self.font)
         entry2.config(bg="white")
-        entry2.grid(column=2,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
+        entry2.grid(column=2, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=stick_all)
 
         entry3 = tkinter.Entry(self.frame, textvar=self.tk_value[2], width=3)
-        entry3.grid(column=3,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
+        entry3.grid(column=3, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=stick_all)
 
         obj_collection.append(label1)
         obj_collection.append(entry1)
@@ -334,7 +309,7 @@ class FilterEntry:
 
 
 class MenuEntryStride:
-    """ Standard menu widget """
+    """Standard menu widget"""
 
     def __init__(self, frame, text="Text", row=0, column=0, menu=(), is_model=False, default=None, font=None):
         self.frame = tkinter.Frame(frame)
@@ -342,13 +317,14 @@ class MenuEntryStride:
         self.text = f"{text}"
 
         self.menu = menu
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [1, 1],
-                      "height": 4,
-                      }
+        self.style = {
+            "bg": "white",
+            "padx": 10,
+            "pady": 10,
+            "row_weights": [1],
+            "columns_weights": [1, 1],
+            "height": 4,
+        }
 
         self.frame["bg"] = self.style["bg"]
         self.font = font
@@ -361,7 +337,7 @@ class MenuEntryStride:
         if default is None:
             self.tk_value.set(sorted(list(self.menu))[0])
         else:
-            if type(default) == bool:
+            if isinstance(default, bool):
                 default = "True" if default else "False"
             self.tk_value.set(default)
 
@@ -370,13 +346,8 @@ class MenuEntryStride:
             self.update_model_name(default)
 
     def __call__(self, value, obj_collection):
-
         label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
+        label1.grid(column=0, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=stick_all)
 
         if self.is_model:
             entry1 = tkinter.OptionMenu(self.frame, self.tk_value, *self.menu, command=self.update_model_name)
@@ -386,11 +357,7 @@ class MenuEntryStride:
         entry1.config(font=self.font)
         entry1["menu"].config(bg="white")
         entry1.config(bg="white")
-        entry1.grid(column=1,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_all)
+        entry1.grid(column=1, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=stick_all)
 
         obj_collection.append(label1)
         obj_collection.append(entry1)
@@ -402,20 +369,21 @@ class MenuEntryStride:
 
 
 class RescaleEntry:
-    """ Special widget for rescale """
+    """Special widget for rescale"""
 
     def __init__(self, frame, text="Text", row=0, column=0, type=float, font=None):
         self.frame = tkinter.Frame(frame)
 
         self.text = f"{text}"
         self.type = type
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [1, 1, 1, 1, 1],
-                      "height": 4,
-                      }
+        self.style = {
+            "bg": "white",
+            "padx": 10,
+            "pady": 10,
+            "row_weights": [1],
+            "columns_weights": [1, 1, 1, 1, 1],
+            "height": 4,
+        }
 
         self.frame["bg"] = self.style["bg"]
         self.font = font
@@ -433,42 +401,24 @@ class RescaleEntry:
         [self.tk_value[i].set(self.type(value[i])) for i in range(3)]
 
         label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
+        label1.grid(column=0, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=stick_ew)
 
-        entry0 = tkinter.Button(self.frame, text="Guided", command=self.auto_rescale, bg=self.style["bg"],
-                                font=self.font)
-        entry0.grid(column=1,
-                    row=0,
-                    padx=(self.style["padx"], 0),
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
+        entry0 = tkinter.Button(
+            self.frame, text="Guided", command=self.auto_rescale, bg=self.style["bg"], font=self.font
+        )
+        entry0.grid(column=1, row=0, padx=(self.style["padx"], 0), pady=self.style["pady"], sticky=stick_ew)
         entry0["bg"] = "white"
 
         entry1 = tkinter.Entry(self.frame, textvar=self.tk_value[0], width=3, font=self.font)
-        entry1.grid(column=2,
-                    row=0,
-                    padx=(self.style["padx"], 0),
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
+        entry1.grid(column=2, row=0, padx=(self.style["padx"], 0), pady=self.style["pady"], sticky=stick_ew)
         entry1["bg"] = "white"
 
         entry2 = tkinter.Entry(self.frame, textvar=self.tk_value[1], width=3, font=self.font)
-        entry2.grid(column=3,
-                    row=0,
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
+        entry2.grid(column=3, row=0, pady=self.style["pady"], sticky=stick_ew)
         entry2["bg"] = "white"
 
         entry3 = tkinter.Entry(self.frame, textvar=self.tk_value[2], width=3, font=self.font)
-        entry3.grid(column=4,
-                    row=0,
-                    padx=(0, self.style["padx"]),
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
+        entry3.grid(column=4, row=0, padx=(0, self.style["padx"]), pady=self.style["pady"], sticky=stick_ew)
         entry3["bg"] = "white"
 
         obj_collection.append(label1)
@@ -479,8 +429,8 @@ class RescaleEntry:
         return obj_collection
 
     def auto_rescale(self):
-        """ This method open a popup windows that automatically set the scaling
-         factor from the resolution given by the user"""
+        """This method open a popup windows that automatically set the scaling
+        factor from the resolution given by the user"""
         global current_model
 
         model_config = load_config(PATH_MODEL_ZOO)
@@ -490,20 +440,21 @@ class RescaleEntry:
 
 
 class ListEntry:
-    """ Standard triplet list widget """
+    """Standard triplet list widget"""
 
     def __init__(self, frame, text="Text", row=0, column=0, type=float, font=None):
         self.frame = tkinter.Frame(frame)
 
         self.text = f"{text}"
         self.type = type
-        self.style = {"bg": "white",
-                      "padx": 10,
-                      "pady": 10,
-                      "row_weights": [1],
-                      "columns_weights": [3, 1, 1, 1],
-                      "height": 4,
-                      }
+        self.style = {
+            "bg": "white",
+            "padx": 10,
+            "pady": 10,
+            "row_weights": [1],
+            "columns_weights": [3, 1, 1, 1],
+            "height": 4,
+        }
 
         self.frame["bg"] = self.style["bg"]
         self.font = font
@@ -521,33 +472,18 @@ class ListEntry:
         [self.tk_value[i].set(self.type(value[i])) for i in range(3)]
 
         label1 = tkinter.Label(self.frame, bg=self.style["bg"], text=self.text, anchor="w", font=self.font)
-        label1.grid(column=0,
-                    row=0,
-                    padx=self.style["padx"],
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
+        label1.grid(column=0, row=0, padx=self.style["padx"], pady=self.style["pady"], sticky=stick_ew)
 
         entry1 = tkinter.Entry(self.frame, textvar=self.tk_value[0], width=3, font=self.font)
-        entry1.grid(column=1,
-                    row=0,
-                    padx=(self.style["padx"], 0),
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
+        entry1.grid(column=1, row=0, padx=(self.style["padx"], 0), pady=self.style["pady"], sticky=stick_ew)
         entry1["bg"] = "white"
 
         entry2 = tkinter.Entry(self.frame, textvar=self.tk_value[1], width=3, font=self.font)
-        entry2.grid(column=2,
-                    row=0,
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
+        entry2.grid(column=2, row=0, pady=self.style["pady"], sticky=stick_ew)
         entry2["bg"] = "white"
 
         entry3 = tkinter.Entry(self.frame, textvar=self.tk_value[2], width=3, font=self.font)
-        entry3.grid(column=3,
-                    row=0,
-                    padx=(0, self.style["padx"]),
-                    pady=self.style["pady"],
-                    sticky=stick_ew)
+        entry3.grid(column=3, row=0, padx=(0, self.style["padx"]), pady=self.style["pady"], sticky=stick_ew)
         entry3["bg"] = "white"
 
         obj_collection.append(label1)
@@ -559,6 +495,7 @@ class ListEntry:
 
 class Files2Process:
     """Browse for file and directory"""
+
     def __init__(self, config: dict) -> None:
         self.config = config
         self.files = tkinter.StringVar(value=config.get("path", str(PATH_HOME)))
@@ -575,13 +512,10 @@ class Files2Process:
 
     def browse_for_file(self) -> None:
         """Open a file dialog to browse for a file, and update the configuration."""
-        file_types = [("h5 files", "*.h5"), ("hdf files", "*.hdf"),
-                      ("tiff files", "*.tiff"), ("tif files", "*.tif")]
+        file_types = [("h5 files", "*.h5"), ("hdf files", "*.hdf"), ("tiff files", "*.tiff"), ("tif files", "*.tif")]
 
         file_name = filedialog.askopenfilename(
-            initialdir=self._get_valid_initial_dir(),
-            title="Select File",
-            filetypes=file_types
+            initialdir=self._get_valid_initial_dir(), title="Select File", filetypes=file_types
         )
 
         if file_name:
@@ -590,15 +524,11 @@ class Files2Process:
 
     def browse_for_directory(self) -> None:
         """Open a directory dialog to browse for a directory, and update the configuration."""
-        dire_name = filedialog.askdirectory(
-            initialdir=self._get_valid_initial_dir(),
-            title="Select Directory"
-        )
+        dire_name = filedialog.askdirectory(initialdir=self._get_valid_initial_dir(), title="Select Directory")
 
         if dire_name:
             self.files.set(dire_name)
             self.config["path"] = dire_name
-
 
 
 ######################################################################################################################
@@ -607,14 +537,16 @@ class Files2Process:
 #
 ######################################################################################################################
 def report_error(data, font=None, depth=3):
-    """ creates pop up and show error messages """
-    data = data if type(data) is str else f"Unknown Error. Error type: {type(data)} \n {data}"
+    """creates pop up and show error messages"""
+    data = data if isinstance(data, str) else f"Unknown Error. Error type: {type(data)} \n {data}"
     # reduce message depth
     data = '\n' + ''.join([f"{_str} \n" for _str in data.split('\n')[-depth:]])
 
-    default = "The complete error message is reported in the terminal." \
-              " If the error persists, please let us know by opening an issue on" \
-              " https://github.com/kreshuklab/plant-seg."
+    default = (
+        "The complete error message is reported in the terminal."
+        " If the error persists, please let us know by opening an issue on"
+        " https://github.com/kreshuklab/plant-seg."
+    )
 
     popup = tkinter.Tk()
     popup.title("Error")
@@ -631,10 +563,9 @@ def report_error(data, font=None, depth=3):
 
 
 class AutoResPopup:
-    """ Pop up wizard for rescaling input data"""
+    """Pop up wizard for rescaling input data"""
 
     def __init__(self, net_resolution, net_name, tk_value, font=None):
-
         popup = tkinter.Toplevel()
         popup.title("Guided Re-Scale")
         popup.configure(bg="white")
@@ -665,16 +596,14 @@ class AutoResPopup:
         popup_instructions.grid(row=0, column=0, sticky=stick_all)
         popup_instructions.configure(bg="white")
 
-        all_text = [f"The model you currently selected is {self.net_name}",
-                    f"The model was trained with data at voxel resolution of {self.net_resolution} (zxy \u03BCm)",
-                    f"It is generally useful to rescale your input data to match the resolution of the original data"]
+        all_text = [
+            f"The model you currently selected is {self.net_name}",
+            f"The model was trained with data at voxel resolution of {self.net_resolution} (zxy \u03bcm)",
+            "It is generally useful to rescale your input data to match the resolution of the original data",
+        ]
 
         labels = [tkinter.Label(popup_instructions, bg="white", text=text, font=self.font) for text in all_text]
-        [label.grid(column=0,
-                    row=i,
-                    padx=10,
-                    pady=10,
-                    sticky=stick_all) for i, label in enumerate(labels)]
+        [label.grid(column=0, row=i, padx=10, pady=10, sticky=stick_all) for i, label in enumerate(labels)]
 
     def update_input_resolution(self):
         self.user_input = [self.list_entry.tk_value[i].get() for i in range(3)]
@@ -683,9 +612,9 @@ class AutoResPopup:
         self.popup.destroy()
 
     def rescale_button_widget(self):
-        self.list_entry = ListEntry(self.popup, "Input your data resolution (zxy \u03BCm): ",
-                                    row=1, column=0, type=float,
-                                    font=self.font)
+        self.list_entry = ListEntry(
+            self.popup, "Input your data resolution (zxy \u03bcm): ", row=1, column=0, type=float, font=self.font
+        )
         self.list_entry(self.net_resolution, [])
         self.scale_factor = []
 
@@ -694,15 +623,15 @@ class AutoResPopup:
         tkinter.Grid.rowconfigure(popup_button, 0, weight=1)
         tkinter.Grid.columnconfigure(popup_button, 0, weight=1)
         popup_button.grid(row=2, column=0, sticky=stick_all)
-        button = tkinter.Button(popup_button, bg=convert_rgb(PLANTSEG_GREEN), text="Compute Rescaling Factor",
-                                command=self.update_input_resolution,
-                                font=self.font)
+        button = tkinter.Button(
+            popup_button,
+            bg=convert_rgb(PLANTSEG_GREEN),
+            text="Compute Rescaling Factor",
+            command=self.update_input_resolution,
+            font=self.font,
+        )
 
-        button.grid(column=0,
-                    row=0,
-                    padx=10,
-                    pady=10,
-                    sticky=stick_all)
+        button.grid(column=0, row=0, padx=10, pady=10, sticky=stick_all)
 
         search_button_frame = tkinter.Frame(self.popup)
         search_button_frame.configure(bg="white")
@@ -714,19 +643,20 @@ class AutoResPopup:
         label0 = tkinter.Label(search_button_frame, bg="white", text=text, font=self.font)
         label0.grid(column=0, row=0, padx=10, pady=10, sticky=stick_all)
 
-        search_button = tkinter.Button(search_button_frame, bg=convert_rgb(PLANTSEG_GREEN),
-                                       text="Compute Rescaling Factor From File",
-                                       command=self.read_from_file,
-                                       font=self.font)
+        search_button = tkinter.Button(
+            search_button_frame,
+            bg=convert_rgb(PLANTSEG_GREEN),
+            text="Compute Rescaling Factor From File",
+            command=self.read_from_file,
+            font=self.font,
+        )
 
-        search_button.grid(column=0,
-                           row=1,
-                           padx=10,
-                           pady=10,
-                           sticky=stick_all)
+        search_button.grid(column=0, row=1, padx=10, pady=10, sticky=stick_all)
 
-        text = "N.B. Rescaling input data to the training data resolution has shown to be very helpful in some cases" \
-               " and detrimental in others."
+        text = (
+            "N.B. Rescaling input data to the training data resolution has shown to be very helpful in some cases"
+            " and detrimental in others."
+        )
         label1 = tkinter.Label(search_button_frame, bg="white", text=text, font=self.font)
         label1.grid(column=0, row=2, padx=10, pady=10, sticky=stick_all)
 
@@ -745,7 +675,7 @@ class AutoResPopup:
 
 
 class LoadModelPopup:
-    """ Pop up wizard for loading a neural network model"""
+    """Pop up wizard for loading a neural network model"""
 
     def __init__(self, restart, font):
         popup = tkinter.Toplevel()
@@ -772,20 +702,18 @@ class LoadModelPopup:
         popup_instructions.grid(row=0, column=0, sticky=stick_all)
         popup_instructions.configure(bg="white")
 
-        all_text = [f"In order to load a custom model you need to create a directory with the following three files: ",
-                    "- Configuration file used for training (name must be config_train.yml)",
-                    "- Best networks parameters (name must be best_checkpoint.pytorch)",
-                    "- Last networks parameters (name must be last_checkpoint.pytorch)",
-                    "All mentioned files are created when training using https://github.com/wolny/pytorch-3dunet,",
-                    "Please check our repository pytorch-3dunet for training your own data.",
-                    120 * " "]
+        all_text = [
+            "In order to load a custom model you need to create a directory with the following three files: ",
+            "- Configuration file used for training (name must be config_train.yml)",
+            "- Best networks parameters (name must be best_checkpoint.pytorch)",
+            "- Last networks parameters (name must be last_checkpoint.pytorch)",
+            "All mentioned files are created when training using https://github.com/wolny/pytorch-3dunet,",
+            "Please check our repository pytorch-3dunet for training your own data.",
+            120 * " ",
+        ]
 
         labels = [tkinter.Label(popup_instructions, bg="white", text=text, font=self.font) for text in all_text]
-        [label.grid(column=0,
-                    row=i,
-                    padx=10,
-                    pady=10,
-                    sticky=stick_all) for i, label in enumerate(labels)]
+        [label.grid(column=0, row=i, padx=10, pady=10, sticky=stick_all) for i, label in enumerate(labels)]
 
     def load_model_button(self):
         popup_load = tkinter.Frame(self.popup)
@@ -800,32 +728,35 @@ class LoadModelPopup:
 
         self.file_dialog_frame(popup_load, row=0, column=0)
 
-        self.simple_entry1 = SimpleEntry(popup_load, "Model Name: ",
-                                         large_bar=True,
-                                         row=1, column=0, _type=str, _font=self.font)
+        self.simple_entry1 = SimpleEntry(
+            popup_load, "Model Name: ", large_bar=True, row=1, column=0, _type=str, _font=self.font
+        )
         self.simple_entry1("custom_net", [])
 
-        self.list_entry = ListEntry(popup_load, "Input your training data resolution (zxy \u03BCm): ",
-                                    row=2, column=0, type=float,
-                                    font=self.font)
-        self.list_entry([1., 1., 1.], [])
+        self.list_entry = ListEntry(
+            popup_load,
+            "Input your training data resolution (zxy \u03bcm): ",
+            row=2,
+            column=0,
+            type=float,
+            font=self.font,
+        )
+        self.list_entry([1.0, 1.0, 1.0], [])
 
-        self.simple_entry2 = SimpleEntry(popup_load, "Description: ",
-                                         large_bar=True,
-                                         row=3, column=0, _type=str, _font=self.font)
+        self.simple_entry2 = SimpleEntry(
+            popup_load, "Description: ", large_bar=True, row=3, column=0, _type=str, _font=self.font
+        )
         self.simple_entry2("", [])
 
-        button = tkinter.Button(popup_load, bg=convert_rgb(PLANTSEG_GREEN),
-                                text="Add Model Directory (This will restart PlantSeg,"
-                                     " all changes not saved will be deleted)",
-                                command=self.load_model,
-                                font=self.font)
+        button = tkinter.Button(
+            popup_load,
+            bg=convert_rgb(PLANTSEG_GREEN),
+            text="Add Model Directory (This will restart PlantSeg," " all changes not saved will be deleted)",
+            command=self.load_model,
+            font=self.font,
+        )
 
-        button.grid(column=0,
-                    row=4,
-                    padx=10,
-                    pady=10,
-                    sticky=stick_all)
+        button.grid(column=0, row=4, padx=10, pady=10, sticky=stick_all)
 
     def file_dialog_frame(self, popup, row=0, column=0):
         popup_file = tkinter.Frame(popup)
@@ -845,8 +776,9 @@ class LoadModelPopup:
         x = tkinter.Entry(popup_file, textvar=self.file_dialog.files, font=self.font)
         x.grid(column=1, row=0, padx=0, pady=0, sticky=stick_ew)
 
-        x = tkinter.Button(popup_file, bg="white", text="Directory",
-                           command=self.file_dialog.browse_for_directory, font=self.font)
+        x = tkinter.Button(
+            popup_file, bg="white", text="Directory", command=self.file_dialog.browse_for_directory, font=self.font
+        )
         x.grid(column=2, row=0, padx=10, pady=0, sticky=stick_ew)
 
     def load_model(self):
@@ -860,9 +792,15 @@ class LoadModelPopup:
         # Get description
         description = str(self.simple_entry2.tk_value.get())
 
-        success = model_zoo.add_custom_model(new_model_name=model_name, location=path, resolution=resolution,
-                                             description=description, dimensionality='unknown',
-                                             modality='unknown', output_type='unknown')
+        success = model_zoo.add_custom_model(
+            new_model_name=model_name,
+            location=path,
+            resolution=resolution,
+            description=description,
+            dimensionality='unknown',
+            modality='unknown',
+            output_type='unknown',
+        )
         if not success[0]:
             gui_logger.error(success[1])
             self.popup.destroy()
@@ -872,7 +810,7 @@ class LoadModelPopup:
 
 
 class RemovePopup:
-    """ Pop up wizard for removing a neural network model"""
+    """Pop up wizard for removing a neural network model"""
 
     def __init__(self, restart, font):
         popup = tkinter.Toplevel()
@@ -910,8 +848,9 @@ class RemovePopup:
         popup_file.grid(row=row, column=column, sticky=stick_all)
         popup_file.configure(bg="white")
 
-        x = tkinter.Label(popup_file, bg="white", text="Type the custom model name you want to delete: ",
-                          anchor="w", font=self.font)
+        x = tkinter.Label(
+            popup_file, bg="white", text="Type the custom model name you want to delete: ", anchor="w", font=self.font
+        )
         x.grid(column=0, row=0, padx=10, pady=10, sticky=stick_ew)
 
         x = tkinter.Entry(popup_file, textvar=self.file_to_remove, font=self.font)
@@ -921,7 +860,7 @@ class RemovePopup:
         x.grid(column=1, row=1, padx=10, pady=10, sticky=stick_ew)
 
     def delete_model(self):
-        """ Deletes the model directory after validation """
+        """Deletes the model directory after validation"""
         self.file_to_remove = self.file_to_remove.get()
         custom_zoo_dict = load_config(PATH_MODEL_ZOO_CUSTOM)
 
@@ -964,13 +903,11 @@ def version_popup():
     popup_frame.configure(bg="white")
     popup_frame.grid(row=0, column=0, sticky=stick_all)
 
-    text = f"PlantSeg version: {__version__}\n \n" \
-           f"Visit our source page for more info \n \n" \
-           f"https://github.com/kreshuklab/plant-seg"
+    text = (
+        f"PlantSeg version: {__version__}\n \n"
+        f"Visit our source page for more info \n \n"
+        f"https://github.com/kreshuklab/plant-seg"
+    )
 
     label = tkinter.Label(popup_frame, bg="white", text=text)
-    label.grid(column=0,
-               row=0,
-               padx=10,
-               pady=10,
-               sticky=stick_all)
+    label.grid(column=0, row=0, padx=10, pady=10, sticky=stick_all)

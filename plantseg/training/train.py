@@ -16,7 +16,9 @@ from plantseg.training.model import UNet2D, UNet3D
 from plantseg.training.trainer import UNetTrainer
 
 
-def create_model_config(checkpoint_dir: Path, in_channels, out_channels, patch_size, dimensionality, sparse, f_maps, max_num_iters):
+def create_model_config(
+    checkpoint_dir: Path, in_channels, out_channels, patch_size, dimensionality, sparse, f_maps, max_num_iters
+):
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     with open(PATH_TRAIN_TEMPLATE, 'r') as f:
         train_template = yaml.load(f, Loader=yaml.FullLoader)
@@ -41,17 +43,28 @@ def create_model_config(checkpoint_dir: Path, in_channels, out_channels, patch_s
         yaml.dump(train_template, yaml_file, default_flow_style=False)
 
 
-def unet_training(dataset_dir: str, model_name: str, in_channels: int, out_channels: int, feature_maps: tuple,
-                  patch_size: Tuple[int, int, int], max_num_iters: int, dimensionality: str,
-                  sparse: bool, device: str) -> None:
+def unet_training(
+    dataset_dir: str,
+    model_name: str,
+    in_channels: int,
+    out_channels: int,
+    feature_maps: tuple,
+    patch_size: Tuple[int, int, int],
+    max_num_iters: int,
+    dimensionality: str,
+    sparse: bool,
+    device: str,
+) -> None:
     # Model instantiation and logging
     final_sigmoid = not sparse
     if dimensionality in ['2D', '2d']:
-        model = UNet2D(in_channels=in_channels, out_channels=out_channels, f_maps=feature_maps,
-                       final_sigmoid=final_sigmoid)
+        model = UNet2D(
+            in_channels=in_channels, out_channels=out_channels, f_maps=feature_maps, final_sigmoid=final_sigmoid
+        )
     else:
-        model = UNet3D(in_channels=in_channels, out_channels=out_channels, f_maps=feature_maps,
-                       final_sigmoid=final_sigmoid)
+        model = UNet3D(
+            in_channels=in_channels, out_channels=out_channels, f_maps=feature_maps, final_sigmoid=final_sigmoid
+        )
     gui_logger.info(f'Using {model.__class__.__name__} model for training.')
 
     # Device configuration
@@ -70,10 +83,12 @@ def unet_training(dataset_dir: str, model_name: str, in_channels: int, out_chann
     train_datasets = create_datasets(dataset_dir, 'train', patch_size)
     val_datasets = create_datasets(dataset_dir, 'val', patch_size)
     loaders = {
-        'train': DataLoader(ConcatDataset(train_datasets), batch_size=batch_size, shuffle=True, pin_memory=True,
-                            num_workers=1),
-        'val': DataLoader(ConcatDataset(val_datasets), batch_size=batch_size, shuffle=False, pin_memory=True,
-                          num_workers=1)
+        'train': DataLoader(
+            ConcatDataset(train_datasets), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=1
+        ),
+        'val': DataLoader(
+            ConcatDataset(val_datasets), batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=1
+        ),
     }
 
     # Optimizer and training environment setup
@@ -82,8 +97,9 @@ def unet_training(dataset_dir: str, model_name: str, in_channels: int, out_chann
     gui_logger.info(f'Saving training files in {checkpoint_dir}')
     assert not checkpoint_dir.exists(), f'Checkpoint dir {checkpoint_dir} already exists!'
 
-    create_model_config(checkpoint_dir, in_channels, out_channels, patch_size, dimensionality, sparse, feature_maps,
-                        max_num_iters)
+    create_model_config(
+        checkpoint_dir, in_channels, out_channels, patch_size, dimensionality, sparse, feature_maps, max_num_iters
+    )
 
     # Trainer initialization and execution
     trainer = UNetTrainer(
@@ -94,7 +110,7 @@ def unet_training(dataset_dir: str, model_name: str, in_channels: int, out_chann
         loaders=loaders,
         checkpoint_dir=checkpoint_dir,
         max_num_iterations=max_num_iters,
-        device=device
+        device=device,
     )
 
     trainer.train()
@@ -104,10 +120,17 @@ def create_datasets(dataset_dir: str, phase: str, patch_shape):
     assert phase in ['train', 'val'], f'Phase {phase} not supported'
     phase_dir = Path(dataset_dir) / phase
     file_paths = find_h5_files(phase_dir)
-    return [HDF5Dataset(file_path=file_path, augmenter=Augmenter(), patch_shape=patch_shape) for file_path in file_paths]
+    return [
+        HDF5Dataset(file_path=file_path, augmenter=Augmenter(), patch_shape=patch_shape) for file_path in file_paths
+    ]
 
 
 def find_h5_files(data_dir):
     data_dir = Path(data_dir)
     assert data_dir.is_dir(), f'Not a directory {data_dir}'
-    return list(data_dir.glob("*.h5")) + list(data_dir.glob("*.hdf")) + list(data_dir.glob("*.hdf5")) + list(data_dir.glob("*.hd5"))
+    return (
+        list(data_dir.glob("*.h5"))
+        + list(data_dir.glob("*.hdf"))
+        + list(data_dir.glob("*.hdf5"))
+        + list(data_dir.glob("*.hd5"))
+    )

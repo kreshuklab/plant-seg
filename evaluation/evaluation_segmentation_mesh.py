@@ -7,8 +7,6 @@ import numpy as np
 from rand import adapted_rand
 from voi import voi
 
-from plyfile import PlyData, PlyElement
-
 
 def write_csv(output_path, results):
     assert len(results) > 0
@@ -69,7 +67,6 @@ if __name__ == "__main__":
     for dataset in datasets:
         for tp in time_points:
             for st in seg_types:
-
                 seg_path = f"{data_path}{dataset}{tp}{st}{seg_id}"
                 gt_path = f"{data_path}{dataset}{tp}{st}{gt_id}"
 
@@ -86,15 +83,17 @@ if __name__ == "__main__":
                     _voi = voi(seg, gt)
                     print("  scores: ", _rand, _voi[0], _voi[1])
 
-                    result = {"dataset": dataset,
-                              "time_point": tp,
-                              "segmentation_id": seg_id,
-                              "segmentation_path": seg_path,
-                              "groundtruth_path": gt_path,
-                              "adapted_rand": _rand,
-                              "voi": _voi,
-                              "voi_split": _voi[0],
-                              "voi_merge": _voi[1]}
+                    result = {
+                        "dataset": dataset,
+                        "time_point": tp,
+                        "segmentation_id": seg_id,
+                        "segmentation_path": seg_path,
+                        "groundtruth_path": gt_path,
+                        "adapted_rand": _rand,
+                        "voi": _voi,
+                        "voi_split": _voi[0],
+                        "voi_merge": _voi[1],
+                    }
 
                     results.append(result)
 

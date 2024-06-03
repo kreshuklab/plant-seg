@@ -1,0 +1,10 @@
+[tool.typos.default.extend-words]
+nd = "nd"  # N-dimensional (ND)
+ome = "ome"  # Open Microscopy Environment (OME)
+datas = "datas"  # pyinstaller
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "preserve"

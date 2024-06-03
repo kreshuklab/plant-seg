@@ -26,7 +26,6 @@ def sample_label():
 
 
 class TestWidgetRescaling:
-
     def test_rescaling_from_factor(self, make_napari_viewer_proxy, sample_image):
         viewer = make_napari_viewer_proxy()
         viewer.add_image(**sample_image)

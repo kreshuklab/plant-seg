@@ -19,7 +19,8 @@ def shift_affinities(affinities, offsets):
         padded_inverted_affs = np.pad(affinities, pad_width=((0, 0),) + tuple(padding), mode='constant')
 
         crop_slices = tuple(
-            slice(padding[ax][0], padded_inverted_affs.shape[ax + 1] - padding[ax][1]) for ax in range(3))
+            slice(padding[ax][0], padded_inverted_affs.shape[ax + 1] - padding[ax][1]) for ax in range(3)
+        )
 
         padded_inverted_affs = np.roll(padded_inverted_affs[i], shifts, axis=(0, 1, 2))[crop_slices]
         rolled_affs.append(padded_inverted_affs)

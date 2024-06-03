@@ -50,10 +50,14 @@ class PlantSegApp:
         self.plant_segapp.tk.call('wm', 'iconphoto', self.plant_segapp._w, icon)
 
         self.plant_segapp.resizable(width=True, height=True)
-        [tkinter.Grid.rowconfigure(self.plant_segapp, int(key), weight=value)
-         for key, value in self.app_config["row_weights"].items()]
-        [tkinter.Grid.columnconfigure(self.plant_segapp, int(key), weight=value)
-         for key, value in self.app_config["columns_weights"].items()]
+        [
+            tkinter.Grid.rowconfigure(self.plant_segapp, int(key), weight=value)
+            for key, value in self.app_config["row_weights"].items()
+        ]
+        [
+            tkinter.Grid.columnconfigure(self.plant_segapp, int(key), weight=value)
+            for key, value in self.app_config["columns_weights"].items()
+        ]
         self.plant_segapp.configure(bg=self.app_config["bg"])
         self.plant_segapp.title(self.app_config["title"])
         self.plant_segapp.update()
@@ -118,16 +122,13 @@ class PlantSegApp:
         menubar.add_cascade(label="Edit", menu=editmenu, font=self.font)
 
         helpmenu = tkinter.Menu(menubar, tearoff=0)
-        helpmenu.add_command(label="PlantSeg Overview",
-                             command=self.open_documentation_index, font=self.font)
-        helpmenu.add_command(label="Data Pre-Processing",
-                             command=self.open_documentation_preprocessing, font=self.font)
-        helpmenu.add_command(label="CNN Predictions",
-                             command=self.open_documentation_3dunet, font=self.font)
-        helpmenu.add_command(label="Segmentation",
-                             command=self.open_documentation_segmentation, font=self.font)
-        helpmenu.add_command(label="Data Post-Processing",
-                             command=self.open_documentation_preprocessing, font=self.font)
+        helpmenu.add_command(label="PlantSeg Overview", command=self.open_documentation_index, font=self.font)
+        helpmenu.add_command(label="Data Pre-Processing", command=self.open_documentation_preprocessing, font=self.font)
+        helpmenu.add_command(label="CNN Predictions", command=self.open_documentation_3dunet, font=self.font)
+        helpmenu.add_command(label="Segmentation", command=self.open_documentation_segmentation, font=self.font)
+        helpmenu.add_command(
+            label="Data Post-Processing", command=self.open_documentation_preprocessing, font=self.font
+        )
         helpmenu.add_separator()
         helpmenu.add_command(label="About...", command=version_popup, font=self.font)
 
@@ -155,14 +156,19 @@ class PlantSegApp:
 
         x.grid(column=0, row=0, padx=10, pady=10, sticky=self.stick_all)
 
-        x = tkinter.Entry(browser_frame0, textvar=file_to_process.files,
-                          font=self.font)
+        x = tkinter.Entry(browser_frame0, textvar=file_to_process.files, font=self.font)
         x.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
-        x = tkinter.Button(browser_frame0, bg="white", text="File",
-                           command=file_to_process.browse_for_file, font=self.font_bold)
+        x = tkinter.Button(
+            browser_frame0, bg="white", text="File", command=file_to_process.browse_for_file, font=self.font_bold
+        )
         x.grid(column=2, row=0, padx=0, pady=0, sticky=self.stick_all)
-        x = tkinter.Button(browser_frame0, bg="white", text="Directory",
-                           command=file_to_process.browse_for_directory, font=self.font_bold)
+        x = tkinter.Button(
+            browser_frame0,
+            bg="white",
+            text="Directory",
+            command=file_to_process.browse_for_directory,
+            font=self.font_bold,
+        )
         x.grid(column=3, row=0, padx=0, pady=0, sticky=self.stick_all)
         self.file_to_process = file_to_process
 
@@ -174,18 +180,15 @@ class PlantSegApp:
         configuration_config = self.app_config["configuration_frame"]
         self.config_row_column(configuration_frame1, configuration_config)
 
-        configuration_frame1.grid(row=int(configuration_config["row"]),
-                                  column=int(configuration_config["column"]),
-                                  sticky=self.stick_all)
+        configuration_frame1.grid(
+            row=int(configuration_config["row"]), column=int(configuration_config["column"]), sticky=self.stick_all
+        )
         configuration_frame1["highlightthickness"] = configuration_config["highlightthickness"]
         configuration_frame1["bg"] = configuration_config["bg"]
 
         self.configuration_frame1 = configuration_frame1
 
-        (self.pre_proc_obj,
-         self.predictions_obj,
-         self.segmentation_obj,
-         self.post_obj) = self.init_menus(show_all=True)
+        (self.pre_proc_obj, self.predictions_obj, self.segmentation_obj, self.post_obj) = self.init_menus(show_all=True)
 
     def init_frame2(self):
         # =============================================================================================================
@@ -196,29 +199,31 @@ class PlantSegApp:
 
         self.config_row_column(run_frame2, run_config)
 
-        run_frame2.grid(row=int(run_config["row"]),
-                        column=int(run_config["column"]),
-                        sticky=self.stick_all)
+        run_frame2.grid(row=int(run_config["row"]), column=int(run_config["column"]), sticky=self.stick_all)
         run_frame2["highlightthickness"] = run_config["highlightthickness"]
         run_frame2["bg"] = run_config["bg"]
 
-        x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
-                           text="Add Custom Model", font=self.font_bold)
+        x = tkinter.Button(
+            run_frame2, bg=convert_rgb(self.app_config["green"]), text="Add Custom Model", font=self.font_bold
+        )
         x.grid(column=3, row=0, padx=10, pady=10, sticky=self.stick_all)
         x["command"] = self.load_custom_model
 
-        x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
-                           text="PlantSeg Introduction", font=self.font_bold)
+        x = tkinter.Button(
+            run_frame2, bg=convert_rgb(self.app_config["green"]), text="PlantSeg Introduction", font=self.font_bold
+        )
         x.grid(column=4, row=0, padx=10, pady=10, sticky=self.stick_all)
         x["command"] = self.open_documentation_index
 
-        x = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
-                           text="Reset Parameters", font=self.font_bold)
+        x = tkinter.Button(
+            run_frame2, bg=convert_rgb(self.app_config["green"]), text="Reset Parameters", font=self.font_bold
+        )
         x.grid(column=5, row=0, padx=10, pady=10, sticky=self.stick_all)
         x["command"] = self.reset_config
 
-        self.run_button = tkinter.Button(run_frame2, bg=convert_rgb(self.app_config["green"]),
-                                         text="Run", command=self._run, font=self.font_bold)
+        self.run_button = tkinter.Button(
+            run_frame2, bg=convert_rgb(self.app_config["green"]), text="Run", command=self._run, font=self.font_bold
+        )
         self.run_button.grid(column=6, row=0, padx=10, pady=10, sticky=self.stick_all)
 
         self.run_frame2 = run_frame2
@@ -231,9 +236,7 @@ class PlantSegApp:
         out_config = self.app_config["out_frame"]
         self.config_row_column(out_frame3, out_config)
 
-        out_frame3.grid(row=int(out_config["row"]),
-                        column=int(out_config["column"]),
-                        sticky=self.stick_all)
+        out_frame3.grid(row=int(out_config["row"]), column=int(out_config["column"]), sticky=self.stick_all)
         out_frame3["highlightthickness"] = out_config["highlightthickness"]
         out_frame3["bg"] = out_config["bg"]
 
@@ -332,67 +335,76 @@ class PlantSegApp:
         return app_config
 
     def reset_config(self):
-        """ reset to default config, do not change path"""
+        """reset to default config, do not change path"""
         plant_config_path = os.path.join(PATH_STANDARD_TEMPLATE)
         self.plantseg_config = load_config(plant_config_path)
 
-        (self.pre_proc_obj,
-         self.predictions_obj,
-         self.segmentation_obj,
-         self.post_obj) = self.init_menus()
+        (self.pre_proc_obj, self.predictions_obj, self.segmentation_obj, self.post_obj) = self.init_menus()
 
     def open_config(self):
-        """ open new config"""
+        """open new config"""
         default_start = os.path.join(PATH_CONFIGS)
         os.makedirs(default_start, exist_ok=True)
-        plant_config_path = tkinter.filedialog.askopenfilename(initialdir=default_start,
-                                                               title="Select file",
-                                                               filetypes=(("yaml files", "*.yaml"),
-                                                                          ("yaml files", "*.yml")))
+        plant_config_path = tkinter.filedialog.askopenfilename(
+            initialdir=default_start, title="Select file", filetypes=(("yaml files", "*.yaml"), ("yaml files", "*.yml"))
+        )
         if len(plant_config_path) > 0:
             self.plantseg_config = load_config(plant_config_path)
-            (self.pre_proc_obj,
-             self.predictions_obj,
-             self.segmentation_obj,
-             self.post_obj) = self.init_menus()
+            (self.pre_proc_obj, self.predictions_obj, self.segmentation_obj, self.post_obj) = self.init_menus()
 
     def save_config(self):
-        """ save yaml from current entries in the legacy_gui"""
+        """save yaml from current entries in the legacy_gui"""
         self.update_config()
         default_start = os.path.join(PATH_CONFIGS)
         os.makedirs(default_start, exist_ok=True)
 
-        save_path = tkinter.filedialog.asksaveasfilename(initialdir=default_start,
-                                                         defaultextension=".yaml",
-                                                         filetypes=(("yaml files", "*.yaml"),))
+        save_path = tkinter.filedialog.asksaveasfilename(
+            initialdir=default_start, defaultextension=".yaml", filetypes=(("yaml files", "*.yaml"),)
+        )
         if len(save_path) > 0:
             with open(save_path, "w") as f:
                 yaml.dump(self.plantseg_config, f)
 
     # End config Read/Write ========= Begin Others
     def init_menus(self, show_all=True):
-        """ Initialize menu entries from config"""
+        """Initialize menu entries from config"""
         from ..legacy_gui.gui_widgets import PreprocessingFrame, UnetPredictionFrame, SegmentationFrame, PostFrame
-        pre_proc_obj = PreprocessingFrame(self.configuration_frame1, self.plantseg_config,
-                                          col=0, module_name="Data Pre-Processing",
-                                          font=self.font, show_all=show_all)
-        predictions_obj = UnetPredictionFrame(self.configuration_frame1, self.plantseg_config,
-                                              col=1, module_name="CNN Predictions",
-                                              font=self.font, show_all=show_all)
-        segmentation_obj = SegmentationFrame(self.configuration_frame1, self.plantseg_config,
-                                             col=2, module_name="Segmentation",
-                                             font=self.font, show_all=show_all)
-        post_obj = PostFrame(self.configuration_frame1, self.plantseg_config,
-                             col=3, font=self.font, show_all=show_all)
+
+        pre_proc_obj = PreprocessingFrame(
+            self.configuration_frame1,
+            self.plantseg_config,
+            col=0,
+            module_name="Data Pre-Processing",
+            font=self.font,
+            show_all=show_all,
+        )
+        predictions_obj = UnetPredictionFrame(
+            self.configuration_frame1,
+            self.plantseg_config,
+            col=1,
+            module_name="CNN Predictions",
+            font=self.font,
+            show_all=show_all,
+        )
+        segmentation_obj = SegmentationFrame(
+            self.configuration_frame1,
+            self.plantseg_config,
+            col=2,
+            module_name="Segmentation",
+            font=self.font,
+            show_all=show_all,
+        )
+        post_obj = PostFrame(self.configuration_frame1, self.plantseg_config, col=3, font=self.font, show_all=show_all)
 
         return pre_proc_obj, predictions_obj, segmentation_obj, post_obj
 
     @staticmethod
     def config_row_column(frame, config):
-        _ = [tkinter.Grid.rowconfigure(frame, int(key), weight=value)
-             for key, value in config["row_weights"].items()]
-        _ = [tkinter.Grid.columnconfigure(frame, int(key), weight=value)
-             for key, value in config["columns_weights"].items()]
+        _ = [tkinter.Grid.rowconfigure(frame, int(key), weight=value) for key, value in config["row_weights"].items()]
+        _ = [
+            tkinter.Grid.columnconfigure(frame, int(key), weight=value)
+            for key, value in config["columns_weights"].items()
+        ]
 
     @staticmethod
     def open_documentation_index():
@@ -420,7 +432,7 @@ class PlantSegApp:
         webbrowser.open("https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/data_processing.html")
 
     def size_up(self):
-        """ adjust font size in the main widget"""
+        """adjust font size in the main widget"""
         self.font_size += 2
         self.font_size = min(100, self.font_size)
         self.update_font(self.font_size)
@@ -429,7 +441,7 @@ class PlantSegApp:
         self.build_all()
 
     def size_down(self):
-        """ adjust font size in the main widget"""
+        """adjust font size in the main widget"""
         self.font_size -= 2
         self.font_size = max(0, self.font_size)
         self.update_font(self.font_size)
@@ -454,7 +466,7 @@ class PlantSegApp:
         RemovePopup(self.restart_program, self.font)
 
     def close(self):
-        """Thi function let the user decide if saving  the current config"""
+        """Let the user decide to save the current config"""
 
         def close_action():
             """simply close the app"""
@@ -497,7 +509,7 @@ class PlantSegApp:
         x.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
 
     def update_config(self):
-        """ create from legacy_gui an updated yaml dictionary"""
+        """create from legacy_gui an updated yaml dictionary"""
 
         # open a template config
         plantseg_config = load_config(self.plant_config_path)
@@ -505,25 +517,24 @@ class PlantSegApp:
         # fill with modules input
         plantseg_config["path"] = self.file_to_process.files.get()
 
-        plantseg_config = self.pre_proc_obj.check_and_update_config(plantseg_config,
-                                                                    dict_key="preprocessing")
+        plantseg_config = self.pre_proc_obj.check_and_update_config(plantseg_config, dict_key="preprocessing")
 
-        plantseg_config = self.predictions_obj.check_and_update_config(plantseg_config,
-                                                                       dict_key="cnn_prediction")
+        plantseg_config = self.predictions_obj.check_and_update_config(plantseg_config, dict_key="cnn_prediction")
 
-        plantseg_config = self.post_obj.post_pred_obj.check_and_update_config(plantseg_config,
-                                                                              dict_key="cnn_postprocessing")
+        plantseg_config = self.post_obj.post_pred_obj.check_and_update_config(
+            plantseg_config, dict_key="cnn_postprocessing"
+        )
 
-        plantseg_config = self.segmentation_obj.check_and_update_config(plantseg_config,
-                                                                        dict_key="segmentation")
+        plantseg_config = self.segmentation_obj.check_and_update_config(plantseg_config, dict_key="segmentation")
 
-        plantseg_config = self.post_obj.post_seg_obj.check_and_update_config(plantseg_config,
-                                                                             dict_key="segmentation_postprocessing")
+        plantseg_config = self.post_obj.post_seg_obj.check_and_update_config(
+            plantseg_config, dict_key="segmentation_postprocessing"
+        )
         # Save plantseg_config
         self.plantseg_config = plantseg_config
 
     def _run(self):
-        """ create a yaml config from the legacy_gui and run the pipeline accordingly"""
+        """create a yaml config from the legacy_gui and run the pipeline accordingly"""
         # Disable run button to avoid multiple actions.
         self.run_button["state"] = "disabled"
 

@@ -3,6 +3,7 @@ from typing import Optional
 import numpy as np
 import torch
 
+
 class Compose:
     """
     Compose several transforms together.
@@ -10,6 +11,7 @@ class Compose:
     Args:
         transforms (list of callable): The list of transforms to compose.
     """
+
     def __init__(self, transforms):
         self.transforms = transforms
 
@@ -56,8 +58,13 @@ class Standardize:
         AssertionError: If mean or std is provided, both must be provided.
     """
 
-
-    def __init__(self, eps: float = 1e-10, mean: Optional[float] = None, std: Optional[float] = None, channelwise: bool = False):
+    def __init__(
+        self,
+        eps: float = 1e-10,
+        mean: Optional[float] = None,
+        std: Optional[float] = None,
+        channelwise: bool = False,
+    ):
         if (mean is None) != (std is None):
             raise ValueError("Both 'mean' and 'std' must be provided together or not at all.")
 
@@ -94,7 +101,4 @@ def get_test_augmentations(raw: Optional[np.ndarray], expand_dims: bool = True) 
     mean = np.mean(raw) if raw is not None else None
     std = np.std(raw) if raw is not None else None
 
-    return Compose([
-        Standardize(mean=mean, std=std),
-        ToTensor(expand_dims=expand_dims)
-    ])
+    return Compose([Standardize(mean=mean, std=std), ToTensor(expand_dims=expand_dims)])

@@ -3,8 +3,12 @@ from typing import Optional, Any
 import numpy as np
 from skimage.transform import resize
 
-from plantseg.dataprocessing.functional.dataprocessing import image_rescale, image_median, image_gaussian_smoothing, \
-    image_crop
+from plantseg.dataprocessing.functional.dataprocessing import (
+    image_rescale,
+    image_median,
+    image_gaussian_smoothing,
+    image_crop,
+)
 from plantseg.pipeline import gui_logger
 from plantseg.pipeline.steps import GenericPipelineStep
 
@@ -15,33 +19,37 @@ def _no_filter(image, param):
 
 
 class DataPostProcessing3D(GenericPipelineStep):
-    def __init__(self,
-                 input_paths: list[str],
-                 input_key: Optional[str] = None,
-                 input_channel: Optional[int] = None,
-                 input_type: str = "labels",
-                 output_type: str = "labels",
-                 save_directory: str = "PostProcessing",
-                 factor: Optional[tuple[float, float, float]] = None,
-                 out_ext: str = ".h5",
-                 state: bool = True,
-                 save_raw: bool = False,
-                 output_shapes: Optional[list] = None):
+    def __init__(
+        self,
+        input_paths: list[str],
+        input_key: Optional[str] = None,
+        input_channel: Optional[int] = None,
+        input_type: str = "labels",
+        output_type: str = "labels",
+        save_directory: str = "PostProcessing",
+        factor: Optional[tuple[float, float, float]] = None,
+        out_ext: str = ".h5",
+        state: bool = True,
+        save_raw: bool = False,
+        output_shapes: Optional[list] = None,
+    ):
         if factor is None:
             factor = (1, 1, 1)
 
         h5_output_key = "segmentation" if input_type == "labels" else "predictions"
 
-        super().__init__(input_paths,
-                         input_type=input_type,
-                         output_type=output_type,
-                         save_directory=save_directory,
-                         input_key=input_key,
-                         input_channel=input_channel,
-                         out_ext=out_ext,
-                         state=state,
-                         h5_output_key=h5_output_key,
-                         save_raw=save_raw)
+        super().__init__(
+            input_paths,
+            input_type=input_type,
+            output_type=output_type,
+            save_directory=save_directory,
+            input_key=input_key,
+            input_channel=input_channel,
+            out_ext=out_ext,
+            state=state,
+            h5_output_key=h5_output_key,
+            save_raw=save_raw,
+        )
 
         # rescaling
         self.factor = factor
@@ -69,28 +77,31 @@ class DataPostProcessing3D(GenericPipelineStep):
 
 
 class DataPreProcessing3D(GenericPipelineStep):
-    def __init__(self,
-                 input_paths: list[str],
-                 input_key: Optional[str] = None,
-                 input_channel: Optional[int] = None,
-                 input_type: str = "data_float32",
-                 output_type: str = "data_uint8",
-                 save_directory: str = "PreProcessing",
-                 factor: Optional[tuple[float, float, float]] = None,
-                 filter_type: Optional[str] = None,
-                 filter_param: Optional[Any] = None,
-                 state: bool = True,
-                 crop: Optional[str] = None):
-
-        super().__init__(input_paths,
-                         input_type=input_type,
-                         output_type=output_type,
-                         save_directory=save_directory,
-                         input_key=input_key,
-                         input_channel=input_channel,
-                         out_ext=".h5",
-                         state=state,
-                         h5_output_key='raw')
+    def __init__(
+        self,
+        input_paths: list[str],
+        input_key: Optional[str] = None,
+        input_channel: Optional[int] = None,
+        input_type: str = "data_float32",
+        output_type: str = "data_uint8",
+        save_directory: str = "PreProcessing",
+        factor: Optional[tuple[float, float, float]] = None,
+        filter_type: Optional[str] = None,
+        filter_param: Optional[Any] = None,
+        state: bool = True,
+        crop: Optional[str] = None,
+    ):
+        super().__init__(
+            input_paths,
+            input_type=input_type,
+            output_type=output_type,
+            save_directory=save_directory,
+            input_key=input_key,
+            input_channel=input_channel,
+            out_ext=".h5",
+            state=state,
+            h5_output_key='raw',
+        )
 
         if factor is None:
             factor = (1, 1, 1)

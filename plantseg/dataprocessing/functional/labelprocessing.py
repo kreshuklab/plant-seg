@@ -9,7 +9,7 @@ def relabel_segmentation(segmentation_image: np.ndarray) -> np.ndarray:
 
     Args:
         segmentation_image (np.ndarray): segmentation image to relabel
-        
+
     Returns:
         new_segmentation_image (np.ndarray): relabeled segmentation image
 
@@ -24,7 +24,7 @@ def set_background_to_value(segmentation_image: np.ndarray, value: int = 0) -> n
     Args:
         segmentation_image (np.ndarray): segmentation image to relabel
         value (int): value to set the background to, default is 0
-        
+
     Returns:
         new_segmentation_image (np.ndarray): segmentation image with background set to value
     """
@@ -32,4 +32,3 @@ def set_background_to_value(segmentation_image: np.ndarray, value: int = 0) -> n
     idx, counts = np.unique(segmentation_image, return_counts=True)
     bg_idx = idx[np.argmax(counts)]
     return np.where(segmentation_image == bg_idx, value, segmentation_image)
-

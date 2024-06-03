@@ -12,10 +12,16 @@ PLANTSEG_MODELS_DIR = ".plantseg_models"
 PLANTSEG_BIN_ZIP = 'plant-seg.zip'
 PLANTSEG_BIN_DIR = 'plant-seg-win'
 
-plantseg_win_urls = {'gpu': {'description': 'Only suggested if a NVIDIA Gpu is installed.',
-                             'url': 'https://heibox.uni-heidelberg.de/f/c2d167ad7d1b486cac48/?dl=1'},
-                     'cpu': {'description': 'Cpu only version, smaller installation size.',
-                             'url': 'https://heibox.uni-heidelberg.de/f/758d076cfadc46a89980/?dl=1'}}
+plantseg_win_urls = {
+    'gpu': {
+        'description': 'Only suggested if a NVIDIA Gpu is installed.',
+        'url': 'https://heibox.uni-heidelberg.de/f/c2d167ad7d1b486cac48/?dl=1',
+    },
+    'cpu': {
+        'description': 'Cpu only version, smaller installation size.',
+        'url': 'https://heibox.uni-heidelberg.de/f/758d076cfadc46a89980/?dl=1',
+    },
+}
 
 
 def download_plantseg(out_path):
@@ -71,9 +77,11 @@ def check():
     plantseg_dir_path = os.path.join(configs_path, PLANTSEG_BIN_DIR)
 
     if not os.path.isdir(plantseg_dir_path):
-        print(f"plantseg Installation... \n"
-              f" plantseg is going to be installed in {configs_path},"
-              f" to uninstall plantseg you can simply delete this directory.")
+        print(
+            f"plantseg Installation... \n"
+            f" plantseg is going to be installed in {configs_path},"
+            f" to uninstall plantseg you can simply delete this directory."
+        )
         install_permission = input('Do you want to proceed with the Installation? (y/n)')
         if install_permission != 'y':
             exit(0)

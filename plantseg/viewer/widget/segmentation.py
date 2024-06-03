@@ -441,7 +441,9 @@ def widget_fix_over_under_segmentation_from_nuclei(
     },
 )
 def widget_fix_false_positive_from_foreground_pmap(
-    segmentation: Labels, foreground: Image, threshold=0.6  # TODO: maybe also allow labels
+    segmentation: Labels,
+    foreground: Image,
+    threshold=0.6,  # TODO: maybe also allow labels
 ) -> Future[LayerDataTuple]:
     out_name = create_layer_name(segmentation.name, 'FGPmapFix')
 

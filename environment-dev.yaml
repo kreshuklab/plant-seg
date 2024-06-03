@@ -25,6 +25,7 @@ dependencies:
   - napari
   - python-graphviz
   - bioimageio.core>=0.6.5
+  - pre-commit
   - mkdocs-material
   - mkdocs-autorefs
   - mkdocs-git-revision-date-localized-plugin

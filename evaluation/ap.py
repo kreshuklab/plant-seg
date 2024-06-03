@@ -30,7 +30,7 @@ class AveragePrecision:
         # compute the area under precision recall curve by simple integration of piece-wise constant function
         ap = 0.0
         for i in range(1, len(recall)):
-            ap += ((recall[i] - recall[i - 1]) * precision[i])
+            ap += (recall[i] - recall[i - 1]) * precision[i]
         return ap
 
     def _roc_curve(self, predicted, target, target_instances):

@@ -1,6 +1,5 @@
 class RunningAverage:
-    """Computes and stores the average
-    """
+    """Computes and stores the average"""
 
     def __init__(self):
         self.count = 0

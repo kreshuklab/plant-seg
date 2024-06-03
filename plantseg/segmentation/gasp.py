@@ -15,33 +15,38 @@ class WSSegmentationFeeder:
 
 
 class GaspFromPmaps(AbstractSegmentationStep):
-    def __init__(self,
-                 predictions_paths,
-                 key=None,
-                 channel=None,
-                 save_directory="GASP",
-                 gasp_linkage_criteria='average',
-                 beta=0.5,
-                 run_ws=True,
-                 ws_2D=True,
-                 ws_threshold=0.4,
-                 ws_minsize=50,
-                 ws_sigma=0.3,
-                 ws_w_sigma=0,
-                 post_minsize=100,
-                 n_threads=6,
-                 state=True,
-                 **kwargs):
+    def __init__(
+        self,
+        predictions_paths,
+        key=None,
+        channel=None,
+        save_directory="GASP",
+        gasp_linkage_criteria='average',
+        beta=0.5,
+        run_ws=True,
+        ws_2D=True,
+        ws_threshold=0.4,
+        ws_minsize=50,
+        ws_sigma=0.3,
+        ws_w_sigma=0,
+        post_minsize=100,
+        n_threads=6,
+        state=True,
+        **kwargs,
+    ):
+        super().__init__(
+            input_paths=predictions_paths,
+            save_directory=save_directory,
+            file_suffix='_gasp_' + gasp_linkage_criteria,
+            state=state,
+            input_key=key,
+            input_channel=channel,
+        )
 
-        super().__init__(input_paths=predictions_paths,
-                         save_directory=save_directory,
-                         file_suffix='_gasp_' + gasp_linkage_criteria,
-                         state=state,
-                         input_key=key,
-                         input_channel=channel)
-
-        assert gasp_linkage_criteria in ['average',
-                                         'mutex_watershed'], f"Unsupported linkage criteria '{gasp_linkage_criteria}'"
+        assert gasp_linkage_criteria in [
+            'average',
+            'mutex_watershed',
+        ], f"Unsupported linkage criteria '{gasp_linkage_criteria}'"
 
         # GASP parameters
         self.gasp_linkage_criteria = gasp_linkage_criteria
@@ -57,10 +62,15 @@ class GaspFromPmaps(AbstractSegmentationStep):
         # Postprocessing size threshold
         self.post_minsize = post_minsize
         self.n_threads = n_threads
-        self.dt_watershed = partial(dt_watershed,
-                                    threshold=ws_threshold, sigma_seeds=ws_sigma,
-                                    stacked=ws_2D, sigma_weights=ws_w_sigma,
-                                    min_size=ws_minsize, n_threads=n_threads)
+        self.dt_watershed = partial(
+            dt_watershed,
+            threshold=ws_threshold,
+            sigma_seeds=ws_sigma,
+            stacked=ws_2D,
+            sigma_weights=ws_w_sigma,
+            min_size=ws_minsize,
+            n_threads=n_threads,
+        )
 
     def process(self, pmaps):
         # start real world clock timer
@@ -78,11 +88,14 @@ class GaspFromPmaps(AbstractSegmentationStep):
 
         gui_logger.info('Clustering with GASP...')
         # Run GASP
-        segmentation = gasp(pmaps, ws,
-                            gasp_linkage_criteria=self.gasp_linkage_criteria,
-                            beta=self.beta,
-                            post_minsize=self.post_minsize,
-                            n_threads=self.n_threads)
+        segmentation = gasp(
+            pmaps,
+            ws,
+            gasp_linkage_criteria=self.gasp_linkage_criteria,
+            beta=self.beta,
+            post_minsize=self.post_minsize,
+            n_threads=self.n_threads,
+        )
 
         # stop real world clock timer
         runtime = time.time() - runtime

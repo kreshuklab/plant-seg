@@ -7,7 +7,7 @@ PLANTSEG_GREEN = (208, 240, 192)
 
 
 def var_to_tkinter(var):
-    """ transform python variables in tkinter variables"""
+    """Transform python variables in tkinter variables"""
     if isinstance(var, bool):
         tk_var = tkinter.BooleanVar()
 
@@ -28,6 +28,6 @@ def var_to_tkinter(var):
 
 
 def convert_rgb(rgb=(0, 0, 0)):
-    """ rgb to tkinter friendly format"""
+    """RGB to tkinter friendly format"""
     rgb = tuple(rgb)
     return "#%02x%02x%02x" % rgb

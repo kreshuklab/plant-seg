@@ -1,4 +1,4 @@
-from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtGui, QtCore
 from napari._qt.qt_resources import get_stylesheet
 import base64
 

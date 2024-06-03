@@ -63,7 +63,7 @@ def split_vi(x, y=None, ignore_x=[0], ignore_y=[0]):
     --------
     vi
     """
-    _, _, _ , hxgy, hygx, _, _ = vi_tables(x, y, ignore_x, ignore_y)
+    _, _, _, hxgy, hygx, _, _ = vi_tables(x, y, ignore_x, ignore_y)
     # false merges, false splits
     return np.array([hygx.sum(), hxgy.sum()])
 
@@ -110,12 +110,12 @@ def vi_tables(x, y=None, ignore_x=[0], ignore_y=[0]):
     # Calculate log conditional probabilities and entropies
     lpygx = np.zeros(np.shape(px))
     lpygx[nzx] = xlogx(divide_rows(nzpxy, nzpx)).sum(axis=1).ravel()
-                        # \sum_x{p_{y|x} \log{p_{y|x}}}
-    hygx = -(px*lpygx) # \sum_x{p_x H(Y|X=x)} = H(Y|X)
+    # \sum_x{p_{y|x} \log{p_{y|x}}}
+    hygx = -(px * lpygx)  # \sum_x{p_x H(Y|X=x)} = H(Y|X)
 
     lpxgy = np.zeros(np.shape(py))
     lpxgy[nzy] = xlogx(divide_columns(nzpxy, nzpy)).sum(axis=0).ravel()
-    hxgy = -(py*lpxgy)
+    hxgy = -(py * lpxgy)
 
     return [pxy] + list(map(np.asarray, [px, py, hxgy, hygx, lpygx, lpxgy]))
 
@@ -259,4 +259,3 @@ def xlogx(x, out=None, in_place=False):
     nz = z.nonzero()
     z[nz] *= np.log2(z[nz])
     return y
-

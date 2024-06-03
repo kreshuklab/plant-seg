@@ -32,9 +32,7 @@ class ProofreadingHandler:
     scale: Union[tuple, None] = None
     scribbles_layer_name = SCRIBBLES_LAYER_NAME
     corrected_cells_layer_name = CORRECTED_CELLS_LAYER_NAME
-    correct_cells_cmap = {0: None,
-                          1: (0.76388469, 0.02003777, 0.61156412, 1.)
-                          }
+    correct_cells_cmap = {0: None, 1: (0.76388469, 0.02003777, 0.61156412, 1.0)}
 
     def __init__(self):
         self._status = False
@@ -158,26 +156,25 @@ class ProofreadingHandler:
         viewer.layers[layer_name].refresh()
 
     def update_corrected_cells_mask_to_viewer(self, viewer: napari.Viewer):
-        self._update_to_viewer(viewer,
-                               self.corrected_cells_mask,
-                               self.corrected_cells_layer_name,
-                               scale=self.scale,
-                               color=self.correct_cells_cmap,
-                               opacity=1,
-                               )
+        self._update_to_viewer(
+            viewer,
+            self.corrected_cells_mask,
+            self.corrected_cells_layer_name,
+            scale=self.scale,
+            color=self.correct_cells_cmap,
+            opacity=1,
+        )
         self.preserve_labels(viewer, self.corrected_cells_layer_name)
 
-    def update_corrected_cells_mask_slice_to_viewer(self, viewer: napari.Viewer,
-                                                    slice_data: np.ndarray,
-                                                    region_slice: tuple[slice, ...]):
+    def update_corrected_cells_mask_slice_to_viewer(
+        self, viewer: napari.Viewer, slice_data: np.ndarray, region_slice: tuple[slice, ...]
+    ):
         self._update_slice_to_viewer(viewer, slice_data, self.corrected_cells_layer_name, region_slice)
         self.preserve_labels(viewer, self.corrected_cells_layer_name)
 
-    def update_after_proofreading(self, viewer: napari.Viewer,
-                                  seg_slice: np.ndarray,
-                                  region_slice: tuple[slice, ...],
-                                  bbox: np.ndarray):
-
+    def update_after_proofreading(
+        self, viewer: napari.Viewer, seg_slice: np.ndarray, region_slice: tuple[slice, ...], bbox: np.ndarray
+    ):
         self._bboxes = bbox
         self._update_slice_to_viewer(viewer, seg_slice, self.seg_layer_name, region_slice)
 
@@ -191,12 +188,14 @@ segmentation_handler = ProofreadingHandler()
 @magicgui(call_button=f'Clean scribbles - < {DEFAULT_KEY_BINDING_CLEAN} >')
 def widget_clean_scribble(viewer: napari.Viewer):
     if not segmentation_handler.status:
-        napari_formatted_logging('Proofreading widget not initialized. Run the proofreading widget tool once first',
-                                 thread='Clean scribble')
+        napari_formatted_logging(
+            'Proofreading widget not initialized. Run the proofreading widget tool once first', thread='Clean scribble'
+        )
 
     if 'Scribbles' not in viewer.layers:
-        napari_formatted_logging('Scribble Layer not defined. Run the proofreading widget tool once first',
-                                 thread='Clean scribble')
+        napari_formatted_logging(
+            'Scribble Layer not defined. Run the proofreading widget tool once first', thread='Clean scribble'
+        )
         return None
 
     segmentation_handler.reset_scribbles()
@@ -238,12 +237,8 @@ def initialize_proofreading(viewer: napari.Viewer, segmentation_layer: Labels) -
     return True
 
 
-@magicgui(call_button=f'Initialize Proofreading',
-          segmentation={'label': 'Segmentation'},
-          image={'label': 'Pmap/Image'})
-def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
-                                          segmentation: Labels,
-                                          image: Image) -> None:
+@magicgui(call_button='Initialize Proofreading', segmentation={'label': 'Segmentation'}, image={'label': 'Pmap/Image'})
+def widget_split_and_merge_from_scribbles(viewer: napari.Viewer, segmentation: Labels, image: Image) -> None:
     if segmentation is None:
         napari_formatted_logging('Segmentation Layer not defined', thread='Proofreading tool', level='error')
         return None
@@ -252,10 +247,13 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
         napari_formatted_logging('Image Layer not defined', thread='Proofreading tool', level='error')
         return None
     elif 'pmap' not in image.metadata:
-        napari_formatted_logging('Pmap/Image layer appears to be a raw image and not a boundary probability map. '
-                                 'For the best proofreading results, try to use a boundaries probability layer '
-                                 '(e.g. from the Run Prediction widget)',
-                                 thread='Proofreading tool', level='warning')
+        napari_formatted_logging(
+            'Pmap/Image layer appears to be a raw image and not a boundary probability map. '
+            'For the best proofreading results, try to use a boundaries probability layer '
+            '(e.g. from the Run Prediction widget)',
+            thread='Proofreading tool',
+            level='warning',
+        )
 
     if initialize_proofreading(viewer, segmentation):
         napari_formatted_logging('Proofreading initialized', thread='Proofreading tool')
@@ -276,12 +274,14 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
             return None
 
         segmentation_handler.lock()
-        new_seg, region_slice, bboxes = split_merge_from_seeds(segmentation_handler.scribbles,
-                                                               segmentation_handler.segmentation,
-                                                               image=image.data,
-                                                               bboxes=segmentation_handler.bboxes,
-                                                               max_label=segmentation_handler.max_label,
-                                                               correct_labels=segmentation_handler.corrected_cells)
+        new_seg, region_slice, bboxes = split_merge_from_seeds(
+            segmentation_handler.scribbles,
+            segmentation_handler.segmentation,
+            image=image.data,
+            bboxes=segmentation_handler.bboxes,
+            max_label=segmentation_handler.max_label,
+            correct_labels=segmentation_handler.corrected_cells,
+        )
 
         segmentation_handler.update_after_proofreading(viewer, new_seg, region_slice, bboxes)
         segmentation_handler.unlock()
@@ -290,11 +290,14 @@ def widget_split_and_merge_from_scribbles(viewer: napari.Viewer,
     worker.start()
 
 
-@magicgui(call_button=f'Extract correct labels')
+@magicgui(call_button='Extract correct labels')
 def widget_filter_segmentation() -> Future[LayerDataTuple]:
     if not segmentation_handler.status:
-        napari_formatted_logging('Proofreading widget not initialized. Run the proofreading widget tool once first',
-                                 thread='Export correct labels', level='error')
+        napari_formatted_logging(
+            'Proofreading widget not initialized. Run the proofreading widget tool once first',
+            thread='Export correct labels',
+            level='error',
+        )
         raise ValueError('Proofreading widget not initialized. Run the proofreading widget tool once first')
 
     future = Future()
@@ -307,10 +310,11 @@ def widget_filter_segmentation() -> Future[LayerDataTuple]:
         segmentation_handler.lock()
         filtered_seg = segmentation_handler.segmentation.copy()
         filtered_seg[segmentation_handler.corrected_cells_mask == 0] = 0
-        layers_kwargs = {'scale': segmentation_handler.scale,
-                         'name': f'Proofread_{segmentation_handler.seg_layer_name}',
-                         'metadata': segmentation_handler.seg_metadata
-                         }
+        layers_kwargs = {
+            'scale': segmentation_handler.scale,
+            'name': f'Proofread_{segmentation_handler.seg_layer_name}',
+            'metadata': segmentation_handler.seg_metadata,
+        }
 
         segmentation_handler.unlock()
         return filtered_seg, layers_kwargs, 'labels'

@@ -1,0 +1,20 @@
+ci:
+  autoupdate_schedule: monthly
+  autofix_commit_msg: "[pre-commit.ci] auto fixes"
+  autoupdate_commit_msg: "[pre-commit.ci] autoupdate"
+
+repos:
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.21.0
+    hooks:
+      - id: typos
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.6
+    hooks:
+      - id: ruff
+        types_or: [python, pyi, jupyter]
+        args: [--fix]
+      - id: ruff-format
+        types_or: [python, pyi, jupyter]
+        args: [--config=pyproject.toml]

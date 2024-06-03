@@ -3,7 +3,7 @@ from torch import nn as nn
 
 
 def shift_tensor(tensor: torch.Tensor, offset: tuple) -> torch.Tensor:
-    """ Shift a tensor by the given (spatial) offset.
+    """Shift a tensor by the given (spatial) offset.
 
     Args:
         tensor: 4D (=2 spatial dims) or 5D (=3 spatial dims) tensor.
@@ -64,14 +64,13 @@ def invert_offsets(offsets: tuple) -> tuple:
 
 
 def embeddings_to_affinities(embeddings: torch.Tensor, offsets: list, delta: float) -> torch.Tensor:
-    """ Transform embeddings to affinities.
-    """
+    """Transform embeddings to affinities."""
     # shift the embeddings by the offsets and stack them along a new axis
     # we need to shift in the opposite direction of the offsets, so we invert them
     # before applying the shift
     offsets_ = invert_offsets(offsets)
     shifted = torch.cat([shift_tensor(embeddings, off).unsqueeze(1) for off in offsets_], dim=1)
-    # substract the embeddings from the shifted embeddings, take the norm and
+    # subtract the embeddings from the shifted embeddings, take the norm and
     # transform to affinities based on the delta distance
     affs = (2 * delta - torch.norm(embeddings.unsqueeze(1) - shifted, dim=2)) / (2 * delta)
     affs = torch.clamp(affs, min=0) ** 2

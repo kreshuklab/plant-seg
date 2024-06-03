@@ -20,9 +20,11 @@ def relabel(tracks):
     if 0 in labels:
         labels.remove(0)
 
-    if len(labels) >= 2 ** 16:
-        print("Track graph contains %d distinct labels, can not be expressed "
-              "in int16. Skipping evaluation." % len(labels))
+    if len(labels) >= 2**16:
+        print(
+            "Track graph contains %d distinct labels, can not be expressed "
+            "in int16. Skipping evaluation." % len(labels)
+        )
         raise RuntimeError()
 
     old_values = np.array(labels)
@@ -50,10 +52,10 @@ def compute_seg_score(res_seg, gt_seg):
         os.chmod(SCRIPT_PATH, 0o0775)
 
     # holy cow, they need 16-bit encodings!
-    if res_seg.max() >= 2 ** 16:
+    if res_seg.max() >= 2**16:
         print("Converting res to int16... ")
         res_seg = relabel(res_seg)
-    if gt_seg.max() >= 2 ** 16:
+    if gt_seg.max() >= 2**16:
         print("Converting gt to int16...")
         gt_seg = relabel(gt_seg)
 
@@ -99,11 +101,7 @@ def compute_seg_score(res_seg, gt_seg):
 
         print("Computing SEG score...")
         try:
-            seg_output = check_output([
-                SCRIPT_PATH,
-                dataset_dir,
-                '01'
-            ])
+            seg_output = check_output([SCRIPT_PATH, dataset_dir, '01'])
         except CalledProcessError as exc:
             print("Calling SEGMeasure failed: ", exc.returncode, exc.output)
             seg_score = 0
@@ -134,7 +132,7 @@ def replace(array, old_values, new_values):
     return values_map[array]
 
 
-######################################################################################################################3
+######################################################################################################################
 
 N_THREADS = 16
 # should we get TRA score in addition to SEG score
@@ -145,7 +143,7 @@ def evaluate_seg(gt_file, seg_file, dataset_name, eval_tracking):
     with h5py.File(gt_file, 'r') as f:
         mask = f['volumes/labels/ignore'][...]
         gt_tracks = f['volumes/labels/tracks'][...]
-        gt_track_graph = f['graphs/track_graph'][...]
+        gt_track_graph = f['graphs/track_graph'][...]  # noqa: F841
 
     with h5py.File(seg_file, 'r') as f:
         seg_cells = f[dataset_name][...]
@@ -196,12 +194,9 @@ def compute_mean_std(files):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Validate FlyWing segmentation')
-    parser.add_argument('--gt-dir', type=str,
-                        help='Path to directory with the ground truth files', required=True)
-    parser.add_argument('--seg-dir', type=str,
-                        help='Path to directory with the segmentation files', required=True)
-    parser.add_argument('--seg-dataset', type=str, default='segmentation',
-                        help='Segmentation dataset inside the H5')
+    parser.add_argument('--gt-dir', type=str, help='Path to directory with the ground truth files', required=True)
+    parser.add_argument('--seg-dir', type=str, help='Path to directory with the segmentation files', required=True)
+    parser.add_argument('--seg-dataset', type=str, default='segmentation', help='Segmentation dataset inside the H5')
     args = parser.parse_args()
 
     gt_files = list(glob.glob(os.path.join(args.gt_dir, '*.hdf')))
@@ -223,8 +218,10 @@ if __name__ == '__main__':
     print("Processing: ", gt_seg_map)
 
     with futures.ThreadPoolExecutor(N_THREADS) as tp:
-        tasks = [tp.submit(evaluate_seg, gt_file, seg_file, args.seg_dataset, eval_tra) for gt_file, seg_file in
-                 gt_seg_map.items()]
+        tasks = [
+            tp.submit(evaluate_seg, gt_file, seg_file, args.seg_dataset, eval_tra)
+            for gt_file, seg_file in gt_seg_map.items()
+        ]
 
         results = [t.result() for t in tasks]
 
@@ -233,5 +230,7 @@ if __name__ == '__main__':
         per_result_files = os.path.join(args.seg_dir, '{}*.csv'.format(file_type))
         seg_mean, seg_std, tra_mean, tra_std = compute_mean_std(per_result_files)
         print(
-            '{} movies: seg_mean {}, seg_std {}, tra_mean {}, tra_std {}'.format(file_type, seg_mean, seg_std, tra_mean,
-                                                                                 tra_std))
+            '{} movies: seg_mean {}, seg_std {}, tra_mean {}, tra_std {}'.format(
+                file_type, seg_mean, seg_std, tra_mean, tra_std
+            )
+        )

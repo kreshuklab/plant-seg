@@ -25,7 +25,7 @@ def load_pill(path: str, info_only=False) -> Union[tuple, tuple[np.ndarray, tupl
     image = np.array(image)
 
     # create infos
-    infos = ([1., 1., 1.], image.shape, None, 'um')
+    infos = ([1.0, 1.0, 1.0], image.shape, None, 'um')
 
     if info_only:
         return infos

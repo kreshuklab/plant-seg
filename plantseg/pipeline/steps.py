@@ -26,8 +26,20 @@ class GenericPipelineStep:
         save_raw (bool): save raw input in the output H5
     """
 
-    def __init__(self, input_paths, input_type, output_type, save_directory, input_key=None, input_channel=None,
-                 file_suffix="", out_ext=".h5", state=True, h5_output_key=None, save_raw=False):
+    def __init__(
+        self,
+        input_paths,
+        input_type,
+        output_type,
+        save_directory,
+        input_key=None,
+        input_channel=None,
+        file_suffix="",
+        out_ext=".h5",
+        state=True,
+        h5_output_key=None,
+        save_raw=False,
+    ):
         assert isinstance(input_paths, list)
         assert len(input_paths) > 0, "Input file paths cannot be empty"
         assert input_type in SUPPORTED_TYPES
