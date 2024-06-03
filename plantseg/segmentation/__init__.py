@@ -1,5 +1,20 @@
-from plantseg.segmentation.functional.segmentation import gasp, multicut, mutex_ws
-from plantseg.segmentation.functional.segmentation import dt_watershed
-from plantseg.segmentation.functional.segmentation import simple_itk_watershed
-from plantseg.segmentation.functional.segmentation import lifted_multicut_from_nuclei_segmentation
-from plantseg.segmentation.functional.segmentation import lifted_multicut_from_nuclei_pmaps
+from plantseg.segmentation.functional.segmentation import (
+    gasp,
+    multicut,
+    mutex_ws,
+    dt_watershed,
+    simple_itk_watershed,
+    lifted_multicut_from_nuclei_segmentation,
+    lifted_multicut_from_nuclei_pmaps,
+)
+
+# Use __all__ to let type checkers know what is part of the public API.
+__all__ = [
+    "gasp",
+    "multicut",
+    "mutex_ws",
+    "dt_watershed",
+    "simple_itk_watershed",
+    "lifted_multicut_from_nuclei_segmentation",
+    "lifted_multicut_from_nuclei_pmaps",
+]
