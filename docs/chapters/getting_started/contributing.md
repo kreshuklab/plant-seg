@@ -39,4 +39,6 @@ The PlantSeg repository uses pre-commit hooks to ensure the code is correctly fo
 pre-commit run --all-files
 ```
 
+Commit messages are important. Please follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+
 For efficiency, pytest is not included in the pre-commit hooks. Please run the tests separately.
