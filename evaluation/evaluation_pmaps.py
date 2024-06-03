@@ -58,13 +58,13 @@ def pmaps_evaluation(gt_path,
                      p_key="predictions",
                      gt_key="label",
                      sigma=1.0):
-    if type(thresholds) is float:
-        assert thresholds < 1 or thresholds > 0, "threshold must be float between 0 and 1."
+    if isinstance(thresholds, float):
+        assert 0 < thresholds < 1, "threshold must be a float between 0 and 1."
         thresholds = [thresholds]
 
-    elif type(thresholds) is list:
+    elif isinstance(thresholds, list):
         for _t in thresholds:
-            assert _t < 1 or _t > 0, "threshold must be float between 0 and 1."
+            assert 0 < _t < 1, "each threshold must be a float between 0 and 1."
     else:
         TypeError("thresholds type not understood")
 

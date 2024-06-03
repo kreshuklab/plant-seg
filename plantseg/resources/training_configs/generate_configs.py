@@ -57,7 +57,7 @@ loss_config_values = {
 BASE_DIR = '/g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/'
 
 
-def create_config(conf, output_file, a, n, l, phase):
+def create_config(conf, output_file, a, n, l, phase):  # noqa: E741
     conf = copy.deepcopy(conf)
     updates = []
     updates.extend(arch_config_values[a].items())
@@ -99,7 +99,7 @@ def generate_configs():
             # generate train config
             for a in arch:
                 for n in norm:
-                    for l in loss:
+                    for l in loss:  # noqa: E741
                         output_dir = os.path.join(base_dir, ds_name, f'{a}_{n}_{l}')
                         output_path = os.path.join(output_dir, f'config_{phase}.yml')
                         os.makedirs(output_dir, exist_ok=True)

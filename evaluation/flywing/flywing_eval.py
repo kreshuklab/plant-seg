@@ -134,7 +134,7 @@ def replace(array, old_values, new_values):
     return values_map[array]
 
 
-######################################################################################################################3
+######################################################################################################################
 
 N_THREADS = 16
 # should we get TRA score in addition to SEG score
@@ -145,7 +145,7 @@ def evaluate_seg(gt_file, seg_file, dataset_name, eval_tracking):
     with h5py.File(gt_file, 'r') as f:
         mask = f['volumes/labels/ignore'][...]
         gt_tracks = f['volumes/labels/tracks'][...]
-        gt_track_graph = f['graphs/track_graph'][...]
+        gt_track_graph = f['graphs/track_graph'][...]  # noqa: F841
 
     with h5py.File(seg_file, 'r') as f:
         seg_cells = f[dataset_name][...]

@@ -154,7 +154,7 @@ class Check(object):
 def load_template():
     def _check(loader, node):
         node = loader.construct_mapping(node, deep=True)
-        if type(node) is dict:
+        if isinstance(node, dict):
             return Check(node)
         else:
             raise NotImplementedError("!check constructor must be dict or list.")

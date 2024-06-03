@@ -164,7 +164,7 @@ class MenuEntry:
         if default is None:
             self.tk_value.set(sorted(list(self.menu))[0])
         else:
-            if type(default) == bool:
+            if isinstance(default, bool):
                 default = "True" if default else "False"
             self.tk_value.set(default)
 
@@ -361,7 +361,7 @@ class MenuEntryStride:
         if default is None:
             self.tk_value.set(sorted(list(self.menu))[0])
         else:
-            if type(default) == bool:
+            if isinstance(default, bool):
                 default = "True" if default else "False"
             self.tk_value.set(default)
 
@@ -608,7 +608,7 @@ class Files2Process:
 ######################################################################################################################
 def report_error(data, font=None, depth=3):
     """ creates pop up and show error messages """
-    data = data if type(data) is str else f"Unknown Error. Error type: {type(data)} \n {data}"
+    data = data if isinstance(data, str) else f"Unknown Error. Error type: {type(data)} \n {data}"
     # reduce message depth
     data = '\n' + ''.join([f"{_str} \n" for _str in data.split('\n')[-depth:]])
 
