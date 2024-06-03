@@ -170,13 +170,14 @@ def recursive_config_check(config, template):
         correct_key = deprecated_keys[d_key]
 
         if d_key in config.keys() and correct_key not in config.keys():
-            gui_logger.warning(f"Deprecated config warning. You are using an old version of the config file. "
-                               f"key: '{d_key}' has been renamed '{correct_key}'")
+            gui_logger.warning(
+                f"Deprecated config warning. You are using an old version of the config file. "
+                f"key: '{d_key}' has been renamed '{correct_key}'"
+            )
             config[correct_key] = config[d_key]
             del config[d_key]
 
     for key, value in template.items():
-
         # check if key exist
         if key not in config:
             config[key] = None
@@ -201,16 +202,20 @@ def check_scaling_factor(config):
     post_seg_rescaling = config["segmentation_postprocessing"]["factor"]
     pre_inverse_rescaling = [1.0 / f for f in pre_rescaling]
     if not np.allclose(pre_inverse_rescaling, post_pred_rescaling):
-        gui_logger.warning(f"Prediction post processing scaling is not set up correctly. "
-                           f"To avoid shape mismatch between input and output the "
-                           f"'factor' value is corrected to {pre_inverse_rescaling}")
+        gui_logger.warning(
+            f"Prediction post processing scaling is not set up correctly. "
+            f"To avoid shape mismatch between input and output the "
+            f"'factor' value is corrected to {pre_inverse_rescaling}"
+        )
 
         config["cnn_postprocessing"]["factor"] = pre_inverse_rescaling
 
     if not np.allclose(pre_inverse_rescaling, post_seg_rescaling):
-        gui_logger.warning(f"Segmentation post processing scaling is not set up correctly. "
-                           f"To avoid shape mismatch between input and output the "
-                           f"'factor' value is corrected to {pre_inverse_rescaling}")
+        gui_logger.warning(
+            f"Segmentation post processing scaling is not set up correctly. "
+            f"To avoid shape mismatch between input and output the "
+            f"'factor' value is corrected to {pre_inverse_rescaling}"
+        )
 
         config["segmentation_postprocessing"]["factor"] = pre_inverse_rescaling
 
@@ -231,9 +236,11 @@ def check_patch_and_stride(config):
         test_x = _ax == 'x' and _patch - _stride <= 16
         test_y = _ax == 'y' and _patch - _stride <= 16
         if test_z or test_x or test_y:
-            gui_logger.warning(f"Stride along {_ax} axis (axis order zxy) is too large, "
-                               f"this might lead to empty strides artifacts in the cnn predictions. "
-                               f"Please try to either reduce the stride or to increase the patch size.")
+            gui_logger.warning(
+                f"Stride along {_ax} axis (axis order zxy) is too large, "
+                f"this might lead to empty strides artifacts in the cnn predictions. "
+                f"Please try to either reduce the stride or to increase the patch size."
+            )
     return config
 
 

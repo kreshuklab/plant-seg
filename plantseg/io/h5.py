@@ -45,17 +45,21 @@ def _find_input_key(h5_file) -> str:
             if h5_key in found_datasets:
                 return h5_key
 
-        raise RuntimeError(f"Ambiguous datasets '{found_datasets}' in {h5_file.filename}. "
-                           f"plantseg expects only one dataset to be present in input H5.")
+        raise RuntimeError(
+            f"Ambiguous datasets '{found_datasets}' in {h5_file.filename}. "
+            f"plantseg expects only one dataset to be present in input H5."
+        )
 
 
-def load_h5(path: str,
-            key: str,
-            slices: Optional[slice] = None,
-            info_only: bool = False) -> Union[tuple, tuple[np.ndarray, tuple]]:
+def load_h5(
+    path: str,
+    key: str,
+    slices: Optional[slice] = None,
+    info_only: bool = False,
+) -> Union[tuple, tuple[np.ndarray, tuple]]:
     """
     Load a dataset from a h5 file and returns some meta info about it.
-    
+
     Args:
         path (str): Path to the h5file
         key (str): internal key of the desired dataset
@@ -86,14 +90,16 @@ def load_h5(path: str,
     return file, infos
 
 
-def create_h5(path: str,
-              stack: np.ndarray,
-              key: str,
-              voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
-              mode: str = 'a') -> None:
+def create_h5(
+    path: str,
+    stack: np.ndarray,
+    key: str,
+    voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    mode: str = 'a',
+) -> None:
     """
     Create a dataset inside a h5 file from a numpy array.
-    
+
     Args:
         path (str): file path.
         stack (np.ndarray): numpy array to save as dataset in the h5 file.
@@ -114,14 +120,15 @@ def create_h5(path: str,
 def list_keys(path: str) -> list[str]:
     """
     List all keys in a h5 file
-    
+
     Args:
         path (str): path to the h5 file
 
     Returns:
         keys (list[str]): A list of keys in the h5 file.
-        
+
     """
+
     def _recursive_find_keys(f, base='/'):
         _list_keys = []
         for key, dataset in f.items():
@@ -140,12 +147,12 @@ def list_keys(path: str) -> list[str]:
 def del_h5_key(path: str, key: str, mode: str = 'a') -> None:
     """
     helper function to delete a dataset from a h5file
-    
+
     Args:
         path (str): path to the h5file
         key (str): key of the dataset to delete
         mode (str): mode to open the h5 file ['r', 'r+']
-    
+
     """
     with h5py.File(path, mode) as f:
         if key in f:
@@ -154,15 +161,15 @@ def del_h5_key(path: str, key: str, mode: str = 'a') -> None:
 
 
 def rename_h5_key(path: str, old_key: str, new_key: str, mode='r+') -> None:
-    """ 
-    Rename the 'old_key' dataset to 'new_key' 
-    
+    """
+    Rename the 'old_key' dataset to 'new_key'
+
     Args:
         path (str): path to the h5 file
         old_key (str): old key name
         new_key (str): new key name
         mode (str): mode to open the h5 file ['r', 'r+']
-    
+
     """
     with h5py.File(path, mode) as f:
         if old_key in f:

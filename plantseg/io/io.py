@@ -15,7 +15,7 @@ def smart_load(path, key=None, info_only=False, default=load_tiff) -> Union[tupl
     Load a dataset from a file and returns some meta info about it. The loader is chosen based on the file extension.
     Supported formats are: tiff, h5, zarr, and PIL images.
     If the format is not supported, a default loader can be provided (default: load_tiff).
-    
+
     Args:
         path (str): path to the file to load.
         key (str): key of the dataset to load (if h5).
@@ -25,7 +25,7 @@ def smart_load(path, key=None, info_only=False, default=load_tiff) -> Union[tupl
     Returns:
         stack (np.ndarray): numpy array with the image data.
         infos (tuple): tuple with the voxel size, shape, metadata and voxel size unit (if info_only is True).
-        
+
     Examples:
         >>> data, infos = smart_load('path/to/file.tif')
         >>> data, infos = smart_load('path/to/file.h5', key='raw')
@@ -52,14 +52,14 @@ def smart_load(path, key=None, info_only=False, default=load_tiff) -> Union[tupl
 def load_shape(path: str, key: str = None) -> tuple[int, ...]:
     """
     Load only the stack shape from a file using the smart loader.
-    
+
     Args:
         path (str): path to the file to load.
         key (str): key of the dataset to load (if h5 or zarr).
-        
+
     Returns:
         shape (tuple[int, ...]) shape of the image stack.
-        
+
     Examples:
         >>> shape = load_shape('path/to/file.tif')
         >>> print(shape)

@@ -89,11 +89,15 @@ def unet_predictions(
     augs = get_test_augmentations(raw)  # using full raw to compute global normalization mean and std
     stride = get_stride_shape(patch)
     slice_builder = SliceBuilder(raw, label_dataset=None, patch_shape=patch, stride_shape=stride)
-    test_dataset = ArrayDataset(raw, slice_builder, augs, halo_shape=patch_halo, multichannel=multichannel_input, verbose_logging=False)
+    test_dataset = ArrayDataset(
+        raw, slice_builder, augs, halo_shape=patch_halo, multichannel=multichannel_input, verbose_logging=False
+    )
 
     pmaps = predictor(test_dataset)  # pmaps either (C, Z, Y, X) or (C, Y, X)
 
-    if int(model_config['out_channels']) > 1 and handle_multichannel:  # if multi-channel output and who called this function can handle it
+    if (
+        int(model_config['out_channels']) > 1 and handle_multichannel
+    ):  # if multi-channel output and who called this function can handle it
         napari_formatted_logging(
             f'`unet_predictions()` has `handle_multichannel`={handle_multichannel}',
             thread="unet_predictions",

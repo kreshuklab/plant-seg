@@ -26,9 +26,19 @@ def configure_preprocessing_step(input_paths, config):
 
     state = config.get('state', True)
     crop = config.get('crop_volume', None)
-    return DataPreProcessing3D(input_paths, input_key=input_key, input_channel=input_channel, input_type="data_float32",
-                               output_type=output_type, save_directory=save_directory, factor=factor,
-                               filter_type=filter_type, filter_param=filter_param, state=state, crop=crop)
+    return DataPreProcessing3D(
+        input_paths,
+        input_key=input_key,
+        input_channel=input_channel,
+        input_type="data_float32",
+        output_type=output_type,
+        save_directory=save_directory,
+        factor=factor,
+        filter_type=filter_type,
+        filter_param=filter_param,
+        state=state,
+        crop=crop,
+    )
 
 
 def configure_cnn_step(input_paths, config):
@@ -42,9 +52,18 @@ def configure_cnn_step(input_paths, config):
     state = config.get('state', True)
     model_update = config.get('model_update', False)
     patch_halo = tuple(config.get('patch_halo', None))
-    return UnetPredictions(input_paths, model_name=model_name, input_key=input_key, input_channel=input_channel,
-                           patch=patch, stride_ratio=stride_ratio, device=device, model_update=model_update,
-                           state=state, patch_halo=patch_halo)
+    return UnetPredictions(
+        input_paths,
+        model_name=model_name,
+        input_key=input_key,
+        input_channel=input_channel,
+        patch=patch,
+        stride_ratio=stride_ratio,
+        device=device,
+        model_update=model_update,
+        state=state,
+        patch_halo=patch_halo,
+    )
 
 
 def configure_cnn_postprocessing_step(input_paths, config):
@@ -66,10 +85,19 @@ def _create_postprocessing_step(input_paths, input_type, config):
     out_ext = ".tiff" if config["tiff"] else ".h5"
     state = config.get('state', True)
     save_raw = config.get('save_raw', False)
-    return DataPostProcessing3D(input_paths, input_key=input_key, input_channel=input_channel,
-                                input_type=input_type, output_type=output_type,
-                                save_directory=save_directory, factor=factor, out_ext=out_ext,
-                                state=state, save_raw=save_raw, output_shapes=output_shapes)
+    return DataPostProcessing3D(
+        input_paths,
+        input_key=input_key,
+        input_channel=input_channel,
+        input_type=input_type,
+        output_type=output_type,
+        save_directory=save_directory,
+        factor=factor,
+        out_ext=out_ext,
+        state=state,
+        save_raw=save_raw,
+        output_shapes=output_shapes,
+    )
 
 
 def _validate_cnn_postprocessing_rescaling(input_paths, config):
@@ -100,7 +128,7 @@ def raw2seg(config):
         ('segmentation_postprocessing', configure_segmentation_postprocessing_step),
     ]
 
-    for pipeline_step_name, pipeline_step_setup in all_pipeline_steps: # Common section for all steps
+    for pipeline_step_name, pipeline_step_setup in all_pipeline_steps:  # Common section for all steps
         # In Tk GUI, entries have fixed types. All steps are fixed here including LMC. TODO: better solution?
         if config[pipeline_step_name].get('key', None) == 'None':  # in Tk GUI key is str
             config[pipeline_step_name]['key'] = None
@@ -115,7 +143,8 @@ def raw2seg(config):
             _validate_cnn_postprocessing_rescaling(input_paths, config)
 
         gui_logger.info(
-            f"Executing pipeline step: '{pipeline_step_name}'. Parameters: '{config[pipeline_step_name]}'. Files {input_paths}.")
+            f"Executing pipeline step: '{pipeline_step_name}'. Parameters: '{config[pipeline_step_name]}'. Files {input_paths}."
+        )
         pipeline_step = pipeline_step_setup(input_paths, config[pipeline_step_name])
         output_paths = pipeline_step()
 

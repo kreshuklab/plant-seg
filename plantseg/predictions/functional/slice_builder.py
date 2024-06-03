@@ -57,11 +57,7 @@ class SliceBuilder:
             for y in y_steps:
                 x_steps = SliceBuilder._gen_indices(i_x, k_x, s_x)
                 for x in x_steps:
-                    slice_idx = (
-                        slice(z, z + k_z),
-                        slice(y, y + k_y),
-                        slice(x, x + k_x)
-                    )
+                    slice_idx = (slice(z, z + k_z), slice(y, y + k_y), slice(x, x + k_x))
                     if dataset.ndim == 4:
                         slice_idx = (slice(0, in_channels),) + slice_idx
                     slices.append(slice_idx)
@@ -86,8 +82,16 @@ class FilterSliceBuilder(SliceBuilder):
     Filter patches containing less than `threshold` non-zero labels.
     """
 
-    def __init__(self, raw_dataset, label_dataset, patch_shape, stride_shape, ignore_index=(0,),
-                 threshold=0.1, slack_acceptance=0.01):
+    def __init__(
+        self,
+        raw_dataset,
+        label_dataset,
+        patch_shape,
+        stride_shape,
+        ignore_index=(0,),
+        threshold=0.1,
+        slack_acceptance=0.01,
+    ):
         super().__init__(raw_dataset, label_dataset, patch_shape, stride_shape)
         if label_dataset is None:
             return

@@ -20,10 +20,10 @@ def _read_imagej_meta(tiff) -> tuple[tuple[float, float, float], str]:
             num_pixels, units = tags[key].value
             return units / num_pixels
         # return default
-        return 1.
+        return 1.0
 
     image_metadata = tiff.imagej_metadata
-    z = image_metadata.get('spacing', 1.)
+    z = image_metadata.get('spacing', 1.0)
     voxel_size_unit = image_metadata.get('unit', 'um')
 
     tags = tiff.pages[0].tags
@@ -45,17 +45,15 @@ def _read_ome_meta(tiff) -> tuple[tuple[float, float, float], str]:
     if image_element:
         image_element = image_element[0]
     else:
-        warnings.warn('Error parsing omero tiff meta Image. '
-                      'Reverting to default voxel size (1., 1., 1.) um')
-        return (1., 1., 1.), 'um'
+        warnings.warn('Error parsing omero tiff meta Image. Reverting to default voxel size (1., 1., 1.) um')
+        return (1.0, 1.0, 1.0), 'um'
 
     pixels_element = [pixels for pixels in image_element if pixels.tag.find('Pixels') != -1]
     if pixels_element:
         pixels_element = pixels_element[0]
     else:
-        warnings.warn('Error parsing omero tiff meta Pixels. '
-                      'Reverting to default voxel size (1., 1., 1.) um')
-        return (1., 1., 1.), 'um'
+        warnings.warn('Error parsing omero tiff meta Pixels. Reverting to default voxel size (1., 1., 1.) um')
+        return (1.0, 1.0, 1.0), 'um'
 
     units = []
     x, y, z, voxel_size_unit = None, None, None, 'um'
@@ -79,19 +77,16 @@ def _read_ome_meta(tiff) -> tuple[tuple[float, float, float], str]:
             warnings.warn('Units are not homogeneous: {units}')
 
     if x is None:
-        x = 1.
-        warnings.warn('Error parsing omero tiff meta. '
-                      'Reverting to default voxel size x = 1.')
+        x = 1.0
+        warnings.warn('Error parsing omero tiff meta. Reverting to default voxel size x = 1.')
 
     if y is None:
-        y = 1.
-        warnings.warn('Error parsing omero tiff meta. '
-                      'Reverting to default voxel size y = 1.')
+        y = 1.0
+        warnings.warn('Error parsing omero tiff meta. Reverting to default voxel size y = 1.')
 
     if z is None:
-        z = 1.
-        warnings.warn('Error parsing omero tiff meta. '
-                      'Reverting to default voxel size z = 1.')
+        z = 1.0
+        warnings.warn('Error parsing omero tiff meta. Reverting to default voxel size z = 1.')
 
     return (z, y, x), voxel_size_unit
 
@@ -99,14 +94,14 @@ def _read_ome_meta(tiff) -> tuple[tuple[float, float, float], str]:
 def read_tiff_voxel_size(file_path: str) -> tuple[tuple[float, float, float], str]:
     """
     Returns the voxels size and the voxel units for imagej and ome style tiff (if absent returns [1, 1, 1], um)
-    
+
     Args:
         file_path (str): path to the tiff file
-        
+
     Returns:
         voxel size
         voxel size unit
-        
+
     """
     with tifffile.TiffFile(file_path) as tiff:
         if tiff.imagej_metadata is not None:
@@ -117,9 +112,8 @@ def read_tiff_voxel_size(file_path: str) -> tuple[tuple[float, float, float], st
 
         else:
             # default voxel size
-            warnings.warn('No metadata found. '
-                          'Reverting to default voxel size (1., 1., 1.) um')
-            x, y, z = 1., 1., 1.
+            warnings.warn('No metadata found. Reverting to default voxel size (1., 1., 1.) um')
+            x, y, z = 1.0, 1.0, 1.0
             voxel_size_unit = 'um'
 
         return (z, y, x), voxel_size_unit
@@ -152,7 +146,12 @@ def load_tiff(path: str, info_only: bool = False) -> Union[tuple, tuple[np.ndarr
     return file, infos
 
 
-def create_tiff(path: str, stack: np.ndarray, voxel_size: tuple[float, float, float], voxel_size_unit: str = 'um') -> None:
+def create_tiff(
+    path: str,
+    stack: np.ndarray,
+    voxel_size: tuple[float, float, float],
+    voxel_size_unit: str = 'um',
+) -> None:
     """
     Create a tiff file from a numpy array
 
@@ -161,18 +160,20 @@ def create_tiff(path: str, stack: np.ndarray, voxel_size: tuple[float, float, fl
         stack (np.ndarray): numpy array to save as tiff
         voxel_size (list or tuple): tuple of the voxel size
         voxel_size_unit (str): units of the voxel size
-    
+
     """
     # taken from: https://pypi.org/project/tifffile docs
     z, y, x = stack.shape
-    stack = stack.reshape(1, z, 1, y, x, 1) # dimensions in TZCYXS order
+    stack = stack.reshape(1, z, 1, y, x, 1)  # dimensions in TZCYXS order
     spacing, y, x = voxel_size
-    resolution = (1. / x, 1. / y)
+    resolution = (1.0 / x, 1.0 / y)
     # Save output results as tiff
-    tifffile.imwrite(path,
-                     data=stack,
-                     dtype=stack.dtype,
-                     imagej=True,
-                     resolution=resolution,
-                     metadata={'axes': 'TZCYXS', 'spacing': spacing, 'unit': voxel_size_unit},
-                     compression='zlib')
+    tifffile.imwrite(
+        path,
+        data=stack,
+        dtype=stack.dtype,
+        imagej=True,
+        resolution=resolution,
+        metadata={'axes': 'TZCYXS', 'spacing': spacing, 'unit': voxel_size_unit},
+        compression='zlib',
+    )

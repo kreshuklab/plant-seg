@@ -127,8 +127,14 @@ class PreprocessingFrame(ModuleFramePrototype):
             sticky=stick_new,
         )
 
-        [tkinter.Grid.rowconfigure(self.preprocessing_frame, i, weight=w) for i, w in enumerate(self.preprocessing_style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.preprocessing_frame, i, weight=w) for i, w in enumerate(self.preprocessing_style["columns_weights"])]
+        [
+            tkinter.Grid.rowconfigure(self.preprocessing_frame, i, weight=w)
+            for i, w in enumerate(self.preprocessing_style["row_weights"])
+        ]
+        [
+            tkinter.Grid.columnconfigure(self.preprocessing_frame, i, weight=w)
+            for i, w in enumerate(self.preprocessing_style["columns_weights"])
+        ]
 
         super().__init__(self.preprocessing_frame, module_name, font=font)
         self.module = "preprocessing"
@@ -226,8 +232,14 @@ class UnetPredictionFrame(ModuleFramePrototype):
             sticky=stick_new,
         )
 
-        [tkinter.Grid.rowconfigure(self.prediction_frame, i, weight=w) for i, w in enumerate(self.prediction_style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.prediction_frame, i, weight=w) for i, w in enumerate(self.prediction_style["columns_weights"])]
+        [
+            tkinter.Grid.rowconfigure(self.prediction_frame, i, weight=w)
+            for i, w in enumerate(self.prediction_style["row_weights"])
+        ]
+        [
+            tkinter.Grid.columnconfigure(self.prediction_frame, i, weight=w)
+            for i, w in enumerate(self.prediction_style["columns_weights"])
+        ]
 
         super().__init__(self.prediction_frame, module_name, font=font)
         self.module = "cnn_prediction"
@@ -321,8 +333,14 @@ class SegmentationFrame(ModuleFramePrototype):
             sticky=stick_new,
         )
 
-        [tkinter.Grid.rowconfigure(self.segmentation_frame, i, weight=w) for i, w in enumerate(self.segmentation_style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.segmentation_frame, i, weight=w) for i, w in enumerate(self.segmentation_style["columns_weights"])]
+        [
+            tkinter.Grid.rowconfigure(self.segmentation_frame, i, weight=w)
+            for i, w in enumerate(self.segmentation_style["row_weights"])
+        ]
+        [
+            tkinter.Grid.columnconfigure(self.segmentation_frame, i, weight=w)
+            for i, w in enumerate(self.segmentation_style["columns_weights"])
+        ]
 
         super().__init__(self.segmentation_frame, module_name, font)
         self.module = "segmentation"
@@ -486,10 +504,15 @@ class PostSegmentationFrame(ModuleFramePrototype):
 
         self.post_frame["bg"] = self.post_style["bg"]
         self.font = font
-        self.post_frame.grid(column=0, row=row, padx=self.post_style["padx"], pady=self.post_style["pady"], sticky=stick_all)
+        self.post_frame.grid(
+            column=0, row=row, padx=self.post_style["padx"], pady=self.post_style["pady"], sticky=stick_all
+        )
 
         [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w) for i, w in enumerate(self.post_style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.post_frame, i, weight=w) for i, w in enumerate(self.post_style["columns_weights"])]
+        [
+            tkinter.Grid.columnconfigure(self.post_frame, i, weight=w)
+            for i, w in enumerate(self.post_style["columns_weights"])
+        ]
 
         super().__init__(self.post_frame, module_name, font=font)
         self.module = "segmentation_postprocessing"
@@ -569,7 +592,10 @@ class PostPredictionsFrame(ModuleFramePrototype):
         )
 
         [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w) for i, w in enumerate(self.post_style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.post_frame, i, weight=w) for i, w in enumerate(self.post_style["columns_weights"])]
+        [
+            tkinter.Grid.columnconfigure(self.post_frame, i, weight=w)
+            for i, w in enumerate(self.post_style["columns_weights"])
+        ]
 
         super().__init__(self.post_frame, module_name, font=font)
         self.module = "cnn_postprocessing"
@@ -648,10 +674,15 @@ class PostFrame:
 
         self.post_frame["bg"] = self.post_style["bg"]
         self.font = font
-        self.post_frame.grid(column=col, row=0, padx=self.post_style["padx"], pady=self.post_style["pady"], sticky=stick_new)
+        self.post_frame.grid(
+            column=col, row=0, padx=self.post_style["padx"], pady=self.post_style["pady"], sticky=stick_new
+        )
 
         [tkinter.Grid.rowconfigure(self.post_frame, i, weight=w) for i, w in enumerate(self.post_style["row_weights"])]
-        [tkinter.Grid.columnconfigure(self.post_frame, i, weight=w) for i, w in enumerate(self.post_style["columns_weights"])]
+        [
+            tkinter.Grid.columnconfigure(self.post_frame, i, weight=w)
+            for i, w in enumerate(self.post_style["columns_weights"])
+        ]
 
         # init frames
         self.post_pred_obj = PostPredictionsFrame(self.post_frame, config, row=0, font=font, show_all=True)

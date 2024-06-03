@@ -13,6 +13,7 @@ def test_get_3D_model_by_id():
         state = state['model_state_dict']
     model.load_state_dict(state)
 
+
 def test_get_2D_model_by_id():
     """Try to load a 2D model from the BioImage.IO model zoo.
 
@@ -23,6 +24,7 @@ def test_get_2D_model_by_id():
     if 'model_state_dict' in state:  # Model weights format may vary between versions
         state = state['model_state_dict']
     model.load_state_dict(state)
+
 
 def test_halo_computation_for_bioimageio_model():
     """Compute the halo for a BioImage.IO model."""

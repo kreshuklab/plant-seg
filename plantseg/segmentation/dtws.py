@@ -7,30 +7,39 @@ from plantseg.segmentation.functional.segmentation import dt_watershed
 
 
 class DistanceTransformWatershed(AbstractSegmentationStep):
-    def __init__(self,
-                 predictions_paths,
-                 key=None,
-                 channel=None,
-                 save_directory="DTWatershed",
-                 ws_2D=True,
-                 ws_threshold=0.4,
-                 ws_minsize=50,
-                 ws_sigma=0.3,
-                 ws_w_sigma=0,
-                 n_threads=None,
-                 state=True,
-                 **kwargs):
-        super().__init__(input_paths=predictions_paths,
-                         save_directory=save_directory,
-                         file_suffix='_dtws',
-                         state=state,
-                         input_key=key,
-                         input_channel=channel)
+    def __init__(
+        self,
+        predictions_paths,
+        key=None,
+        channel=None,
+        save_directory="DTWatershed",
+        ws_2D=True,
+        ws_threshold=0.4,
+        ws_minsize=50,
+        ws_sigma=0.3,
+        ws_w_sigma=0,
+        n_threads=None,
+        state=True,
+        **kwargs,
+    ):
+        super().__init__(
+            input_paths=predictions_paths,
+            save_directory=save_directory,
+            file_suffix='_dtws',
+            state=state,
+            input_key=key,
+            input_channel=channel,
+        )
 
-        self.dt_watershed = partial(dt_watershed,
-                                    threshold=ws_threshold, sigma_seeds=ws_sigma,
-                                    stacked=ws_2D, sigma_weights=ws_w_sigma,
-                                    min_size=ws_minsize, n_threads=n_threads)
+        self.dt_watershed = partial(
+            dt_watershed,
+            threshold=ws_threshold,
+            sigma_seeds=ws_sigma,
+            stacked=ws_2D,
+            sigma_weights=ws_w_sigma,
+            min_size=ws_minsize,
+            n_threads=n_threads,
+        )
 
     def process(self, pmaps):
         runtime = time.time()

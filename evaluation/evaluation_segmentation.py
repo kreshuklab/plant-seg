@@ -18,9 +18,7 @@ from simple_hash import simple_hash
 from voi import voi
 
 # Add new metrics if needed
-metrics = {"voi": voi,
-           "adapted_rand": adapted_rand,
-           "hash": simple_hash}
+metrics = {"voi": voi, "adapted_rand": adapted_rand, "hash": simple_hash}
 
 
 def load_config():
@@ -33,8 +31,7 @@ def load_config():
 
 
 def create_result_placeholder(config, metrics):
-    header = {"segmentation_file": None,
-              "gt_file": None}
+    header = {"segmentation_file": None, "gt_file": None}
 
     # Metrics used
     for key in metrics.keys():
@@ -73,7 +70,7 @@ def automatic_file_matching(all_gt, all_seg):
 
 
 def run_evaluation(gtarray, segarray, remove_background=True):
-    timer = - time.time()
+    timer = -time.time()
     # Check for problems in data types
     # double check for type and sign to allow a bit of slack in using _
     # int for segmentation and not only uint)
@@ -98,8 +95,7 @@ def run_evaluation(gtarray, segarray, remove_background=True):
 
     # Resize segmentation to gt size for apple to apple comparison in the scores
     if segarray.shape != gtarray.shape:
-        print("- Segmentation shape:", segarray.shape,
-              "Ground truth shape: ", gtarray.shape)
+        print("- Segmentation shape:", segarray.shape, "Ground truth shape: ", gtarray.shape)
 
         print("- Shape mismatch, trying to fixing it")
         factor = tuple([g_shape / seg_shape for g_shape, seg_shape in zip(gtarray.shape, segarray.shape)])
@@ -164,8 +160,7 @@ if __name__ == "__main__":
     result_placeholder = create_result_placeholder(eval_config, metrics=metrics)
     results = []
 
-    remove_background = (eval_config["remove_background"] if "remove_background" in eval_config
-                         else True)
+    remove_background = eval_config["remove_background"] if "remove_background" in eval_config else True
 
     # Make sure that GT and segmentation directories are present in the FS
     # assert os.path.isdir(eval_config["gt_dir"]) and os.path.isdir(eval_config["seg_dir"])

@@ -21,9 +21,15 @@ class HDF5Dataset(Dataset):
         global_normalization (bool): if True, the mean and std of the raw data will be calculated over the whole dataset
     """
 
-    def __init__(self, file_path, augmenter, patch_shape,
-                 raw_internal_path='raw', label_internal_path='label', global_normalization=True):
-
+    def __init__(
+        self,
+        file_path,
+        augmenter,
+        patch_shape,
+        raw_internal_path='raw',
+        label_internal_path='label',
+        global_normalization=True,
+    ):
         self.file_path = file_path
 
         with h5py.File(file_path, 'r') as f:
@@ -38,8 +44,9 @@ class HDF5Dataset(Dataset):
             self._check_volume_sizes(self.raw, self.label)
 
             # build slice indices for raw and label data sets
-            slice_builder = FilterSliceBuilder(self.raw, self.label, patch_shape=patch_shape,
-                                               stride_shape=tuple(i // 2 for i in patch_shape))
+            slice_builder = FilterSliceBuilder(
+                self.raw, self.label, patch_shape=patch_shape, stride_shape=tuple(i // 2 for i in patch_shape)
+            )
             self.raw_slices = slice_builder.raw_slices
             self.label_slices = slice_builder.label_slices
 
@@ -49,8 +56,10 @@ class HDF5Dataset(Dataset):
     @staticmethod
     def load_dataset(input_file, internal_path):
         ds = input_file[internal_path][:]
-        assert ds.ndim in [3, 4], \
-            f"Invalid dataset dimension: {ds.ndim}. Supported dataset formats: (C, Z, Y, X) or (Z, Y, X)"
+        assert ds.ndim in [
+            3,
+            4,
+        ], f"Invalid dataset dimension: {ds.ndim}. Supported dataset formats: (C, Z, Y, X) or (Z, Y, X)"
         return ds
 
     def __getitem__(self, idx):
@@ -94,16 +103,9 @@ def calculate_stats(images, global_normalization=True):
     """
     if global_normalization:
         # flatten first since the images might not be the same size
-        flat = np.concatenate(
-            [img.ravel() for img in images]
-        )
+        flat = np.concatenate([img.ravel() for img in images])
         pmin, pmax, mean, std = np.percentile(flat, 1), np.percentile(flat, 99.6), np.mean(flat), np.std(flat)
     else:
         pmin, pmax, mean, std = None, None, None, None
 
-    return {
-        'pmin': pmin,
-        'pmax': pmax,
-        'mean': mean,
-        'std': std
-    }
+    return {'pmin': pmin, 'pmax': pmax, 'mean': mean, 'std': std}

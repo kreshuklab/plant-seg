@@ -25,7 +25,7 @@ class TestModelPrediction:
     def test_embeddings_to_affinities(self):
         x = torch.randn(4, 8, 128, 128)
         offsets = [[-1, 0], [0, -1]]
-        delta = .5
+        delta = 0.5
         affs = embeddings_to_affinities(x, offsets, delta)
         assert affs.shape == (4, 2, 128, 128)
         assert torch.all(affs >= 0) and torch.all(affs <= 1)

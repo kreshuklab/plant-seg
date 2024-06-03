@@ -26,25 +26,27 @@ def run_workflow_headless(path: Path):
     print(dag)
     input_paths, input_names = parse_input_paths(dag.inputs)
 
-    @magicgui(list_inputs={'label': input_names,
-                           'layout': 'vertical'},
-              out_directory={'label': 'Export directory',
-                             'mode': 'd',
-                             'tooltip': 'Select export directory'},
-              device={'label': 'Device',
-                      'choices': ALL_DEVICES_HEADLESS},
-              num_workers={'label': '# Workers',
-                           'widget_type': 'IntSlider',
-                           'tooltip': 'Set number of workers.',
-                           'max': MAX_WORKERS, 'min': 1},
-              scheduler={'label': 'Scheduler',
-                         'choices': ['multiprocessing', 'threaded']},
-              call_button='Run PlantSeg')
-    def run(list_inputs: list[tuple[Path]],  # -> ListEdit; magicgui cannot handle `...` in type hints
-            out_directory: Path = Path.home(),
-            device: str = ALL_DEVICES_HEADLESS[0],
-            num_workers: int = MAX_WORKERS,
-            scheduler: str = 'multiprocessing'):
+    @magicgui(
+        list_inputs={'label': input_names, 'layout': 'vertical'},
+        out_directory={'label': 'Export directory', 'mode': 'd', 'tooltip': 'Select export directory'},
+        device={'label': 'Device', 'choices': ALL_DEVICES_HEADLESS},
+        num_workers={
+            'label': '# Workers',
+            'widget_type': 'IntSlider',
+            'tooltip': 'Set number of workers.',
+            'max': MAX_WORKERS,
+            'min': 1,
+        },
+        scheduler={'label': 'Scheduler', 'choices': ['multiprocessing', 'threaded']},
+        call_button='Run PlantSeg',
+    )
+    def run(
+        list_inputs: list[tuple[Path]],  # -> ListEdit; magicgui cannot handle `...` in type hints
+        out_directory: Path = Path.home(),
+        device: str = ALL_DEVICES_HEADLESS[0],
+        num_workers: int = MAX_WORKERS,
+        scheduler: str = 'multiprocessing',
+    ):
         with LocalCluster(n_workers=num_workers, threads_per_worker=1) as cluster, Client(cluster) as client:
             print(f"Dashboard link: \n{client.dashboard_link}\n")
             print('Setting up jobs...')
@@ -53,11 +55,13 @@ def run_workflow_headless(path: Path):
                 if device == all_gpus_str:
                     device = ALL_DEVICES[i % len(ALL_CUDA_DEVICES)]
                 job_dict: dict = dict(zip(input_paths, inputs))
-                job_dict.update({
-                    'out_stack_name': inputs[0].stem,
-                    'out_directory': out_directory,
-                    'device': device,
-                })
+                job_dict.update(
+                    {
+                        'out_stack_name': inputs[0].stem,
+                        'out_directory': out_directory,
+                        'device': device,
+                    }
+                )
                 jobs[i] = dag.get_dag(job_dict, get_type=scheduler)
 
             start_time = time.time()

@@ -31,10 +31,19 @@ class UNetTrainer:
         pre_trained(str): path to the pre-trained model
     """
 
-    def __init__(self, model: nn.Module, optimizer: optim.Optimizer, lr_scheduler: optim.lr_scheduler.ReduceLROnPlateau,
-                 loss_criterion: nn.Module, loaders: dict, checkpoint_dir: str,
-                 max_num_iterations: int, device: str = 'cuda', log_after_iters: int = 100, pre_trained: str = None):
-
+    def __init__(
+        self,
+        model: nn.Module,
+        optimizer: optim.Optimizer,
+        lr_scheduler: optim.lr_scheduler.ReduceLROnPlateau,
+        loss_criterion: nn.Module,
+        loaders: dict,
+        checkpoint_dir: str,
+        max_num_iterations: int,
+        device: str = 'cuda',
+        log_after_iters: int = 100,
+        pre_trained: str = None,
+    ):
         self.model = model
         self.optimizer = optimizer
         self.scheduler = lr_scheduler

@@ -4,7 +4,7 @@ BASE_DIR = '/g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_con
 
 GT_PATHS = {
     'root': '/g/kreshuk/wolny/Datasets/LateralRoot/Test',
-    'ovules': '/g/kreshuk/wolny/Datasets/Ovules/test/Lorenzo/ds2'
+    'ovules': '/g/kreshuk/wolny/Datasets/Ovules/test/Lorenzo/ds2',
 }
 
 

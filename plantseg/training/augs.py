@@ -105,8 +105,10 @@ class RandomRotate:
         if m.ndim == 3:
             m = rotate(m, angle, axes=axis, reshape=False, order=self.order, mode=self.mode, cval=-1)
         else:
-            channels = [rotate(m[c], angle, axes=axis, reshape=False, order=self.order, mode=self.mode, cval=-1) for c
-                        in range(m.shape[0])]
+            channels = [
+                rotate(m[c], angle, axes=axis, reshape=False, order=self.order, mode=self.mode, cval=-1)
+                for c in range(m.shape[0])
+            ]
             m = np.stack(channels, axis=0)
 
         return m
@@ -141,8 +143,9 @@ class ElasticDeformation:
     Based on: https://github.com/fcalvet/image_tools/blob/master/image_augmentation.py#L62
     """
 
-    def __init__(self, random_state, spline_order, alpha=2000, sigma=50, execution_probability=0.1, apply_3d=True,
-                 **kwargs):
+    def __init__(
+        self, random_state, spline_order, alpha=2000, sigma=50, execution_probability=0.1, apply_3d=True, **kwargs
+    ):
         """
         :param spline_order: the order of spline interpolation (use 0 for labeled images)
         :param alpha: scaling factor for deformations
@@ -172,10 +175,8 @@ class ElasticDeformation:
                 dz = np.zeros_like(m)
 
             dy, dx = [
-                gaussian_filter(
-                    self.random_state.randn(*volume_shape),
-                    self.sigma, mode="reflect"
-                ) * self.alpha for _ in range(2)
+                gaussian_filter(self.random_state.randn(*volume_shape), self.sigma, mode="reflect") * self.alpha
+                for _ in range(2)
             ]
 
             z_dim, y_dim, x_dim = volume_shape
@@ -237,12 +238,12 @@ class CropToFixed:
             x_start, x_pad = _start_and_pad(self.crop_x, x)
 
         if m.ndim == 3:
-            result = m[:, y_start:y_start + self.crop_y, x_start:x_start + self.crop_x]
+            result = m[:, y_start : y_start + self.crop_y, x_start : x_start + self.crop_x]
             return np.pad(result, pad_width=((0, 0), y_pad, x_pad), mode='reflect')
         else:
             channels = []
             for c in range(m.shape[0]):
-                result = m[c][:, y_start:y_start + self.crop_y, x_start:x_start + self.crop_x]
+                result = m[c][:, y_start : y_start + self.crop_y, x_start : x_start + self.crop_x]
                 channels.append(np.pad(result, pad_width=((0, 0), y_pad, x_pad), mode='reflect'))
             return np.stack(channels, axis=0)
 
@@ -251,7 +252,7 @@ class AbstractLabelToBoundary:
     AXES_TRANSPOSE = [
         (0, 1, 2),  # X
         (0, 2, 1),  # Y
-        (2, 0, 1)  # Z
+        (2, 0, 1),  # Z
     ]
 
     def __init__(self, ignore_index=None, aggregate_affinities=False, append_label=False, **kwargs):
@@ -284,7 +285,7 @@ class AbstractLabelToBoundary:
             # aggregate affinities with the same offset
             for i in range(0, len(kernels), 3):
                 # merge across X,Y,Z axes (logical OR)
-                xyz_aggregated_affinities = np.logical_or.reduce(channels[i:i + 3, ...]).astype(np.int32)
+                xyz_aggregated_affinities = np.logical_or.reduce(channels[i : i + 3, ...]).astype(np.int32)
                 # recover ignore index
                 xyz_aggregated_affinities = _recover_ignore_index(xyz_aggregated_affinities, m, self.ignore_index)
                 results.append(xyz_aggregated_affinities)
@@ -312,8 +313,7 @@ class AbstractLabelToBoundary:
 
 
 class StandardLabelToBoundary:
-    def __init__(self, ignore_index=None, append_label=False, mode='thick', foreground=False,
-                 **kwargs):
+    def __init__(self, ignore_index=None, append_label=False, mode='thick', foreground=False, **kwargs):
         self.ignore_index = ignore_index
         self.append_label = append_label
         self.mode = mode
@@ -469,7 +469,9 @@ class Relabel:
         self.run_cc = run_cc
 
         if ignore_label is not None:
-            assert append_original, "ignore_label present, so append_original must be true, so that one can localize the ignore region"
+            assert (
+                append_original
+            ), "ignore_label present, so append_original must be true, so that one can localize the ignore region"
 
     def __call__(self, m):
         orig = m
@@ -507,7 +509,7 @@ class LabelToTensor:
 
 
 class GaussianBlur3D:
-    def __init__(self, sigma=[.1, 2.], execution_probability=0.5, **kwargs):
+    def __init__(self, sigma=[0.1, 2.0], execution_probability=0.5, **kwargs):
         self.sigma = sigma
         self.execution_probability = execution_probability
 
@@ -532,22 +534,26 @@ class Augmenter:
         self.seed = GLOBAL_RANDOM_STATE.randint(10000000)
 
     def raw_transform(self, stats):
-        return Compose([
-            Standardize(mean=stats['mean'], std=stats['std']),
-            RandomFlip(np.random.RandomState(self.seed)),
-            RandomRotate90(np.random.RandomState(self.seed)),
-            RandomRotate(np.random.RandomState(self.seed), axes=[[2, 1]], angle_spectrum=45, mode='reflect'),
-            GaussianBlur3D(),
-            AdditiveGaussianNoise(np.random.RandomState()),
-            AdditivePoissonNoise(np.random.RandomState()),
-            ToTensor(expand_dims=True)
-        ])
+        return Compose(
+            [
+                Standardize(mean=stats['mean'], std=stats['std']),
+                RandomFlip(np.random.RandomState(self.seed)),
+                RandomRotate90(np.random.RandomState(self.seed)),
+                RandomRotate(np.random.RandomState(self.seed), axes=[[2, 1]], angle_spectrum=45, mode='reflect'),
+                GaussianBlur3D(),
+                AdditiveGaussianNoise(np.random.RandomState()),
+                AdditivePoissonNoise(np.random.RandomState()),
+                ToTensor(expand_dims=True),
+            ]
+        )
 
     def label_transform(self):
-        return Compose([
-            RandomFlip(np.random.RandomState(self.seed)),
-            RandomRotate90(np.random.RandomState(self.seed)),
-            RandomRotate(np.random.RandomState(self.seed), axes=[[2, 1]], angle_spectrum=45, mode='reflect'),
-            StandardLabelToBoundary(),
-            ToTensor(expand_dims=False)
-        ])
+        return Compose(
+            [
+                RandomFlip(np.random.RandomState(self.seed)),
+                RandomRotate90(np.random.RandomState(self.seed)),
+                RandomRotate(np.random.RandomState(self.seed), axes=[[2, 1]], angle_spectrum=45, mode='reflect'),
+                StandardLabelToBoundary(),
+                ToTensor(expand_dims=False),
+            ]
+        )

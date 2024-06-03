@@ -46,8 +46,18 @@ def process_config(path: Path):
         from plantseg.training.train import unet_training
 
         c = config['training']
-        unet_training(c['dataset_dir'], c['model_name'], c['in_channels'], c['out_channels'], c['feature_maps'],
-                      c['patch_size'], c['max_num_iters'], c['dimensionality'], c['sparse'], c['device'])
+        unet_training(
+            c['dataset_dir'],
+            c['model_name'],
+            c['in_channels'],
+            c['out_channels'],
+            c['feature_maps'],
+            c['patch_size'],
+            c['max_num_iters'],
+            c['dimensionality'],
+            c['sparse'],
+            c['device'],
+        )
     else:
         from plantseg.pipeline.raw2seg import raw2seg
 

@@ -60,23 +60,14 @@ def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label, correc
 
     correct_cell_idx = [idx for idx in all_idx if idx in correct_labels]
     if correct_cell_idx:
-        napari_formatted_logging(f'Label {correct_cell_idx} is in the correct labels list. Cannot be modified',
-                                 thread='Proofreading tool')
+        napari_formatted_logging(
+            f'Label {correct_cell_idx} is in the correct labels list. Cannot be modified', thread='Proofreading tool'
+        )
         return segmentation[region_slice], region_slice, bboxes
 
     if len(seeds_idx) == 1:
-        return _merge_from_seeds(segmentation,
-                                 region_slice,
-                                 region_bbox,
-                                 bboxes,
-                                 all_idx)
+        return _merge_from_seeds(segmentation, region_slice, region_bbox, bboxes, all_idx)
     else:
-        return _split_from_seed(segmentation,
-                                sz, sx, sy,
-                                region_slice,
-                                all_idx,
-                                offsets,
-                                bboxes,
-                                image,
-                                seeds_values,
-                                max_label)
+        return _split_from_seed(
+            segmentation, sz, sx, sy, region_slice, all_idx, offsets, bboxes, image, seeds_values, max_label
+        )

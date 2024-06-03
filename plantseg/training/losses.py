@@ -82,7 +82,7 @@ class _AbstractDiceLoss(nn.Module):
         per_channel_dice = self.dice(input, target, weight=self.weight)
 
         # average Dice score across all channels/classes
-        return 1. - torch.mean(per_channel_dice)
+        return 1.0 - torch.mean(per_channel_dice)
 
 
 class DiceLoss(_AbstractDiceLoss):

@@ -31,33 +31,48 @@ def write_csv(output_path, results):
 
 def parse():
     parser = argparse.ArgumentParser(description='Pmaps Quality Evaluation Script')
-    parser.add_argument('--gt', type=str,
-                        help='Path to directory with the ground truth files', required=True)
-    parser.add_argument('--predictions', type=str,
-                        help='Path to directory with the predictions files', required=True)
-    parser.add_argument('--threshold', type=float, nargs='+',
-                        help='thresholds at which the predictions will be binarized',
-                        required=True)
-    parser.add_argument('--out-file', type=str,
-                        help='define name (and location) of output file (final name: out-file + timestamp + .csv)',
-                        required=False, default="pmaps_evaluation")
-    parser.add_argument('--p-key', type=str, default="predictions",
-                        help='predictions dataset name inside h5', required=False)
-    parser.add_argument('--gt-key', type=str, default="label",
-                        help='ground truth dataset name inside h5', required=False)
-    parser.add_argument('--sigma', type=float, default=1.0,
-                        help='must match the default smoothing used in training. Default ovules 1.3', required=False)
+    parser.add_argument('--gt', type=str, help='Path to directory with the ground truth files', required=True)
+    parser.add_argument('--predictions', type=str, help='Path to directory with the predictions files', required=True)
+    parser.add_argument(
+        '--threshold',
+        type=float,
+        nargs='+',
+        help='thresholds at which the predictions will be binarized',
+        required=True,
+    )
+    parser.add_argument(
+        '--out-file',
+        type=str,
+        help='define name (and location) of output file (final name: out-file + timestamp + .csv)',
+        required=False,
+        default="pmaps_evaluation",
+    )
+    parser.add_argument(
+        '--p-key', type=str, default="predictions", help='predictions dataset name inside h5', required=False
+    )
+    parser.add_argument(
+        '--gt-key', type=str, default="label", help='ground truth dataset name inside h5', required=False
+    )
+    parser.add_argument(
+        '--sigma',
+        type=float,
+        default=1.0,
+        help='must match the default smoothing used in training. Default ovules 1.3',
+        required=False,
+    )
     args = parser.parse_args()
     return args
 
 
-def pmaps_evaluation(gt_path,
-                     predictions_path,
-                     thresholds,
-                     out_name="pmaps_evaluation",
-                     p_key="predictions",
-                     gt_key="label",
-                     sigma=1.0):
+def pmaps_evaluation(
+    gt_path,
+    predictions_path,
+    thresholds,
+    out_name="pmaps_evaluation",
+    p_key="predictions",
+    gt_key="label",
+    sigma=1.0,
+):
     if isinstance(thresholds, float):
         assert 0 < thresholds < 1, "threshold must be a float between 0 and 1."
         thresholds = [thresholds]
@@ -79,8 +94,9 @@ def pmaps_evaluation(gt_path,
         all_predictions = [predictions_path]
 
     else:
-        NotImplementedError("gt and predictions inputs must be directories or single files. "
-                            "Moreover, types must match.")
+        NotImplementedError(
+            "gt and predictions inputs must be directories or single files. " "Moreover, types must match."
+        )
 
     results = []
     for pmap_file, gt_file in zip(all_predictions, all_gt):
@@ -106,27 +122,33 @@ def pmaps_evaluation(gt_path,
             _pmap[pmap < threshold] = 0
 
             # Measure accuracy
-            mask = (_pmap == boundaries)
-            accuracy = (np.sum(mask) / mask.size)
+            mask = _pmap == boundaries
+            accuracy = np.sum(mask) / mask.size
 
             # Measure scores
             precision = precision_score(boundaries.ravel(), _pmap.ravel())
             recall = recall_score(boundaries.ravel(), _pmap.ravel())
             f1 = 2 * ((precision * recall) / (precision + recall))
 
-            print(f"threshold: {threshold:0.2f},"
-                  f" accuracy: {accuracy:0.3f},"
-                  f" f1 score: {f1:0.3f},"
-                  f" precision: {precision:0.3f},"
-                  f" recall: {recall:0.3f}")
+            print(
+                f"threshold: {threshold:0.2f},"
+                f" accuracy: {accuracy:0.3f},"
+                f" f1 score: {f1:0.3f},"
+                f" precision: {precision:0.3f},"
+                f" recall: {recall:0.3f}"
+            )
 
-            results.append({"threshold": threshold,
-                            "gt": gt_file,
-                            "pmap": pmap_file,
-                            "accuracy": accuracy,
-                            "precision": precision,
-                            "recall": recall,
-                            "f1 score": f1})
+            results.append(
+                {
+                    "threshold": threshold,
+                    "gt": gt_file,
+                    "pmap": pmap_file,
+                    "accuracy": accuracy,
+                    "precision": precision,
+                    "recall": recall,
+                    "f1 score": f1,
+                }
+            )
     write_csv(out_name, results)
 
 
@@ -135,10 +157,12 @@ if __name__ == "__main__":
     import os
 
     args = parse()
-    pmaps_evaluation(args.gt,
-                     args.predictions,
-                     args.threshold,
-                     out_name=args.out_file,
-                     p_key=args.p_key,
-                     gt_key=args.gt_key,
-                     sigma=args.sigma)
+    pmaps_evaluation(
+        args.gt,
+        args.predictions,
+        args.threshold,
+        out_name=args.out_file,
+        p_key=args.p_key,
+        gt_key=args.gt_key,
+        sigma=args.sigma,
+    )

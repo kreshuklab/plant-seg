@@ -69,17 +69,21 @@ def _find_input_key(zarr_file: zarr.Group) -> str:
             if zarr_key in found_datasets:
                 return zarr_key
 
-        raise RuntimeError(f"Ambiguous datasets '{found_datasets}' in {zarr_file}. "
-                           f"PlantSeg expects only one dataset in the input Zarr.")
+        raise RuntimeError(
+            f"Ambiguous datasets '{found_datasets}' in {zarr_file}. "
+            f"PlantSeg expects only one dataset in the input Zarr."
+        )
 
 
-def load_zarr(path: str,
-              key: Optional[str],
-              slices: Optional[slice] = None,
-              info_only: bool = False,
-              # ) -> tuple[Optional[np.ndarray], tuple[tuple[float, float, float], Any, str, str]]:
-              ) -> Union[tuple[tuple[float, float, float], Any, str, str],
-                         tuple[np.ndarray, tuple[tuple[float, float, float], Any, str, str]]]:
+def load_zarr(
+    path: str,
+    key: Optional[str],
+    slices: Optional[slice] = None,
+    info_only: bool = False,
+) -> Union[
+    tuple[tuple[float, float, float], Any, str, str],
+    tuple[np.ndarray, tuple[tuple[float, float, float], Any, str, str]],
+]:
     """Load a dataset from a Zarr file and return it or its meta-information.
 
     Args:
@@ -108,11 +112,13 @@ def load_zarr(path: str,
     return data, infos
 
 
-def create_zarr(path: str,
-                stack: np.ndarray,
-                key: str,
-                voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
-                mode: str = 'a') -> None:
+def create_zarr(
+    path: str,
+    stack: np.ndarray,
+    key: str,
+    voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    mode: str = 'a',
+) -> None:
     """
     Create a Zarr array from a NumPy array.
 
@@ -139,6 +145,7 @@ def list_keys(path: str) -> list[str]:
     Returns:
         keys (list[str]): A list of keys in the Zarr file.
     """
+
     def _recursive_find_keys(zarr_group: zarr.Group, base: Path = Path('')) -> list[str]:
         _list_keys = []
         for key, dataset in zarr_group.items():
