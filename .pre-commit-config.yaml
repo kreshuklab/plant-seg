@@ -1,7 +1,7 @@
 ci:
   autoupdate_schedule: monthly
-  autofix_commit_msg: "style: [pre-commit.ci] auto fixes [...]"
-  autoupdate_commit_msg: "ci: [pre-commit.ci] autoupdate"
+  autofix_commit_msg: "[pre-commit.ci] auto fixes"
+  autoupdate_commit_msg: "[pre-commit.ci] autoupdate"
 
 repos:
   - repo: https://github.com/crate-ci/typos
