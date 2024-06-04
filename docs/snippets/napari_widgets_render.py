@@ -1,5 +1,5 @@
 from PyQt5 import QtGui, QtCore
-from napari._qt.qt_resources import get_stylesheet
+from napari.qt import get_stylesheet
 import base64
 
 css_style = """
@@ -43,17 +43,20 @@ def get_doc_string(widget) -> str:
 
 
 def _render_widget(widget, theme="dark"):
-    widget.native.setStyleSheet(get_stylesheet(theme))
     widget.show()
+    widget.native.setStyleSheet(get_stylesheet(theme))
     geometry = widget.native.geometry()
-    widget.close()
     pixmap = QtGui.QPixmap(geometry.size())
     widget.native.render(pixmap)
     qimage = pixmap.toImage()
+    widget.close()
+
     buffer = QtCore.QBuffer()
     buffer.open(QtCore.QBuffer.ReadWrite)
     qimage.save(buffer, "PNG")
     base64_image = base64.b64encode(buffer.data()).decode("utf-8")
+    buffer.close()
+
     return f'<img src="data:image/png;base64,{base64_image}" alt="Screenshot">'
 
 
