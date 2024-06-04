@@ -4,12 +4,8 @@ import base64
 
 css_style = """
     <style>
-    body {
-            background-color: var(--background-color);
-            color: var(--text-color);
-        }
-
-        .light-mode-message, .dark-mode-message {
+        .light-mode-message,
+        .dark-mode-message {
             display: none;
         }
 

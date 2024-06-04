@@ -32,7 +32,6 @@ theme:
     - content.code.annotate
     - navigation.instant
     - navigation.instant.progress
-    # - navigation.tabs
     - navigation.sections
     - navigation.path
     - navigation.indexes
