@@ -22,6 +22,6 @@ and copy the following files into it:
 
 The later two files are automatically generated during training and contain all neural networks parameters.
 
-Now you can simply use your model for prediction by setting the [model_name](examples/config.yaml) key to `MY_MODEL_NAME`.
+Now you can simply use your model for prediction by setting the [config.yaml](https://github.com/kreshuklab/plant-seg/blob/master/examples/config.yaml) key to `MY_MODEL_NAME`.
 
 If you want your model to be part of the open-source model zoo provided with this package, please contact us.

@@ -3,7 +3,7 @@
 ## Guide to Custom Configuration File
 
 The configuration file defines all the operations in our pipeline together with the data to be processed.
-Please refer to [config.yaml](../../../examples/config.yaml) for a sample pipeline configuration and a detailed explanation
+Please refer to [config.yaml](https://github.com/kreshuklab/plant-seg/blob/master/examples/config.yaml) for a sample pipeline configuration and a detailed explanation
 of all parameters.
 
 ## Main Keys/Steps
@@ -11,12 +11,12 @@ of all parameters.
 * `path` attribute: is used to define either the file to process or the directory containing the data.
 * `preprocessing` attribute: contains a simple set of possible operations one would need to run on their data before calling the neural network.
 This step can be skipped if data is ready for neural network processing.
-Detailed instructions can be found at [Classic GUI (Data Processing)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/data_processing.html).
+Detailed instructions can be found at [Classic GUI (Data Processing)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/data_processing/).
 * `cnn_prediction` attribute: contains all parameters relevant for predicting with a neural network.
 Description of all pre-trained models provided with the package is described below.
-Detailed instructions can be found at [Classic GUI (Predictions)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_predictions.html).
+Detailed instructions can be found at [Classic GUI (Predictions)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_predictions/).
 * `segmentation` attribute: contains all parameters needed to run the partitioning algorithm (i.e., final Segmentation).
-Detailed instructions can be found at [Classic GUI (Segmentation)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/segmentation.html).
+Detailed instructions can be found at [Classic GUI (Segmentation)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/segmentation/).
 
 ## Additional information
 
@@ -193,14 +193,14 @@ We will use the _Arabidopsis thaliana_ lateral root as an example. The `LiftedMu
 PlantSeg two times:
 
 1. Using PlantSeg to predict the nuclei probability maps using the `lightsheet_unet_bce_dice_nuclei_ds1x` network.
-In this case, only the pre-processing and CNN prediction steps are enabled in the config. See [example config](../../../plantseg/resources/nuclei_predictions_example.yaml).
+In this case, only the pre-processing and CNN prediction steps are enabled in the config. See [example nuclei prediction config](https://github.com/kreshuklab/plant-seg/blob/master/plantseg/resources/nuclei_predictions_example.yaml).
 
     ```bash
     plantseg --config nuclei_predictions_example.yaml
     ```
 
-2. Using PlantSeg to segment the input image with the `LiftedMulticut` algorithm given the nuclei probability maps from the 1st step.
-See [example config](../../../plantseg/resources/lifted_multicut_example.yaml). The notable difference is that in the `segmentation`
+1. Using PlantSeg to segment the input image with the `LiftedMulticut` algorithm given the nuclei probability maps from the 1st step.
+See [example lifted multicut config](https://github.com/kreshuklab/plant-seg/blob/master/plantseg/resources/lifted_multicut_example.yaml). The notable difference is that in the `segmentation`
 part of the config, we set `name: LiftedMulticut` and the `nuclei_predictions_path` as the path to the directory where the nuclei pmaps
 were saved in step 1. Also, make sure that the `path` attribute points to the raw files containing the cell boundary staining (NOT THE NUCLEI).
 
@@ -208,5 +208,5 @@ were saved in step 1. Also, make sure that the `path` attribute points to the ra
     plantseg --config lifted_multicut_example.yaml
     ```
 
-If case when the nuclei segmentation is given, one should skip step 1., add `is_segmentation=True` flag in the [config](../../../plantseg/resources/lifted_multicut_example.yaml)
+If case when the nuclei segmentation is given, one should skip step 1., add `is_segmentation=True` flag in the [example lifted multicut config](https://github.com/kreshuklab/plant-seg/blob/master/plantseg/resources/lifted_multicut_example.yaml)
 and directly run step 2.
