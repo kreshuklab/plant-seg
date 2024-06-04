@@ -223,7 +223,7 @@ def lifted_multicut_from_nuclei_pmaps(
             with values between 0 and 1.
         superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
         beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards
-        under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
+            under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
         post_minsize (int): minimal size of the segments after Multicut. (default: 100)
 
     Returns:
@@ -272,7 +272,7 @@ def lifted_multicut_from_nuclei_segmentation(
         nuclei_seg (np.ndarray): Nuclei segmentation. Must have the same shape as boundary_pmaps.
         superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
         beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards
-        under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
+            under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
         post_minsize (int): minimal size of the segments after Multicut. (default: 100)
 
     Returns:
