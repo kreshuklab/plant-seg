@@ -35,7 +35,7 @@ def setup_menu(container, path=None):
 def get_data_io():
     container = MainWindow(widgets=[widget_open_file, widget_export_stacks], labels=False)
     container = setup_menu(
-        container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/data_io.html'
+        container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/import_export/'
     )
     return container
 
@@ -54,7 +54,7 @@ def get_preprocessing_workflow():
     )
     container = setup_menu(
         container,
-        path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/data_processing.html',
+        path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/data_processing/',
     )
     return container
 
@@ -63,7 +63,7 @@ def get_gasp_workflow():
     container = MainWindow(widgets=[widget_unet_predictions, widget_dt_ws, widget_agglomeration], labels=False)
     container = setup_menu(
         container,
-        path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/unet_gasp_workflow.html',
+        path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/unet_gasp_workflow/',
     )
     return container
 
@@ -84,7 +84,7 @@ def get_extra():
         labels=False,
     )
     container = setup_menu(
-        container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/extra.html'
+        container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/extra/'
     )
     return container
 
@@ -100,6 +100,6 @@ def get_proofreading():
         labels=False,
     )
     container = setup_menu(
-        container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/proofreading.html'
+        container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/proofreading/'
     )
     return container

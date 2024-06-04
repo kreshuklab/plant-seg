@@ -11,12 +11,12 @@ of all parameters.
 * `path` attribute: is used to define either the file to process or the directory containing the data.
 * `preprocessing` attribute: contains a simple set of possible operations one would need to run on their data before calling the neural network.
 This step can be skipped if data is ready for neural network processing.
-Detailed instructions can be found at [Classic GUI (Data Processing)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/data_processing.html).
+Detailed instructions can be found at [Classic GUI (Data Processing)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/data_processing/).
 * `cnn_prediction` attribute: contains all parameters relevant for predicting with a neural network.
 Description of all pre-trained models provided with the package is described below.
-Detailed instructions can be found at [Classic GUI (Predictions)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_predictions.html).
+Detailed instructions can be found at [Classic GUI (Predictions)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_predictions/).
 * `segmentation` attribute: contains all parameters needed to run the partitioning algorithm (i.e., final Segmentation).
-Detailed instructions can be found at [Classic GUI (Segmentation)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/segmentation.html).
+Detailed instructions can be found at [Classic GUI (Segmentation)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/segmentation/).
 
 ## Additional information
 

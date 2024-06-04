@@ -409,27 +409,27 @@ class PlantSegApp:
     @staticmethod
     def open_documentation_index():
         """Open documentation homepage on the default browser"""
-        webbrowser.open("https://kreshuklab.github.io/plant-seg/intro.html")
+        webbrowser.open("https://kreshuklab.github.io/plant-seg/")
 
     @staticmethod
     def open_documentation_preprocessing():
         """Open Classic Data Processing documentation on the default browser"""
-        webbrowser.open("https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/data_processing.html")
+        webbrowser.open("https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/data_processing/")
 
     @staticmethod
     def open_documentation_3dunet():
         """Open CNN Predictions documentation on the default browser"""
-        webbrowser.open("https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_predictions.html")
+        webbrowser.open("https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_predictions/")
 
     @staticmethod
     def open_documentation_segmentation():
         """Open Segmentation documentation on the default browser"""
-        webbrowser.open("https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/segmentation.html")
+        webbrowser.open("https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/segmentation/")
 
     @staticmethod
     def open_postprocessing():
         """Open Classic Data Processing documentation on the default browser"""
-        webbrowser.open("https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/data_processing.html")
+        webbrowser.open("https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/data_processing/")
 
     def size_up(self):
         """adjust font size in the main widget"""
