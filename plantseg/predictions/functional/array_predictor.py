@@ -59,6 +59,62 @@ def find_batch_size(
         return batch_size
 
 
+def will_CUDA_OOM(
+    model: nn.Module,
+    in_channels: int,
+    patch_shape: Tuple[int, int, int],
+    patch_halo: Tuple[int, int, int],
+    batch_size: int,
+    device: str,
+) -> bool:
+    """
+    Determine if a given batch size will cause an out-of-memory (OOM) error on the specified device.
+
+    Args:
+        model (nn.Module): The model to be used for predictions.
+        in_channels (int): Number of input channels to the model.
+        patch_shape (Tuple[int, int, int]): Dimensions of the input patches.
+        patch_halo (Tuple[int, int, int]): Halo size used for patch augmentation.
+        batch_size (int): Number of samples per batch.
+        device (str): Device to perform the computation on ('cuda' or 'cpu').
+
+    Returns:
+        bool: True if the batch size will cause an OOM error, False otherwise.
+    """
+    if device == 'cpu':
+        return False  # CPU does not have CUDA OOM errors
+
+    # Calculate the actual patch shape including the halo
+    actual_patch_shape = tuple(patch_shape[i] + 2 * patch_halo[i] for i in range(3))
+
+    # If the model is a 2D UNet, adjust the patch shape to 2D
+    if isinstance(model, UNet2D):
+        actual_patch_shape = actual_patch_shape[1:]
+
+    model.to(device)
+    model.eval()
+
+    OOM_error = False
+    with torch.no_grad():
+        try:
+            x = torch.randn((batch_size, in_channels) + actual_patch_shape).to(device)
+            _ = model(x)
+        except RuntimeError as e:
+            if 'out of memory' in str(e):
+                OOM_error = True
+                print(
+                    f'Using patch shape {patch_shape}, halo {patch_halo} and batch size {batch_size} will cause an OOM error.'
+                )
+            else:
+                raise  # Re-raise if it's not an OOM error
+
+    # Clean up
+    del x
+    torch.cuda.empty_cache()
+
+    return OOM_error
+
+
 class ArrayPredictor:
     """Predictor class for applying a model to a dataset and returning the results as numpy arrays.
 
@@ -115,6 +171,7 @@ class ArrayPredictor:
             self.batch_size = find_batch_size(model, in_channels, patch, patch_halo, device)
         gui_logger.info(f'Using batch size of {self.batch_size} for prediction')
 
+        # Use all available graphics cards (GPUs) for headless mode
         if torch.cuda.device_count() > 1 and device != 'cpu' and headless:
             model = nn.DataParallel(model)
             gui_logger.info(
@@ -123,6 +180,12 @@ class ArrayPredictor:
             )
             self.batch_size *= torch.cuda.device_count()
             self.device = 'cuda'
+
+        # Check if OOM will happen
+        if device != 'cpu':
+            if will_OOM(model, in_channels, patch, patch_halo, self.batch_size, device):
+                assert self.batch_size == 1, 'OOM error will happen, but PlantSeg decided to use batch size > 1.'
+                raise RuntimeError('OOM error will happen. Please reduce the patch size.')
 
         self.model = model.to(self.device)
         self.out_channels = out_channels
