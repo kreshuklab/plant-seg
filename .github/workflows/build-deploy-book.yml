@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - master
-      - qy/mkdocs-author
+      - qy/fix-docs-qt-napari-path
 
 permissions:
   contents: write
