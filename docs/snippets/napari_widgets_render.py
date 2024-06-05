@@ -22,8 +22,8 @@ css_style = """
     </style>
     """
 
-QtCore.QDir.addSearchPath(f'theme_dark', str(_theme_path('dark')))
-QtCore.QDir.addSearchPath(f'theme_light', str(_theme_path('light')))
+QtCore.QDir.addSearchPath('theme_dark', str(_theme_path('dark')))
+QtCore.QDir.addSearchPath('theme_light', str(_theme_path('light')))
 
 
 def get_widget_title(widget) -> str:
