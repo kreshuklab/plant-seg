@@ -1,5 +1,6 @@
 from PyQt5 import QtGui, QtCore
 from napari.qt import get_stylesheet
+from napari.resources._icons import _theme_path
 import base64
 
 css_style = """
@@ -20,6 +21,9 @@ css_style = """
         }
     </style>
     """
+
+QtCore.QDir.addSearchPath(f'theme_dark', str(_theme_path('dark')))
+QtCore.QDir.addSearchPath(f'theme_light', str(_theme_path('light')))
 
 
 def get_widget_title(widget) -> str:
@@ -50,7 +54,6 @@ def _render_widget(widget, theme="dark"):
     widget.native.render(pixmap)
     qimage = pixmap.toImage()
     widget.close()
-
     buffer = QtCore.QBuffer()
     buffer.open(QtCore.QBuffer.ReadWrite)
     qimage.save(buffer, "PNG")
