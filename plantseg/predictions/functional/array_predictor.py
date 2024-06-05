@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import numpy as np
 import torch
 import tqdm
@@ -21,8 +19,8 @@ def _is_2d_model(model: nn.Module) -> bool:
 def find_batch_size(
     model: nn.Module,
     in_channels: int,
-    patch_shape: Tuple[int, int, int],
-    patch_halo: Tuple[int, int, int],
+    patch_shape: tuple[int, int, int],
+    patch_halo: tuple[int, int, int],
     device: str,
 ) -> int:
     """Determine the maximum feasible batch size for a given model based on available GPU memory.
@@ -30,8 +28,8 @@ def find_batch_size(
     Args:
         model (nn.Module): The model to be used for predictions.
         in_channels (int): Number of input channels to the model.
-        patch_shape (Tuple[int, int, int]): Dimensions of the input patches.
-        patch_halo (Tuple[int, int, int]): Halo size used for patch augmentation.
+        patch_shape (tuple[int, int, int]): Dimensions of the input patches.
+        patch_halo (tuple[int, int, int]): Halo size used for patch augmentation.
         device (str): Device to perform the computation on ('cuda' or 'cpu').
 
     Returns:
@@ -41,7 +39,8 @@ def find_batch_size(
         return 1
 
     actual_patch_shape = tuple(patch_shape[i] + 2 * patch_halo[i] for i in range(3))
-    actual_patch_shape = actual_patch_shape[1:] if isinstance(model, UNet2D) else actual_patch_shape
+    if isinstance(model, UNet2D):
+        actual_patch_shape = actual_patch_shape[1:]
 
     model = model.to(device)
     model.eval()
@@ -50,31 +49,35 @@ def find_batch_size(
             try:
                 x = torch.randn((batch_size, in_channels) + actual_patch_shape).to(device)
                 _ = model(x)
-            except RuntimeError:
-                batch_size //= 2
-                break
+            except RuntimeError as e:
+                if 'out of memory' in str(e):
+                    batch_size //= 2
+                    break
+                else:
+                    raise
+            finally:
+                del x
+                del model
+                torch.cuda.empty_cache()
 
-        del model
-        torch.cuda.empty_cache()
-        return batch_size
+    return batch_size
 
 
 def will_CUDA_OOM(
     model: nn.Module,
     in_channels: int,
-    patch_shape: Tuple[int, int, int],
-    patch_halo: Tuple[int, int, int],
+    patch_shape: tuple[int, int, int],
+    patch_halo: tuple[int, int, int],
     batch_size: int,
     device: str,
 ) -> bool:
-    """
-    Determine if a given batch size will cause an out-of-memory (OOM) error on the specified device.
+    """Determine if a given batch size will cause an out-of-memory (OOM) error on the specified device.
 
     Args:
         model (nn.Module): The model to be used for predictions.
         in_channels (int): Number of input channels to the model.
-        patch_shape (Tuple[int, int, int]): Dimensions of the input patches.
-        patch_halo (Tuple[int, int, int]): Halo size used for patch augmentation.
+        patch_shape (tuple[int, int, int]): Dimensions of the input patches.
+        patch_halo (tuple[int, int, int]): Halo size used for patch augmentation.
         batch_size (int): Number of samples per batch.
         device (str): Device to perform the computation on ('cuda' or 'cpu').
 
@@ -91,26 +94,27 @@ def will_CUDA_OOM(
     if isinstance(model, UNet2D):
         actual_patch_shape = actual_patch_shape[1:]
 
-    model.to(device)
+    model = model.to(device)
     model.eval()
 
     OOM_error = False
-    with torch.no_grad():
-        try:
+    x = None
+    try:
+        with torch.no_grad():
             x = torch.randn((batch_size, in_channels) + actual_patch_shape).to(device)
             _ = model(x)
-        except RuntimeError as e:
-            if 'out of memory' in str(e):
-                OOM_error = True
-                print(
-                    f'Using patch shape {patch_shape}, halo {patch_halo} and batch size {batch_size} will cause an OOM error.'
-                )
-            else:
-                raise  # Re-raise if it's not an OOM error
-
-    # Clean up
-    del x
-    torch.cuda.empty_cache()
+    except RuntimeError as e:
+        if 'out of memory' in str(e):
+            OOM_error = True
+            print(
+                f'Using patch shape {patch_shape}, halo {patch_halo}, and batch size {batch_size} will cause an OOM error.'
+            )
+        else:
+            raise  # Re-raise if it's not an OOM error
+    finally:
+        del x
+        del model
+        torch.cuda.empty_cache()
 
     return OOM_error
 
@@ -131,8 +135,8 @@ class ArrayPredictor:
         in_channels (int): Number of input channels to the model.
         out_channels (int): Number of output channels from the model.
         device (str): Device to use for prediction.
-        patch (Tuple[int, int, int]): Patch size used for prediction.
-        patch_halo (Tuple[int, int, int]): Mirror padding around the patch.
+        patch (tuple[int, int, int]): Patch size used for prediction.
+        patch_halo (tuple[int, int, int]): Mirror padding around the patch.
         single_batch_mode (bool): If True, the batch size will be set to 1.
         headless (bool): If True, use DataParallel if multiple GPUs are available.
         is_embedding (bool, optional): If True, convert model output to embeddings. Defaults to False.
@@ -144,7 +148,7 @@ class ArrayPredictor:
         device (str): Device where the model will be run.
         model (nn.Module): Model configured for evaluation.
         out_channels (int): Number of channels expected in the output.
-        patch_halo (Tuple[int, int, int]): Halo size around each patch.
+        patch_halo (tuple[int, int, int]): Halo size around each patch.
         verbose_logging (bool): Flag to enable detailed logging.
         disable_tqdm (bool): Flag to disable tqdm progress bars during prediction.
         is_embedding (bool): Flag to determine if the output should be treated as embeddings.
@@ -156,8 +160,8 @@ class ArrayPredictor:
         in_channels: int,
         out_channels: int,
         device: str,
-        patch: Tuple[int, int, int],
-        patch_halo: Tuple[int, int, int],
+        patch: tuple[int, int, int],
+        patch_halo: tuple[int, int, int],
         single_batch_mode: bool,
         headless: bool,
         is_embedding: bool = False,
@@ -165,13 +169,10 @@ class ArrayPredictor:
         disable_tqdm: bool = False,
     ):
         self.device = device
-        if single_batch_mode:
-            self.batch_size = 1
-        else:
-            self.batch_size = find_batch_size(model, in_channels, patch, patch_halo, device)
+        self.batch_size = 1 if single_batch_mode else find_batch_size(model, in_channels, patch, patch_halo, device)
         gui_logger.info(f'Using batch size of {self.batch_size} for prediction')
 
-        # Use all available graphics cards (GPUs) for headless mode
+        # Use all available GPUs for headless mode
         if torch.cuda.device_count() > 1 and device != 'cpu' and headless:
             model = nn.DataParallel(model)
             gui_logger.info(
@@ -181,11 +182,10 @@ class ArrayPredictor:
             self.batch_size *= torch.cuda.device_count()
             self.device = 'cuda'
 
-        # Check if OOM will happen
-        if device != 'cpu':
-            if will_OOM(model, in_channels, patch, patch_halo, self.batch_size, device):
-                assert self.batch_size == 1, 'OOM error will happen, but PlantSeg decided to use batch size > 1.'
-                raise RuntimeError('OOM error will happen. Please reduce the patch size.')
+        # Check for OOM risk
+        if device != 'cpu' and will_CUDA_OOM(model, in_channels, patch, patch_halo, self.batch_size, device):
+            assert self.batch_size == 1, 'OOM error will happen, but PlantSeg decided to use batch size > 1.'
+            raise RuntimeError('OOM error will happen. Please reduce the patch size.')
 
         self.model = model.to(self.device)
         self.out_channels = out_channels
@@ -195,7 +195,7 @@ class ArrayPredictor:
         self.is_embedding = is_embedding
 
     def __call__(self, test_dataset: Dataset) -> np.ndarray:
-        assert isinstance(test_dataset, ArrayDataset)
+        assert isinstance(test_dataset, ArrayDataset), 'Dataset must be an instance of ArrayDataset'
         assert (
             self.patch_halo == test_dataset.halo_shape
         ), f'Predictor halo shape {self.patch_halo} does not match dataset halo shape {test_dataset.halo_shape}'
@@ -268,6 +268,7 @@ class ArrayPredictor:
                 prediction = remove_padding(prediction, self.patch_halo)
                 # convert to numpy array
                 prediction = prediction.cpu().numpy()
+
                 channel_slice = slice(0, out_channels)
                 # for each batch sample
                 for pred, index in zip(prediction, indices):
@@ -285,7 +286,7 @@ class ArrayPredictor:
         return prediction_map / normalization_mask
 
     @staticmethod
-    def volume_shape(dataset):
+    def volume_shape(dataset: Dataset) -> tuple[int, int, int]:
         raw = dataset.raw
         if raw.ndim == 3:
             return raw.shape
