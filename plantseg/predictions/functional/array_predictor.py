@@ -45,7 +45,7 @@ def find_batch_size(
     model = model.to(device)
     model.eval()
     with torch.no_grad():
-        for batch_size in [2, 4, 8, 16, 32, 64, 128]:
+        for batch_size in [1, 2, 4, 8, 16, 32, 64, 128]:
             try:
                 x = torch.randn((batch_size, in_channels) + actual_patch_shape).to(device)
                 _ = model(x)
@@ -57,9 +57,14 @@ def find_batch_size(
                     raise
             finally:
                 del x
-                del model
                 torch.cuda.empty_cache()
-
+    if batch_size == 0:
+        raise RuntimeError(
+            f'Could not determine a feasible batch size for patch size {patch_shape} and halo {patch_halo}. '
+            'Please reduce the patch size.'
+        )
+    del model
+    torch.cuda.empty_cache()
     return batch_size
 
 
@@ -106,9 +111,7 @@ def will_CUDA_OOM(
     except RuntimeError as e:
         if 'out of memory' in str(e):
             OOM_error = True
-            print(
-                f'Using patch shape {patch_shape}, halo {patch_halo}, and batch size {batch_size} will cause an OOM error.'
-            )
+            print(f'Using patch shape {patch_shape}, halo {patch_halo}, and batch size {batch_size} will cause OOM.')
         else:
             raise  # Re-raise if it's not an OOM error
     finally:
@@ -169,7 +172,16 @@ class ArrayPredictor:
         disable_tqdm: bool = False,
     ):
         self.device = device
-        self.batch_size = 1 if single_batch_mode else find_batch_size(model, in_channels, patch, patch_halo, device)
+
+        if single_batch_mode:  # then check if OOM happens at batch size 1
+            self.batch_size = 1
+            if device != 'cpu' and will_CUDA_OOM(model, in_channels, patch, patch_halo, self.batch_size, device):
+                raise RuntimeError('OOM error will happen. Please reduce the patch size/halo.')
+        else:  # find the max batch size without causing OOM, may be [0, 1, 2, 4, 8, 16, 32, 64, 128]
+            self.batch_size = find_batch_size(model, in_channels, patch, patch_halo, device)
+            if self.batch_size < 1:
+                raise RuntimeError('Could not determine a feasible batch size for the given model and patch size/halo.')
+
         gui_logger.info(f'Using batch size of {self.batch_size} for prediction')
 
         # Use all available GPUs for headless mode
@@ -181,11 +193,6 @@ class ArrayPredictor:
             )
             self.batch_size *= torch.cuda.device_count()
             self.device = 'cuda'
-
-        # Check for OOM risk
-        if device != 'cpu' and will_CUDA_OOM(model, in_channels, patch, patch_halo, self.batch_size, device):
-            assert self.batch_size == 1, 'OOM error will happen, but PlantSeg decided to use batch size > 1.'
-            raise RuntimeError('OOM error will happen. Please reduce the patch size.')
 
         self.model = model.to(self.device)
         self.out_channels = out_channels
