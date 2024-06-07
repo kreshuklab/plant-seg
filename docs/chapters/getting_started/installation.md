@@ -54,6 +54,8 @@ PlantSeg can be installed directly by executing in the terminal (or PowerShell o
     mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly pyqt plant-seg --no-channel-priority
     ```
 
+If you used older versions of PlantSeg, please delete the old config files in `~/.plantseg_models/configs/` after installing new PlantSeg.
+
 The above command will create new conda environment `plant-seg` together with all required dependencies.
 
 Please refer to the [PyTorch](https://pytorch.org/get-started/locally/) website for more information on the available versions of PyTorch and the required CUDA version. The GPU version of Pytorch will also work on CPU only machines but has a much larger installation on disk.
