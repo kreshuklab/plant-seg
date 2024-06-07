@@ -1,5 +1,6 @@
 """Initialise model registry at startup"""
 
+import torch # required to patch #273
 from os import getenv
 from pathlib import Path
 import yaml
