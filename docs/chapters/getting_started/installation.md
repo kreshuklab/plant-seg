@@ -2,7 +2,7 @@
 
 ## Prerequisites for Conda package
 
-* Linux, Windows, MacOS (not all features are available on MacOS)
+* Linux, Windows, macOS (not all features are available on macOS)
 * (Optional) Nvidia GPU with official Nvidia drivers installed for GPU acceleration
 
 ## Install Mamba
@@ -29,30 +29,40 @@ The easiest way to install PlantSeg is by using the [conda (Anaconda)](https://w
     Please refer to the [Miniforge repo](https://github.com/conda-forge/miniforge) for more information, troubleshooting and uninstallation instructions.
     The miniforge installation file `Miniforge3-*.sh` can be deleted now.
 
-=== "Windows/MacOS"
+=== "Windows/macOS"
     The first step required to use the pipeline is installing mamba. The installation can be done by downloading the installer from the [Miniforge repo](https://github.com/conda-forge/miniforge). There you can find the download links for the latest version of Miniforge, troubleshooting and uninstallation instructions.
 
 ## Install PlantSeg using Mamba
 
 PlantSeg can be installed directly by executing in the terminal (or PowerShell on Windows). For `conda` users, the command is identical, just replace `mamba` with `conda`.
 
-* GPU version, CUDA=12.x
+=== "Linux/Windows"
 
-    ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 pyqt plant-seg --no-channel-priority
-    ```
+    * NVIDIA GPU version, CUDA=12.x
 
-* GPU version, CUDA=11.x
+        ```bash
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 pyqt plant-seg --no-channel-priority
+        ```
 
-    ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 pyqt plant-seg --no-channel-priority
-    ```
+    * NVIDIA GPU version, CUDA=11.x
 
-* CPU version
+        ```bash
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 pyqt plant-seg --no-channel-priority
+        ```
 
-    ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly pyqt plant-seg --no-channel-priority
-    ```
+    * CPU version
+
+        ```bash
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly pyqt plant-seg --no-channel-priority
+        ```
+
+=== "macOS"
+
+    * Apple silicon version
+
+        ```bash
+        mamba create -n plant-seg -c pytorch -c conda-forge python=3.11 pytorch::pytorch pyqt plant-seg --no-channel-priority
+        ```
 
 If you used older versions of PlantSeg, please delete the old config files in `~/.plantseg_models/configs/` after installing new PlantSeg.
 
