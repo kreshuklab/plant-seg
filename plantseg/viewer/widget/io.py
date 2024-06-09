@@ -7,8 +7,8 @@ from magicgui import magicgui
 from napari.layers import Layer, Image, Labels
 from napari.types import LayerDataTuple
 
-from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape, normalize_01, image_crop
-from plantseg.dataprocessing.functional.dataprocessing import image_rescale, compute_scaling_factor
+from plantseg.dataprocessing.dataprocessing import fix_input_shape, normalize_01, image_crop
+from plantseg.dataprocessing.dataprocessing import image_rescale, compute_scaling_factor
 from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, PIL_EXTENSIONS, allowed_data_format, ZARR_EXTENSIONS
 from plantseg.io import create_h5, create_tiff, create_zarr
 from plantseg.io import load_tiff, load_h5, load_pill, load_zarr

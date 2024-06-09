@@ -9,10 +9,10 @@ import napari  # Napari import is lazy.
 from napari.layers import Image, Labels, Shapes, Layer
 from napari.types import LayerDataTuple
 
-from plantseg.dataprocessing.functional import image_gaussian_smoothing, image_rescale
-from plantseg.dataprocessing.functional.dataprocessing import compute_scaling_factor, compute_scaling_voxelsize
-from plantseg.dataprocessing.functional.labelprocessing import relabel_segmentation as _relabel_segmentation
-from plantseg.dataprocessing.functional.labelprocessing import set_background_to_value
+from plantseg.dataprocessing import image_gaussian_smoothing, image_rescale
+from plantseg.dataprocessing import compute_scaling_factor, compute_scaling_voxelsize
+from plantseg.dataprocessing import relabel_segmentation as _relabel_segmentation
+from plantseg.dataprocessing import set_background_to_value
 from plantseg.viewer.widget.predictions import widget_unet_predictions
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_dt_ws
 from plantseg.viewer.widget.utils import (

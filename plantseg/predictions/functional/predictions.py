@@ -8,7 +8,7 @@ from plantseg.pipeline import gui_logger
 from plantseg.models.zoo import model_zoo
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.augment.transforms import get_test_augmentations
-from plantseg.dataprocessing.functional.dataprocessing import fix_input_shape_to_ZYX, fix_input_shape_to_CZYX
+from plantseg.dataprocessing.dataprocessing import fix_input_shape_to_ZYX, fix_input_shape_to_CZYX
 from plantseg.predictions.functional.array_dataset import ArrayDataset
 from plantseg.predictions.functional.array_predictor import ArrayPredictor
 from plantseg.predictions.functional.slice_builder import SliceBuilder
