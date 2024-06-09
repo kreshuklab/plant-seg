@@ -9,8 +9,8 @@ from napari.types import LayerDataTuple
 from plantseg.dataprocessing.advanced_dataprocessing import fix_over_under_segmentation_from_nuclei
 from plantseg.dataprocessing.advanced_dataprocessing import remove_false_positives_by_foreground_probability
 from plantseg.dataprocessing.dataprocessing import normalize_01
-from plantseg.segmentation.functional import gasp, multicut, dt_watershed, mutex_ws
-from plantseg.segmentation.functional import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
+from plantseg.segmentation import gasp, multicut, dt_watershed, mutex_ws
+from plantseg.segmentation import lifted_multicut_from_nuclei_segmentation, lifted_multicut_from_nuclei_pmaps
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.widget.utils import start_threading_process, create_layer_name, layer_properties

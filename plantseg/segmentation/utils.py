@@ -1,47 +1,44 @@
-SUPPORTED_ALGORITHMS = ["GASP", "MutexWS", "DtWatershed", "MultiCut", "LiftedMulticut", "SimpleITK"]
+import numpy as np
+from elf.segmentation import compute_boundary_mean_and_length
+from elf.segmentation.multicut import transform_probabilities_to_costs
 
 
-def configure_segmentation_step(predictions_paths, config):
-    algorithm_name = config["name"]
-    assert algorithm_name in SUPPORTED_ALGORITHMS, f"Unsupported algorithm name {algorithm_name}"
+def shift_affinities(affinities, offsets):
+    rolled_affs = []
+    for i, _ in enumerate(offsets):
+        offset = offsets[i]
+        shifts = tuple([int(off / 2) for off in offset])
 
-    # create a copy of the config to prevent changing the original
-    config = config.copy()
+        padding = [[0, 0] for _ in range(len(shifts))]
+        for ax, shf in enumerate(shifts):
+            if shf < 0:
+                padding[ax][1] = -shf
+            elif shf > 0:
+                padding[ax][0] = shf
 
-    config['predictions_paths'] = predictions_paths
+        padded_inverted_affs = np.pad(affinities, pad_width=((0, 0),) + tuple(padding), mode='constant')
 
-    if algorithm_name == "GASP":
-        from .gasp import GaspFromPmaps
+        crop_slices = tuple(
+            slice(padding[ax][0], padded_inverted_affs.shape[ax + 1] - padding[ax][1]) for ax in range(3)
+        )
 
-        # user 'average' linkage by default
-        config['gasp_linkage_criteria'] = 'average'
-        return GaspFromPmaps(**config)
+        padded_inverted_affs = np.roll(padded_inverted_affs[i], shifts, axis=(0, 1, 2))[crop_slices]
+        rolled_affs.append(padded_inverted_affs)
+        del padded_inverted_affs
 
-    if algorithm_name == "MutexWS":
-        from .gasp import GaspFromPmaps
+    rolled_affs = np.stack(rolled_affs)
+    return rolled_affs
 
-        config['gasp_linkage_criteria'] = 'mutex_watershed'
-        return GaspFromPmaps(**config)
 
-    if algorithm_name == "DtWatershed":
-        from .dtws import DistanceTransformWatershed
+def compute_mc_costs(boundary_pmaps, rag, beta):
+    # compute the edge costs
+    features = compute_boundary_mean_and_length(rag, boundary_pmaps)
+    costs, sizes = features[:, 0], features[:, 1]
 
-        return DistanceTransformWatershed(**config)
+    # transform the edge costs from [0, 1] to  [-inf, inf], which is
+    # necessary for the multicut. This is done by interpreting the values
+    # as probabilities for an edge being 'true' and then taking the negative log-likelihood.
+    # in addition, we weight the costs by the size of the corresponding edge
 
-    if algorithm_name == "MultiCut":
-        from .multicut import MulticutFromPmaps
-
-        return MulticutFromPmaps(**config)
-
-    if algorithm_name == "SimpleITK":
-        from .simpleitkws import SimpleITKWatershed
-
-        return SimpleITKWatershed(**config)
-
-    if algorithm_name == "LiftedMulticut":
-        from .lmc import LiftedMulticut
-
-        assert (
-            'nuclei_predictions_path' in config
-        ), "Missing 'nuclei_predictions_path' config attribute for 'LiftedMulticut'"
-        return LiftedMulticut(**config)
+    costs = transform_probabilities_to_costs(costs, edge_sizes=sizes, beta=beta)
+    return costs
