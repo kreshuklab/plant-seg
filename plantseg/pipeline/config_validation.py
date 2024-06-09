@@ -7,7 +7,7 @@ import yaml
 
 from plantseg.pipeline import gui_logger
 from plantseg import PATH_RAW2SEG_TEMPLATE
-from plantseg.predictions.functional.utils import get_stride_shape
+from plantseg.predictions.utils.utils import get_stride_shape
 from plantseg.segmentation.utils import SUPPORTED_ALGORITHMS
 from plantseg.models.zoo import model_zoo
 

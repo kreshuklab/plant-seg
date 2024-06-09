@@ -3,7 +3,7 @@ import numpy as np
 from torch.utils.data import Dataset
 
 from plantseg.pipeline import gui_logger
-from plantseg.predictions.functional.slice_builder import FilterSliceBuilder
+from plantseg.predictions.utils.slice_builder import FilterSliceBuilder
 
 
 # copied from https://github.com/wolny/pytorch-3dunet

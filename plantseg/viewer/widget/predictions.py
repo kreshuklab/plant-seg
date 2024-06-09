@@ -10,7 +10,7 @@ from napari.qt.threading import thread_worker
 from napari.types import LayerDataTuple
 
 from plantseg.dataprocessing import image_gaussian_smoothing
-from plantseg.predictions.functional import unet_predictions
+from plantseg.predictions import unet_predictions
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.proofreading.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer.widget.segmentation import widget_agglomeration, widget_lifted_multicut, widget_dt_ws
