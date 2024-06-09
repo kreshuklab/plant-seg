@@ -21,8 +21,21 @@ def create_parser():
 def launch_gui():
     """Launch the GUI configurator."""
     from plantseg.legacy_gui.plantsegapp import PlantSegApp
+    from plantseg import PATH_CONFIGS
 
-    PlantSegApp()
+    try:
+        PlantSegApp()
+    except KeyError:
+        new_location = PATH_CONFIGS.parent / 'old_configs'
+        PATH_CONFIGS.rename(new_location)
+        docs_link = "https://kreshuklab.github.io/plant-seg/chapters/getting_started/troubleshooting/#missing-configuration-key-errors"
+        print(
+            f"{PATH_CONFIGS} is checked for your custom configurations."
+            f"Since `KeyError` happened, we moved {PATH_CONFIGS} to {new_location} "
+            f"and a new default configs will be put in {PATH_CONFIGS}. "
+            f"For more information, please visit {docs_link}"
+        )
+        PlantSegApp()
 
 
 def launch_napari():
