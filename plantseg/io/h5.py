@@ -283,5 +283,8 @@ class H5DataHandler:
         """
         Get the voxel size of the dataset.
         """
+        if self._voxel_size is not None:
+            return self._voxel_size
+        
         return read_h5_voxel_size(self.path, self.key)
     
