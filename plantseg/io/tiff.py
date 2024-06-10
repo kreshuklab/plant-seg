@@ -1,5 +1,5 @@
 import warnings
-from typing import Self
+from typing import Self, Optional
 from xml.etree import cElementTree as ElementTree
 
 import numpy as np
@@ -17,7 +17,7 @@ def _read_imagej_meta(tiff) -> VoxelSize:
     """
 
     def _xy_voxel_size(tags, key):
-        assert key in ['XResolution', 'YResolution']
+        assert key in ["XResolution", "YResolution"]
         if key in tags:
             num_pixels, units = tags[key].value
             return units / num_pixels
@@ -25,19 +25,19 @@ def _read_imagej_meta(tiff) -> VoxelSize:
         return None
 
     image_metadata = tiff.imagej_metadata
-    z = image_metadata.get('spacing', None)
-    voxel_size_unit = image_metadata.get('unit', 'um')
+    z = image_metadata.get("spacing", None)
+    voxel_size_unit = image_metadata.get("unit", "um")
 
     tags = tiff.pages[0].tags
     # parse X, Y resolution
-    y = _xy_voxel_size(tags, 'YResolution')
-    x = _xy_voxel_size(tags, 'XResolution')
+    y = _xy_voxel_size(tags, "YResolution")
+    x = _xy_voxel_size(tags, "XResolution")
     # return voxel size
-    
+
     if x is None or y is None or z is None:
-        warnings.warn('Error parsing imagej tiff meta.')
+        warnings.warn("Error parsing imagej tiff meta.")
         return VoxelSize()
-    
+
     return VoxelSize(voxels_size=(z, y, x), unit=voxel_size_unit)
 
 
@@ -48,58 +48,57 @@ def _read_ome_meta(tiff) -> VoxelSize:
     xml_om = tiff.ome_metadata
     tree = ElementTree.fromstring(xml_om)
 
-    image_element = [image for image in tree if image.tag.find('Image') != -1]
+    image_element = [image for image in tree if image.tag.find("Image") != -1]
     if image_element:
         image_element = image_element[0]
     else:
-        warnings.warn('Error parsing omero tiff meta Image. Reverting to default voxel size (1., 1., 1.) um')
+        warnings.warn("Error parsing omero tiff meta Image. Reverting to default voxel size (1., 1., 1.) um")
         return VoxelSize()
 
-    pixels_element = [pixels for pixels in image_element if pixels.tag.find('Pixels') != -1]
+    pixels_element = [pixels for pixels in image_element if pixels.tag.find("Pixels") != -1]
     if pixels_element:
         pixels_element = pixels_element[0]
     else:
-        warnings.warn('Error parsing omero tiff meta Pixels. Reverting to default voxel size (1., 1., 1.) um')
+        warnings.warn("Error parsing omero tiff meta Pixels. Reverting to default voxel size (1., 1., 1.) um")
         return VoxelSize()
 
     units = []
-    x, y, z, voxel_size_unit = None, None, None, 'um'
+    x, y, z, voxel_size_unit = None, None, None, "um"
 
     for key, value in pixels_element.items():
-        if key == 'PhysicalSizeX':
+        if key == "PhysicalSizeX":
             x = float(value)
 
-        elif key == 'PhysicalSizeY':
+        elif key == "PhysicalSizeY":
             y = float(value)
 
-        elif key == 'PhysicalSizeZ':
+        elif key == "PhysicalSizeZ":
             z = float(value)
 
-        if key in ['PhysicalSizeXUnit', 'PhysicalSizeYUnit', 'PhysicalSizeZUnit']:
+        if key in ["PhysicalSizeXUnit", "PhysicalSizeYUnit", "PhysicalSizeZUnit"]:
             units.append(value)
 
     if units:
         voxel_size_unit = units[0]
         if not all(unit == voxel_size_unit for unit in units):
-            warnings.warn('Units are not homogeneous: {units}')
+            warnings.warn("Units are not homogeneous: {units}")
 
     if x is None or y is None or z is None:
-        warnings.warn('Error parsing omero tiff meta. ')
+        warnings.warn("Error parsing omero tiff meta. ")
         return VoxelSize()
 
     return VoxelSize(voxels_size=(z, y, x), unit=voxel_size_unit)
 
 
-def read_tiff_voxel_size(file_path: str) -> VoxelSize:
+def read_tiff_voxel_size(file_path: Path) -> VoxelSize:
     """
     Returns the voxels size and the voxel units for imagej and ome style tiff (if absent returns [1, 1, 1], um)
 
     Args:
-        file_path (str): path to the tiff file
+        file_path (Path): path to the tiff file
 
     Returns:
-        voxel size
-        voxel size unit
+        VoxelSize: voxel size and unit
 
     """
     with tifffile.TiffFile(file_path) as tiff:
@@ -109,11 +108,11 @@ def read_tiff_voxel_size(file_path: str) -> VoxelSize:
         elif tiff.ome_metadata is not None:
             return _read_ome_meta(tiff)
 
-        warnings.warn('No metadata found.')
+        warnings.warn("No metadata found.")
         return VoxelSize()
 
 
-def load_tiff(path: str) -> np.ndarray:
+def load_tiff(path: Path) -> np.ndarray:
     """
     Load a dataset from a tiff file and returns some meta info about it.
     Args:
@@ -121,14 +120,13 @@ def load_tiff(path: str) -> np.ndarray:
         info_only (bool): if true will return a tuple with infos such as voxel resolution, units and shape.
 
     Returns:
-        stack (np.ndarray): numpy array with the data
-        infos (tuple): tuple with the voxel size, shape, metadata and voxel size unit (if info_only is True)
+        np.ndarray: loaded data as numpy array
     """
     return tifffile.imread(path)
-    
+
 
 def create_tiff(
-    path: str,
+    path: Path,
     stack: np.ndarray,
     voxel_size: VoxelSize,
 ) -> None:
@@ -136,7 +134,7 @@ def create_tiff(
     Create a tiff file from a numpy array
 
     Args:
-        path (str): path of the new file
+        path (Path): path to save the tiff file
         stack (np.ndarray): numpy array to save as tiff
         voxel_size (list or tuple): tuple of the voxel size
         voxel_size_unit (str): units of the voxel size
@@ -145,7 +143,13 @@ def create_tiff(
     # taken from: https://pypi.org/project/tifffile docs
     z, y, x = stack.shape
     stack = stack.reshape(1, z, 1, y, x, 1)  # dimensions in TZCYXS order
-    spacing, y, x = VoxelSize.voxels_size
+
+    if voxel_size.voxels_size is not None:
+        assert len(voxel_size.voxels_size) == 3, "Voxel size must have 3 elements (z, y, x)"
+        spacing, y, x = voxel_size.voxels_size
+    else:
+        spacing, y, x = (1.0, 1.0, 1.0)
+
     resolution = (1.0 / x, 1.0 / y)
     # Save output results as tiff
     tifffile.imwrite(
@@ -154,13 +158,12 @@ def create_tiff(
         dtype=stack.dtype,
         imagej=True,
         resolution=resolution,
-        metadata={'axes': 'TZCYXS', 'spacing': spacing, 'unit': voxel_size.unit},
-        compression='zlib',
+        metadata={"axes": "TZCYXS", "spacing": spacing, "unit": voxel_size.unit},
+        compression="zlib",
     )
 
 
-
-class TiffDataHandler(DataHandler):
+class TiffDataHandler:
     """
     Class to handle data loading, and metadata retrieval from a Zarr file.
 
@@ -168,30 +171,33 @@ class TiffDataHandler(DataHandler):
         path (Path): path to the zarr file
         key (str): key of the dataset in the zarr file
     """
-    _data: np.ndarray = None
-    _voxel_size = None
+
+    _data: Optional[np.ndarray] = None
+    _voxel_size: VoxelSize
+    key: str = ""
 
     def __init__(self, path: Path):
         self.path = path
-        
+        self._voxel_size = read_tiff_voxel_size(path)
+
     def __repr__(self):
         return f"TiffDataHandler(path={self.path})"
-    
+
     @classmethod
-    def from_data_handler(cls, data_handler: DataHandler, path: Path) -> Self:
+    def from_data_handler(cls, data_handler: DataHandler, path: Path, key: Optional[str] = None) -> Self:
         """
         Create a TiffDataHandler object from a DataHandler object.
-        
+
         Args:
             data_handler (DataHandler): DataHandler object
-            
+
         Returns:
             TiffDataHandler: TiffDataHandler object
         """
         zarr_handler = cls(path)
         zarr_handler._data = data_handler.get_data()
         zarr_handler._voxel_size = data_handler.get_voxel_size()
-        
+        return zarr_handler
 
     def get_data(self, slices=None) -> np.ndarray:
         """
@@ -202,28 +208,30 @@ class TiffDataHandler(DataHandler):
         """
         if self._data is not None:
             return self._data
-        
+
         self._data = load_tiff(self.path)
         return self._data
-        
+
     def write_data(self, **kwargs) -> None:
         """
         Write the dataset to the h5 file.
         """
+        if self._data is None:
+            raise ValueError("No data to write.")
+
         create_tiff(path=self.path, stack=self._data, voxel_size=self._voxel_size)
-        
-    def get_shape(self) -> tuple[int]:
+
+    def get_shape(self) -> tuple[int, ...]:
         """
         Get the shape of the dataset.
         """
-        return self.get_data().shape
-        
-    
+        if self._data is None:
+            self._data = load_tiff(self.path)
+
+        return self._data.shape
+
     def get_voxel_size(self) -> VoxelSize:
         """
         Get the voxel size of the dataset.
         """
-        if self._voxel_size is not None:
-            return self._voxel_size
-
         return self._voxel_size

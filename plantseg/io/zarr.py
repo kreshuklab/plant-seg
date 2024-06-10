@@ -62,27 +62,25 @@ def _find_input_key(zarr_file: zarr.Group) -> str:
             f"Ambiguous datasets '{found_datasets}' in {zarr_file}. "
             f"PlantSeg expects only one dataset in the input Zarr."
         )
-        
+
+
 def _get_zarr_dataset(zarr_path: Path, key: Optional[str] = None) -> zarr.Array:
-    zarr_file = zarr.open_group(zarr_path, mode='r')
+    zarr_file = zarr.open_group(zarr_path, mode="r")
     if key is None:
         key = _find_input_key(zarr_file)
 
     ds = zarr_file[key]
     if not isinstance(ds, zarr.Array):
         raise ValueError(f"'{key}' is not a zarr.Array.")
-    
-    return zarr.open_array(zarr_path, mode='r', path=key)
+
+    return zarr.open_array(zarr_path, mode="r", path=key)
 
 
 def load_zarr(
     path: Path,
     key: Optional[str],
     slices: Optional[slice] = None,
-) -> Union[
-    tuple[tuple[float, float, float], Any, str, str],
-    tuple[np.ndarray, tuple[tuple[float, float, float], Any, str, str]],
-]:
+) -> np.ndarray:
     """Load a dataset from a Zarr file and return it or its meta-information.
 
     Args:
@@ -99,7 +97,7 @@ def load_zarr(
     return data
 
 
-def read_zarr_shape(path: Path, key: Optional[str] = None) -> tuple[int]:
+def read_zarr_shape(path: Path, key: Optional[str] = None) -> tuple[int, ...]:
     """Read the shape of a dataset in a Zarr file.
 
     Args:
@@ -126,12 +124,12 @@ def read_zarr_voxel_size(path: Path, key: str) -> VoxelSize:
     """
     _validate_zarr_file(path)
     data = _get_zarr_dataset(path, key)
-    
-    if 'element_size_um' in data.attrs:
-        return VoxelSize(voxels_size=data.attrs['element_size_um'])
-    elif 'resolution' in data.attrs:
-        return VoxelSize(voxels_size=data.attrs['resolution'])
-    
+
+    if "element_size_um" in data.attrs:
+        return VoxelSize(voxels_size=data.attrs["element_size_um"])
+    elif "resolution" in data.attrs:
+        return VoxelSize(voxels_size=data.attrs["resolution"])
+
     warnings.warn(f"Voxel size not found in {path}.")
     return VoxelSize()
 
@@ -141,7 +139,7 @@ def create_zarr(
     stack: np.ndarray,
     key: str,
     voxel_size: VoxelSize,
-    mode: str = 'a',
+    mode: str = "a",
 ) -> None:
     """
     Create a Zarr array from a NumPy array.
@@ -155,8 +153,8 @@ def create_zarr(
 
     """
     zarr_file = zarr.open_group(path, mode)
-    zarr_file.create_dataset(key, data=stack, compression='gzip', overwrite=True)
-    zarr_file[key].attrs['element_size_um'] = voxel_size.voxels_size
+    zarr_file.create_dataset(key, data=stack, compression="gzip", overwrite=True)
+    zarr_file[key].attrs["element_size_um"] = voxel_size.voxels_size
 
 
 def list_keys(path: Path) -> list[str]:
@@ -170,7 +168,7 @@ def list_keys(path: Path) -> list[str]:
         keys (list[str]): A list of keys in the Zarr file.
     """
 
-    def _recursive_find_keys(zarr_group: zarr.Group, base: Path = Path('')) -> list[str]:
+    def _recursive_find_keys(zarr_group: zarr.Group, base: Path = Path("")) -> list[str]:
         _list_keys = []
         for key, dataset in zarr_group.items():
             if isinstance(dataset, zarr.Group):
@@ -180,11 +178,11 @@ def list_keys(path: Path) -> list[str]:
                 _list_keys.append(str(base / key))
         return _list_keys
 
-    zarr_file = zarr.open_group(path, 'r')
+    zarr_file = zarr.open_group(path, "r")
     return _recursive_find_keys(zarr_file)
 
 
-def del_zarr_key(path: Path, key: str, mode: str = 'a') -> None:
+def del_zarr_key(path: Path, key: str, mode: str = "a") -> None:
     """
     Delete a dataset from a Zarr file.
 
@@ -199,7 +197,7 @@ def del_zarr_key(path: Path, key: str, mode: str = 'a') -> None:
         del zarr_file[key]
 
 
-def rename_zarr_key(path: Path, old_key: str, new_key: str, mode='r+') -> None:
+def rename_zarr_key(path: Path, old_key: str, new_key: str, mode="r+") -> None:
     """
     Rename a dataset in a Zarr file.
 
@@ -224,31 +222,32 @@ class ZarrDataHandler:
         path (Path): path to the zarr file
         key (str): key of the dataset in the zarr file
     """
-    _data: np.ndarray = None
-    _voxel_size = None
 
-    def __init__(self, path: Path, key: str):
+    _data: Optional[np.ndarray] = None
+    _voxel_size: VoxelSize
+
+    def __init__(self, path: Path, key: Optional[str] = None) -> None:
         self.path = path
         self.key = key
-        
+
     def __repr__(self):
         return f"ZarrDataHandler(path={self.path}, key={self.key})"
-    
+
     @classmethod
-    def from_data_handler(cls, data_handler: DataHandler, path: Path, key: str) -> Self:
+    def from_data_handler(cls, data_handler: DataHandler, path: Path, key: Optional[str] = None) -> Self:
         """
         Create a ZarrDataHandler object from a DataHandler object.
-        
+
         Args:
             data_handler (DataHandler): DataHandler object
-            
+
         Returns:
             ZarrDataHandler: ZarrDataHandler object
         """
         zarr_handler = cls(path, key)
         zarr_handler._data = data_handler.get_data()
         zarr_handler._voxel_size = data_handler.get_voxel_size()
-        
+        return zarr_handler
 
     def get_data(self, slices=None) -> np.ndarray:
         """
@@ -259,31 +258,33 @@ class ZarrDataHandler:
         """
         if self._data is not None:
             return self._data
-        
+
         self._data = load_zarr(self.path, self.key, slices)
         return self._data
-        
+
     def write_data(self, **kwargs) -> None:
         """
         Write the dataset to the h5 file.
         """
+        if self._data is None:
+            raise ValueError("No data to write.")
+
+        if self.key is None:
+            raise ValueError("No key to write.")
+
         create_zarr(path=self.path, stack=self._data, key=self.key, **kwargs)
-        
-    def get_shape(self) -> tuple[int]:
+
+    def get_shape(self) -> tuple[int, ...]:
         """
         Get the shape of the dataset.
         """
-        if self._data is not None:
-            return self._data.shape
-        
+        if self._data is None:
+            self._data = load_zarr(self.path, self.key)
+
         return read_zarr_shape(self.path, self.key)
-        
-    
+
     def get_voxel_size(self) -> VoxelSize:
         """
         Get the voxel size of the dataset.
         """
-        if self._voxel_size is not None:
-            return self._voxel_size
-            
-        return read_zarr_voxel_size(self.path, self.key)
+        return self._voxel_size
