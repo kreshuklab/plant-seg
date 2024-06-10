@@ -1,16 +1,55 @@
 import os
 
 import numpy as np
-from typing import Union
-from plantseg.io.h5 import load_h5, H5_EXTENSIONS
-from plantseg.io.tiff import load_tiff, TIFF_EXTENSIONS
-from plantseg.io.pil import load_pill, PIL_EXTENSIONS
-from plantseg.io.zarr import load_zarr, ZARR_EXTENSIONS
+from pathlib import Path
+from typing import Optional
+from plantseg.io.utils import DataHandler
+from plantseg.io.h5 import load_h5, H5DataHandler, H5_EXTENSIONS
+from plantseg.io.tiff import load_tiff, TiffDataHandler, TIFF_EXTENSIONS
+from plantseg.io.pil import load_pil, PilDataHandler, PIL_EXTENSIONS
+from plantseg.io.zarr import load_zarr, ZarrDataHandler, ZARR_EXTENSIONS
 
 allowed_data_format = TIFF_EXTENSIONS + H5_EXTENSIONS + PIL_EXTENSIONS + ZARR_EXTENSIONS
 
 
-def smart_load(path, key=None, info_only=False, default=load_tiff) -> Union[tuple, tuple[np.ndarray, tuple]]:
+def smart_load(path: Path, key: Optional[str] = None, default=load_tiff) -> np.ndarray:
+    """
+    Load a dataset from a file and returns some meta info about it. The loader is chosen based on the file extension.
+    Supported formats are: tiff, h5, zarr, and PIL images.
+    If the format is not supported, a default loader can be provided (default: load_tiff).
+
+    Args:
+        path (Path): path to the file to load.
+        key (str): key of the dataset to load (if h5 or zarr).
+        default (callable): default loader if the type is not understood.
+
+    Returns:
+        stack (np.ndarray): numpy array with the image data.
+
+    Examples:
+        >>> data = smart_load('path/to/file.tif')
+        >>> data = smart_load('path/to/file.h5', key='raw')
+
+    """
+    _, ext = os.path.splitext(path)
+    if ext in H5_EXTENSIONS:
+        return load_h5(path, key)
+
+    elif ext in TIFF_EXTENSIONS:
+        return load_tiff(path)
+
+    elif ext in PIL_EXTENSIONS:
+        return load_pil(path)
+
+    elif ext in ZARR_EXTENSIONS:
+        return load_zarr(path, key)
+
+    else:
+        print(f"No default found for {ext}, reverting to default loader")
+        return default(path)
+
+
+def smart_data_handle_loader(path: Path, key=None, default=TiffDataHandler) -> DataHandler:
     """
     Load a dataset from a file and returns some meta info about it. The loader is chosen based on the file extension.
     Supported formats are: tiff, h5, zarr, and PIL images.
@@ -19,51 +58,29 @@ def smart_load(path, key=None, info_only=False, default=load_tiff) -> Union[tupl
     Args:
         path (str): path to the file to load.
         key (str): key of the dataset to load (if h5).
-        info_only (bool): if true will return a tuple with infos such as voxel resolution, units and shape.
         default (callable): default loader if the type is not understood.
 
     Returns:
-        stack (np.ndarray): numpy array with the image data.
-        infos (tuple): tuple with the voxel size, shape, metadata and voxel size unit (if info_only is True).
+        data_handler (DataHandler): data handler object.
 
     Examples:
-        >>> data, infos = smart_load('path/to/file.tif')
-        >>> data, infos = smart_load('path/to/file.h5', key='raw')
+        >>> data = smart_data_handle_loader('path/to/file.tif')
+        >>> data = smart_data_handle_loader('path/to/file.h5', key='raw')
 
     """
-    _, ext = os.path.splitext(path)
+    ext = path.suffix
     if ext in H5_EXTENSIONS:
-        return load_h5(path, key, info_only=info_only)
+        return H5DataHandler(path, key)
 
     elif ext in TIFF_EXTENSIONS:
-        return load_tiff(path, info_only=info_only)
+        return TiffDataHandler(path)
 
     elif ext in PIL_EXTENSIONS:
-        return load_pill(path, info_only=info_only)
+        return PilDataHandler(path)
 
     elif ext in ZARR_EXTENSIONS:
-        return load_zarr(path, key, info_only=info_only)
+        return ZarrDataHandler(path, key)
 
     else:
         print(f"No default found for {ext}, reverting to default loader")
         return default(path)
-
-
-def load_shape(path: str, key: str = None) -> tuple[int, ...]:
-    """
-    Load only the stack shape from a file using the smart loader.
-
-    Args:
-        path (str): path to the file to load.
-        key (str): key of the dataset to load (if h5 or zarr).
-
-    Returns:
-        shape (tuple[int, ...]) shape of the image stack.
-
-    Examples:
-        >>> shape = load_shape('path/to/file.tif')
-        >>> print(shape)
-        (10, 512, 512)
-    """
-    _, data_shape, _, _ = smart_load(path, key=key, info_only=True)
-    return data_shape

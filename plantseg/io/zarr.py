@@ -285,5 +285,5 @@ class ZarrDataHandler:
         """
         if self._voxel_size is not None:
             return self._voxel_size
-        
+            
         return read_zarr_voxel_size(self.path, self.key)
