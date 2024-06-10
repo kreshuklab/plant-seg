@@ -1,26 +1,18 @@
 import warnings
-from typing import Optional, Union
+from typing import Optional, Self
+from plantseg.io.utils import VoxelSize, DataHandler
 
 import h5py
 import numpy as np
+from pathlib import Path
 
 # allowed h5 keys
 H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]
 H5_KEYS = ["raw", "predictions", "segmentation"]
 
-
-def read_h5_voxel_size(f, h5key: str) -> tuple[float, float, float]:
-    """
-    returns the voxels size stored in a h5 dataset (if absent returns [1, 1, 1])
-    """
-    ds = f[h5key]
-
-    # parse voxel_size
-    if 'element_size_um' in ds.attrs:
-        return ds.attrs['element_size_um']
-    else:
-        warnings.warn('Voxel size not found, returning default [1.0, 1.0. 1.0]', RuntimeWarning)
-        return (1.0, 1.0, 1.0)
+def _validate_h5_file(path: Path) -> None:
+    assert path.suffix in H5_EXTENSIONS, f"File extension not supported. Supported extensions: {H5_EXTENSIONS}"
+    assert path.exists(), f"File not found: {path}"
 
 
 def _find_input_key(h5_file) -> str:
@@ -50,84 +42,128 @@ def _find_input_key(h5_file) -> str:
             f"plantseg expects only one dataset to be present in input H5."
         )
 
+def _get_h5_dataset(f: h5py.File, key: Optional[str] = None) -> h5py.Dataset:
+    if key is None:
+        key = _find_input_key(f)
+
+    ds = f[key]
+    if not isinstance(ds, h5py.Dataset):
+        raise ValueError(f"'{key}' is not a h5py.Dataset.")
+    
+    return ds
 
 def load_h5(
-    path: str,
-    key: str,
+    path: Path,
+    key: Optional[str] = None,
     slices: Optional[slice] = None,
-    info_only: bool = False,
-) -> Union[tuple, tuple[np.ndarray, tuple]]:
+) -> np.ndarray:
     """
     Load a dataset from a h5 file and returns some meta info about it.
 
     Args:
-        path (str): Path to the h5file
-        key (str): internal key of the desired dataset
+        path (Path): Path to the h5file
+        key (Optional[str], optional): Optional, key of the dataset in the h5 file. Defaults to None.
         slices (Optional[slice], optional): Optional, slice to load. Defaults to None.
-        info_only (bool, optional): if true will return a tuple with infos such as voxel resolution, units and shape. \
-        Defaults to False.
 
     Returns:
-        Union[tuple, tuple[np.ndarray, tuple]]: dataset as numpy array and infos
+        np.ndarray: dataset as numpy array
+    """
+    
+    assert path.suffix in H5_EXTENSIONS, f"File extension not supported. Supported extensions: {H5_EXTENSIONS}"
+    assert path.exists(), f"File not found: {path}"
+    
+    with h5py.File(path, 'r') as f:
+        data = _get_h5_dataset(f, key)
+        data = data[...] if slices is None else data[slices]
+
+    return data
+
+
+def read_h5_shape(
+    path: Path,
+    key: Optional[str] = None
+) -> tuple[int]:
+    """
+    Load a dataset from a h5 file and returns some meta info about it.
+
+    Args:
+        path (Path): Path to the h5file
+        key (Optional[str], optional): Optional, key of the dataset in the h5 file. Defaults to None.
+
+    Returns:
+        tuple[int]: shape of the dataset
     """
     with h5py.File(path, 'r') as f:
-        if key is None:
-            key = _find_input_key(f)
+        data = _get_h5_dataset(f, key)
+        shape = data.shape
 
-        voxel_size = read_h5_voxel_size(f, key)
+    return shape
 
-        ds = f[key]
-        if not isinstance(ds, h5py.Dataset):
-            raise ValueError(f"'{key}' is not a h5py.Dataset.")
-        file_shape = ds.shape
+def read_h5_voxel_size(
+    path: Path,
+    key: Optional[str] = None,
+    ) -> VoxelSize:
+    """
+    Load the voxel size from a h5 file.
+    
+    Args:
+        path (Path): path to the h5 file
+        key (Optional[str], optional): key of the dataset in the h5 file. Defaults to None.
+        
+    Returns:
+        VoxelSize: voxel size of the dataset
+    """
+    with h5py.File(path, 'r') as f:
+        data = _get_h5_dataset(f, key)
+        
+        if 'element_size_um' not in data.attrs:
+            warnings.warn(f"Voxel size not found in {path}/{key}.")
+            return VoxelSize()
+        voxel_size = VoxelSize(voxels_size=data.attrs['element_size_um'])
 
-        infos = (voxel_size, file_shape, key, 'um')
-        if info_only:
-            return infos
-
-        file = ds[...] if slices is None else ds[slices]
-
-    return file, infos
-
+    return voxel_size
 
 def create_h5(
-    path: str,
+    path: Path,
     stack: np.ndarray,
     key: str,
-    voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    voxel_size: VoxelSize = None,
     mode: str = 'a',
 ) -> None:
     """
     Create a dataset inside a h5 file from a numpy array.
 
     Args:
-        path (str): file path.
+        path (Path): path to the h5 file
         stack (np.ndarray): numpy array to save as dataset in the h5 file.
         key (str): key of the dataset in the h5 file.
-        voxel_size (tuple[float, float, float]: voxel size in micrometers.
+        voxel_size (VoxelSize): voxel size of the dataset.
         mode (str): mode to open the h5 file ['w', 'a'].
 
     """
-
+    _validate_h5_file(path)
+    
     with h5py.File(path, mode) as f:
         if key in f:
             del f[key]
         f.create_dataset(key, data=stack, compression='gzip')
         # save voxel_size
-        f[key].attrs['element_size_um'] = voxel_size
+        if voxel_size is not None:
+            f[key].attrs['element_size_um'] = voxel_size.voxels_size
 
 
-def list_keys(path: str) -> list[str]:
+def list_h5_keys(path: Path) -> list[str]:
     """
     List all keys in a h5 file
 
     Args:
-        path (str): path to the h5 file
+        path (Path): path to the h5 file (Path object)
 
     Returns:
         keys (list[str]): A list of keys in the h5 file.
 
     """
+    _validate_h5_file(path)
 
     def _recursive_find_keys(f, base='/'):
         _list_keys = []
@@ -144,35 +180,108 @@ def list_keys(path: str) -> list[str]:
         return _recursive_find_keys(h5_f)
 
 
-def del_h5_key(path: str, key: str, mode: str = 'a') -> None:
+def del_h5_key(path: Path, key: str, mode: str = 'a') -> None:
     """
     helper function to delete a dataset from a h5file
 
     Args:
-        path (str): path to the h5file
+        path (Path): path to the h5 file (Path object)
         key (str): key of the dataset to delete
         mode (str): mode to open the h5 file ['r', 'r+']
 
     """
+    _validate_h5_file(path)
     with h5py.File(path, mode) as f:
         if key in f:
             del f[key]
             f.close()
 
 
-def rename_h5_key(path: str, old_key: str, new_key: str, mode='r+') -> None:
+def rename_h5_key(path: Path, old_key: str, new_key: str, mode='r+') -> None:
     """
     Rename the 'old_key' dataset to 'new_key'
 
     Args:
-        path (str): path to the h5 file
+        path (Path): path to the h5 file (Path object)
         old_key (str): old key name
         new_key (str): new key name
         mode (str): mode to open the h5 file ['r', 'r+']
 
     """
+    _validate_h5_file(path)
     with h5py.File(path, mode) as f:
         if old_key in f:
             f[new_key] = f[old_key]
             del f[old_key]
             f.close()
+
+
+class H5DataHandler:
+    """
+    Class to handle data loading, and metadata retrieval from a h5 file.
+
+    Attributes:
+        path (Path): path to the h5 file
+        key (str): key of the dataset in the h5 file
+    """
+    _data: np.ndarray = None
+    _voxel_size = None
+
+    def __init__(self, path: Path, key: str):
+        self.path = path
+        self.key = key
+        
+    def __repr__(self):
+        return f"H5DataHandler(path={self.path}, key={self.key})"
+    
+    @classmethod
+    def from_data_handler(cls, data_handler: DataHandler, path: Path, key: str) -> Self:
+        """
+        Create a H5DataHandler from a DataHandler.
+        
+        Args:
+            data_handler (DataHandler): DataHandler object
+            
+        Returns:
+            Self: H5DataHandler object
+        """
+        h5_handler = cls(path, key)
+        h5_handler._data = data_handler.get_data()
+        h5_handler._voxel_size = data_handler.get_voxel_size()
+        
+
+    def get_data(self, slices=None) -> np.ndarray:
+        """
+        Load the dataset from the h5 file.
+
+        Returns:
+            np.ndarray: dataset as numpy array
+        """
+        if self._data is not None:
+            return self._data
+        
+        self._data = load_h5(self.path, self.key, slices)
+        return self._data
+        
+    def write_data(self, **kwargs) -> None:
+        """
+        Write the dataset to the h5 file.
+        """
+        create_h5(path=self.path, stack=self._data, key=self.key, **kwargs)
+        
+    def get_shape(self) -> tuple[int]:
+        """
+        Get the shape of the dataset.
+        """
+        if self._data is not None:
+            return self._data.shape
+        
+        return read_h5_shape(self.path, self.key)
+        
+    
+    def get_voxel_size(self) -> VoxelSize:
+        """
+        Get the voxel size of the dataset.
+        """
+        return read_h5_voxel_size(self.path, self.key)
+    
