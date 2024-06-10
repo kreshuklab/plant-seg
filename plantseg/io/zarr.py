@@ -267,7 +267,7 @@ class ZarrDataHandler:
         """
         Write the dataset to the h5 file.
         """
-        create_h5(path=self.path, stack=self._data, key=self.key, **kwargs)
+        create_zarr(path=self.path, stack=self._data, key=self.key, **kwargs)
         
     def get_shape(self) -> tuple[int]:
         """
