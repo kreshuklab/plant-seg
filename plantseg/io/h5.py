@@ -145,8 +145,6 @@ def create_h5(
         mode (str): mode to open the h5 file ['w', 'a'].
 
     """
-    _validate_h5_file(path)
-
     with h5py.File(path, mode) as f:
         if key in f:
             del f[key]

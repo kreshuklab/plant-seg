@@ -229,6 +229,7 @@ class ZarrDataHandler:
     def __init__(self, path: Path, key: Optional[str] = None) -> None:
         self.path = path
         self.key = key
+        self._voxel_size = read_zarr_voxel_size(path, key)
 
     def __repr__(self):
         return f"ZarrDataHandler(path={self.path}, key={self.key})"
