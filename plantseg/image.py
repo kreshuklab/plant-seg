@@ -36,15 +36,20 @@ class ImageDimensionality(Enum):
 
 
 class ImageLayout(Enum):
-    XY = ("XY", ImageDimensionality.TWO)
-    CXY = ("CXY", ImageDimensionality.TWO)
-    ZXY = ("ZXY", ImageDimensionality.THREE)
-    CZXY = ("CZXY", ImageDimensionality.THREE)
-    ZCXY = ("ZCXY", ImageDimensionality.THREE)
+    XY = ("XY", ImageDimensionality.TWO, None)
+    CXY = ("CXY", ImageDimensionality.TWO, 0)
+    ZXY = ("ZXY", ImageDimensionality.THREE, None)
+    CZXY = ("CZXY", ImageDimensionality.THREE, 0)
+    ZCXY = ("ZCXY", ImageDimensionality.THREE, 1)
 
-    def __init__(self, layout: str, dimensionality: ImageDimensionality):
+    def __init__(self, layout: str, dimensionality: ImageDimensionality, channel_axis: Optional[int] = None):
         self.layout = layout
         self.dimensionality = dimensionality
+        self.channel_axis = channel_axis
+
+    @classmethod
+    def to_choices(cls) -> list[str]:
+        return [il.layout for il in cls]
 
 
 class ImageProperties(BaseModel):

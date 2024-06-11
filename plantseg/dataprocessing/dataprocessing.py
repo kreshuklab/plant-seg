@@ -97,7 +97,7 @@ def image_gaussian_smoothing(image: np.ndarray, sigma: float) -> np.ndarray:
     Returns:
         smoothed_image (np.ndarray): Gaussian smoothed image as numpy array
     """
-    image = image.astype('float32')
+    image = image.astype("float32")
     max_sigma = (np.array(image.shape) - 1) / 3
     sigma_array = np.minimum(max_sigma, np.ones(max_sigma.ndim) * sigma)
     return gaussianSmoothing(image, sigma_array)
@@ -114,10 +114,10 @@ def image_crop(image: np.ndarray, crop_str: str) -> np.ndarray:
     Returns:
         cropped_image (np.ndarray): Cropped image as numpy array
     """
-    crop_str = crop_str.replace('[', '').replace(']', '')
+    crop_str = crop_str.replace("[", "").replace("]", "")
     slices = tuple(
-        (slice(*(int(i) if i else None for i in part.strip().split(':'))) if ':' in part else int(part.strip()))
-        for part in crop_str.split(',')
+        (slice(*(int(i) if i else None for i in part.strip().split(":"))) if ":" in part else int(part.strip()))
+        for part in crop_str.split(",")
     )
     return image[slices]
 
@@ -172,4 +172,19 @@ def normalize_01(data: np.ndarray, eps=1e-12) -> np.ndarray:
     Returns:
         normalized_data (np.ndarray): Normalized numpy array
     """
-    return (data - np.min(data)) / (np.max(data) - np.min(data) + eps).astype('float32')
+    return (data - np.min(data)) / (np.max(data) - np.min(data) + eps).astype("float32")
+
+
+def select_channel(data: np.ndarray, channel: int, channel_axis: int = 0) -> np.ndarray:
+    """
+    Select a channel from a numpy array with shape (C x Z x Y x X) or (C x Y x X) or (Z x C x Y x X)
+
+    Args:
+        data (np.ndarray): Input numpy array
+        channel (int): Channel to select
+        channel_axis (int): Channel axis
+
+    Returns:
+        selected_channel (np.ndarray): Selected channel as numpy array
+    """
+    return np.take(data, channel, axis=channel_axis)
