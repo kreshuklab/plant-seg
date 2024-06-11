@@ -1,6 +1,6 @@
 from concurrent.futures import Future
 from enum import Enum
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 from magicgui import magicgui
@@ -406,8 +406,9 @@ def _on_rescale_order_changed(order):
 
 
 def _compute_slices(rectangle, crop_z: tuple[int, int], shape):
+    z_slice = slice(*crop_z)
     if rectangle is None:
-        return crop_z, slice(0, shape[1]), slice(0, shape[2])
+        return z_slice, slice(0, shape[1]), slice(0, shape[2])
 
     x_start = max(rectangle[0, 1], 0)
     x_end = min(rectangle[2, 1], shape[1])
@@ -416,7 +417,7 @@ def _compute_slices(rectangle, crop_z: tuple[int, int], shape):
     y_start = max(rectangle[0, 2], 0)
     y_end = min(rectangle[2, 2], shape[2])
     y_slice = slice(y_start, y_end)
-    return crop_z, x_slice, y_slice
+    return z_slice, x_slice, y_slice
 
 
 def _cropping(data, crop_slices):
@@ -436,8 +437,8 @@ def _cropping(data, crop_slices):
     # FloatRangeSlider and RangeSlider are not working very nicely with napari, they are usable but not very
     # nice. maybe we should use a custom widget for this.
     crop_z={
-        "label": "Z slices",
-        "tooltip": "Number of z slices to take next to the current selection.",
+        "label": "Z slices [Start, End)",
+        "tooltip": "Number of z slices to take next to the current selection.\nSTART is included, END is not.",
         "widget_type": "RangeSlider",
         "max": 100,
         "min": 0,
@@ -478,7 +479,6 @@ def widget_cropping(
         rectangle = None
 
     assert isinstance(image.data, np.ndarray), "Only numpy arrays are supported for cropping."
-    crop_z = (crop_z[0], crop_z[1] + 1)
     crop_slices = _compute_slices(rectangle, crop_z, image.data.shape)
 
     return start_threading_process(
@@ -508,9 +508,13 @@ def widget_cropping(
 
 
 @widget_cropping.image.changed.connect
-def _on_cropping_image_changed(image: Layer):
+def _on_cropping_image_changed(image: Optional[Layer]):
+    if image is None:
+        widget_cropping.crop_z.hide()
+        return None
+
     image = return_value_if_widget(image)
-    image_shape_z = image.data.shape[0]
+    image_shape_z = int(image.data.shape[0])
 
     if image_shape_z == 1:
         widget_cropping.crop_z.hide()
@@ -520,8 +524,8 @@ def _on_cropping_image_changed(image: Layer):
     widget_cropping.crop_z.step = 1
 
     if widget_cropping.crop_z.value[1] > image_shape_z:
-        widget_cropping.crop_z.value[1] = int(image_shape_z)
-    widget_cropping.crop_z.max = int(image_shape_z)
+        widget_cropping.crop_z.value = (0, image_shape_z)
+    widget_cropping.crop_z.max = image_shape_z
 
 
 def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
