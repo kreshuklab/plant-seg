@@ -405,13 +405,9 @@ def _on_rescale_order_changed(order):
         widget_rescaling.order.value = RescaleType.NEAREST.int_val
 
 
-def _compute_slices(rectangle, crop_z, shape):
-    z_start = int(crop_z[0])
-    z_end = int(crop_z[1])
-    z_slice = slice(z_start, z_end)
-
+def _compute_slices(rectangle, crop_z: tuple[int, int], shape):
     if rectangle is None:
-        return z_slice, slice(0, shape[1]), slice(0, shape[2])
+        return crop_z, slice(0, shape[1]), slice(0, shape[2])
 
     x_start = max(rectangle[0, 1], 0)
     x_end = min(rectangle[2, 1], shape[1])
@@ -420,7 +416,7 @@ def _compute_slices(rectangle, crop_z, shape):
     y_start = max(rectangle[0, 2], 0)
     y_end = min(rectangle[2, 2], shape[2])
     y_slice = slice(y_start, y_end)
-    return z_slice, x_slice, y_slice
+    return crop_z, x_slice, y_slice
 
 
 def _cropping(data, crop_slices):
@@ -442,12 +438,10 @@ def _cropping(data, crop_slices):
     crop_z={
         "label": "Z slices",
         "tooltip": "Number of z slices to take next to the current selection.",
-        "widget_type": "FloatRangeSlider",
+        "widget_type": "RangeSlider",
         "max": 100,
         "min": 0,
         "step": 1,
-        "readout": False,
-        "tracking": False,
     },
     update_other_widgets={
         "visible": False,
@@ -484,6 +478,7 @@ def widget_cropping(
         rectangle = None
 
     assert isinstance(image.data, np.ndarray), "Only numpy arrays are supported for cropping."
+    crop_z = (crop_z[0], crop_z[1] + 1)
     crop_slices = _compute_slices(rectangle, crop_z, image.data.shape)
 
     return start_threading_process(
@@ -515,18 +510,18 @@ def widget_cropping(
 @widget_cropping.image.changed.connect
 def _on_cropping_image_changed(image: Layer):
     image = return_value_if_widget(image)
-    image_shape = image.data.shape
+    image_shape_z = image.data.shape[0]
 
-    if image_shape[0] == 1:
+    if image_shape_z == 1:
         widget_cropping.crop_z.hide()
         return None
 
     widget_cropping.crop_z.show()
-
-    widget_cropping.crop_z.max = int(image_shape[0])
     widget_cropping.crop_z.step = 1
-    if widget_cropping.crop_z.value[1] > image_shape[0]:
-        widget_cropping.crop_z.value[1] = int(image_shape[0])
+
+    if widget_cropping.crop_z.value[1] > image_shape_z:
+        widget_cropping.crop_z.value[1] = int(image_shape_z)
+    widget_cropping.crop_z.max = int(image_shape_z)
 
 
 def _two_layers_operation(data1, data2, operation, weights: float = 0.5):
