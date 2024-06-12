@@ -11,9 +11,9 @@ from plantseg.dataprocessing.dataprocessing import fix_input_shape, normalize_01
 from plantseg.dataprocessing.dataprocessing import image_rescale, compute_scaling_factor
 from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, PIL_EXTENSIONS, allowed_data_format, ZARR_EXTENSIONS
 from plantseg.io import create_h5, create_tiff, create_zarr
-from plantseg.io import load_tiff, load_h5, load_pill, load_zarr
-from plantseg.io.h5 import list_keys as list_h5_keys
-from plantseg.io.zarr import list_keys as list_zarr_keys
+from plantseg.io import load_tiff, load_h5, load_pil, load_zarr
+from plantseg.io.h5 import list_h5_keys
+from plantseg.io.zarr import list_zarr_keys
 from plantseg.viewer.dag_handler import dag_manager
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.utils import layer_properties, return_value_if_widget
@@ -67,7 +67,7 @@ def open_file(path: Path, key: str, channel: int, stack_layout: str, m_slicing: 
         data, (voxel_size, _, _, voxel_size_unit) = load_tiff(path)
 
     elif ext in PIL_EXTENSIONS:
-        data, (voxel_size, _, _, voxel_size_unit) = load_pill(path)
+        data, (voxel_size, _, _, voxel_size_unit) = load_pil(path)
 
     elif ext in ZARR_EXTENSIONS:
         if key == "":

@@ -157,7 +157,7 @@ def create_zarr(
     zarr_file[key].attrs["element_size_um"] = voxel_size.voxels_size
 
 
-def list_keys(path: Path) -> list[str]:
+def list_zarr_keys(path: Path) -> list[str]:
     """
     List all keys in a Zarr file.
 
