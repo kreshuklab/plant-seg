@@ -16,7 +16,7 @@ import numpy as np
 
 import warnings
 from typing import Optional, Self
-from plantseg.io.utils import VoxelSize, DataHandler
+from plantseg.io.utils import VoxelSize
 
 
 ZARR_EXTENSIONS = [".zarr"]
@@ -112,7 +112,7 @@ def read_zarr_shape(path: Path, key: Optional[str] = None) -> tuple[int, ...]:
     return data.shape
 
 
-def read_zarr_voxel_size(path: Path, key: str) -> VoxelSize:
+def read_zarr_voxel_size(path: Path, key: str | None) -> VoxelSize:
     """Read the voxel size of a dataset in a Zarr file.
 
     Args:
@@ -212,80 +212,3 @@ def rename_zarr_key(path: Path, old_key: str, new_key: str, mode="r+") -> None:
     if old_key in zarr_file:
         zarr_file[new_key] = zarr_file[old_key]
         del zarr_file[old_key]
-
-
-class ZarrDataHandler:
-    """
-    Class to handle data loading, and metadata retrieval from a Zarr file.
-
-    Attributes:
-        path (Path): path to the zarr file
-        key (str): key of the dataset in the zarr file
-    """
-
-    _data: Optional[np.ndarray] = None
-    _voxel_size: VoxelSize
-
-    def __init__(self, path: Path, key: Optional[str] = None) -> None:
-        self.path = path
-        self.key = key
-        self._voxel_size = read_zarr_voxel_size(path, key)
-
-    def __repr__(self):
-        return f"ZarrDataHandler(path={self.path}, key={self.key})"
-
-    @classmethod
-    def from_data_handler(cls, data_handler: DataHandler, path: Path, key: Optional[str] = None) -> Self:
-        """
-        Create a ZarrDataHandler object from a DataHandler object.
-
-        Args:
-            data_handler (DataHandler): DataHandler object
-
-        Returns:
-            ZarrDataHandler: ZarrDataHandler object
-        """
-        zarr_handler = cls(path, key)
-        zarr_handler._data = data_handler.get_data()
-        zarr_handler._voxel_size = data_handler.get_voxel_size()
-        return zarr_handler
-
-    def get_data(self, slices=None) -> np.ndarray:
-        """
-        Load the dataset from the h5 file.
-
-        Returns:
-            np.ndarray: dataset as numpy array
-        """
-        if self._data is not None:
-            return self._data
-
-        self._data = load_zarr(self.path, self.key, slices)
-        return self._data
-
-    def write_data(self, **kwargs) -> None:
-        """
-        Write the dataset to the h5 file.
-        """
-        if self._data is None:
-            raise ValueError("No data to write.")
-
-        if self.key is None:
-            raise ValueError("No key to write.")
-
-        create_zarr(path=self.path, stack=self._data, key=self.key, **kwargs)
-
-    def get_shape(self) -> tuple[int, ...]:
-        """
-        Get the shape of the dataset.
-        """
-        if self._data is None:
-            self._data = load_zarr(self.path, self.key)
-
-        return read_zarr_shape(self.path, self.key)
-
-    def get_voxel_size(self) -> VoxelSize:
-        """
-        Get the voxel size of the dataset.
-        """
-        return self._voxel_size

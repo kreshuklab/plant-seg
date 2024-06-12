@@ -17,18 +17,35 @@ from plantseg.io.zarr import list_zarr_keys
 from plantseg.viewer.dag_handler import dag_manager
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.viewer.widget.utils import layer_properties, return_value_if_widget
+from enum import Enum
+from plantseg.image import ImageLayout
 
 
-path_modes = ["tiff, h5, etc..", "zarr"]
-channel_token = "<c>"
-channels_stack_layouts = [
-    f"Z{channel_token}XY (usually tiff)",
-    f"{channel_token}ZXY (usually h5 or zarr)",
-    f"{channel_token}XY",
-]
-no_channels_stack_layouts = ["ZXY", "XY"]
-manual_slicing = "Manual Slicing"
-all_layouts = channels_stack_layouts + no_channels_stack_layouts + [manual_slicing]
+class PathMode(Enum):
+    FILE = "tiff, h5, etc.."
+    DIR = "zarr"
+
+    @classmethod
+    def to_choices(cls):
+        return [member.value for member in cls]
+
+
+class ImageLayoutChoiches(Enum):
+    ZXY = ("ZXY", ImageLayout.ZXY, None)
+    CZXY = ("<c>ZXY (usually h5 or zarr)", ImageLayout.CZXY, 0)
+    ZCXY = ("Z<c>XY (usually tiff)", ImageLayout.ZCXY, 1)
+    XY = ("XY", ImageLayout.XY, None)
+    CXY = ("<c>XY", ImageLayout.CXY, 0)
+    MANUAL = ("Manual Slicing", ImageLayout.UNKNOWN, None)
+
+    def __init__(self, layout_name: str, layout: ImageLayout, channel_axis: int | None):
+        self.layout_name = layout_name
+        self.layout = layout
+        self.channel_axis = channel_axis
+
+    @classmethod
+    def to_choices(cls):
+        return [sl.layout_name for sl in cls]
 
 
 def select_channel(data: np.ndarray, layout: str, channel: int, m_slicing: str = "[:, :, :]") -> np.ndarray:
@@ -95,18 +112,23 @@ def unpack_open_file(loaded_dict, key):
 
 @magicgui(
     call_button="Open file",
+    path_mode={
+        "label": "File type",
+        "choices": PathMode.to_choices(),
+        "widget_type": "RadioButtons",
+        "orientation": "horizontal",
+    },
     path={
         "label": "Pick a file (tiff, h5, zarr, png, jpg)",
         "mode": "r",
         "tooltip": "Select a file to be imported, the file can be a tiff, h5, png, jpg.",
     },
-    path_mode={"label": "File type", "choices": path_modes, "widget_type": "RadioButtons", "orientation": "horizontal"},
     new_layer_name={
         "label": "Layer Name",
         "tooltip": "Define the name of the output layer, default is either image or label.",
     },
     layer_type={
-        "label": "Layer type",
+        "label": "Layer Type",
         "tooltip": "Select if the image is a normal image or a segmentation",
         "widget_type": "RadioButtons",
         "orientation": "horizontal",
@@ -115,17 +137,17 @@ def unpack_open_file(loaded_dict, key):
     key={"label": "Key (h5/zarr only)", "choices": [""], "tooltip": "Key to be loaded from h5"},
     channel={"label": "Channel", "tooltip": "Channel to select"},
     m_slicing={"label": "Manual slicing", "tooltip": "Manually slice the array using python fancy slicing"},
-    stack_layout={"label": "Stack Layout", "choices": all_layouts, "tooltip": "Stack layout"},
+    stack_layout={"label": "Stack Layout", "choices": ImageLayoutChoiches.to_choices(), "tooltip": "Stack layout"},
 )
 def widget_open_file(
+    path_mode: str = PathMode.FILE.value,
     path: Path = Path.home(),
-    path_mode: str = path_modes[0],
     layer_type: str = "image",
     new_layer_name: str = "",
     key: str = "",
     channel: int = 0,
     m_slicing: str = "[:, :, :]",
-    stack_layout: str = no_channels_stack_layouts[0],
+    stack_layout: str = ImageLayoutChoiches.ZXY.layout_name,
 ) -> LayerDataTuple:
     """Open a file and return a napari layer."""
     new_layer_name = layer_type if new_layer_name == "" else new_layer_name
@@ -190,10 +212,10 @@ widget_open_file.m_slicing.hide()
 @widget_open_file.path_mode.changed.connect
 def _on_path_mode_changed(path_mode: str):
     path_mode = return_value_if_widget(path_mode)
-    if path_mode == path_modes[0]:  # file
+    if path_mode == PathMode.FILE.value:  # file
         widget_open_file.path.mode = "r"
         widget_open_file.path.label = "Pick a file (.tiff, .h5, .png, .jpg)"
-    elif path_mode == path_modes[1]:  # directory case
+    elif path_mode == PathMode.DIR.value:  # directory case
         widget_open_file.path.mode = "d"
         widget_open_file.path.label = "Pick a folder (.zarr)"
 
