@@ -3,20 +3,20 @@ import numpy as np
 from plantseg.dataprocessing.dataprocessing import DataPostProcessing3D
 from plantseg.dataprocessing.dataprocessing import DataPreProcessing3D
 from plantseg.io.io import load_shape
-from plantseg.pipeline import gui_logger
-from plantseg.pipeline.config_validation import config_validation
-from plantseg.pipeline.utils import load_paths
+from plantseg._pipeline import gui_logger
+from plantseg._pipeline.config_validation import config_validation
+from plantseg._pipeline.utils import load_paths
 from plantseg.predictions.predict import UnetPredictions
 from plantseg.segmentation.utils import configure_segmentation_step
 
 
 def configure_preprocessing_step(input_paths, config):
-    input_key = config.get('key', None)
-    input_channel = config.get('channel', None)
+    input_key = config.get("key", None)
+    input_channel = config.get("channel", None)
 
-    output_type = config.get('output_type', "data_uint8")
-    save_directory = config.get('save_directory', 'PreProcessing')
-    factor = config.get('factor', [1, 1, 1])
+    output_type = config.get("output_type", "data_uint8")
+    save_directory = config.get("save_directory", "PreProcessing")
+    factor = config.get("factor", [1, 1, 1])
 
     filter_type = None
     filter_param = None
@@ -24,8 +24,8 @@ def configure_preprocessing_step(input_paths, config):
         filter_type = config["filter"]["type"]
         filter_param = config["filter"]["filter_param"]
 
-    state = config.get('state', True)
-    crop = config.get('crop_volume', None)
+    state = config.get("state", True)
+    crop = config.get("crop_volume", None)
     return DataPreProcessing3D(
         input_paths,
         input_key=input_key,
@@ -42,16 +42,16 @@ def configure_preprocessing_step(input_paths, config):
 
 
 def configure_cnn_step(input_paths, config):
-    input_key = config.get('key', None)
-    input_channel = config.get('channel', None)
+    input_key = config.get("key", None)
+    input_channel = config.get("channel", None)
 
-    model_name = config['model_name']
-    patch = tuple(config.get('patch', (80, 160, 160)))
-    stride_ratio = config.get('stride_ratio', 0.75)
-    device = config.get('device', 'cuda')
-    state = config.get('state', True)
-    model_update = config.get('model_update', False)
-    patch_halo = tuple(config.get('patch_halo', None))
+    model_name = config["model_name"]
+    patch = tuple(config.get("patch", (80, 160, 160)))
+    stride_ratio = config.get("stride_ratio", 0.75)
+    device = config.get("device", "cuda")
+    state = config.get("state", True)
+    model_update = config.get("model_update", False)
+    patch_halo = tuple(config.get("patch_halo", None))
     return UnetPredictions(
         input_paths,
         model_name=model_name,
@@ -75,16 +75,16 @@ def configure_segmentation_postprocessing_step(input_paths, config):
 
 
 def _create_postprocessing_step(input_paths, input_type, config):
-    input_key = config.get('key', None)
-    input_channel = config.get('channel', None)
+    input_key = config.get("key", None)
+    input_channel = config.get("channel", None)
 
-    output_type = config.get('output_type', input_type)
-    save_directory = config.get('save_directory', 'PostProcessing')
-    factor = config.get('factor', [1, 1, 1])
-    output_shapes = config.get('output_shapes', None)
+    output_type = config.get("output_type", input_type)
+    save_directory = config.get("save_directory", "PostProcessing")
+    factor = config.get("factor", [1, 1, 1])
+    output_shapes = config.get("output_shapes", None)
     out_ext = ".tiff" if config["tiff"] else ".h5"
-    state = config.get('state', True)
-    save_raw = config.get('save_raw', False)
+    state = config.get("state", True)
+    save_raw = config.get("save_raw", False)
     return DataPostProcessing3D(
         input_paths,
         input_key=input_key,
@@ -101,8 +101,8 @@ def _create_postprocessing_step(input_paths, input_type, config):
 
 
 def _validate_cnn_postprocessing_rescaling(input_paths, config):
-    input_key = config["preprocessing"].get('key', None)
-    input_channel = config["preprocessing"].get('channel', None)
+    input_key = config["preprocessing"].get("key", None)
+    input_channel = config["preprocessing"].get("channel", None)
 
     input_shapes = [load_shape(input_path, key=input_key) for input_path in input_paths]
     if input_channel is not None:
@@ -121,25 +121,25 @@ def raw2seg(config):
 
     gui_logger.info("Executing pipeline, see terminal for verbose logs.")
     all_pipeline_steps = [
-        ('preprocessing', configure_preprocessing_step),
-        ('cnn_prediction', configure_cnn_step),
-        ('cnn_postprocessing', configure_cnn_postprocessing_step),
-        ('segmentation', configure_segmentation_step),
-        ('segmentation_postprocessing', configure_segmentation_postprocessing_step),
+        ("preprocessing", configure_preprocessing_step),
+        ("cnn_prediction", configure_cnn_step),
+        ("cnn_postprocessing", configure_cnn_postprocessing_step),
+        ("segmentation", configure_segmentation_step),
+        ("segmentation_postprocessing", configure_segmentation_postprocessing_step),
     ]
 
     for pipeline_step_name, pipeline_step_setup in all_pipeline_steps:  # Common section for all steps
         # In Tk GUI, entries have fixed types. All steps are fixed here including LMC. TODO: better solution?
-        if config[pipeline_step_name].get('key', None) == 'None':  # in Tk GUI key is str
-            config[pipeline_step_name]['key'] = None
-        if config[pipeline_step_name].get('channel', None) == -1:  # in Tk GUI channel is int
-            config[pipeline_step_name]['channel'] = None
-        if config[pipeline_step_name].get('key_nuclei', None) == 'None':  # in Tk GUI key is str
-            config[pipeline_step_name]['key_nuclei'] = None
-        if config[pipeline_step_name].get('channel_nuclei', None) == -1:  # in Tk GUI channel is int
-            config[pipeline_step_name]['channel_nuclei'] = None
+        if config[pipeline_step_name].get("key", None) == "None":  # in Tk GUI key is str
+            config[pipeline_step_name]["key"] = None
+        if config[pipeline_step_name].get("channel", None) == -1:  # in Tk GUI channel is int
+            config[pipeline_step_name]["channel"] = None
+        if config[pipeline_step_name].get("key_nuclei", None) == "None":  # in Tk GUI key is str
+            config[pipeline_step_name]["key_nuclei"] = None
+        if config[pipeline_step_name].get("channel_nuclei", None) == -1:  # in Tk GUI channel is int
+            config[pipeline_step_name]["channel_nuclei"] = None
 
-        if pipeline_step_name == 'preprocessing':
+        if pipeline_step_name == "preprocessing":
             _validate_cnn_postprocessing_rescaling(input_paths, config)
 
         gui_logger.info(

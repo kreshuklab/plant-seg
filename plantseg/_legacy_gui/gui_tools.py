@@ -9,7 +9,7 @@ from plantseg import PATH_HOME, PATH_PLANTSEG_MODELS, PATH_MODEL_ZOO, PATH_MODEL
 from plantseg.__version__ import __version__
 from plantseg.io import read_tiff_voxel_size, TIFF_EXTENSIONS
 from plantseg.legacy_gui import stick_all, stick_ew, var_to_tkinter, convert_rgb, PLANTSEG_GREEN
-from plantseg.pipeline import gui_logger
+from plantseg._pipeline import gui_logger
 from plantseg.utils import load_config
 from plantseg.models.zoo import model_zoo
 
@@ -540,7 +540,7 @@ def report_error(data, font=None, depth=3):
     """creates pop up and show error messages"""
     data = data if isinstance(data, str) else f"Unknown Error. Error type: {type(data)} \n {data}"
     # reduce message depth
-    data = '\n' + ''.join([f"{_str} \n" for _str in data.split('\n')[-depth:]])
+    data = "\n" + "".join([f"{_str} \n" for _str in data.split("\n")[-depth:]])
 
     default = (
         "The complete error message is reported in the terminal."
@@ -797,9 +797,9 @@ class LoadModelPopup:
             location=path,
             resolution=resolution,
             description=description,
-            dimensionality='unknown',
-            modality='unknown',
-            output_type='unknown',
+            dimensionality="unknown",
+            modality="unknown",
+            output_type="unknown",
         )
         if not success[0]:
             gui_logger.error(success[1])
@@ -875,7 +875,7 @@ class RemovePopup:
             self.popup.destroy()
             raise RuntimeError(msg)
 
-        yaml.dump(custom_zoo_dict, open(PATH_MODEL_ZOO_CUSTOM, 'w'))
+        yaml.dump(custom_zoo_dict, open(PATH_MODEL_ZOO_CUSTOM, "w"))
 
         model_directory = PATH_PLANTSEG_MODELS / self.file_to_remove
         if model_directory.exists():

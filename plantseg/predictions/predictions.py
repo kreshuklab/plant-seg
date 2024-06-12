@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from plantseg.pipeline import gui_logger
+from plantseg.loggers import gui_logger
 from plantseg.models.zoo import model_zoo
 from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.augment.transforms import get_test_augmentations
@@ -21,7 +21,7 @@ def unet_predictions(
     model_id: Optional[str],
     patch: Tuple[int, int, int] = (80, 160, 160),
     single_batch_mode: bool = True,
-    device: str = 'cuda',
+    device: str = "cuda",
     model_update: bool = False,
     disable_tqdm: bool = False,
     handle_multichannel: bool = False,
@@ -48,28 +48,28 @@ def unet_predictions(
         pmap (np.ndarray): The predicted boundaries as a 3D (Z, Y, X) or 4D (C, Z, Y, X) array, normalized between 0 and 1.
     """
     if config_path is not None:  # Safari mode for custom models outside zoos
-        gui_logger.info('Safari prediction: Running model from custom config path.')
+        gui_logger.info("Safari prediction: Running model from custom config path.")
         model, model_config, model_path = model_zoo.get_model_by_config_path(config_path, model_weights_path)
     elif model_id is not None:  # BioImage.IO zoo mode
-        gui_logger.info('BioImage.IO prediction: Running model from BioImage.IO model zoo.')
+        gui_logger.info("BioImage.IO prediction: Running model from BioImage.IO model zoo.")
         model, model_config, model_path = model_zoo.get_model_by_id(model_id)
     elif model_name is not None:  # PlantSeg zoo mode
-        gui_logger.info('Zoo prediction: Running model from PlantSeg official zoo.')
+        gui_logger.info("Zoo prediction: Running model from PlantSeg official zoo.")
         model, model_config, model_path = model_zoo.get_model_by_name(model_name, model_update=model_update)
     else:
-        raise ValueError('Either `model_name` or `model_id` or `model_path` must be provided.')
-    state = torch.load(model_path, map_location='cpu')
+        raise ValueError("Either `model_name` or `model_id` or `model_path` must be provided.")
+    state = torch.load(model_path, map_location="cpu")
 
-    if 'model_state_dict' in state:  # Model weights format may vary between versions
-        state = state['model_state_dict']
+    if "model_state_dict" in state:  # Model weights format may vary between versions
+        state = state["model_state_dict"]
     model.load_state_dict(state)
 
-    patch_halo = kwargs['patch_halo'] if 'patch_halo' in kwargs else get_patch_halo(model_name)  # lazy else statement
+    patch_halo = kwargs["patch_halo"] if "patch_halo" in kwargs else get_patch_halo(model_name)  # lazy else statement
 
     predictor = ArrayPredictor(
         model=model,
-        in_channels=model_config['in_channels'],
-        out_channels=model_config['out_channels'],
+        in_channels=model_config["in_channels"],
+        out_channels=model_config["out_channels"],
         device=device,
         patch=patch,
         patch_halo=patch_halo,
@@ -79,13 +79,13 @@ def unet_predictions(
         disable_tqdm=disable_tqdm,
     )
 
-    if int(model_config['in_channels']) > 1:  # if multi-channel input
+    if int(model_config["in_channels"]) > 1:  # if multi-channel input
         raw = fix_input_shape_to_CZYX(raw)
         multichannel_input = True
     else:
         raw = fix_input_shape_to_ZYX(raw)
         multichannel_input = False
-    raw = raw.astype('float32')
+    raw = raw.astype("float32")
     augs = get_test_augmentations(raw)  # using full raw to compute global normalization mean and std
     stride = get_stride_shape(patch)
     slice_builder = SliceBuilder(raw, label_dataset=None, patch_shape=patch, stride_shape=stride)
@@ -96,12 +96,12 @@ def unet_predictions(
     pmaps = predictor(test_dataset)  # pmaps either (C, Z, Y, X) or (C, Y, X)
 
     if (
-        int(model_config['out_channels']) > 1 and handle_multichannel
+        int(model_config["out_channels"]) > 1 and handle_multichannel
     ):  # if multi-channel output and who called this function can handle it
         napari_formatted_logging(
-            f'`unet_predictions()` has `handle_multichannel`={handle_multichannel}',
+            f"`unet_predictions()` has `handle_multichannel`={handle_multichannel}",
             thread="unet_predictions",
-            level='warning',
+            level="warning",
         )
         pmaps = fix_input_shape_to_CZYX(pmaps)  # make (C, Y, X) to (C, 1, Y, X) and keep (C, Z, Y, X) unchanged
     else:  # otherwise use old mechanism

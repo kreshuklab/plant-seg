@@ -12,9 +12,9 @@ from plantseg.utils import load_config
 from plantseg import PATH_PLANTSEG_GLOBAL, PATH_CONFIGS, DIR_RESOURCES, PATH_STANDARD_TEMPLATE
 from plantseg.legacy_gui import convert_rgb
 from plantseg.legacy_gui.gui_tools import Files2Process, report_error, version_popup, LoadModelPopup, RemovePopup
-from plantseg.pipeline import gui_logger
-from plantseg.pipeline.executor import PipelineExecutor
-from plantseg.pipeline.utils import QueueHandler
+from plantseg._pipeline import gui_logger
+from plantseg._pipeline.executor import PipelineExecutor
+from plantseg._pipeline.utils import QueueHandler
 
 
 class PlantSegApp:
@@ -42,12 +42,12 @@ class PlantSegApp:
 
         # Init main app and configure
         self.plant_segapp = tkinter.Tk()
-        self.plant_segapp.tk.call('tk', 'scaling', 1.0)
+        self.plant_segapp.tk.call("tk", "scaling", 1.0)
 
         # Set icon
         icon_path = self.get_icon_path()
         icon = tkinter.PhotoImage(file=icon_path)
-        self.plant_segapp.tk.call('wm', 'iconphoto', self.plant_segapp._w, icon)
+        self.plant_segapp.tk.call("wm", "iconphoto", self.plant_segapp._w, icon)
 
         self.plant_segapp.resizable(width=True, height=True)
         [
@@ -251,20 +251,20 @@ class PlantSegApp:
         scroll_bar.grid(column=1, row=0, padx=10, pady=10, sticky=self.stick_all)
 
         # configure log level display
-        out_text.tag_config('INFO', foreground='black')
-        out_text.tag_config('DEBUG', foreground='gray')
-        out_text.tag_config('WARNING', foreground='orange')
-        out_text.tag_config('ERROR', foreground='red')
-        out_text.tag_config('CRITICAL', foreground='red', underline=1)
+        out_text.tag_config("INFO", foreground="black")
+        out_text.tag_config("DEBUG", foreground="gray")
+        out_text.tag_config("WARNING", foreground="orange")
+        out_text.tag_config("ERROR", foreground="red")
+        out_text.tag_config("CRITICAL", foreground="red", underline=1)
 
-        out_text.configure(state='disabled')
+        out_text.configure(state="disabled")
 
         # TODO: refactor
         # Create a logging handler using a queue
         self.out_frame3 = out_frame3
         self.log_queue = queue.Queue()
         self.queue_handler = QueueHandler(self.log_queue)
-        formatter = logging.Formatter('%(asctime)s - %(message)s')
+        formatter = logging.Formatter("%(asctime)s - %(message)s")
         self.queue_handler.setFormatter(formatter)
         gui_logger.addHandler(self.queue_handler)
         # Start polling messages from the queue
@@ -286,13 +286,13 @@ class PlantSegApp:
 
     def display(self, record):
         msg = self.queue_handler.format(record)
-        if record.levelname in ['ERROR', 'CRITICAL']:
+        if record.levelname in ["ERROR", "CRITICAL"]:
             # show pop-up in case of error
             report_error(msg)
         else:
-            self.out_text.configure(state='normal')
-            self.out_text.insert(tkinter.END, msg + '\n', record.levelname)
-            self.out_text.configure(state='disabled')
+            self.out_text.configure(state="normal")
+            self.out_text.insert(tkinter.END, msg + "\n", record.levelname)
+            self.out_text.configure(state="disabled")
             # Autoscroll to the bottom
             self.out_text.yview(tkinter.END)
 

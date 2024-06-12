@@ -6,8 +6,8 @@ import yaml
 
 from plantseg.dataprocessing.functional.dataprocessing import normalize_01, fix_input_shape
 from plantseg.io import smart_load, create_tiff, create_h5
-from plantseg.pipeline import gui_logger
-from plantseg.pipeline.utils import SUPPORTED_TYPES
+from plantseg._pipeline import gui_logger
+from plantseg._pipeline.utils import SUPPORTED_TYPES
 
 
 class GenericPipelineStep:
@@ -82,7 +82,7 @@ class GenericPipelineStep:
         raise NotImplementedError
 
     def read_process_write(self, input_path):
-        gui_logger.info(f'Loading stack from {input_path}')
+        gui_logger.info(f"Loading stack from {input_path}")
         input_data, voxel_size = self.load_stack(input_path)
 
         output_data = self.process(input_data)
@@ -95,7 +95,7 @@ class GenericPipelineStep:
         voxel_size = np.array(voxel_size) * scale_factor
 
         output_path = self._create_output_path(input_path)
-        gui_logger.info(f'Saving results in {output_path}')
+        gui_logger.info(f"Saving results in {output_path}")
         self.save_output(output_data, output_path, voxel_size)
 
         if self.save_raw:
@@ -137,11 +137,11 @@ class GenericPipelineStep:
         """
         raw_path = self._raw_path(input_path)
         if os.path.exists(raw_path):
-            raw, _ = smart_load(raw_path, key='raw')
-            create_h5(output_path, stack=raw, key='raw', voxel_size=voxel_size, mode='a')
+            raw, _ = smart_load(raw_path, key="raw")
+            create_h5(output_path, stack=raw, key="raw", voxel_size=voxel_size, mode="a")
 
         else:
-            gui_logger.warning(f'Cannot save raw input: {raw_path} not found')
+            gui_logger.warning(f"Cannot save raw input: {raw_path} not found")
 
     @staticmethod
     def _fix_input_shape(data):
@@ -187,8 +187,8 @@ class GenericPipelineStep:
         assert ext in [".h5", ".tiff"], f"Unsupported file extension {ext}"
 
         if ext == ".h5":
-            key = self.h5_output_key if self.h5_output_key is not None else 'raw'
-            create_h5(output_path, stack=data, key=key, voxel_size=voxel_size, mode='w')
+            key = self.h5_output_key if self.h5_output_key is not None else "raw"
+            create_h5(output_path, stack=data, key=key, voxel_size=voxel_size, mode="w")
 
         elif ext == ".tiff":
             create_tiff(output_path, stack=data, voxel_size=voxel_size)
@@ -210,10 +210,10 @@ class GenericPipelineStep:
 
     def _raw_path(self, input_path):
         base, filename = os.path.split(input_path)
-        filename = filename.split('_predictions')[0] + '.h5'
+        filename = filename.split("_predictions")[0] + ".h5"
 
         up_levels = 2
-        if self.input_type != 'labels':
+        if self.input_type != "labels":
             up_levels = 1
 
         for _ in range(up_levels):
@@ -234,5 +234,5 @@ class AbstractSegmentationStep(GenericPipelineStep, ABC):
             file_suffix=file_suffix,
             out_ext=".h5",
             state=state,
-            h5_output_key='segmentation',
+            h5_output_key="segmentation",
         )

@@ -2,7 +2,7 @@ import h5py
 import numpy as np
 from torch.utils.data import Dataset
 
-from plantseg.pipeline import gui_logger
+from plantseg._pipeline import gui_logger
 from plantseg.predictions.utils.slice_builder import FilterSliceBuilder
 
 
@@ -26,13 +26,13 @@ class HDF5Dataset(Dataset):
         file_path,
         augmenter,
         patch_shape,
-        raw_internal_path='raw',
-        label_internal_path='label',
+        raw_internal_path="raw",
+        label_internal_path="label",
         global_normalization=True,
     ):
         self.file_path = file_path
 
-        with h5py.File(file_path, 'r') as f:
+        with h5py.File(file_path, "r") as f:
             self.raw = self.load_dataset(f, raw_internal_path)
             stats = calculate_stats(self.raw, global_normalization)
             self.augmenter = augmenter
@@ -51,7 +51,7 @@ class HDF5Dataset(Dataset):
             self.label_slices = slice_builder.label_slices
 
             self.patch_count = len(self.raw_slices)
-            gui_logger.info(f'{self.patch_count} patches found in {file_path}')
+            gui_logger.info(f"{self.patch_count} patches found in {file_path}")
 
     @staticmethod
     def load_dataset(input_file, internal_path):
@@ -91,10 +91,10 @@ class HDF5Dataset(Dataset):
                 return volume.shape
             return volume.shape[1:]
 
-        assert raw.ndim in [3, 4], 'Raw dataset must be 3D (DxHxW) or 4D (CxDxHxW)'
-        assert label.ndim in [3, 4], 'Label dataset must be 3D (DxHxW) or 4D (CxDxHxW)'
+        assert raw.ndim in [3, 4], "Raw dataset must be 3D (DxHxW) or 4D (CxDxHxW)"
+        assert label.ndim in [3, 4], "Label dataset must be 3D (DxHxW) or 4D (CxDxHxW)"
 
-        assert _volume_shape(raw) == _volume_shape(label), 'Raw and labels have to be of the same size'
+        assert _volume_shape(raw) == _volume_shape(label), "Raw and labels have to be of the same size"
 
 
 def calculate_stats(images, global_normalization=True):
@@ -108,4 +108,4 @@ def calculate_stats(images, global_normalization=True):
     else:
         pmin, pmax, mean, std = None, None, None, None
 
-    return {'pmin': pmin, 'pmax': pmax, 'mean': mean, 'std': std}
+    return {"pmin": pmin, "pmax": pmax, "mean": mean, "std": std}

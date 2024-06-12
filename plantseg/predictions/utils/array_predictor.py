@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from plantseg.training.embeddings import embeddings_to_affinities
 from plantseg.training.model import UNet2D
-from plantseg.pipeline import gui_logger
+from plantseg.loggers import gui_logger
 from plantseg.predictions.utils.array_dataset import ArrayDataset, default_prediction_collate, remove_padding
 
 
@@ -35,7 +35,7 @@ def find_batch_size(
     Returns:
         int: The largest batch size that can be used without causing memory overflow.
     """
-    if device == 'cpu':
+    if device == "cpu":
         return 1
 
     actual_patch_shape = tuple(patch_shape[i] + 2 * patch_halo[i] for i in range(3))
@@ -50,7 +50,7 @@ def find_batch_size(
                 x = torch.randn((batch_size, in_channels) + actual_patch_shape).to(device)
                 _ = model(x)
             except RuntimeError as e:
-                if 'out of memory' in str(e):
+                if "out of memory" in str(e):
                     batch_size //= 2
                     break
                 else:
@@ -60,8 +60,8 @@ def find_batch_size(
                 torch.cuda.empty_cache()
     if batch_size == 0:
         raise RuntimeError(
-            f'Could not determine a feasible batch size for patch size {patch_shape} and halo {patch_halo}. '
-            'Please reduce the patch size.'
+            f"Could not determine a feasible batch size for patch size {patch_shape} and halo {patch_halo}. "
+            "Please reduce the patch size."
         )
     del model
     torch.cuda.empty_cache()
@@ -89,7 +89,7 @@ def will_CUDA_OOM(
     Returns:
         bool: True if the batch size will cause an OOM error, False otherwise.
     """
-    if device == 'cpu':
+    if device == "cpu":
         return False  # CPU does not have CUDA OOM errors
 
     # Calculate the actual patch shape including the halo
@@ -109,9 +109,9 @@ def will_CUDA_OOM(
             x = torch.randn((batch_size, in_channels) + actual_patch_shape).to(device)
             _ = model(x)
     except RuntimeError as e:
-        if 'out of memory' in str(e):
+        if "out of memory" in str(e):
             OOM_error = True
-            print(f'Using patch shape {patch_shape}, halo {patch_halo}, and batch size {batch_size} will cause OOM.')
+            print(f"Using patch shape {patch_shape}, halo {patch_halo}, and batch size {batch_size} will cause OOM.")
         else:
             raise  # Re-raise if it's not an OOM error
     finally:
@@ -175,24 +175,24 @@ class ArrayPredictor:
 
         if single_batch_mode:  # then check if OOM happens at batch size 1
             self.batch_size = 1
-            if device != 'cpu' and will_CUDA_OOM(model, in_channels, patch, patch_halo, self.batch_size, device):
-                raise RuntimeError('OOM error will happen. Please reduce the patch size/halo.')
+            if device != "cpu" and will_CUDA_OOM(model, in_channels, patch, patch_halo, self.batch_size, device):
+                raise RuntimeError("OOM error will happen. Please reduce the patch size/halo.")
         else:  # find the max batch size without causing OOM, may be [0, 1, 2, 4, 8, 16, 32, 64, 128]
             self.batch_size = find_batch_size(model, in_channels, patch, patch_halo, device)
             if self.batch_size < 1:
-                raise RuntimeError('Could not determine a feasible batch size for the given model and patch size/halo.')
+                raise RuntimeError("Could not determine a feasible batch size for the given model and patch size/halo.")
 
-        gui_logger.info(f'Using batch size of {self.batch_size} for prediction')
+        gui_logger.info(f"Using batch size of {self.batch_size} for prediction")
 
         # Use all available GPUs for headless mode
-        if torch.cuda.device_count() > 1 and device != 'cpu' and headless:
+        if torch.cuda.device_count() > 1 and device != "cpu" and headless:
             model = nn.DataParallel(model)
             gui_logger.info(
-                f'Using {torch.cuda.device_count()} GPUs for prediction. '
-                f'Increasing batch size to {torch.cuda.device_count()} * {self.batch_size}'
+                f"Using {torch.cuda.device_count()} GPUs for prediction. "
+                f"Increasing batch size to {torch.cuda.device_count()} * {self.batch_size}"
             )
             self.batch_size *= torch.cuda.device_count()
-            self.device = 'cuda'
+            self.device = "cuda"
 
         self.model = model.to(self.device)
         self.out_channels = out_channels
@@ -202,10 +202,10 @@ class ArrayPredictor:
         self.is_embedding = is_embedding
 
     def __call__(self, test_dataset: Dataset) -> np.ndarray:
-        assert isinstance(test_dataset, ArrayDataset), 'Dataset must be an instance of ArrayDataset'
+        assert isinstance(test_dataset, ArrayDataset), "Dataset must be an instance of ArrayDataset"
         assert (
             self.patch_halo == test_dataset.halo_shape
-        ), f'Predictor halo shape {self.patch_halo} does not match dataset halo shape {test_dataset.halo_shape}'
+        ), f"Predictor halo shape {self.patch_halo} does not match dataset halo shape {test_dataset.halo_shape}"
 
         test_loader = DataLoader(
             test_dataset,
@@ -215,7 +215,7 @@ class ArrayPredictor:
         )
 
         if self.verbose_logging:
-            gui_logger.info(f'Running prediction on {len(test_loader)} batches')
+            gui_logger.info(f"Running prediction on {len(test_loader)} batches")
 
         # dimensionality of the output predictions
         volume_shape = self.volume_shape(test_dataset)
@@ -233,15 +233,15 @@ class ArrayPredictor:
         prediction_maps_shape = (out_channels,) + volume_shape
 
         if self.verbose_logging:
-            gui_logger.info(f'The shape of the output prediction maps (CDHW): {prediction_maps_shape}')
-            gui_logger.info(f'Using patch_halo: {self.patch_halo}')
+            gui_logger.info(f"The shape of the output prediction maps (CDHW): {prediction_maps_shape}")
+            gui_logger.info(f"Using patch_halo: {self.patch_halo}")
             # allocate prediction and normalization arrays
-            gui_logger.info('Allocating prediction and normalization arrays...')
+            gui_logger.info("Allocating prediction and normalization arrays...")
 
         # initialize the output prediction arrays
-        prediction_map = np.zeros(prediction_maps_shape, dtype='float32')
+        prediction_map = np.zeros(prediction_maps_shape, dtype="float32")
         # initialize normalization mask in order to average out probabilities of overlapping patches
-        normalization_mask = np.zeros(prediction_maps_shape, dtype='uint8')
+        normalization_mask = np.zeros(prediction_maps_shape, dtype="uint8")
 
         # run prediction
         # Sets the module in evaluation mode explicitly
@@ -287,7 +287,7 @@ class ArrayPredictor:
                     normalization_mask[index] += 1
 
         if self.verbose_logging:
-            gui_logger.info('Prediction finished')
+            gui_logger.info("Prediction finished")
 
         # normalize results and return
         return prediction_map / normalization_mask

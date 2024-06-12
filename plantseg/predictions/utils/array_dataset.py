@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from plantseg.pipeline import gui_logger
+from plantseg.loggers import gui_logger
 from plantseg.predictions.utils.slice_builder import SliceBuilder
 
 
@@ -55,7 +55,7 @@ def mirror_pad(image: np.ndarray, padding_shape: tuple[int, int, int], multichan
         if len(image.shape) == 4:  # CZYX image
             pad_width = [(0, 0)] + pad_width  # given 3D (ZYX) padding shape, has to add 0 C padding
 
-    return np.pad(image, pad_width, mode='reflect')
+    return np.pad(image, pad_width, mode="reflect")
 
 
 def remove_padding(m, padding_shape):
@@ -111,7 +111,7 @@ class ArrayDataset(Dataset):
         self.raw_padded = mirror_pad(self.raw, self.halo_shape, multichannel)
 
         if verbose_logging:
-            gui_logger.info(f'Number of patches: {len(self.raw_slices)}')
+            gui_logger.info(f"Number of patches: {len(self.raw_slices)}")
 
     def __getitem__(self, idx):
         if idx >= len(self):

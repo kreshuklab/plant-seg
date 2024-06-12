@@ -5,21 +5,21 @@ import numpy as np
 import torch
 import yaml
 
-from plantseg.pipeline import gui_logger
+from plantseg._pipeline import gui_logger
 from plantseg import PATH_RAW2SEG_TEMPLATE
 from plantseg.predictions.utils.utils import get_stride_shape
 from plantseg.segmentation.utils import SUPPORTED_ALGORITHMS
 from plantseg.models.zoo import model_zoo
 
 
-deprecated_keys = {'param': 'filter_param'}
+deprecated_keys = {"param": "filter_param"}
 special_keys = {
-    'key',
-    'key_nuclei',
-    'channel',
-    'channel_nuclei',
-    'nuclei_predictions_path',
-    'is_segmentation',
+    "key",
+    "key_nuclei",
+    "channel",
+    "channel_nuclei",
+    "nuclei_predictions_path",
+    "is_segmentation",
 }
 
 
@@ -78,8 +78,8 @@ def iterative_is_int(key, value, fallback=None):
 
 
 def filter_name(key, value, fallback=None):
-    filters = ['gaussian', 'median']
-    if value not in ['gaussian', 'median']:
+    filters = ["gaussian", "median"]
+    if value not in ["gaussian", "median"]:
         _error_message(f"value must be one of {filters}", key, value, fallback)
         return fallback
     else:
@@ -104,7 +104,7 @@ def model_exist(key, value, fallback):
 
 
 def check_cuda(key, value, fallback):
-    if value == 'cuda' and (not torch.cuda.is_available()):
+    if value == "cuda" and (not torch.cuda.is_available()):
         _error_message("torch can not detect a valid cuda device", key, value, fallback)
         return fallback
     return value
@@ -128,14 +128,14 @@ def is_0to1(key, value, fallback):
 
 class Check(object):
     def __init__(self, node):
-        assert 'tests' in node.keys(), 'Test is not configured correctly tests key is missing'
+        assert "tests" in node.keys(), "Test is not configured correctly tests key is missing"
         check_list = []
-        for test in node['tests']:
-            m = importlib.import_module('plantseg.pipeline.config_validation')
+        for test in node["tests"]:
+            m = importlib.import_module("plantseg.pipeline.config_validation")
             check_list.append(getattr(m, test))
 
         self.check_list = check_list
-        self.fallback = node.get('fallback', None)
+        self.fallback = node.get("fallback", None)
 
     def __call__(self, key, value):
         out = value
@@ -159,8 +159,8 @@ def load_template():
         else:
             raise NotImplementedError("!check constructor must be dict or list.")
 
-    yaml.add_constructor('!check', _check)
-    with open(PATH_RAW2SEG_TEMPLATE, 'r') as f:
+    yaml.add_constructor("!check", _check)
+    with open(PATH_RAW2SEG_TEMPLATE, "r") as f:
         return yaml.full_load(f)
 
 
@@ -229,12 +229,12 @@ def check_patch_and_stride(config):
     """
     _stride = config["cnn_prediction"].get("stride_ratio", 0.75)
     patch = config["cnn_prediction"]["patch"]
-    axis = ['z', 'x', 'y']
+    axis = ["z", "x", "y"]
     stride = get_stride_shape(patch, _stride) if isinstance(_stride, float) else _stride
     for _ax, _patch, _stride in zip(axis, patch, stride):
-        test_z = _ax == 'z' and 1 < _patch - _stride <= 8
-        test_x = _ax == 'x' and _patch - _stride <= 16
-        test_y = _ax == 'y' and _patch - _stride <= 16
+        test_z = _ax == "z" and 1 < _patch - _stride <= 8
+        test_x = _ax == "x" and _patch - _stride <= 16
+        test_y = _ax == "y" and _patch - _stride <= 16
         if test_z or test_x or test_y:
             gui_logger.warning(
                 f"Stride along {_ax} axis (axis order zxy) is too large, "
