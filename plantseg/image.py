@@ -2,7 +2,7 @@ from typing import Protocol, Optional
 import numpy as np
 from pydantic import BaseModel
 from enum import Enum
-from io.utils import VoxelSize, DataHandler
+from plantseg.io.utils import VoxelSize, DataHandler
 
 
 class ImageType(Enum):
