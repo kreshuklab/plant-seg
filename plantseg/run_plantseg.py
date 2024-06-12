@@ -8,12 +8,12 @@ from plantseg.utils import check_version, load_config, clean_models
 
 def create_parser():
     """Create and return the argument parser for the CLI."""
-    arg_parser = argparse.ArgumentParser(description='PlantSeg: Plant cell/nucler instance segmentation software')
-    arg_parser.add_argument('--config', type=Path, help='Launch CLI from CONFIG (path to the YAML config file)')
-    arg_parser.add_argument('--napari', action='store_true', help='Launch Napari GUI')
-    arg_parser.add_argument('--train', type=Path, help='Launch training from CONFIG (path to the YAML config file)')
-    arg_parser.add_argument('--version', action='store_true', help='Print PlantSeg version')
-    arg_parser.add_argument('--clean', action='store_true', help='Remove all models from "~/.plantseg_models"')
+    arg_parser = argparse.ArgumentParser(description="PlantSeg: Plant cell/nucler instance segmentation software")
+    arg_parser.add_argument("--config", type=Path, help="Launch CLI from CONFIG (path to the YAML config file)")
+    arg_parser.add_argument("--napari", action="store_true", help="Launch Napari GUI")
+    arg_parser.add_argument("--train", type=Path, help="Launch training from CONFIG (path to the YAML config file)")
+    arg_parser.add_argument("--version", action="store_true", help="Print PlantSeg version")
+    arg_parser.add_argument("--clean", action="store_true", help='Remove all models from "~/.plantseg_models"')
     return arg_parser.parse_args()
 
 
@@ -27,16 +27,17 @@ def launch_napari():
 def launch_workflow_headless(path: Path):
     """Run a workflow in headless mode."""
     from plantseg.viewer.headless import run_workflow_headless
+
     run_workflow_headless(path)
-    
+
 
 def launch_training(path: Path):
     """Launch the training"""
     config = load_config(path)
-    
+
     from plantseg.training.train import unet_training
+
     unet_training(*config)
-    
 
 
 def main():
