@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - master
-      - qy/fix-docs-qt-napari-path
+      - qy/record-issue-missing-button
 
 permissions:
   contents: write

@@ -19,6 +19,8 @@ Related discussions:
 
 * [`plantseg --gui`, no buttons to begin the workflow #241](https://github.com/kreshuklab/plant-seg/issues/241)
 
+![plantseg-gui](https://github.com/kreshuklab/plant-seg/assets/17722010/af834274-4157-4fcc-bc58-665c3e73b197)
+
 Other references:
 
 * [tkinter not recognizing screen resolution correctly](https://stackoverflow.com/questions/36381225/tkinter-not-recognizing-screen-resolution-correctly)
