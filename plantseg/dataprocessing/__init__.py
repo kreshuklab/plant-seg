@@ -6,6 +6,9 @@ from plantseg.dataprocessing.dataprocessing import (
     image_crop,
     image_median,
     fix_input_shape,
+    normalize_01,
+    select_channel,
+    scale_image_to_voxelsize,
 )
 from plantseg.dataprocessing.labelprocessing import (
     relabel_segmentation,
@@ -23,6 +26,9 @@ __all__ = [
     "image_rescale",
     "image_crop",
     "image_median",
+    "scale_image_to_voxelsize",
+    "normalize_01",
+    "select_channel",
     "fix_input_shape",
     "relabel_segmentation",
     "set_background_to_value",
