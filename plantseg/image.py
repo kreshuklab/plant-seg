@@ -7,7 +7,10 @@ from pathlib import Path
 import plantseg.dataprocessing as dp
 from plantseg.io import load_h5, load_pil, load_tiff, load_zarr
 from plantseg.io import create_h5, create_tiff, create_zarr
+from napari.types import LayerDataTuple
+from napari.layers import Image, Labels
 from uuid import uuid4, UUID
+
 from plantseg.io import (
     read_h5_voxel_size,
     read_tiff_voxel_size,
@@ -142,7 +145,7 @@ class ImageProperties(BaseModel):
             raise ValueError(f"Image type {self.image_type} not recognized")
 
 
-class Image:
+class PlantSegImage:
     """
     Image class represent an image with its metadata and data.
     """
@@ -156,7 +159,21 @@ class Image:
         self._check_shape(data)
         self._id = uuid4()
 
-    def derive_new(self, data: np.ndarray, name: str, **kwargs) -> "Image":
+    def derive_new(self, data: np.ndarray, name: str, **kwargs) -> "PlantSegImage":
+        """
+        Derive a new image from the current image.
+
+        The new image will have the same properties as the original image, except for the name and the properties passed as kwargs.
+
+        args:
+            data (np.ndarray): New data
+            name (str): New name
+            **kwargs: other properties to change
+
+        Returns:
+            PlantSegImage: New image
+        """
+
         property_dict = self._properties.model_dump()
 
         if name == self.name:
@@ -171,13 +188,72 @@ class Image:
                 raise ValueError(f"Property {key} not recognized, should be one of {property_dict.keys()}")
 
         new_properties = ImageProperties(**property_dict)
-        return Image(data, new_properties)
+        return PlantSegImage(data, new_properties)
 
-    def from_napari_layer(self, layer) -> "Image":
-        pass
+    @classmethod
+    def from_napari_layer(cls, layer: Image | Labels) -> "PlantSegImage":
+        """
+        Load a PlantSegImage from a napari layer.
 
-    def to_napari_layer_tuple(self) -> None:
-        pass
+        Args:
+            layer (Image | Labels): Napari layer to load
+        """
+
+        metadata = layer.metadata
+
+        if "semantic_type" not in metadata:
+            raise ValueError("Semantic type not found in metadata")
+
+        semantic_type = SemanticType(metadata["semantic_type"])
+
+        if isinstance(layer, Image):
+            image_type = ImageType.IMAGE
+        elif isinstance(layer, Labels):
+            image_type = ImageType.LABEL
+        else:
+            raise ValueError("Layer should be either Image or Labels")
+
+        if "original_voxel_size" not in metadata:
+            raise ValueError("Original voxel size not found in metadata")
+
+        original_voxel_size = VoxelSize(**metadata["original_voxel_size"])
+
+        if "image_layout" not in metadata:
+            raise ValueError("Image layout not found in metadata")
+
+        image_layout = ImageLayout(metadata["image_layout"])
+
+        new_voxel_size = VoxelSize(scale=layer.scale)
+
+        properties = ImageProperties(
+            name=layer.name,
+            semantic_type=semantic_type,
+            voxel_size=new_voxel_size,
+            image_layout=image_layout,
+            original_voxel_size=original_voxel_size,
+        )
+
+        if image_type != properties.image_type:
+            raise ValueError(f"Image type {image_type} does not match semantic type {properties.semantic_type}")
+
+        return cls(layer.data, properties)
+
+    def to_napari_layer_tuple(self) -> LayerDataTuple:
+        """
+        Prepare the image to be loaded as a napari layer.
+        All the metadata will be stored in the metadata of the layer.
+
+        Returns:
+            LayerDataTuple: Tuple containing the data, metadata and type of the image
+        """
+        name = self.name
+        scale = self.voxel_size.scale
+        metadata = self._properties.model_dump()
+        return (
+            self.data,
+            {"name": name, "scale": scale, "metadata": metadata},
+            self.image_type,
+        )
 
     def _check_shape(self, data: np.ndarray) -> None:
         if self.image_layout in (ImageLayout.CXY, ImageLayout.ZXY):
@@ -307,8 +383,20 @@ def import_image(
     stack_layout: str = "XY",
     channel: int | None = None,
     m_slicing: Optional[str] = None,
-) -> Image:
+) -> PlantSegImage:
     data, voxel_size = _load_data(path, key)
+    """
+    Open an image file and create a PlantSegImage object.
+    
+    Args:
+        path (Path): Path to the image file
+        key (str): Key to load data from h5 or zarr files
+        image_name (str): Name of the image (a unique name to identify the image)
+        image_type (str): Type of the image, should be raw, segmentation, prediction or label
+        stack_layout (str): Layout of the image, should be XY, CXY, ZXY, CZXY or ZCXY
+        channel (int): Channel to load from the image, should be an integer if the image is multichannel.
+        m_slicing (str): Slicing to apply to the image, should be a string with the format [start:stop, ...] for each dimension.
+    """
 
     if m_slicing is not None:
         data = dp.image_crop(data, m_slicing)
@@ -323,10 +411,10 @@ def import_image(
         original_voxel_size=voxel_size,
     )
 
-    return Image(data=data, properties=image_properties)
+    return PlantSegImage(data=data, properties=image_properties)
 
 
-def _image_postprocessing(image: Image, scale_to_origin: bool, export_dtype) -> Image:
+def _image_postprocessing(image: PlantSegImage, scale_to_origin: bool, export_dtype) -> PlantSegImage:
     if scale_to_origin and image.requires_scaling:
         data = dp.scale_image_to_voxelsize(
             image.data,
@@ -361,7 +449,7 @@ def _image_postprocessing(image: Image, scale_to_origin: bool, export_dtype) -> 
 
 
 def save_image(
-    image: Image,
+    image: PlantSegImage,
     directory: Path,
     file_name: str,
     custom_key: str,
@@ -369,6 +457,18 @@ def save_image(
     file_format: str = "tiff",
     dtype: str = "uint16",
 ) -> None:
+    """
+    Write an PlantSegImage object to disk.
+
+    Args:
+        image (PlantSegImage): Image to save
+        directory (Path): Directory to save the image
+        file_name (str): Name of the file
+        custom_key (str): Custom key to save the image (it will be used as suffix in tiff files or as key in h5 or zarr files)
+        scale_to_origin (bool): Scale the image to the original voxel size (if different from the current voxel size)
+        file_format (str): File format to save the image, should be tiff, h5 or zarr
+        dtype (str): Data type to save the image, should be uint8, uint16, float32 or float64
+    """
     data, voxel_size = _image_postprocessing(image, scale_to_origin, dtype)
 
     directory = Path(directory)

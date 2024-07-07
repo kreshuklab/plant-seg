@@ -1,5 +1,5 @@
 from plantseg.__version__ import __version__
-from plantseg.image import Image
+from plantseg.image import PlantSegImage
 from pydantic import BaseModel, Field
 from typing import Callable
 from enum import Enum
@@ -236,7 +236,7 @@ def task_tracker(
             parameters = {}
 
             for name, arg in kwargs.items():
-                if isinstance(arg, Image):
+                if isinstance(arg, PlantSegImage):
                     images_inputs[name] = arg.unique_name
 
                 elif name in list_inputs:
@@ -257,13 +257,13 @@ def task_tracker(
             if out_image is None:
                 list_outputs = []
 
-            elif isinstance(out_image, Image):
+            elif isinstance(out_image, PlantSegImage):
                 list_outputs = [out_image.unique_name]
 
             elif is_multioutput and isinstance(out_image, tuple):
                 list_outputs = []
                 for i, img in enumerate(out_image):
-                    if not isinstance(img, Image):
+                    if not isinstance(img, PlantSegImage):
                         raise ValueError(f"Output {i} is not an Image object, but {type(img)}")
                     list_outputs.append(img.unique_name)
             else:
