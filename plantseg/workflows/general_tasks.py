@@ -6,15 +6,17 @@ from pathlib import Path
 
 @task_tracker(
     is_root=True,
-    list_private_params=["image_type", "stack_layout"],
+    list_private_params=["semantic_type", "stack_layout"],
     list_inputs=["input_path"],
 )
 def import_image_task(
     input_path: Path,
     key: str,
     image_name: str,
-    image_type: str,
+    semantic_type: str,
     stack_layout: str,
+    channel: int | None = None,
+    m_slicing: str | None = None,
 ) -> PlantSegImage:
     """
     Task wrapper creating a PlantSegImage object from an image file.
@@ -23,8 +25,10 @@ def import_image_task(
         path=input_path,
         key=key,
         image_name=image_name,
-        image_type=image_type,
+        semantic_type=semantic_type,
         stack_layout=stack_layout,
+        channel=channel,
+        m_slicing=m_slicing,
     )
 
 

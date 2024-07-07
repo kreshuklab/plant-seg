@@ -54,6 +54,10 @@ class ImageType(Enum):
     IMAGE = "image"
     LABEL = "label"
 
+    @classmethod
+    def to_choices(cls):
+        return [member.value for member in cls]
+
 
 class ImageDimensionality(Enum):
     """
@@ -135,7 +139,6 @@ class ImageProperties(BaseModel):
         else:
             raise ValueError(f"Image layout {self.image_layout} not recognized")
 
-    @property
     def interpolation_order(self, image_default=1) -> int:
         if self.image_type == ImageType.LABEL:
             return 0
@@ -223,7 +226,7 @@ class PlantSegImage:
 
         image_layout = ImageLayout(metadata["image_layout"])
 
-        new_voxel_size = VoxelSize(scale=layer.scale)
+        new_voxel_size = VoxelSize(voxels_size=layer.scale)
 
         properties = ImageProperties(
             name=layer.name,
@@ -247,12 +250,12 @@ class PlantSegImage:
             LayerDataTuple: Tuple containing the data, metadata and type of the image
         """
         name = self.name
-        scale = self.voxel_size.scale
+        scale = self.voxel_size.voxels_size
         metadata = self._properties.model_dump()
         return (
             self.data,
             {"name": name, "scale": scale, "metadata": metadata},
-            self.image_type,
+            self.image_type.value,
         )
 
     def _check_shape(self, data: np.ndarray) -> None:
@@ -268,8 +271,14 @@ class PlantSegImage:
                     f"Data has shape {data.shape} but should have 4 dimensions for layout {self.image_layout}"
                 )
 
-        elif self.image_layout in (ImageLayout.XY):
-            if data.ndim != 2:
+        elif self.image_layout in (ImageLayout.XY,):
+            if data.ndim == 2:
+                return None
+
+            elif data.ndim == 3 and data.shape[0] == 1:
+                return None
+
+            else:
                 raise ValueError(
                     f"Data has shape {data.shape} but should have 2 dimensions for layout {self.image_layout}"
                 )
@@ -375,39 +384,48 @@ def _select_channel(data: np.ndarray, channel: int, image_layout: ImageLayout) -
     return data, image_layout
 
 
+def _add_singletons(data: np.ndarray, image_layout: ImageLayout) -> np.ndarray:
+    if image_layout == ImageLayout.XY:
+        return data[np.newaxis, ...]
+    return data
+
+
 def import_image(
     path: Path,
     key: str | None = None,
     image_name: str = "image",
-    image_type: str = "raw",
+    semantic_type: str = "raw",
     stack_layout: str = "XY",
     channel: int | None = None,
     m_slicing: Optional[str] = None,
 ) -> PlantSegImage:
-    data, voxel_size = _load_data(path, key)
     """
     Open an image file and create a PlantSegImage object.
-    
+
     Args:
         path (Path): Path to the image file
         key (str): Key to load data from h5 or zarr files
         image_name (str): Name of the image (a unique name to identify the image)
-        image_type (str): Type of the image, should be raw, segmentation, prediction or label
+        semantic_type (str): Semantic type of the image, should be raw, segmentation, prediction or label
         stack_layout (str): Layout of the image, should be XY, CXY, ZXY, CZXY or ZCXY
         channel (int): Channel to load from the image, should be an integer if the image is multichannel.
         m_slicing (str): Slicing to apply to the image, should be a string with the format [start:stop, ...] for each dimension.
     """
+    data, voxel_size = _load_data(path, key)
+
+    stack_layout = ImageLayout(stack_layout)
 
     if m_slicing is not None:
         data = dp.image_crop(data, m_slicing)
 
-    data, new_stack_layout = _select_channel(data, channel, stack_layout)
+    data, stack_layout = _select_channel(data, channel, stack_layout)
+    data = _add_singletons(data, stack_layout)
 
     image_properties = ImageProperties(
         name=image_name,
-        semantic_type=SemanticType(image_type),
+        semantic_type=SemanticType(semantic_type),
         voxel_size=voxel_size,
-        image_layout=ImageLayout(new_stack_layout),
+        image_layout=stack_layout,
         original_voxel_size=voxel_size,
     )
 
@@ -419,9 +437,10 @@ def _image_postprocessing(image: PlantSegImage, scale_to_origin: bool, export_dt
         data = dp.scale_image_to_voxelsize(
             image.data,
             input_voxel_size=image.voxel_size,
-            output_voxel_size=image.root_voxel_size,
+            output_voxel_size=image.original_voxel_size,
+            order=image.interpolation_order(),
         )
-        new_voxel_size = image.root_voxel_size
+        new_voxel_size = image.original_voxel_size
     else:
         data = image.data
         new_voxel_size = image.voxel_size
@@ -431,7 +450,7 @@ def _image_postprocessing(image: PlantSegImage, scale_to_origin: bool, export_dt
         if export_dtype in ["uint8", "uint16"]:
             max_val = np.iinfo(export_dtype).max
             data = (data * max_val).astype(export_dtype)
-        elif export_dtype == ["float32", "float64"]:
+        elif export_dtype in ["float32", "float64"]:
             data = data.astype(export_dtype)
 
         else:
