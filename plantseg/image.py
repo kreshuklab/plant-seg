@@ -1,15 +1,27 @@
 from typing import Protocol, Optional, Any, Callable
 import numpy as np
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from enum import Enum
 from plantseg.io.utils import VoxelSize
 from pathlib import Path
+import plantseg.dataprocessing as dp
 from plantseg.io import load_h5, load_pil, load_tiff, load_zarr
-from plantseg.io import read_h5_voxel_size, read_tiff_voxel_size, read_zarr_voxel_size
-from plantseg.io import PIL_EXTENSIONS, H5_EXTENSIONS, ZARR_EXTENSIONS, TIFF_EXTENSIONS, allowed_data_format
+from plantseg.io import create_h5, create_tiff, create_zarr
+from plantseg.io import (
+    read_h5_voxel_size,
+    read_tiff_voxel_size,
+    read_zarr_voxel_size,
+)
+from plantseg.io import (
+    PIL_EXTENSIONS,
+    H5_EXTENSIONS,
+    ZARR_EXTENSIONS,
+    TIFF_EXTENSIONS,
+    allowed_data_format,
+)
 
 
-class ImageType(Enum):
+class SemanticType(Enum):
     """
     Enum class for image types.
 
@@ -23,6 +35,19 @@ class ImageType(Enum):
     RAW = "raw"
     SEGMENTATION = "segmentation"
     PREDICTION = "prediction"
+    LABEL = "label"
+
+
+class ImageType(Enum):
+    """
+    Enum class for image types.
+
+    Attributes:
+        IMAGE (str): Image data
+        LABEL (str): Label data
+    """
+
+    IMAGE = "image"
     LABEL = "label"
 
 
@@ -40,17 +65,11 @@ class ImageDimensionality(Enum):
 
 
 class ImageLayout(Enum):
-    XY = ("XY", ImageDimensionality.TWO, None)
-    CXY = ("CXY", ImageDimensionality.TWO, 0)
-    ZXY = ("ZXY", ImageDimensionality.THREE, None)
-    CZXY = ("CZXY", ImageDimensionality.THREE, 0)
-    ZCXY = ("ZCXY", ImageDimensionality.THREE, 1)
-    UNKNOWN = ("UNKNOWN", ImageDimensionality.THREE, None)
-
-    def __init__(self, layout: str, dimensionality: ImageDimensionality, channel_axis: Optional[int] = None):
-        self.layout = layout
-        self.dimensionality = dimensionality
-        self.channel_axis = channel_axis
+    XY = "XY"
+    CXY = "CXY"
+    ZXY = "ZXY"
+    CZXY = "CZXY"
+    ZCXY = "ZCXY"
 
     @classmethod
     def to_choices(cls) -> list[str]:
@@ -62,33 +81,191 @@ class ImageProperties(BaseModel):
     Basic properties of an image.
 
     Attributes:
-        name (str): Current name to identify the image
-        image_type (ImageType): Type of image
+        name (str): Name of the image
+        semantic_type (SemanticType): Semantic type of the image
         voxel_size (VoxelSize): Voxel size of the image
-        image_layout (ImageLayout): Layout of the image
-        root_name (Optional[str]): Name of the root image from which the current image was derived
-        root_voxel_size (Optional[VoxelSize]): Voxel size of the root image from which the current image was derived
+        image_layout (ImageLayout): Image layout of the image
+        original_voxel_size (VoxelSize): Original voxel size of the image
     """
 
-    name: str
-    image_type: ImageType
-    voxel_size: VoxelSize
-    image_layout: ImageLayout
+    name: str = Field(frozen=True)
+    semantic_type: SemanticType = Field(frozen=True)
+    voxel_size: VoxelSize = Field(frozen=True)
+    image_layout: ImageLayout = Field(frozen=True)
+    original_voxel_size: VoxelSize = Field(frozen=True)
 
-    root_name: Optional[str] = None
-    root_voxel_size: Optional[VoxelSize] = None
+    @property
+    def dimensionality(self) -> ImageDimensionality:
+        if self.image_layout in (ImageLayout.XY, ImageLayout.CXY):
+            return ImageDimensionality.TWO
+        elif self.image_layout in (
+            ImageLayout.ZXY,
+            ImageLayout.CZXY,
+            ImageLayout.ZCXY,
+        ):
+            return ImageDimensionality.THREE
+        else:
+            raise ValueError(
+                f"Image layout {self.image_layout} not recognized"
+            )
+
+    @property
+    def image_type(self) -> ImageType:
+        if self.semantic_type in (SemanticType.RAW, SemanticType.PREDICTION):
+            return ImageType.IMAGE
+        elif self.semantic_type in (
+            SemanticType.SEGMENTATION,
+            SemanticType.LABEL,
+        ):
+            return ImageType.LABEL
+        else:
+            raise ValueError(
+                f"Semantic type {self.semantic_type} not recognized"
+            )
+
+    @property
+    def channel_axis(self) -> int:
+        if self.image_layout in (ImageLayout.CXY, ImageLayout.CZXY):
+            return 0
+        elif self.image_layout in (ImageLayout.ZCXY):
+            return 1
+
+        elif self.image_layout in (ImageLayout.XY, ImageLayout.ZXY):
+            return None
+        else:
+            raise ValueError(
+                f"Image layout {self.image_layout} not recognized"
+            )
+
+    @property
+    def interpolation_order(self, image_default=1) -> int:
+        if self.image_type == ImageType.LABEL:
+            return 0
+        elif self.image_type == ImageType.IMAGE:
+            return image_default
+        else:
+            raise ValueError(f"Image type {self.image_type} not recognized")
 
 
-class Image(BaseModel):
-    data: np.ndarray
-    properties: ImageProperties
+class Image:
+    """
+    Image class represent an image with its metadata and data.
+    """
+
+    _data: np.ndarray
+    _properties: ImageProperties
+
+    def __init__(self, data: np.ndarray, properties: ImageProperties):
+        self._data = data
+        self._properties = properties
+        self._check_shape(data)
+
+    def derive_new(self, data: np.ndarray, name: str, **kwargs) -> "Image":
+        property_dict = self._properties.model_dump()
+
+        if name == self.name:
+            raise ValueError(
+                "New derived name should be different from the original"
+            )
+
+        property_dict["name"] = name
+
+        for key, value in kwargs.items():
+            if key in property_dict:
+                property_dict[key] = value
+            else:
+                raise ValueError(
+                    f"Property {key} not recognized, should be one of {property_dict.keys()}"
+                )
+
+        new_properties = ImageProperties(**property_dict)
+        return Image(data, new_properties)
+
+    def from_napari_layer(self, layer) -> "Image":
+        pass
+
+    def to_napari_layer_tuple(self) -> None:
+        pass
+
+    def _check_shape(self, data: np.ndarray) -> None:
+
+        if self.image_layout in (ImageLayout.CXY, ImageLayout.ZXY):
+            if data.ndim != 3:
+                raise ValueError(
+                    f"Data has shape {data.shape} but should have 3 dimensions for layout {self.image_layout}"
+                )
+
+        elif self.image_layout in (ImageLayout.CZXY, ImageLayout.ZCXY):
+            if data.ndim != 4:
+                raise ValueError(
+                    f"Data has shape {data.shape} but should have 4 dimensions for layout {self.image_layout}"
+                )
+
+        elif self.image_layout in (ImageLayout.XY):
+            if data.ndim != 2:
+                raise ValueError(
+                    f"Data has shape {data.shape} but should have 2 dimensions for layout {self.image_layout}"
+                )
+
+        else:
+            raise ValueError(
+                f"Image layout {self.image_layout} not recognized"
+            )
+
+    @property
+    def requires_scaling(self) -> bool:
+        if self.voxel_size != self.original_voxel_size:
+            return True
+        return False
+
+    @property
+    def data(self) -> np.ndarray:
+        if self.image_type == ImageType.LABEL:
+            return self._data
+
+        _data = dp.normalize_01(self._data)
+        return _data
+
+    @property
+    def voxel_size(self) -> VoxelSize:
+        return self._properties.voxel_size
+
+    @property
+    def original_voxel_size(self) -> VoxelSize:
+        return self._properties.original_voxel_size
+
+    @property
+    def name(self) -> str:
+        return self._properties.name
+
+    @property
+    def image_type(self) -> ImageType:
+        return self._properties.image_type
+
+    @property
+    def semantic_type(self) -> SemanticType:
+        return self._properties.semantic_type
+
+    @property
+    def image_layout(self) -> ImageLayout:
+        return self._properties.image_layout
+
+    @property
+    def dimensionality(self) -> ImageDimensionality:
+        return self._properties.dimensionality
+
+    @property
+    def channel_axis(self) -> int:
+        return self._properties.channel_axis
 
 
-def get_data(path: Path, key: str) -> tuple[np.ndarray, VoxelSize]:
+def _load_data(path: Path, key: str) -> tuple[np.ndarray, VoxelSize]:
     ext = path.suffix
 
     if ext not in allowed_data_format:
-        raise ValueError(f"File extension is {ext} but should be one of {allowed_data_format}")
+        raise ValueError(
+            f"File extension is {ext} but should be one of {allowed_data_format}"
+        )
 
     if ext in H5_EXTENSIONS:
         h5_key = key if key else None
@@ -108,44 +285,131 @@ def get_data(path: Path, key: str) -> tuple[np.ndarray, VoxelSize]:
         raise NotImplementedError()
 
 
-def create_image(
+def _select_channel(
+    data: np.ndarray, channel: int, image_layout: ImageLayout
+) -> tuple[np.ndarray | ImageLayout]:
+
+    if image_layout == ImageLayout.CXY:
+        return dp.select_channel(data, channel, channel_axis=0), ImageLayout.XY
+
+    if image_layout == ImageLayout.CZXY:
+        return (
+            dp.select_channel(data, channel, channel_axis=0),
+            ImageLayout.ZXY,
+        )
+
+    if image_layout == ImageLayout.ZCXY:
+        return (
+            dp.select_channel(data, channel, channel_axis=1),
+            ImageLayout.ZXY,
+        )
+
+    return data, image_layout
+
+
+def import_image(
     path: Path,
-    key: str,
-    image_name: str,
-    stack_layout: ImageLayout,
+    key: str | None = None,
+    image_name: str = "image",
+    image_type: str = "raw",
+    stack_layout: str = "XY",
+    channel: int | None = None,
     m_slicing: Optional[str] = None,
-    layer_type="image",
 ) -> Image:
 
-    data, voxel_size = get_data(path, key)
+    data, voxel_size = _load_data(path, key)
+
+    if m_slicing is not None:
+        data = dp.image_crop(data, m_slicing)
+
+    data, new_stack_layout = _select_channel(data, channel, stack_layout)
+
     image_properties = ImageProperties(
-        name=image_name, image_type=ImageType.RAW, voxel_size=voxel_size, image_layout=stack_layout
+        name=image_name,
+        semantic_type=SemanticType(image_type),
+        voxel_size=voxel_size,
+        image_layout=ImageLayout(new_stack_layout),
+        original_voxel_size=voxel_size,
     )
-    # TODO: select the correct slicing, channel and checks
+
     return Image(data=data, properties=image_properties)
 
 
-def save_image(image: Image, path: Path, key: str) -> None:
-    # TODO scaling and normalization
-    pass
+def _image_postprocessing(
+    image: Image, scale_to_origin: bool, export_dtype
+) -> Image:
+    if scale_to_origin and image.requires_scaling:
+        data = dp.scale_image_to_voxelsize(
+            image.data,
+            input_voxel_size=image.voxel_size,
+            output_voxel_size=image.root_voxel_size,
+        )
+        new_voxel_size = image.root_voxel_size
+    else:
+        data = image.data
+        new_voxel_size = image.voxel_size
+
+    if image.image_type == ImageType.IMAGE:
+        data = dp.normalize_01(data)
+        if export_dtype in ["uint8", "uint16"]:
+            max_val = np.iinfo(export_dtype).max
+            data = (data * max_val).astype(export_dtype)
+        elif export_dtype == ["float32", "float64"]:
+            data = data.astype(export_dtype)
+
+        else:
+            raise ValueError(
+                f"Data type {export_dtype} not recognized, should be uint8, uint16, float32 or float64"
+            )
+
+    elif image.image_type == ImageType.LABEL:
+        if export_dtype in ["float32", "float64"]:
+            raise ValueError(
+                f"Data type {export_dtype} not recognized for label image, should be uint8 or uint16"
+            )
+        data = data.astype(export_dtype)
+
+    else:
+        raise ValueError(
+            f"Image type {image.image_type} not recognized, should be image or label"
+        )
+
+    return data, new_voxel_size
 
 
-def apply_function_to_image(
-    func: Callable,
-    run_time_inputs: dict[str, Image],
-    static_kwargs: dict[str, Any],
-    out_properties: list[ImageProperties],
-) -> Image | tuple[Image]:
-    _run_time_inputs = {key: image.data for key, image in run_time_inputs.items()}
-    data = func(**_run_time_inputs, **static_kwargs)
+def save_image(
+    image: Image,
+    directory: Path,
+    file_name: str,
+    custom_key: str,
+    scale_to_origin: bool,
+    file_format: str = "tiff",
+    dtype: str = "uint16",
+) -> None:
 
-    if isinstance(data, np.ndarray):
-        data = (data,)
+    data, voxel_size = _image_postprocessing(image, scale_to_origin, dtype)
 
-    assert len(data) == len(out_properties), "Number of outputs does not match the number of properties"
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
 
-    returns = []
-    for _data, _properties in zip(data, out_properties):
-        returns.append(Image(data=_data, properties=_properties))
+    if file_format == "tiff":
+        file_path_name = directory / f"{file_name}_{custom_key}.tiff"
+        create_tiff(file_path_name, data, voxel_size)
 
-    return tuple(returns)
+    elif file_format == "zarr":
+        file_path_name = directory / f"{file_name}.zarr"
+        create_zarr(
+            path=file_path_name,
+            data=data,
+            voxel_size=voxel_size,
+            key=custom_key,
+        )
+
+    elif file_format == "h5":
+        file_path_name = directory / f"{file_name}.h5"
+        create_h5(file_path_name, data, voxel_size, key=custom_key)
+
+    else:
+        raise ValueError(
+            f"File format {file_format} not recognized, should be tiff, h5 or zarr"
+        )
