@@ -7,6 +7,7 @@ from pathlib import Path
 import plantseg.dataprocessing as dp
 from plantseg.io import load_h5, load_pil, load_tiff, load_zarr
 from plantseg.io import create_h5, create_tiff, create_zarr
+from uuid import uuid4, UUID
 from plantseg.io import (
     read_h5_voxel_size,
     read_tiff_voxel_size,
@@ -153,6 +154,7 @@ class Image:
         self._data = data
         self._properties = properties
         self._check_shape(data)
+        self._id = uuid4()
 
     def derive_new(self, data: np.ndarray, name: str, **kwargs) -> "Image":
         property_dict = self._properties.model_dump()
@@ -224,6 +226,14 @@ class Image:
     @property
     def name(self) -> str:
         return self._properties.name
+
+    @property
+    def id(self) -> UUID:
+        return self._id
+
+    @property
+    def unique_name(self) -> str:
+        return f"{self.name}_{self.id}"
 
     @property
     def image_type(self) -> ImageType:

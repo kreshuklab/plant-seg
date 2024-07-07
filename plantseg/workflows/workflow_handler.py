@@ -237,7 +237,7 @@ def task_tracker(
 
             for name, arg in kwargs.items():
                 if isinstance(arg, Image):
-                    images_inputs[name] = arg.name
+                    images_inputs[name] = arg.unique_name
 
                 elif name in list_inputs:
                     input_name = workflow_handler.add_input(name)
@@ -258,14 +258,14 @@ def task_tracker(
                 list_outputs = []
 
             elif isinstance(out_image, Image):
-                list_outputs = [out_image.name]
+                list_outputs = [out_image.unique_name]
 
             elif is_multioutput and isinstance(out_image, tuple):
                 list_outputs = []
                 for i, img in enumerate(out_image):
                     if not isinstance(img, Image):
                         raise ValueError(f"Output {i} is not an Image object, but {type(img)}")
-                    list_outputs.append(img.name)
+                    list_outputs.append(img.unique_name)
             else:
                 raise ValueError(
                     f"Output of a workflow function should be one of None, Image or Tuple of Images. Got {type(out_image)}"
