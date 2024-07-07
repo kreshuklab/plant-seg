@@ -1,4 +1,4 @@
-from typing import Protocol, Optional, Any, Callable
+from typing import Optional
 import numpy as np
 from pydantic import BaseModel, Field
 from enum import Enum
@@ -105,9 +105,7 @@ class ImageProperties(BaseModel):
         ):
             return ImageDimensionality.THREE
         else:
-            raise ValueError(
-                f"Image layout {self.image_layout} not recognized"
-            )
+            raise ValueError(f"Image layout {self.image_layout} not recognized")
 
     @property
     def image_type(self) -> ImageType:
@@ -119,9 +117,7 @@ class ImageProperties(BaseModel):
         ):
             return ImageType.LABEL
         else:
-            raise ValueError(
-                f"Semantic type {self.semantic_type} not recognized"
-            )
+            raise ValueError(f"Semantic type {self.semantic_type} not recognized")
 
     @property
     def channel_axis(self) -> int:
@@ -133,9 +129,7 @@ class ImageProperties(BaseModel):
         elif self.image_layout in (ImageLayout.XY, ImageLayout.ZXY):
             return None
         else:
-            raise ValueError(
-                f"Image layout {self.image_layout} not recognized"
-            )
+            raise ValueError(f"Image layout {self.image_layout} not recognized")
 
     @property
     def interpolation_order(self, image_default=1) -> int:
@@ -164,9 +158,7 @@ class Image:
         property_dict = self._properties.model_dump()
 
         if name == self.name:
-            raise ValueError(
-                "New derived name should be different from the original"
-            )
+            raise ValueError("New derived name should be different from the original")
 
         property_dict["name"] = name
 
@@ -174,9 +166,7 @@ class Image:
             if key in property_dict:
                 property_dict[key] = value
             else:
-                raise ValueError(
-                    f"Property {key} not recognized, should be one of {property_dict.keys()}"
-                )
+                raise ValueError(f"Property {key} not recognized, should be one of {property_dict.keys()}")
 
         new_properties = ImageProperties(**property_dict)
         return Image(data, new_properties)
@@ -188,7 +178,6 @@ class Image:
         pass
 
     def _check_shape(self, data: np.ndarray) -> None:
-
         if self.image_layout in (ImageLayout.CXY, ImageLayout.ZXY):
             if data.ndim != 3:
                 raise ValueError(
@@ -208,9 +197,7 @@ class Image:
                 )
 
         else:
-            raise ValueError(
-                f"Image layout {self.image_layout} not recognized"
-            )
+            raise ValueError(f"Image layout {self.image_layout} not recognized")
 
     @property
     def requires_scaling(self) -> bool:
@@ -263,9 +250,7 @@ def _load_data(path: Path, key: str) -> tuple[np.ndarray, VoxelSize]:
     ext = path.suffix
 
     if ext not in allowed_data_format:
-        raise ValueError(
-            f"File extension is {ext} but should be one of {allowed_data_format}"
-        )
+        raise ValueError(f"File extension is {ext} but should be one of {allowed_data_format}")
 
     if ext in H5_EXTENSIONS:
         h5_key = key if key else None
@@ -285,10 +270,7 @@ def _load_data(path: Path, key: str) -> tuple[np.ndarray, VoxelSize]:
         raise NotImplementedError()
 
 
-def _select_channel(
-    data: np.ndarray, channel: int, image_layout: ImageLayout
-) -> tuple[np.ndarray | ImageLayout]:
-
+def _select_channel(data: np.ndarray, channel: int, image_layout: ImageLayout) -> tuple[np.ndarray | ImageLayout]:
     if image_layout == ImageLayout.CXY:
         return dp.select_channel(data, channel, channel_axis=0), ImageLayout.XY
 
@@ -316,7 +298,6 @@ def import_image(
     channel: int | None = None,
     m_slicing: Optional[str] = None,
 ) -> Image:
-
     data, voxel_size = _load_data(path, key)
 
     if m_slicing is not None:
@@ -335,9 +316,7 @@ def import_image(
     return Image(data=data, properties=image_properties)
 
 
-def _image_postprocessing(
-    image: Image, scale_to_origin: bool, export_dtype
-) -> Image:
+def _image_postprocessing(image: Image, scale_to_origin: bool, export_dtype) -> Image:
     if scale_to_origin and image.requires_scaling:
         data = dp.scale_image_to_voxelsize(
             image.data,
@@ -358,21 +337,15 @@ def _image_postprocessing(
             data = data.astype(export_dtype)
 
         else:
-            raise ValueError(
-                f"Data type {export_dtype} not recognized, should be uint8, uint16, float32 or float64"
-            )
+            raise ValueError(f"Data type {export_dtype} not recognized, should be uint8, uint16, float32 or float64")
 
     elif image.image_type == ImageType.LABEL:
         if export_dtype in ["float32", "float64"]:
-            raise ValueError(
-                f"Data type {export_dtype} not recognized for label image, should be uint8 or uint16"
-            )
+            raise ValueError(f"Data type {export_dtype} not recognized for label image, should be uint8 or uint16")
         data = data.astype(export_dtype)
 
     else:
-        raise ValueError(
-            f"Image type {image.image_type} not recognized, should be image or label"
-        )
+        raise ValueError(f"Image type {image.image_type} not recognized, should be image or label")
 
     return data, new_voxel_size
 
@@ -386,7 +359,6 @@ def save_image(
     file_format: str = "tiff",
     dtype: str = "uint16",
 ) -> None:
-
     data, voxel_size = _image_postprocessing(image, scale_to_origin, dtype)
 
     directory = Path(directory)
@@ -410,6 +382,4 @@ def save_image(
         create_h5(file_path_name, data, voxel_size, key=custom_key)
 
     else:
-        raise ValueError(
-            f"File format {file_format} not recognized, should be tiff, h5 or zarr"
-        )
+        raise ValueError(f"File format {file_format} not recognized, should be tiff, h5 or zarr")

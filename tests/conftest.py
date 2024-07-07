@@ -3,9 +3,6 @@
 from pathlib import Path
 import shutil
 
-import h5py
-import zarr
-import numpy as np
 import pytest
 import yaml
 

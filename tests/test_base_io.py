@@ -1,4 +1,3 @@
-from tests.conftest import path_h5, path_zarr, path_tiff, path_jpg
 from plantseg.io.utils import VoxelSize
 import numpy as np
 from plantseg.io import smart_load

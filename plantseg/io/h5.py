@@ -1,5 +1,5 @@
 import warnings
-from typing import Optional, Self
+from typing import Optional
 from plantseg.io.utils import VoxelSize
 
 import h5py

@@ -2,8 +2,6 @@ from PIL import Image
 from PIL.ImageOps import grayscale
 import numpy as np
 from pathlib import Path
-from typing import Self, Optional
-from plantseg.io.utils import VoxelSize
 
 
 PIL_EXTENSIONS = [".png", ".jpg", ".jpeg"]

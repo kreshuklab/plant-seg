@@ -8,14 +8,12 @@ Notes:
 """
 
 import warnings
-from typing import Optional, Union, Any
+from typing import Optional
 from pathlib import Path
 
 import zarr
 import numpy as np
 
-import warnings
-from typing import Optional, Self
 from plantseg.io.utils import VoxelSize
 
 

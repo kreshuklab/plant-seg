@@ -1,7 +1,5 @@
 from pydantic import BaseModel
-import numpy as np
-from typing import Protocol, Optional
-from pathlib import Path
+from typing import Optional
 
 
 class VoxelSize(BaseModel):

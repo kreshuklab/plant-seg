@@ -25,9 +25,7 @@ def import_image_workflow(
     )
 
 
-@task_tracker(
-    is_leaf=True, list_inputs=["output_directory", "output_file_name"]
-)
+@task_tracker(is_leaf=True, list_inputs=["output_directory", "output_file_name"])
 def export_image_workflow(
     image: Image,
     output_directory: Path,

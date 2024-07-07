@@ -4,13 +4,13 @@ Tests the functionality of the `io.zarr` module.
 
 # pylint: disable=missing-docstring,import-outside-toplevel
 import pytest
-
-pytest.skip(allow_module_level=True)
 from pathlib import Path
 import numpy as np
 import zarr
 
 from tests.conftest import KEY_ZARR
+
+pytest.skip(allow_module_level=True)
 
 
 class TestZarr:
@@ -29,7 +29,13 @@ class TestZarr:
         zarr.open_array(tmpfile_native / KEY_ZARR, mode="a").attrs["element_size_um"] = (1.0, 1.0, 1.0)
 
         # 2. PlantSeg write to zarr file with explicit voxel size
-        create_zarr(str(tmpfile_plantseg), np.ones((32, 32, 32)), KEY_ZARR, voxel_size=(1.0, 1.0, 1.0), mode="a")
+        create_zarr(
+            str(tmpfile_plantseg),
+            np.ones((32, 32, 32)),
+            KEY_ZARR,
+            voxel_size=(1.0, 1.0, 1.0),
+            mode="a",
+        )
 
         # 3. PlantSeg write to zarr file without explicit voxel size
         create_zarr(str(tmpfile_plantseg), np.ones((32, 32, 32)), KEY_ZARR + "2")
@@ -80,7 +86,12 @@ class TestZarr:
         tmpfile = tmpdir / "test.zarr"
 
         # Note that this causes error: `keys = ['/group1/array0', '/group2/array1', '/group2/array2']``
-        keys = ["array0", "group1/array1", "group2/array2", "group2/group3/array3"]
+        keys = [
+            "array0",
+            "group1/array1",
+            "group2/array2",
+            "group2/group3/array3",
+        ]
         for key in keys:
             zarr.save_array(str(tmpfile), np.ones((8, 8, 8)), path=key)
             zarr.open_array(tmpfile / key, mode="a").attrs["element_size_um"] = (1.0, 1.0, 1.0)

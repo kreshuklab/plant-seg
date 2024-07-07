@@ -1,7 +1,7 @@
 from plantseg.__version__ import __version__
 from plantseg.image import Image
 from pydantic import BaseModel, Field
-from typing import Callable, Any
+from typing import Callable
 from enum import Enum
 import yaml
 import json
@@ -113,9 +113,7 @@ class WorkflowHandler:
         outputs: list[str],
         node_type: NodeType,
     ):
-        assert (
-            func.__name__ in self._funcs.list_funcs()
-        ), f"Function {func.__name__} not registered"
+        assert func.__name__ in self._funcs.list_funcs(), f"Function {func.__name__} not registered"
 
         task = Task(
             func=func.__name__,
@@ -128,7 +126,6 @@ class WorkflowHandler:
         self._dag.list_tasks.append(task)
 
     def add_input(self, name: str):
-
         def _unique_input(name, id: int = 0):
             new_name = f"{name}_{id}"
             if new_name not in self._dag.list_inputs:
@@ -161,7 +158,6 @@ class WorkflowHandler:
         safety_counter = 0
         size_reachable = len(reachable)
         while True:
-
             # For each task check if the outputs is connected to the reachable set
             # if so, add the task to the reachable set
             for task in dag_copy.list_tasks:
@@ -180,9 +176,7 @@ class WorkflowHandler:
                 break
             size_reachable = len(reachable)
 
-        self._dag.list_tasks = [
-            task for task in dag_copy.list_tasks if task.id in reachable
-        ]
+        self._dag.list_tasks = [task for task in dag_copy.list_tasks if task.id in reachable]
 
     def save_to_yaml(self, path: Path | str):
         self.prune_dag()
@@ -220,9 +214,7 @@ def task_tracker(
     """
 
     if is_root and is_leaf:
-        raise ValueError(
-            "A node cannot be both root and leaf at the same time"
-        )
+        raise ValueError("A node cannot be both root and leaf at the same time")
 
     if is_root:
         node_type = NodeType.ROOT
@@ -238,9 +230,7 @@ def task_tracker(
         workflow_handler.register_func(func)
 
         def wrapper(*args, **kwargs):
-            assert (
-                len(args) == 0
-            ), "Workflow functions should not have positional arguments"
+            assert len(args) == 0, "Workflow functions should not have positional arguments"
 
             images_inputs = {}
             parameters = {}
@@ -258,34 +248,30 @@ def task_tracker(
 
             for private_param in list_private_params:
                 if private_param not in parameters:
-                    raise ValueError(
-                        f"Private parameter {private_param} not found in the function parameters"
-                    )
+                    raise ValueError(f"Private parameter {private_param} not found in the function parameters")
 
             # Execute the function
             out_image = func(*args, **kwargs)
 
             # Parse the output
             if out_image is None:
-                list_outupts = []
+                list_outputs = []
 
             elif isinstance(out_image, Image):
-                list_outupts = [out_image.name]
+                list_outputs = [out_image.name]
 
             elif is_multioutput and isinstance(out_image, tuple):
-                list_outupts = []
+                list_outputs = []
                 for i, img in enumerate(out_image):
                     if not isinstance(img, Image):
-                        raise ValueError(
-                            f"Output {i} is not an Image object, but {type(img)}"
-                        )
-                    list_outupts.append(img.name)
+                        raise ValueError(f"Output {i} is not an Image object, but {type(img)}")
+                    list_outputs.append(img.name)
             else:
                 raise ValueError(
                     f"Output of a workflow function should be one of None, Image or Tuple of Images. Got {type(out_image)}"
                 )
 
-            for name in list_outupts:
+            for name in list_outputs:
                 if name in images_inputs.values():
                     raise ValueError(
                         f"Function {func.__name__} has an output image with the same name as an input image: {name}"
@@ -296,7 +282,7 @@ def task_tracker(
                 images_inputs=images_inputs,
                 parameters=parameters,
                 list_private_parameters=list_private_params,
-                outputs=list_outupts,
+                outputs=list_outputs,
                 node_type=node_type,
             )
             return out_image

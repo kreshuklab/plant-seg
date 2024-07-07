@@ -7,16 +7,32 @@ from magicgui import magicgui
 from napari.layers import Layer, Image, Labels
 from napari.types import LayerDataTuple
 
-from plantseg.dataprocessing.dataprocessing import fix_input_shape, normalize_01, image_crop
-from plantseg.dataprocessing.dataprocessing import image_rescale, compute_scaling_factor
-from plantseg.io import H5_EXTENSIONS, TIFF_EXTENSIONS, PIL_EXTENSIONS, allowed_data_format, ZARR_EXTENSIONS
+from plantseg.dataprocessing.dataprocessing import (
+    fix_input_shape,
+    normalize_01,
+    image_crop,
+)
+from plantseg.dataprocessing.dataprocessing import (
+    image_rescale,
+    compute_scaling_factor,
+)
+from plantseg.io import (
+    H5_EXTENSIONS,
+    TIFF_EXTENSIONS,
+    PIL_EXTENSIONS,
+    allowed_data_format,
+    ZARR_EXTENSIONS,
+)
 from plantseg.io import create_h5, create_tiff, create_zarr
 from plantseg.io import load_tiff, load_h5, load_pil, load_zarr
 from plantseg.io.h5 import list_h5_keys
 from plantseg.io.zarr import list_zarr_keys
 from plantseg.viewer.dag_handler import dag_manager
 from plantseg.viewer.logging import napari_formatted_logging
-from plantseg.viewer.widget.utils import layer_properties, return_value_if_widget
+from plantseg.viewer.widget.utils import (
+    layer_properties,
+    return_value_if_widget,
+)
 from enum import Enum
 from plantseg.image import ImageLayout
 
@@ -49,10 +65,10 @@ class ImageLayoutChoiches(Enum):
 
 
 def select_channel(data: np.ndarray, layout: str, channel: int, m_slicing: str = "[:, :, :]") -> np.ndarray:
-    if layout == manual_slicing:
+    if layout == m_slicing:
         return image_crop(data, m_slicing)
 
-    channel_index = layout.find(channel_token)
+    channel_index = layout.find(channel)
     if channel_index == -1:
         return data
 
@@ -68,7 +84,14 @@ def select_channel(data: np.ndarray, layout: str, channel: int, m_slicing: str =
         raise ValueError("channel index out of range, error in formatting channel_stack_layout")
 
 
-def open_file(path: Path, key: str, channel: int, stack_layout: str, m_slicing: str = "[:, :, :]", layer_type="image"):
+def open_file(
+    path: Path,
+    key: str,
+    channel: int,
+    stack_layout: str,
+    m_slicing: str = "[:, :, :]",
+    layer_type="image",
+):
     ext = path.suffix
     path = str(path)
 
@@ -103,7 +126,11 @@ def open_file(path: Path, key: str, channel: int, stack_layout: str, m_slicing: 
     elif layer_type == "labels":
         data = data.astype("uint16")
 
-    return {"data": data, "voxel_size": voxel_size, "voxel_size_unit": voxel_size_unit}
+    return {
+        "data": data,
+        "voxel_size": voxel_size,
+        "voxel_size_unit": voxel_size_unit,
+    }
 
 
 def unpack_open_file(loaded_dict, key):
@@ -134,10 +161,21 @@ def unpack_open_file(loaded_dict, key):
         "orientation": "horizontal",
         "choices": ["image", "labels"],
     },
-    key={"label": "Key (h5/zarr only)", "choices": [""], "tooltip": "Key to be loaded from h5"},
+    key={
+        "label": "Key (h5/zarr only)",
+        "choices": [""],
+        "tooltip": "Key to be loaded from h5",
+    },
     channel={"label": "Channel", "tooltip": "Channel to select"},
-    m_slicing={"label": "Manual slicing", "tooltip": "Manually slice the array using python fancy slicing"},
-    stack_layout={"label": "Stack Layout", "choices": ImageLayoutChoiches.to_choices(), "tooltip": "Stack layout"},
+    m_slicing={
+        "label": "Manual slicing",
+        "tooltip": "Manually slice the array using python fancy slicing",
+    },
+    stack_layout={
+        "label": "Stack Layout",
+        "choices": ImageLayoutChoiches.to_choices(),
+        "tooltip": "Stack layout",
+    },
 )
 def widget_open_file(
     path_mode: str = PathMode.FILE.value,
@@ -194,12 +232,17 @@ def widget_open_file(
     # return layer
 
     napari_formatted_logging(
-        f"{new_layer_name} Correctly imported, voxel_size: {voxel_size} {voxel_size_unit}", thread="Open file"
+        f"{new_layer_name} Correctly imported, voxel_size: {voxel_size} {voxel_size_unit}",
+        thread="Open file",
     )
     layer_kwargs = layer_properties(
         name=new_layer_name,
         scale=voxel_size,
-        metadata={"original_voxel_size": voxel_size, "voxel_size_unit": voxel_size_unit, "root_name": new_layer_name},
+        metadata={
+            "original_voxel_size": voxel_size,
+            "voxel_size_unit": voxel_size_unit,
+            "root_name": new_layer_name,
+        },
     )
     return data, layer_kwargs, layer_type
 
@@ -241,6 +284,7 @@ def _on_path_changed(path: Path):
 
 @widget_open_file.stack_layout.changed.connect
 def _on_stack_layout_changed(stack_layout: str):
+    """
     if channel_token in stack_layout:
         widget_open_file.channel.show()
         widget_open_file.m_slicing.hide()
@@ -252,6 +296,8 @@ def _on_stack_layout_changed(stack_layout: str):
     else:
         widget_open_file.channel.hide()
         widget_open_file.m_slicing.hide()
+    """
+    pass
 
 
 # For some reason after the widget is called the keys are deleted, so we need to reassign them after the widget is called
@@ -283,7 +329,12 @@ def export_stack_as_tiff(
     out_path = directory / f"{stack_name}.tiff"
     data = fix_input_shape(data)
     data = safe_typecast(data, dtype, stack_type)
-    create_tiff(path=out_path, stack=data[...], voxel_size=voxel_size, voxel_size_unit=voxel_size_unit)
+    create_tiff(
+        path=out_path,
+        stack=data[...],
+        voxel_size=voxel_size,
+        voxel_size_unit=voxel_size_unit,
+    )
     return out_path
 
 
@@ -393,7 +444,10 @@ def checkout(*args):
         "mode": "d",
         "tooltip": "Select the directory where the files will be exported",
     },
-    workflow_name={"label": "Workflow name", "tooltip": "Name of the workflow object."},
+    workflow_name={
+        "label": "Workflow name",
+        "tooltip": "Name of the workflow object.",
+    },
 )
 def widget_export_stacks(
     images: List[Tuple[Layer, str]],
@@ -436,7 +490,8 @@ def widget_export_stacks(
             output_resolution = image.metadata["original_voxel_size"]
             input_resolution = image.scale
             scaling_factor = compute_scaling_factor(
-                input_voxel_size=input_resolution, output_voxel_size=output_resolution
+                input_voxel_size=input_resolution,
+                output_voxel_size=output_resolution,
             )
         else:
             output_resolution = image.scale
@@ -487,7 +542,8 @@ def widget_export_stacks(
         export_name.append(_export_name)
 
         napari_formatted_logging(
-            f"{image.name} Correctly exported, voxel_size: {image.scale} {voxel_size_unit}", thread="Export stack"
+            f"{image.name} Correctly exported, voxel_size: {image.scale} {voxel_size_unit}",
+            thread="Export stack",
         )
 
     if export_name:

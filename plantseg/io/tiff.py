@@ -1,5 +1,4 @@
 import warnings
-from typing import Self, Optional
 from xml.etree import cElementTree as ElementTree
 
 import numpy as np
