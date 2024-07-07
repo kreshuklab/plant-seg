@@ -71,6 +71,10 @@ class SingletonMeta(type):
 
 
 class FuncsHandler(metaclass=SingletonMeta):
+    """
+    A singleton class to store the functions of the workflow.
+    """
+
     def __init__(self):
         self._funcs = {}
 
@@ -102,6 +106,9 @@ class WorkflowHandler:
         return self._funcs
 
     def register_func(self, func):
+        """
+        Add a function to the workflow functions registry.
+        """
         self._funcs.register_func(func)
 
     def add_task(
@@ -113,6 +120,19 @@ class WorkflowHandler:
         outputs: list[str],
         node_type: NodeType,
     ):
+        """
+        Add a task to the workflow. This method is used by the task_tracker decorator and should not be called directly.
+
+        Args:
+            func (Callable): The function to be executed.
+            images_inputs (dict): A dictionary of the image inputs. The key is the name of the parameter in the function,
+                and the value is the unique_name of the image.
+            parameters (dict): The kwargs parameters of the workflow function.
+            list_private_parameters (list[str]): A list of the names of the private parameters.
+            outputs (list[str]): A list of the names of the output images.
+            node_type (NodeType): The type of the node in the workflow (ROOT, LEAF, NODE)
+
+        """
         assert func.__name__ in self._funcs.list_funcs(), f"Function {func.__name__} not registered"
 
         task = Task(
@@ -210,7 +230,17 @@ def task_tracker(
     list_private_params: list[str] | None = None,
 ):
     """
-    Decorator
+    Decorator to register a function as a task in the workflow.
+
+    Args:
+        func (Callable): The function that will be registered as a task.
+        is_multioutput (bool): If True, the function returns a tuple of PlantSegImage objects.
+        is_root (bool): If True, the function is a root node in the workflow (usually a import task).
+        is_leaf (bool): If True, the function is a leaf node in the workflow (usually a writer task).
+        list_inputs (list[str]): A list of parameters that are runtime inputs. For example, the path to an image, or
+            the name of the output file.
+        list_private_params (list[str]): A list of the names of the private parameters. If a gui will
+            be used to run the workflow, these parameters should not be exposed to the user.
     """
 
     if is_root and is_leaf:

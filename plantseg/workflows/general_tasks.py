@@ -9,13 +9,16 @@ from pathlib import Path
     list_private_params=["image_type", "stack_layout"],
     list_inputs=["input_path"],
 )
-def import_image_workflow(
+def import_image_task(
     input_path: Path,
     key: str,
     image_name: str,
     image_type: str,
     stack_layout: str,
 ) -> PlantSegImage:
+    """
+    Task wrapper creating a PlantSegImage object from an image file.
+    """
     return import_image(
         path=input_path,
         key=key,
@@ -26,7 +29,7 @@ def import_image_workflow(
 
 
 @task_tracker(is_leaf=True, list_inputs=["output_directory", "output_file_name"])
-def export_image_workflow(
+def export_image_task(
     image: PlantSegImage,
     output_directory: Path,
     output_file_name: str,
@@ -35,6 +38,9 @@ def export_image_workflow(
     file_format: str = "tiff",
     dtype: str = "uint16",
 ) -> None:
+    """
+    Task wrapper for saving an PlantSegImage object to disk.
+    """
     save_image(
         image=image,
         directory=output_directory,
@@ -48,7 +54,7 @@ def export_image_workflow(
 
 
 @task_tracker
-def gaussian_smoothing_workflow(image: PlantSegImage, sigma: float) -> PlantSegImage:
+def gaussian_smoothing_task(image: PlantSegImage, sigma: float) -> PlantSegImage:
     data = image.data
     smoothed_data = image_gaussian_smoothing(data, sigma=sigma)
     new_image = image.derive_new(smoothed_data, name=f"{image.name}_smoothed")
