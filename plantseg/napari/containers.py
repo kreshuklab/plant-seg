@@ -3,7 +3,8 @@ import webbrowser
 from PyQt5.QtCore import Qt
 from magicgui.widgets import MainWindow
 
-from plantseg.napari.widgets.io import widget_open_file, widget_export_stacks
+from plantseg.napari.widgets import widget_open_file, widget_export_stacks
+from plantseg.napari.widgets import widget_gaussian_smoothing
 
 STYLE_SLIDER = "font-size: 9pt;"
 
@@ -28,16 +29,11 @@ def get_data_io():
     return container
 
 
-"""
-def get_preprocessing_workflow():
-    widget_cropping.crop_z.native.setStyleSheet(STYLE_SLIDER)
+def get_preprocessing_tab():
+    # widget_cropping.crop_z.native.setStyleSheet(STYLE_SLIDER) # TODO remove comment when widget_cropping is implemented
     container = MainWindow(
         widgets=[
             widget_gaussian_smoothing,
-            widget_rescaling,
-            widget_cropping,
-            widget_merge_layers,
-            widget_label_processing,
         ],
         labels=False,
     )
@@ -48,6 +44,7 @@ def get_preprocessing_workflow():
     return container
 
 
+"""
 def get_gasp_workflow():
     container = MainWindow(widgets=[widget_unet_predictions, widget_dt_ws, widget_agglomeration], labels=False)
     container = setup_menu(
