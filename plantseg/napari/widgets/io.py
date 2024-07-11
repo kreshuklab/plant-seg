@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import List, Tuple
+from concurrent.futures import Future
 
 from magicgui import magicgui
 from napari.layers import Layer
@@ -16,9 +17,12 @@ from plantseg.io import (
 )
 from plantseg.io.h5 import list_h5_keys
 from plantseg.io.zarr import list_zarr_keys
-from plantseg.napari.widgets.utils import return_value_if_widget
+from plantseg.napari.widgets.utils import _return_value_if_widget, schedule_task
 from enum import Enum
 from plantseg.image import ImageLayout, ImageType, SemanticType
+from plantseg.workflows.workflow_handler import workflow_handler
+import time
+from plantseg.napari.logging import napari_formatted_logging
 
 
 class PathMode(Enum):
@@ -90,7 +94,7 @@ def widget_open_file(
     key: str = "",
     channel: int = 0,
     stack_layout: str = ImageLayoutChoiches.ZXY.layout_name,
-) -> LayerDataTuple:
+) -> Future[LayerDataTuple]:
     """Open a file and return a napari layer."""
 
     stack_layout = ImageLayoutChoiches[stack_layout].layout
@@ -100,15 +104,18 @@ def widget_open_file(
     elif layer_type == ImageType.LABEL.value:
         semantic_type = SemanticType.SEGMENTATION
 
-    image = import_image_task(
-        input_path=path,
-        key=key,
-        image_name=new_layer_name,
-        semantic_type=semantic_type,
-        stack_layout=stack_layout.value,
-        channel=channel,
+    return schedule_task(
+        import_image_task,
+        task_kwargs={
+            "input_path": path,
+            "key": key,
+            "image_name": new_layer_name,
+            "semantic_type": semantic_type,
+            "stack_layout": stack_layout.value,
+            "channel": channel,
+        },
+        widget_to_update=[],
     )
-    return image.to_napari_layer_tuple()
 
 
 widget_open_file.key.hide()
@@ -117,7 +124,7 @@ widget_open_file.channel.hide()
 
 @widget_open_file.path_mode.changed.connect
 def _on_path_mode_changed(path_mode: str):
-    path_mode = return_value_if_widget(path_mode)
+    path_mode = _return_value_if_widget(path_mode)
     if path_mode == PathMode.FILE.value:  # file
         widget_open_file.path.mode = "r"
         widget_open_file.path.label = "Pick a file (.tiff, .h5, .png, .jpg)"
@@ -128,7 +135,7 @@ def _on_path_mode_changed(path_mode: str):
 
 @widget_open_file.path.changed.connect
 def _on_path_changed(path: Path):
-    path = return_value_if_widget(path)
+    path = _return_value_if_widget(path)
     widget_open_file.new_layer_name.value = path.stem
     ext = path.suffix
 
@@ -200,20 +207,30 @@ def widget_export_stacks(
     data_type: str = "float32",
     workflow_name: str = "workflow",
 ) -> None:
+    timer = time.time()
+    napari_formatted_logging("export_image_task started", thread="Task", level="info")
+
     for i, (image, image_custom_name) in enumerate(images):
         # parse and check input to the function
 
         image_custom_name = f"exported_image_{i}" if image_custom_name == "" else image_custom_name
         ps_image = PlantSegImage.from_napari_layer(image)
+
         export_image_task(
             image=ps_image,
             output_directory=directory,
             output_file_name=image_custom_name,
-            custom_key=workflow_name,
+            custom_key=image.name,
             scale_to_origin=rescale_to_original_resolution,
             file_format=export_format,
             dtype=data_type,
         )
+
+    # Save the workflow as a yaml file
+    workflow_path = Path(directory) / f"{workflow_name}.yaml"
+    workflow_handler.save_to_yaml(path=workflow_path)
+
+    napari_formatted_logging(f"export_image_task completed in {time.time() - timer:.2f}s", thread="Task", level="info")
 
 
 widget_export_stacks.directory.hide()
@@ -225,7 +242,7 @@ widget_export_stacks.workflow_name.hide()
 
 @widget_export_stacks.images.changed.connect
 def _on_images_changed(images_list: List[Tuple[Layer, str]]):
-    images_list = return_value_if_widget(images_list)
+    images_list = _return_value_if_widget(images_list)
     if len(images_list) > 0:
         widget_export_stacks.directory.show()
         widget_export_stacks.export_format.show()
