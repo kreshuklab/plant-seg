@@ -317,6 +317,7 @@ def task_tracker(
             )
             return out_image
 
+        wrapper.__plantseg_task__ = func.__name__
         return wrapper
 
     if func is None:
