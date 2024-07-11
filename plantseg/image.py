@@ -228,6 +228,13 @@ class PlantSegImage:
 
         new_voxel_size = VoxelSize(voxels_size=layer.scale)
 
+        # Loading from napari layer, the id needs to be present in the metadata
+        # If not present, the layer is corrupted
+        if "id" in metadata:
+            id = metadata["id"]
+        else:
+            raise ValueError("ID not found in metadata")
+
         properties = ImageProperties(
             name=layer.name,
             semantic_type=semantic_type,
@@ -239,7 +246,9 @@ class PlantSegImage:
         if image_type != properties.image_type:
             raise ValueError(f"Image type {image_type} does not match semantic type {properties.semantic_type}")
 
-        return cls(layer.data, properties)
+        ps_image = cls(layer.data, properties)
+        ps_image._id = id
+        return ps_image
 
     def to_napari_layer_tuple(self) -> LayerDataTuple:
         """
@@ -252,6 +261,9 @@ class PlantSegImage:
         name = self.name
         scale = self.voxel_size.voxels_size
         metadata = self._properties.model_dump()
+
+        # When going to we need to preserve the id
+        metadata["id"] = self.id
         return (
             self.data,
             {"name": name, "scale": scale, "metadata": metadata},
