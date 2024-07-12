@@ -145,7 +145,7 @@ class WorkflowHandler:
         )
         self._dag.list_tasks.append(task)
 
-    def add_input(self, name: str):
+    def add_input(self, name: str, func_name: str | None = None):
         def _unique_input(name, id: int = 0):
             new_name = f"{name}_{id}"
             if new_name not in self._dag.list_inputs:
@@ -153,14 +153,18 @@ class WorkflowHandler:
 
             return _unique_input(name, id + 1)
 
-        unique_name = _unique_input(name)
-        self._dag.inputs[unique_name] = "FILL THIS VALUE TO RUN THE WORKFLOW"
+        if name not in self._dag.list_inputs:
+            unique_name = name
+        else:
+            unique_name = _unique_input(name)
+
+        self._dag.inputs[unique_name] = f"FILL THIS WITH THE ARGUMENT '{name}' IN '{func_name}' TASK"
         return unique_name
 
     def clean_dag(self):
         self._dag = DAG()
 
-    def prune_dag(self):
+    def prune_dag(self) -> DAG:
         """
         Remove all the tasks that are not connected to the leaf nodes.
         """
@@ -196,11 +200,11 @@ class WorkflowHandler:
                 break
             size_reachable = len(reachable)
 
-        self._dag.list_tasks = [task for task in dag_copy.list_tasks if task.id in reachable]
+        return dag_copy
 
     def save_to_yaml(self, path: Path | str):
-        self.prune_dag()
-        dag_dict = json.loads(self._dag.model_dump_json())
+        clean_dag = self.prune_dag()
+        dag_dict = json.loads(clean_dag.model_dump_json())
 
         if isinstance(path, str):
             path = Path(path)
@@ -270,7 +274,7 @@ def task_tracker(
                     images_inputs[name] = arg.unique_name
 
                 elif name in list_inputs:
-                    input_name = workflow_handler.add_input(name)
+                    input_name = workflow_handler.add_input(name, func_name=func.__name__)
                     images_inputs[name] = input_name
 
                 else:
