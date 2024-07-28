@@ -1,5 +1,5 @@
 from plantseg.__version__ import __version__
-from plantseg.image import PlantSegImage
+from plantseg.plantseg_image import PlantSegImage
 from pydantic import BaseModel, Field
 from typing import Callable
 from enum import Enum

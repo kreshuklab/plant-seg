@@ -6,7 +6,7 @@ from concurrent.futures import Future
 from napari.qt.threading import create_worker
 
 from plantseg.napari.logging import napari_formatted_logging
-from plantseg.image import PlantSegImage
+from plantseg.plantseg_image import PlantSegImage
 import napari
 
 

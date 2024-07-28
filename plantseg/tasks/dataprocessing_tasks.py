@@ -1,6 +1,6 @@
 from plantseg.tasks import task_tracker
 from plantseg.functionals.dataprocessing import image_gaussian_smoothing
-from plantseg.image import PlantSegImage
+from plantseg.plantseg_image import PlantSegImage
 from plantseg.io.utils import VoxelSize
 import numpy as np
 from plantseg.functionals.dataprocessing import (

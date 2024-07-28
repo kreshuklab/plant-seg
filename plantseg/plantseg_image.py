@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from enum import Enum
 from plantseg.io.utils import VoxelSize
 from pathlib import Path
-import plantseg.dataprocessing as dp
+import plantseg.functionals.dataprocessing as dp
 from plantseg.io import load_h5, load_pil, load_tiff, load_zarr
 from plantseg.io import create_h5, create_tiff, create_zarr
 from napari.types import LayerDataTuple
