@@ -1,4 +1,4 @@
-from plantseg.segmentation.segmentation import (
+from plantseg.functionals.segmentation.segmentation import (
     gasp,
     multicut,
     mutex_ws,

@@ -1,4 +1,4 @@
-from plantseg.dataprocessing.dataprocessing import (
+from plantseg.functionals.dataprocessing.dataprocessing import (
     compute_scaling_factor,
     compute_scaling_voxelsize,
     image_gaussian_smoothing,
@@ -10,11 +10,11 @@ from plantseg.dataprocessing.dataprocessing import (
     select_channel,
     scale_image_to_voxelsize,
 )
-from plantseg.dataprocessing.labelprocessing import (
+from plantseg.functionals.dataprocessing.labelprocessing import (
     relabel_segmentation,
     set_background_to_value,
 )
-from plantseg.dataprocessing.advanced_dataprocessing import (
+from plantseg.functionals.dataprocessing.advanced_dataprocessing import (
     fix_over_under_segmentation_from_nuclei,
 )
 

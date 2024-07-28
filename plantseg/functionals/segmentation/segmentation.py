@@ -9,7 +9,7 @@ from elf.segmentation.multicut import multicut_kernighan_lin
 from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
 from vigra.filters import gaussianSmoothing
 
-from plantseg.segmentation.utils import shift_affinities, compute_mc_costs
+from plantseg.functionals.segmentation.utils import shift_affinities, compute_mc_costs
 
 try:
     import SimpleITK as sitk
