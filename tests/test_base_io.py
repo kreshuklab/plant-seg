@@ -8,14 +8,13 @@ class TestIO:
 
     def _check_voxel_size(self, voxel_size):
         assert isinstance(voxel_size, VoxelSize)
-
-    def _test_data_handler(self, data_handler, original_data):
-        assert np.array_equal(original_data, data_handler.get_data())
-        assert original_data.shape == data_handler.get_shape()
-        self._check_voxel_size(data_handler.get_voxel_size())
+        (
+            np.testing.assert_allclose(voxel_size.voxels_size, self.voxel_size.voxels_size, rtol=1e-5),
+            "Voxel size read from file is not equal to the original voxel size",
+        )
 
     def test_create_read_h5(self, path_h5):
-        from plantseg.io.h5 import create_h5, load_h5, read_h5_shape, read_h5_voxel_size, H5DataHandler
+        from plantseg.io.h5 import create_h5, load_h5, read_h5_shape, read_h5_voxel_size
 
         # Create an HDF5 file
         data = np.random.rand(10, 10, 10)
@@ -36,11 +35,8 @@ class TestIO:
         data_read2 = smart_load(path_h5, "raw")
         assert np.array_equal(data, data_read2), "Data read from HDF5 file is not equal to the original data"
 
-        data_handler = H5DataHandler(path_h5, "raw")
-        self._test_data_handler(data_handler, data)
-
     def test_create_read_zarr(self, path_zarr):
-        from plantseg.io.zarr import create_zarr, load_zarr, read_zarr_shape, read_zarr_voxel_size, ZarrDataHandler
+        from plantseg.io.zarr import create_zarr, load_zarr, read_zarr_shape, read_zarr_voxel_size
 
         # Create a Zarr file
         data = np.random.rand(10, 10, 10)
@@ -63,11 +59,8 @@ class TestIO:
         data_read2 = smart_load(path_zarr, "raw")
         assert np.array_equal(data, data_read2), "Data read from Zarr file is not equal to the original data"
 
-        data_handler = ZarrDataHandler(path_zarr, "raw")
-        self._test_data_handler(data_handler, data)
-
     def test_create_read_tiff(self, path_tiff):
-        from plantseg.io.tiff import create_tiff, load_tiff, read_tiff_voxel_size, TiffDataHandler
+        from plantseg.io.tiff import create_tiff, load_tiff, read_tiff_voxel_size
 
         # Create a TIFF file
         data = 255 * np.random.rand(10, 10, 10)
@@ -84,9 +77,6 @@ class TestIO:
 
         data_read2 = smart_load(path_tiff)
         assert np.array_equal(data, data_read2), "Data read from TIFF file is not equal to the original data"
-
-        data_handler = TiffDataHandler(path_tiff)
-        self._test_data_handler(data_handler, data)
 
     def test_read_jpg(self, path_jpg):
         import numpy as np
