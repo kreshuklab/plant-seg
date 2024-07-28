@@ -5,7 +5,7 @@ from magicgui import magicgui
 from napari.types import LayerDataTuple
 
 from napari.layers import Image, Layer, Labels
-from plantseg.workflows.io_tasks import gaussian_smoothing_task
+from plantseg.tasks.io_tasks import gaussian_smoothing_task
 from plantseg.napari.widgets.utils import schedule_task
 from plantseg.image import PlantSegImage
 from plantseg.models.zoo import model_zoo

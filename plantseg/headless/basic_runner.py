@@ -1,6 +1,6 @@
 from pathlib import Path
-from plantseg.workflows.workflow_handler import WorkflowHandler
-from plantseg.workflows.workflow_handler import Task, DAG
+from plantseg.tasks.workflow_handler import WorkflowHandler
+from plantseg.tasks.workflow_handler import Task, DAG
 
 
 class SerialRunner:

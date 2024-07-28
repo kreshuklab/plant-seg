@@ -1,4 +1,4 @@
-from plantseg.workflows import task_tracker
+from plantseg.tasks import task_tracker
 from plantseg.image import PlantSegImage, import_image, save_image
 from pathlib import Path
 

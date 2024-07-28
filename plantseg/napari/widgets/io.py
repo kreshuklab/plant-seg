@@ -6,7 +6,7 @@ from magicgui import magicgui
 from napari.layers import Layer
 from napari.types import LayerDataTuple
 from plantseg.image import PlantSegImage
-from plantseg.workflows.io_tasks import (
+from plantseg.tasks.io_tasks import (
     import_image_task,
     export_image_task,
 )
@@ -20,7 +20,7 @@ from plantseg.io.zarr import list_zarr_keys
 from plantseg.napari.widgets.utils import _return_value_if_widget, schedule_task
 from enum import Enum
 from plantseg.image import ImageLayout, ImageType, SemanticType
-from plantseg.workflows.workflow_handler import workflow_handler
+from plantseg.tasks.workflow_handler import workflow_handler
 import time
 from plantseg.napari.logging import napari_formatted_logging
 
