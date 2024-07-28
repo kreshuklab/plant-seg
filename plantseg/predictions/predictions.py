@@ -6,7 +6,6 @@ import torch
 
 from plantseg.loggers import gui_logger
 from plantseg.models.zoo import model_zoo
-from plantseg.viewer.logging import napari_formatted_logging
 from plantseg.training.augs import get_test_augmentations
 from plantseg.dataprocessing.dataprocessing import fix_input_shape_to_ZYX, fix_input_shape_to_CZYX
 from plantseg.predictions.utils.array_dataset import ArrayDataset
@@ -98,11 +97,7 @@ def unet_predictions(
     if (
         int(model_config["out_channels"]) > 1 and handle_multichannel
     ):  # if multi-channel output and who called this function can handle it
-        napari_formatted_logging(
-            f"`unet_predictions()` has `handle_multichannel`={handle_multichannel}",
-            thread="unet_predictions",
-            level="warning",
-        )
+        gui_logger.warn(f"`unet_predictions()` has `handle_multichannel`={handle_multichannel}")
         pmaps = fix_input_shape_to_CZYX(pmaps)  # make (C, Y, X) to (C, 1, Y, X) and keep (C, Z, Y, X) unchanged
     else:  # otherwise use old mechanism
         pmaps = fix_input_shape_to_ZYX(pmaps[0])
