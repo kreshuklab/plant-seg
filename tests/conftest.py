@@ -4,11 +4,14 @@ from pathlib import Path
 import shutil
 
 import pytest
+import torch
 import yaml
 
 TEST_FILES = Path(__file__).resolve().parent / "resources"
 VOXEL_SIZE = (0.235, 0.15, 0.15)
 KEY_ZARR = "volumes/new"
+
+IS_CUDA_AVAILABLE = torch.cuda.is_available()
 
 
 @pytest.fixture

@@ -1,9 +1,11 @@
 import torch
-
+import pytest
 from plantseg.training.embeddings import embeddings_to_affinities
 from plantseg.training.model import UNet2D, SpocoNet
+from tests.conftest import IS_CUDA_AVAILABLE
 
 
+@pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason="Cuda is not available")
 class TestModelPrediction:
     def test_UNet2D(self):
         model = UNet2D(in_channels=3, out_channels=1)
