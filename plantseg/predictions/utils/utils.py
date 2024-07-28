@@ -1,5 +1,5 @@
 from plantseg import PATH_PREDICT_TEMPLATE
-from plantseg.augment.transforms import get_test_augmentations
+from plantseg.training.augs import get_test_augmentations
 from plantseg.loggers import gui_logger
 from plantseg.predictions.utils.array_dataset import ArrayDataset
 from plantseg.predictions.utils.slice_builder import SliceBuilder

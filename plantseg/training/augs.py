@@ -13,6 +13,13 @@ GLOBAL_RANDOM_STATE = np.random.RandomState(47)
 
 # copied from https://github.com/wolny/pytorch-3dunet
 class Compose(object):
+    """
+    Composes several transforms together.
+
+    Args:
+        transforms (list of ``Transform`` objects): list of transforms to compose.
+    """
+
     def __init__(self, transforms):
         self.transforms = transforms
 
@@ -341,7 +348,16 @@ class StandardLabelToBoundary:
 
 class Standardize:
     """
-    Apply Z-score normalization to a given input tensor, i.e. re-scaling the values to be 0-mean and 1-std.
+    Apply Z-score normalization (0-mean, 1-std) to a given input tensor.
+
+    Args:
+        eps (float, optional): A small value added to the denominator for numerical stability. Defaults to 1e-10.
+        mean (Optional[float]): The mean to use for standardization. If None, the mean of the input is used. Defaults to None.
+        std (Optional[float]): The standard deviation to use for standardization. If None, the std of the input is used. Defaults to None.
+        channelwise (bool, optional): Whether to apply the normalization channel-wise. Defaults to False.
+
+    Raises:
+        AssertionError: If mean or std is provided, both must be provided.
     """
 
     def __init__(self, mean=None, std=None, channelwise=False, eps=1e-10, **kwargs):
@@ -557,3 +573,23 @@ class Augmenter:
                 ToTensor(expand_dims=False),
             ]
         )
+
+
+def get_test_augmentations(raw: np.ndarray | None, expand_dims: bool = True) -> Compose:
+    """
+    Constructs a set of data transformations for inference.
+    Uses global mean and standard deviation of the provided raw data if available;
+    otherwise, it calculatesthese statistics on-the-fly per patch.
+
+    Args:
+        raw (Optional[ndarray]): The raw data to compute global statistics.
+                                 If None, statistics are computedduring transformation per patch.
+        expand_dims (bool): if True, adds a channel dimension to the input data.
+
+    Returns:
+        Compose: A composed transformation of standardization and tensor conversion.
+    """
+    mean = np.mean(raw) if raw is not None else None
+    std = np.std(raw) if raw is not None else None
+
+    return Compose([Standardize(mean=mean, std=std), ToTensor(expand_dims=expand_dims)])

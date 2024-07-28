@@ -7,7 +7,7 @@ import torch
 from plantseg.loggers import gui_logger
 from plantseg.models.zoo import model_zoo
 from plantseg.viewer.logging import napari_formatted_logging
-from plantseg.augment.transforms import get_test_augmentations
+from plantseg.training.augs import get_test_augmentations
 from plantseg.dataprocessing.dataprocessing import fix_input_shape_to_ZYX, fix_input_shape_to_CZYX
 from plantseg.predictions.utils.array_dataset import ArrayDataset
 from plantseg.predictions.utils.array_predictor import ArrayPredictor
