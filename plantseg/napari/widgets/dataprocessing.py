@@ -6,6 +6,9 @@ from napari.types import LayerDataTuple
 
 from napari.layers import Image, Layer, Labels
 from plantseg.tasks.dataprocessing_tasks import gaussian_smoothing_task
+from plantseg.tasks.dataprocessing_tasks import set_voxel_size_task
+from plantseg.tasks.dataprocessing_tasks import image_rescale_to_shape_task
+from plantseg.tasks.dataprocessing_tasks import image_rescale_to_voxel_size_task
 from plantseg.napari.widgets.utils import schedule_task
 from plantseg.plantseg_image import PlantSegImage
 from plantseg.models.zoo import model_zoo
@@ -169,9 +172,19 @@ def widget_rescaling(
         if mode not in [RescaleModes.SET_VOXEL_SIZE, RescaleModes.TO_LAYER_SHAPE, RescaleModes.TO_SHAPE]:
             raise ValueError("Original voxel size is missing, please set the voxel size manually.")
 
+    # TODO add list of widgets to update
+    widgets_to_update = []
+
     if mode == RescaleModes.SET_VOXEL_SIZE:
         # Run set voxel size task
-        raise NotImplementedError("Set voxel size task not implemented yet.")
+        return schedule_task(
+            set_voxel_size_task,
+            task_kwargs={
+                "image": ps_image,
+                "voxel_size": out_voxel_size,
+            },
+            widget_to_update=widgets_to_update,
+        )
 
     if mode in [RescaleModes.TO_LAYER_SHAPE, RescaleModes.TO_SHAPE]:
         if mode == RescaleModes.TO_LAYER_SHAPE:
@@ -180,9 +193,15 @@ def widget_rescaling(
         if mode == RescaleModes.TO_SHAPE:
             output_shape = reference_shape
 
-        print(output_shape)
-
-        # Run rescale task
+        return schedule_task(
+            image_rescale_to_shape_task,
+            task_kwargs={
+                "image": ps_image,
+                "new_shape": output_shape,
+                "order": order,
+            },
+            widget_to_update=widgets_to_update,
+        )
 
     # Cover rescale that requires a valid voxel size
     current_voxel_size = ps_image.voxel_size.voxels_size
@@ -193,14 +212,32 @@ def widget_rescaling(
         out_voxel_size = out_voxel_size
 
     if mode == RescaleModes.TO_LAYER_VOXEL_SIZE:
+        if not (isinstance(reference_layer, Image) or isinstance(reference_layer, Labels)):
+            raise ValueError("Reference layer must be an Image or Label layer.")
         reference_ps_image = PlantSegImage.from_napari_layer(reference_layer)
         out_voxel_size = reference_ps_image.voxel_size.voxels_size
 
     if mode == RescaleModes.TO_MODEL_VOXEL_SIZE:
-        reference_ps_image = PlantSegImage.from_model(reference_model)
-        out_voxel_size = reference_ps_image.voxel_size.voxels_size
+        model_voxel_size = model_zoo.get_model_resolution(reference_model)
+        if model_voxel_size is None:
+            raise ValueError(f"Model {reference_model} does not have a resolution defined.")
+        out_voxel_size = model_voxel_size
 
-    raise NotImplementedError("Rescale mode not implemented yet.")
+    if any([x <= 0 for x in out_voxel_size]):
+        raise ValueError("Voxel size must be positive.")
+
+    if len(out_voxel_size) != len(current_voxel_size):
+        raise ValueError("Voxel size must have the same dimension as the input image.")
+
+    return schedule_task(
+        image_rescale_to_voxel_size_task,
+        task_kwargs={
+            "image": ps_image,
+            "new_voxel_size": out_voxel_size,
+            "order": order,
+        },
+        widget_to_update=widgets_to_update,
+    )
 
 
 widget_rescaling.out_voxel_size.hide()
