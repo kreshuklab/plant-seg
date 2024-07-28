@@ -12,7 +12,7 @@ from vigra.filters import gaussianSmoothing
 from plantseg.functionals.segmentation.utils import shift_affinities, compute_mc_costs
 
 try:
-    import SimpleITK as sitk
+    import SimpleITK as sitk  # type: ignore
 
     sitk_installed = True
 except ImportError:
