@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from magicgui.widgets import MainWindow
 
 from plantseg.napari.widgets import widget_open_file, widget_export_stacks
-from plantseg.napari.widgets import widget_gaussian_smoothing
+from plantseg.napari.widgets import widget_gaussian_smoothing, widget_rescaling
 
 STYLE_SLIDER = "font-size: 9pt;"
 
@@ -34,6 +34,7 @@ def get_preprocessing_tab():
     container = MainWindow(
         widgets=[
             widget_gaussian_smoothing,
+            widget_rescaling,
         ],
         labels=False,
     )

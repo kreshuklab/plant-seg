@@ -1,5 +1,4 @@
 from plantseg.workflows import task_tracker
-from plantseg.dataprocessing import image_gaussian_smoothing
 from plantseg.image import PlantSegImage, import_image, save_image
 from pathlib import Path
 
@@ -55,14 +54,6 @@ def export_image_task(
         dtype=dtype,
     )
     return None
-
-
-@task_tracker
-def gaussian_smoothing_task(image: PlantSegImage, sigma: float) -> PlantSegImage:
-    data = image.data
-    smoothed_data = image_gaussian_smoothing(data, sigma=sigma)
-    new_image = image.derive_new(smoothed_data, name=f"{image.name}_smoothed")
-    return new_image
 
 
 @task_tracker(is_multioutput=True)

@@ -6,7 +6,7 @@ from magicgui import magicgui
 from napari.layers import Layer
 from napari.types import LayerDataTuple
 from plantseg.image import PlantSegImage
-from plantseg.workflows.general_tasks import (
+from plantseg.workflows.io_tasks import (
     import_image_task,
     export_image_task,
 )

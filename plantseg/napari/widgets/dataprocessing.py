@@ -4,10 +4,12 @@ from enum import Enum
 from magicgui import magicgui
 from napari.types import LayerDataTuple
 
-from napari.layers import Image
-from plantseg.workflows.general_tasks import gaussian_smoothing_task
+from napari.layers import Image, Layer, Labels
+from plantseg.workflows.io_tasks import gaussian_smoothing_task
 from plantseg.napari.widgets.utils import schedule_task
 from plantseg.image import PlantSegImage
+from plantseg.models.zoo import model_zoo
+from plantseg.napari.logging import napari_formatted_logging
 
 
 class WidgetName(Enum):
@@ -20,6 +22,13 @@ class WidgetName(Enum):
     def __init__(self, step_name, layer_suffix):
         self.step_name = step_name
         self.layer_suffix = layer_suffix
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Gaussian Smoothing Widget                                                                                            #
+#                                                                                                                      #
+########################################################################################################################
 
 
 @magicgui(
@@ -57,6 +66,13 @@ def widget_gaussian_smoothing(
     )
 
 
+########################################################################################################################
+#                                                                                                                      #
+# Rescaling Widget                                                                                                     #
+#                                                                                                                      #
+########################################################################################################################
+
+
 class RescaleType(Enum):
     NEAREST = (0, "Nearest")
     LINEAR = (1, "Linear")
@@ -83,3 +99,191 @@ class RescaleModes(Enum):
     @classmethod
     def to_choices(cls):
         return [(mode.value, mode) for mode in RescaleModes]
+
+
+@magicgui(
+    call_button=f"Run {WidgetName.RESCALING.step_name}",
+    image={
+        "label": "Image or Label",
+        "tooltip": "Layer to apply the rescaling.",
+    },
+    mode={
+        "label": "Rescale mode",
+        "choices": RescaleModes.to_choices(),
+    },
+    rescaling_factor={
+        "label": "Rescaling factor",
+        "tooltip": "Define the scaling factor to use for resizing the input image.",
+        "options": {"step": 0.001},
+    },
+    out_voxel_size={
+        "label": "Out voxel size",
+        "tooltip": "Define the output voxel size. Units are same as imported, "
+        '(if units are missing default is "um").',
+        "options": {"step": 0.001},
+    },
+    reference_layer={
+        "label": "Reference layer",
+        "tooltip": "Rescale to same voxel size as selected layer.",
+    },
+    reference_model={
+        "label": "Reference model",
+        "tooltip": "Rescale to same voxel size as selected model.",
+        "choices": model_zoo.list_models(),
+    },
+    reference_shape={
+        "label": "Out shape",
+        "tooltip": "Rescale to a manually selected shape.",
+    },
+    order={
+        "label": "Interpolation order",
+        "widget_type": "ComboBox",
+        "choices": RescaleType.to_choices(),
+        "tooltip": "0 for nearest neighbours (default for labels), 1 for linear, 2 for bilinear.",
+    },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
+)
+def widget_rescaling(
+    image: Layer,
+    mode: RescaleModes = RescaleModes.FROM_FACTOR,
+    rescaling_factor: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    out_voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    reference_layer: Layer | None = None,
+    reference_model: str = model_zoo.list_models()[0],
+    reference_shape: tuple[int, int, int] = (1, 1, 1),
+    order: int = 0,
+    update_other_widgets: bool = True,
+) -> Future[LayerDataTuple]:
+    """Rescale an image or label layer."""
+
+    if isinstance(image, Image) or isinstance(image, Labels):
+        ps_image = PlantSegImage.from_napari_layer(image)
+    else:
+        raise ValueError("Image must be an Image or Label layer.")
+
+    # Cover set voxel size case
+    if not ps_image.has_valid_original_voxel_size():
+        if mode not in [RescaleModes.SET_VOXEL_SIZE, RescaleModes.TO_LAYER_SHAPE, RescaleModes.TO_SHAPE]:
+            raise ValueError("Original voxel size is missing, please set the voxel size manually.")
+
+    if mode == RescaleModes.SET_VOXEL_SIZE:
+        # Run set voxel size task
+        raise NotImplementedError("Set voxel size task not implemented yet.")
+
+    if mode in [RescaleModes.TO_LAYER_SHAPE, RescaleModes.TO_SHAPE]:
+        if mode == RescaleModes.TO_LAYER_SHAPE:
+            output_shape = reference_layer.data.shape
+
+        if mode == RescaleModes.TO_SHAPE:
+            output_shape = reference_shape
+
+        print(output_shape)
+
+        # Run rescale task
+
+    # Cover rescale that requires a valid voxel size
+    current_voxel_size = ps_image.voxel_size.voxels_size
+    if mode == RescaleModes.FROM_FACTOR:
+        out_voxel_size = tuple([a * b for a, b in zip(current_voxel_size, rescaling_factor)])
+
+    if mode == RescaleModes.TO_VOXEL_SIZE:
+        out_voxel_size = out_voxel_size
+
+    if mode == RescaleModes.TO_LAYER_VOXEL_SIZE:
+        reference_ps_image = PlantSegImage.from_napari_layer(reference_layer)
+        out_voxel_size = reference_ps_image.voxel_size.voxels_size
+
+    if mode == RescaleModes.TO_MODEL_VOXEL_SIZE:
+        reference_ps_image = PlantSegImage.from_model(reference_model)
+        out_voxel_size = reference_ps_image.voxel_size.voxels_size
+
+    raise NotImplementedError("Rescale mode not implemented yet.")
+
+
+widget_rescaling.out_voxel_size.hide()
+widget_rescaling.reference_layer.hide()
+widget_rescaling.reference_model.hide()
+widget_rescaling.reference_shape.hide()
+widget_rescaling.reference_shape[0].max = 10000
+widget_rescaling.reference_shape[1].max = 10000
+widget_rescaling.reference_shape[2].max = 10000
+
+
+@widget_rescaling.mode.changed.connect
+def _rescale_update_visibility(mode: RescaleModes):
+    all_widgets = [
+        widget_rescaling.out_voxel_size,
+        widget_rescaling.reference_layer,
+        widget_rescaling.reference_model,
+        widget_rescaling.rescaling_factor,
+        widget_rescaling.reference_shape,
+    ]
+
+    for widget in all_widgets:
+        widget.hide()
+
+    match mode:
+        case RescaleModes.FROM_FACTOR:
+            widget_rescaling.rescaling_factor.show()
+
+        case RescaleModes.TO_LAYER_VOXEL_SIZE:
+            widget_rescaling.reference_layer.show()
+
+        case RescaleModes.TO_MODEL_VOXEL_SIZE:
+            widget_rescaling.reference_model.show()
+
+        case RescaleModes.TO_VOXEL_SIZE:
+            widget_rescaling.out_voxel_size.show()
+
+        case RescaleModes.TO_LAYER_SHAPE:
+            widget_rescaling.reference_layer.show()
+
+        case RescaleModes.TO_SHAPE:
+            widget_rescaling.reference_shape.show()
+
+        case RescaleModes.SET_VOXEL_SIZE:
+            widget_rescaling.out_voxel_size.show()
+
+        case _:
+            raise ValueError(f"{mode} is not implemented yet.")
+
+
+@widget_rescaling.image.changed.connect
+def _on_rescaling_image_changed(image: Layer):
+    if not (isinstance(image, Image) or isinstance(image, Labels)):
+        raise ValueError("Image must be an Image or Label layer.")
+
+    if image.data.ndim == 2 or (image.data.ndim == 3 and image.data.shape[0] == 1):
+        widget_rescaling.rescaling_factor[0].hide()
+        widget_rescaling.reference_shape[0].hide()
+        widget_rescaling.out_voxel_size[0].hide()
+    else:
+        widget_rescaling.rescaling_factor[0].show()
+        widget_rescaling.reference_shape[0].show()
+        widget_rescaling.out_voxel_size[0].show()
+
+    for i, (shape, scale) in enumerate(zip(image.data.shape, image.scale)):
+        widget_rescaling.out_voxel_size[i].value = scale
+        widget_rescaling.reference_shape[i].value = shape
+
+    if isinstance(image, Labels):
+        widget_rescaling.order.value = RescaleType.NEAREST.int_val
+
+
+@widget_rescaling.order.changed.connect
+def _on_rescale_order_changed(order):
+    current_image = widget_rescaling.image.value
+
+    if current_image is None:
+        return None
+
+    if isinstance(current_image, Labels) and order != RescaleType.NEAREST.int_val:
+        napari_formatted_logging(
+            "Labels can only be rescaled with nearest interpolation",
+            thread=WidgetName.RESCALING.step_name,
+            level="warning",
+        )
+        widget_rescaling.order.value = RescaleType.NEAREST.int_val

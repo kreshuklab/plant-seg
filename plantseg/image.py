@@ -352,6 +352,22 @@ class PlantSegImage:
     def channel_axis(self) -> int:
         return self._properties.channel_axis
 
+    def has_valid_voxel_size(self) -> bool:
+        """
+        Returns True if the voxel size is valid (not None), False otherwise.
+        """
+        if self.voxel_size.voxels_size is None:
+            return False
+        return True
+
+    def has_valid_original_voxel_size(self) -> bool:
+        """
+        Returns True if the original voxel size is valid (not None), False otherwise.
+        """
+        if self.original_voxel_size.voxels_size is None:
+            return False
+        return True
+
 
 def _load_data(path: Path, key: str) -> tuple[np.ndarray, VoxelSize]:
     ext = path.suffix
