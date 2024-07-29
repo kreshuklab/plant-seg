@@ -3,7 +3,8 @@ from typing import List, Tuple
 from concurrent.futures import Future
 
 from magicgui import magicgui
-from napari.layers import Layer
+from magicgui.widgets import Label
+from napari.layers import Layer, Image, Labels
 from napari.types import LayerDataTuple
 from plantseg.plantseg_image import PlantSegImage
 from plantseg.tasks.io_tasks import (
@@ -32,22 +33,6 @@ class PathMode(Enum):
     @classmethod
     def to_choices(cls):
         return [member.value for member in cls]
-
-
-class ImageLayoutChoiches(Enum):
-    ZXY = "ZXY", ImageLayout.ZXY
-    CZXY = "<c>ZXY (usually h5 or zarr)", ImageLayout.CZXY
-    ZCXY = "Z<c>XY (usually tiff)", ImageLayout.ZCXY
-    XY = "XY", ImageLayout.XY
-    CXY = "<c>XY", ImageLayout.CXY
-
-    def __init__(self, layout_name: str, layout: ImageLayout):
-        self.layout_name = layout_name
-        self.layout = layout
-
-    @classmethod
-    def to_choices(cls):
-        return [sl.layout_name for sl in cls]
 
 
 @magicgui(
@@ -79,10 +64,9 @@ class ImageLayoutChoiches(Enum):
         "choices": [""],
         "tooltip": "Key to be loaded from h5",
     },
-    channel={"label": "Channel", "tooltip": "Channel to select"},
     stack_layout={
         "label": "Stack Layout",
-        "choices": ImageLayoutChoiches.to_choices(),
+        "choices": ImageLayout.to_choices(),
         "tooltip": "Stack layout",
     },
 )
@@ -92,12 +76,9 @@ def widget_open_file(
     layer_type: str = ImageType.IMAGE.value,
     new_layer_name: str = "",
     key: str = "",
-    channel: int = 0,
-    stack_layout: str = ImageLayoutChoiches.ZXY.layout_name,
+    stack_layout: str = ImageLayout.ZXY.value,
 ) -> Future[LayerDataTuple]:
     """Open a file and return a napari layer."""
-
-    stack_layout = ImageLayoutChoiches[stack_layout].layout
 
     if layer_type == ImageType.IMAGE.value:
         semantic_type = SemanticType.RAW
@@ -111,15 +92,13 @@ def widget_open_file(
             "key": key,
             "image_name": new_layer_name,
             "semantic_type": semantic_type,
-            "stack_layout": stack_layout.value,
-            "channel": channel,
+            "stack_layout": stack_layout,
         },
         widget_to_update=[],
     )
 
 
 widget_open_file.key.hide()
-widget_open_file.channel.hide()
 
 
 @widget_open_file.path_mode.changed.connect
@@ -150,18 +129,6 @@ def _on_path_changed(path: Path):
         keys = list_zarr_keys(path)
         widget_open_file.key.choices = keys
         widget_open_file.key.value = keys[0]
-
-
-@widget_open_file.stack_layout.changed.connect
-def _on_stack_layout_changed(stack_layout: str):
-    if stack_layout in [
-        ImageLayoutChoiches.ZCXY.layout_name,
-        ImageLayoutChoiches.CZXY.layout_name,
-        ImageLayoutChoiches.CXY.layout_name,
-    ]:
-        widget_open_file.channel.show()
-    else:
-        widget_open_file.channel.hide()
 
 
 # For some reason after the widget is called the keys are deleted, so we need to reassign them after the widget is called
@@ -255,3 +222,53 @@ def _on_images_changed(images_list: List[Tuple[Layer, str]]):
         widget_export_stacks.rescale_to_original_resolution.hide()
         widget_export_stacks.data_type.hide()
         widget_export_stacks.workflow_name.hide()
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Show Image Infos                                                                                                     #
+#                                                                                                                      #
+########################################################################################################################
+@magicgui(
+    call_button=None,
+    auto_call=True,
+    layer={
+        "label": "Select layer",
+        "tooltip": "Select the image or label to show the information.",
+    },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
+)
+def widget_show_info(layer: Layer, update_other_widgets: bool = False) -> None:
+    """Show the information of the selected layer."""
+
+
+widget_infos = Label(
+    value="Infos will be shown here...", label="Infos", tooltip="Information about the selected layer."
+)
+
+
+@widget_show_info.layer.changed.connect
+def _on_layer_changed(layer):
+    if not (isinstance(layer, Labels) or isinstance(layer, Image)):
+        raise ValueError("Info can only be shown for Image or Labels layers.")
+
+    ps_image = PlantSegImage.from_napari_layer(layer)
+    if ps_image.has_valid_voxel_size():
+        voxel_size_formatted = "("
+        for vs in ps_image.voxel_size.voxels_size:
+            voxel_size_formatted += f"{vs:.2f}, "
+
+        voxel_size_formatted = voxel_size_formatted[:-2] + f") {ps_image.voxel_size.unit}"
+    else:
+        voxel_size_formatted = "None"
+
+    str_info = (
+        f"Shape: {ps_image.shape}, "
+        f"Voxel size: {voxel_size_formatted}, "
+        f"Type: {ps_image.semantic_type.value}, "
+        f"Layout: {ps_image.image_layout.value}"
+    )
+    widget_infos.value = str_info

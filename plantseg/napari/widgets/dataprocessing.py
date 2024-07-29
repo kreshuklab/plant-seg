@@ -13,6 +13,7 @@ from plantseg.napari.widgets.utils import schedule_task
 from plantseg.plantseg_image import PlantSegImage
 from plantseg.models.zoo import model_zoo
 from plantseg.napari.logging import napari_formatted_logging
+from plantseg.io import VoxelSize
 
 
 class WidgetName(Enum):
@@ -117,13 +118,13 @@ class RescaleModes(Enum):
     rescaling_factor={
         "label": "Rescaling factor",
         "tooltip": "Define the scaling factor to use for resizing the input image.",
-        "options": {"step": 0.001},
+        "options": {"step": 0.0001},
     },
     out_voxel_size={
         "label": "Out voxel size",
         "tooltip": "Define the output voxel size. Units are same as imported, "
         '(if units are missing default is "um").',
-        "options": {"step": 0.001},
+        "options": {"step": 0.0001},
     },
     reference_layer={
         "label": "Reference layer",
@@ -204,30 +205,24 @@ def widget_rescaling(
         )
 
     # Cover rescale that requires a valid voxel size
-    current_voxel_size = ps_image.voxel_size.voxels_size
+    current_voxel_size = ps_image.voxel_size
     if mode == RescaleModes.FROM_FACTOR:
-        out_voxel_size = tuple([a * b for a, b in zip(current_voxel_size, rescaling_factor)])
+        out_voxel_size = current_voxel_size.voxelsize_from_factor(rescaling_factor)
 
     if mode == RescaleModes.TO_VOXEL_SIZE:
-        out_voxel_size = out_voxel_size
+        out_voxel_size = VoxelSize(voxels_size=out_voxel_size, unit=current_voxel_size.unit)
 
     if mode == RescaleModes.TO_LAYER_VOXEL_SIZE:
         if not (isinstance(reference_layer, Image) or isinstance(reference_layer, Labels)):
             raise ValueError("Reference layer must be an Image or Label layer.")
         reference_ps_image = PlantSegImage.from_napari_layer(reference_layer)
-        out_voxel_size = reference_ps_image.voxel_size.voxels_size
+        out_voxel_size = reference_ps_image.voxel_size
 
     if mode == RescaleModes.TO_MODEL_VOXEL_SIZE:
         model_voxel_size = model_zoo.get_model_resolution(reference_model)
         if model_voxel_size is None:
             raise ValueError(f"Model {reference_model} does not have a resolution defined.")
-        out_voxel_size = model_voxel_size
-
-    if any([x <= 0 for x in out_voxel_size]):
-        raise ValueError("Voxel size must be positive.")
-
-    if len(out_voxel_size) != len(current_voxel_size):
-        raise ValueError("Voxel size must have the same dimension as the input image.")
+        out_voxel_size = VoxelSize(voxels_size=model_voxel_size, unit=current_voxel_size.unit)
 
     return schedule_task(
         image_rescale_to_voxel_size_task,
@@ -244,9 +239,9 @@ widget_rescaling.out_voxel_size.hide()
 widget_rescaling.reference_layer.hide()
 widget_rescaling.reference_model.hide()
 widget_rescaling.reference_shape.hide()
-widget_rescaling.reference_shape[0].max = 10000
-widget_rescaling.reference_shape[1].max = 10000
-widget_rescaling.reference_shape[2].max = 10000
+widget_rescaling.reference_shape[0].max = 20000
+widget_rescaling.reference_shape[1].max = 20000
+widget_rescaling.reference_shape[2].max = 20000
 
 
 @widget_rescaling.mode.changed.connect
@@ -302,9 +297,10 @@ def _on_rescaling_image_changed(image: Layer):
         widget_rescaling.reference_shape[0].show()
         widget_rescaling.out_voxel_size[0].show()
 
+    offset = 1 if image.data.ndim == 2 else 0
     for i, (shape, scale) in enumerate(zip(image.data.shape, image.scale)):
-        widget_rescaling.out_voxel_size[i].value = scale
-        widget_rescaling.reference_shape[i].value = shape
+        widget_rescaling.out_voxel_size[i + offset].value = scale
+        widget_rescaling.reference_shape[i + offset].value = shape
 
     if isinstance(image, Labels):
         widget_rescaling.order.value = RescaleType.NEAREST.int_val

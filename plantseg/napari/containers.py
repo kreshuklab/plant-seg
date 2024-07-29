@@ -3,7 +3,7 @@ import webbrowser
 from PyQt5.QtCore import Qt
 from magicgui.widgets import MainWindow
 
-from plantseg.napari.widgets import widget_open_file, widget_export_stacks
+from plantseg.napari.widgets import widget_open_file, widget_export_stacks, widget_show_info, widget_infos
 from plantseg.napari.widgets import widget_gaussian_smoothing, widget_rescaling
 from plantseg.napari.widgets import widget_unet_predictions, widget_dt_ws, widget_agglomeration
 
@@ -22,7 +22,9 @@ def setup_menu(container, path=None):
 
 
 def get_data_io():
-    container = MainWindow(widgets=[widget_open_file, widget_export_stacks], labels=False)
+    container = MainWindow(
+        widgets=[widget_open_file, widget_export_stacks, widget_show_info, widget_infos], labels=False
+    )
     container = setup_menu(
         container,
         path="https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/import_export/",

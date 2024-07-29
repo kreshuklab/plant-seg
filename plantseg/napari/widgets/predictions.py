@@ -33,7 +33,7 @@ class UNetPredictionsMode(Enum):
 
     @classmethod
     def to_choices(cls):
-        return [mode.value() for mode in cls]
+        return [mode.value for mode in cls]
 
 
 @magicgui(
@@ -108,7 +108,7 @@ class UNetPredictionsMode(Enum):
 def widget_unet_predictions(
     viewer: Viewer,
     image: Image,
-    mode: UNetPredictionsMode = UNetPredictionsMode.PLANTSEG,
+    mode: str = UNetPredictionsMode.PLANTSEG.value,
     plantseg_filter: bool = True,
     model_name: str = model_zoo.list_models()[0],
     model_id: str = model_zoo.get_bioimageio_zoo_plantseg_model_names()[0],
@@ -121,6 +121,7 @@ def widget_unet_predictions(
     single_patch: bool = False,
     device: str = ALL_DEVICES[0],
 ) -> Future[LayerDataTuple]:
+    mode = UNetPredictionsMode(mode)
     if mode == UNetPredictionsMode.PLANTSEG:
         suffix = model_name
         model_id = None
@@ -173,12 +174,12 @@ def _on_widget_unet_predictions_mode_change(mode: str):
         widget_unet_predictions.model_id,
         widget_unet_predictions.plantseg_filter,
     ]
-    if mode == UNetPredictionsMode.PLANTSEG:
+    if mode == UNetPredictionsMode.PLANTSEG.value:
         for widget in widgets_p:
             widget.show()
         for widget in widgets_b:
             widget.hide()
-    elif mode == UNetPredictionsMode.BIOIMAGEIO:
+    elif mode == UNetPredictionsMode.BIOIMAGEIO.value:
         for widget in widgets_p:
             widget.hide()
         for widget in widgets_b:

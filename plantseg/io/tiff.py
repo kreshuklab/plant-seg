@@ -5,6 +5,7 @@ import numpy as np
 import tifffile
 from plantseg.io.utils import VoxelSize
 from pathlib import Path
+from plantseg.loggers import gui_logger
 
 TIFF_EXTENSIONS = [".tiff", ".tif"]
 
@@ -24,7 +25,7 @@ def _read_imagej_meta(tiff) -> VoxelSize:
         return None
 
     image_metadata = tiff.imagej_metadata
-    z = image_metadata.get("spacing", None)
+    z = image_metadata.get("spacing", 1.0)
     voxel_size_unit = image_metadata.get("unit", "um")
 
     tags = tiff.pages[0].tags
@@ -33,8 +34,8 @@ def _read_imagej_meta(tiff) -> VoxelSize:
     x = _xy_voxel_size(tags, "XResolution")
     # return voxel size
 
-    if x is None or y is None or z is None:
-        warnings.warn("Error parsing imagej tiff meta.")
+    if x is None or y is None:
+        gui_logger.warning("Error parsing imagej tiff meta.")
         return VoxelSize()
 
     return VoxelSize(voxels_size=(z, y, x), unit=voxel_size_unit)
@@ -124,11 +125,7 @@ def load_tiff(path: Path) -> np.ndarray:
     return tifffile.imread(path)
 
 
-def create_tiff(
-    path: Path,
-    stack: np.ndarray,
-    voxel_size: VoxelSize,
-) -> None:
+def create_tiff(path: Path, stack: np.ndarray, voxel_size: VoxelSize, layout: str = "ZXY") -> None:
     """
     Create a tiff file from a numpy array
 
@@ -140,8 +137,34 @@ def create_tiff(
 
     """
     # taken from: https://pypi.org/project/tifffile docs
-    z, y, x = stack.shape
-    stack = stack.reshape(1, z, 1, y, x, 1)  # dimensions in TZCYXS order
+    # dimensions in TZCYXS order
+    if layout == "ZXY":
+        assert stack.ndim == 3, "Stack dimensions must be in ZXY order"
+        z, y, x = stack.shape
+        stack = stack.reshape(1, z, 1, y, x, 1)
+
+    elif layout == "XY":
+        assert stack.ndim == 2, "Stack dimensions must be in XY order"
+        y, x = stack.shape
+        stack = stack.reshape(1, 1, 1, y, x, 1)
+
+    elif layout == "CXY":
+        assert stack.ndim == 3, "Stack dimensions must be in CXY order"
+        c, y, x = stack.shape
+        stack = stack.reshape(1, 1, c, y, x, 1)
+
+    elif layout == "ZCXY":
+        assert stack.ndim == 4, "Stack dimensions must be in ZCXY order"
+        z, c, y, x = stack.shape
+        stack = stack.reshape(1, z, c, y, x, 1)
+
+    elif layout == "CZXY":
+        assert stack.ndim == 4, "Stack dimensions must be in CZXY order"
+        c, z, y, x = stack.shape
+        stack = stack.reshape(1, z, c, y, x, 1)
+
+    else:
+        raise ValueError(f"Layout {layout} not supported")
 
     if voxel_size.voxels_size is not None:
         assert len(voxel_size.voxels_size) == 3, "Voxel size must have 3 elements (z, y, x)"

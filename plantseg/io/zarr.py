@@ -22,8 +22,9 @@ ZARR_KEYS = ["raw", "predictions", "segmentation"]
 
 
 def _validate_zarr_file(path: Path) -> None:
-    assert path.suffix in ZARR_EXTENSIONS, f"File extension not supported. Supported extensions: {ZARR_EXTENSIONS}"
+    """Check if a file is a Zarr file."""
     assert path.exists(), f"File not found: {path}"
+    assert str(path).find(".zarr") != -1, f"File is not a Zarr file: {path}"
 
 
 def _find_input_key(zarr_file: zarr.Group) -> str:

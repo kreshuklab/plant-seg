@@ -23,9 +23,15 @@ def unet_predictions_task(
     Apply a trained U-Net model to a PlantSegImage object.
 
     Args:
-        image (PlantSegImage): input image
-        model_path (str): path to the trained U-Net model
-        device (str): device to use for prediction (default: "cpu")
+        image (PlantSegImage): input image object
+        model_name (str): the name of the model to use
+        model_id (str): the ID of the model to use
+        suffix (str): suffix to append to the new image name
+        patch (tuple[int, int, int]): patch size for prediction
+        single_batch_mode (bool): whether to use a single batch for prediction
+        device (str): the computation device ('cpu', 'cuda', etc.)
+        model_update (bool): whether to update the model to the latest version
+
 
     """
     data = image.data

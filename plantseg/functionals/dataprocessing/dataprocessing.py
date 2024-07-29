@@ -3,28 +3,7 @@ from scipy.ndimage import zoom
 from skimage.filters import median
 from skimage.morphology import disk, ball
 from vigra import gaussianSmoothing
-
-
-def compute_scaling_factor(
-    input_voxel_size: tuple[float, float, float], output_voxel_size: tuple[float, float, float]
-) -> tuple[float, float, float]:
-    """
-    Compute the scaling factor to rescale an image from input voxel size to output voxel size.
-    """
-    scaling = tuple(i_size / o_size for i_size, o_size in zip(input_voxel_size, output_voxel_size))
-    assert len(scaling) == 3, f"Expected scaling factor to be 3d, but got {len(scaling)}d input"
-    return scaling
-
-
-def compute_scaling_voxelsize(
-    input_voxel_size: tuple[float, float, float], scaling_factor: tuple[float, float, float]
-) -> tuple[float, float, float]:
-    """
-    Compute the output voxel size after scaling an image with a given scaling factor.
-    """
-    output_voxel_size = tuple(i_size / s_size for i_size, s_size in zip(input_voxel_size, scaling_factor))
-    assert len(output_voxel_size) == 3, f"Expected output voxel size to be 3d, but got {len(output_voxel_size)}d input"
-    return output_voxel_size
+from plantseg.io.utils import compute_scaling_factor
 
 
 def scale_image_to_voxelsize(
@@ -188,3 +167,23 @@ def select_channel(data: np.ndarray, channel: int, channel_axis: int = 0) -> np.
         selected_channel (np.ndarray): Selected channel as numpy array
     """
     return np.take(data, channel, axis=channel_axis)
+
+
+def normalize_01_channel_wise(data: np.ndarray, channel_axis: int = 0, eps=1e-12):
+    """
+    Normalize each channel of a numpy array between 0 and 1 and converts it to float32.
+
+    Args:
+        data (np.ndarray): Input numpy array
+        channel_axis (int): Channel axis
+        eps (float): A small value added to the denominator for numerical stability
+
+    Returns:
+        normalized_data (np.ndarray): Normalized numpy array
+    """
+
+    for i in range(data.shape[channel_axis]):
+        _data = select_channel(data, i, channel_axis)
+        _data = normalize_01(_data, eps=eps)
+        data = np.insert(data, i, _data, axis=channel_axis)
+    return data

@@ -1,12 +1,11 @@
 from plantseg.functionals.dataprocessing.dataprocessing import (
-    compute_scaling_factor,
-    compute_scaling_voxelsize,
     image_gaussian_smoothing,
     image_rescale,
     image_crop,
     image_median,
     fix_input_shape,
     normalize_01,
+    normalize_01_channel_wise,
     select_channel,
     scale_image_to_voxelsize,
 )
@@ -21,13 +20,12 @@ from plantseg.functionals.dataprocessing.advanced_dataprocessing import (
 # Use __all__ to let type checkers know what is part of the public API.
 __all__ = [
     "image_gaussian_smoothing",
-    "compute_scaling_factor",
-    "compute_scaling_voxelsize",
     "image_rescale",
     "image_crop",
     "image_median",
     "scale_image_to_voxelsize",
     "normalize_01",
+    "normalize_01_channel_wise",
     "select_channel",
     "fix_input_shape",
     "relabel_segmentation",

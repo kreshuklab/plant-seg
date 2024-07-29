@@ -14,7 +14,6 @@ def import_image_task(
     image_name: str,
     semantic_type: str,
     stack_layout: str,
-    channel: int | None = None,
     m_slicing: str | None = None,
 ) -> PlantSegImage:
     """
@@ -26,7 +25,6 @@ def import_image_task(
         image_name=image_name,
         semantic_type=semantic_type,
         stack_layout=stack_layout,
-        channel=channel,
         m_slicing=m_slicing,
     )
 
