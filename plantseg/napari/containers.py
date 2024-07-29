@@ -5,6 +5,7 @@ from magicgui.widgets import MainWindow
 
 from plantseg.napari.widgets import widget_open_file, widget_export_stacks
 from plantseg.napari.widgets import widget_gaussian_smoothing, widget_rescaling
+from plantseg.napari.widgets import widget_unet_predictions, widget_dt_ws, widget_agglomeration
 
 STYLE_SLIDER = "font-size: 9pt;"
 
@@ -45,8 +46,7 @@ def get_preprocessing_tab():
     return container
 
 
-"""
-def get_gasp_workflow():
+def get_main_tab():
     container = MainWindow(widgets=[widget_unet_predictions, widget_dt_ws, widget_agglomeration], labels=False)
     container = setup_menu(
         container,
@@ -55,19 +55,11 @@ def get_gasp_workflow():
     return container
 
 
-def get_extra():
-    widget_fix_over_under_segmentation_from_nuclei.threshold.native.setStyleSheet(STYLE_SLIDER)
-    widget_fix_over_under_segmentation_from_nuclei.quantile.native.setStyleSheet(STYLE_SLIDER)
+def get_extras_tab():
+    # widet_fix_over_under_segmentation_from_nuclei.threshold.native.setStyleSheet(STYLE_SLIDER)
+    # widget_fix_over_under_segmentation_from_nuclei.quantile.native.setStyleSheet(STYLE_SLIDER)
     container = MainWindow(
-        widgets=[
-            widget_extra_manager,
-            Label(),
-            widget_lifted_multicut,
-            widget_add_custom_model,
-            widget_test_all_unet_predictions,
-            widget_iterative_unet_predictions,
-            widget_fix_over_under_segmentation_from_nuclei,
-        ],
+        widgets=[],
         labels=False,
     )
     container = setup_menu(
@@ -76,18 +68,12 @@ def get_extra():
     return container
 
 
-def get_proofreading():
+def get_proofreading_tab():
     container = MainWindow(
-        widgets=[
-            widget_split_and_merge_from_scribbles,
-            widget_clean_scribble,
-            widget_filter_segmentation,
-            widget_fix_false_positive_from_foreground_pmap,
-        ],
+        widgets=[],
         labels=False,
     )
     container = setup_menu(
         container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/proofreading/'
     )
     return container
-"""
