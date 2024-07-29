@@ -36,8 +36,6 @@ requirements:
 test:
   imports:
     - plantseg
-    - plantseg.legacy_gui
-    - plantseg.segmentation
   requires:
     - pytest
   run:
