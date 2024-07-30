@@ -227,7 +227,6 @@ workflow_handler = WorkflowHandler()
 
 def task_tracker(
     func: Callable | None = None,
-    is_multioutput=False,
     is_root=False,
     is_leaf=False,
     list_inputs: list[str] | None = None,
@@ -238,7 +237,6 @@ def task_tracker(
 
     Args:
         func (Callable): The function that will be registered as a task.
-        is_multioutput (bool): If True, the function returns a tuple of PlantSegImage objects.
         is_root (bool): If True, the function is a root node in the workflow (usually a import task).
         is_leaf (bool): If True, the function is a leaf node in the workflow (usually a writer task).
         list_inputs (list[str]): A list of parameters that are runtime inputs. For example, the path to an image, or
@@ -294,7 +292,7 @@ def task_tracker(
             elif isinstance(out_image, PlantSegImage):
                 list_outputs = [out_image.unique_name]
 
-            elif is_multioutput and isinstance(out_image, tuple):
+            elif isinstance(out_image, tuple) or isinstance(out_image, list):
                 list_outputs = []
                 for i, img in enumerate(out_image):
                     if not isinstance(img, PlantSegImage):

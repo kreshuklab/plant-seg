@@ -54,7 +54,7 @@ def export_image_task(
     return None
 
 
-@task_tracker(is_multioutput=True)
+@task_tracker
 def mock_task1(image: PlantSegImage) -> tuple[PlantSegImage, PlantSegImage]:
     image2 = image.derive_new(image.data, name=f"{image.name}_m1")
     image3 = image.derive_new(image.data, name=f"{image.name}_m2")
