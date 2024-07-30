@@ -33,7 +33,7 @@ def unet_predictions_task(
 
 
     """
-    if image.is_multichannel():
+    if image.is_multichannel:
         handle_multichannel = True
     else:
         handle_multichannel = False

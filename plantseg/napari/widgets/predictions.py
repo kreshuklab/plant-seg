@@ -11,6 +11,7 @@ from plantseg.models.zoo import model_zoo
 from plantseg.napari.logging import napari_formatted_logging
 from plantseg.napari.widgets.utils import schedule_task
 from plantseg.tasks.predictions_tasks import unet_predictions_task
+from plantseg.plantseg_image import PlantSegImage
 
 ALL = 'All'
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
@@ -131,10 +132,12 @@ def widget_unet_predictions(
 
     # TODO add halo support and multichannel support
 
+    ps_image = PlantSegImage.from_napari_layer(image)
+
     return schedule_task(
         unet_predictions_task,
         task_kwargs={
-            "image": image,
+            "image": ps_image,
             "model_name": model_name,
             "model_id": model_id,
             "suffix": suffix,

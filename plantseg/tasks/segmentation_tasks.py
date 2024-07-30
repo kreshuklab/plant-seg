@@ -39,7 +39,7 @@ def dt_watershed_task(
         n_threads (int): number of threads
         mask (np.ndarray): mask
     """
-    if image.is_multichannel():
+    if image.is_multichannel:
         raise ValueError("Multichannel images are not supported for this task.")
 
     if image.semantic_type != SemanticType.PREDICTION:
@@ -83,7 +83,7 @@ def clustering_segmentation_task(
         beta (float): beta parameter
         post_min_size (int): minimum size for the segments
     """
-    if image.is_multichannel():
+    if image.is_multichannel:
         raise ValueError("Multichannel images are not supported for this task.")
 
     if image.semantic_type != SemanticType.PREDICTION:

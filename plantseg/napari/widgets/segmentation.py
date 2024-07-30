@@ -6,6 +6,7 @@ from napari.types import LayerDataTuple
 
 from plantseg.napari.widgets.utils import schedule_task
 from plantseg.tasks.segmentation_tasks import clustering_segmentation_task
+from plantseg.plantseg_image import PlantSegImage
 
 ########################################################################################################################
 #                                                                                                                      #
@@ -22,7 +23,7 @@ STACKED = [('2D', True), ('3D', False)]
         'label': 'Pmap/Image',
         'tooltip': 'Raw or boundary image to use as input for clustering.',
     },
-    _labels={
+    labels={
         'label': 'Over-segmentation',
         'tooltip': 'Over-segmentation labels layer to use as input for clustering.',
     },
@@ -51,11 +52,14 @@ def widget_agglomeration(
     beta: float = 0.6,
     minsize: int = 100,
 ) -> Future[LayerDataTuple]:
+    ps_image = PlantSegImage.from_napari_layer(image)
+    ps_labels = PlantSegImage.from_napari_layer(labels)
+
     return schedule_task(
         clustering_segmentation_task,
         task_kwargs={
-            "image": image,
-            "over_segmentation": labels,
+            "image": ps_image,
+            "over_segmentation": ps_labels,
             "mode": mode.lower(),
             "beta": beta,
             "post_min_size": minsize,
@@ -80,7 +84,7 @@ def widget_agglomeration(
         'label': 'Nuclei',
         'tooltip': 'Nuclei binary predictions or Nuclei segmentation.',
     },
-    _labels={
+    labels={
         'label': 'Over-segmentation',
         'tooltip': 'Over-segmentation labels layer to use as input for clustering.',
     },
@@ -98,7 +102,7 @@ def widget_agglomeration(
     },
 )
 def widget_lifted_multicut(
-    image: Image, nuclei: Layer, _labels: Labels, beta: float = 0.5, minsize: int = 100
+    image: Image, nuclei: Layer, labels: Labels, beta: float = 0.5, minsize: int = 100
 ) -> Future[LayerDataTuple]:
     pass
 

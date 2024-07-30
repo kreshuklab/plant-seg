@@ -17,7 +17,7 @@ def gaussian_smoothing_task(image: PlantSegImage, sigma: float) -> PlantSegImage
         sigma (float): standard deviation of the Gaussian kernel
 
     """
-    if image.is_multichannel():
+    if image.is_multichannel:
         raise ValueError("Gaussian smoothing is not supported for multichannel images.")
 
     data = image.get_data()
