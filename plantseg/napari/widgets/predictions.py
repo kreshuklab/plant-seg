@@ -133,7 +133,6 @@ def widget_unet_predictions(
     # TODO add halo support and multichannel support
 
     ps_image = PlantSegImage.from_napari_layer(image)
-
     return schedule_task(
         unet_predictions_task,
         task_kwargs={

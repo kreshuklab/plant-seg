@@ -54,5 +54,4 @@ def unet_predictions_task(
     )
 
     new_image = image.derive_new(pmap, name=f"{image.name}_{suffix}", semantic_type=SemanticType.PREDICTION)
-    new_image.semantic_type = SemanticType.PREDICTION
     return new_image
