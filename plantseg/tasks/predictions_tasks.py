@@ -15,7 +15,6 @@ def unet_predictions_task(
     device: str = "cuda",
     model_update: bool = False,
     disable_tqdm: bool = False,
-    handle_multichannel: bool = False,
     config_path: Path | None = None,
     model_weights_path: Path | None = None,
 ) -> PlantSegImage:
@@ -34,7 +33,12 @@ def unet_predictions_task(
 
 
     """
-    data = image.data
+    if image.is_multichannel():
+        handle_multichannel = True
+    else:
+        handle_multichannel = False
+
+    data = image.get_data()
     pmap = unet_predictions(
         raw=data,
         model_name=model_name,
@@ -49,6 +53,6 @@ def unet_predictions_task(
         model_weights_path=model_weights_path,
     )
 
-    new_image = image.derive_new(pmap, name=f"{image.name}_{suffix}")
+    new_image = image.derive_new(pmap, name=f"{image.name}_{suffix}", semantic_type=SemanticType.PREDICTION)
     new_image.semantic_type = SemanticType.PREDICTION
     return new_image

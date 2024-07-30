@@ -1,22 +1,19 @@
 from concurrent.futures import Future
 
 from magicgui import magicgui
-from napari import Viewer
 from napari.layers import Labels, Image, Layer
 from napari.types import LayerDataTuple
 
-from plantseg.napari.logging import napari_formatted_logging
+from plantseg.napari.widgets.utils import schedule_task
+from plantseg.tasks.segmentation_tasks import clustering_segmentation_task
+
+########################################################################################################################
+#                                                                                                                      #
+# Clustering Segmentation Widget                                                                                       #
+#                                                                                                                      #
+########################################################################################################################
 
 STACKED = [('2D', True), ('3D', False)]
-
-
-def _pmap_warn(thread: str):
-    napari_formatted_logging(
-        'Pmap/Image layer appears to be a raw image and not a pmap. For the best segmentation results, '
-        'try to use a boundaries probability layer (e.g. from the Run Prediction widget)',
-        thread=thread,
-        level='warning',
-    )
 
 
 @magicgui(
@@ -48,14 +45,29 @@ def _pmap_warn(thread: str):
     },
 )
 def widget_agglomeration(
-    viewer: Viewer,
     image: Image,
-    _labels: Labels,
+    labels: Labels,
     mode: str = "GASP",
     beta: float = 0.6,
     minsize: int = 100,
 ) -> Future[LayerDataTuple]:
-    pass
+    return schedule_task(
+        clustering_segmentation_task,
+        task_kwargs={
+            "image": image,
+            "over_segmentation": labels,
+            "mode": mode.lower(),
+            "beta": beta,
+            "post_min_size": minsize,
+        },
+    )
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Lifted Multicut Segmentation Widget                                                                                  #
+#                                                                                                                      #
+########################################################################################################################
 
 
 @magicgui(
@@ -89,6 +101,13 @@ def widget_lifted_multicut(
     image: Image, nuclei: Layer, _labels: Labels, beta: float = 0.5, minsize: int = 100
 ) -> Future[LayerDataTuple]:
     pass
+
+
+########################################################################################################################
+#                                                                                                                      #
+# DT Watershed Segmentation Widget                                                                                     #
+#                                                                                                                      #
+########################################################################################################################
 
 
 def dtws_wrapper(
@@ -159,9 +178,6 @@ def widget_dt_ws(
     apply_nonmax_suppression: bool = False,
     nuclei: bool = False,
 ) -> Future[LayerDataTuple]:
-    if 'pmap' not in image.metadata:
-        _pmap_warn("Watershed Widget")
-
     pass
 
 

@@ -129,9 +129,21 @@ def widget_unet_predictions(
         suffix = model_id
         model_name = None
 
-    # TODO add kwargs to the function
-    print(suffix)
-    return schedule_task(unet_predictions_task)
+    # TODO add halo support and multichannel support
+
+    return schedule_task(
+        unet_predictions_task,
+        task_kwargs={
+            "image": image,
+            "model_name": model_name,
+            "model_id": model_id,
+            "suffix": suffix,
+            "patch": patch_size,
+            "single_batch_mode": single_patch,
+            "device": device,
+        },
+        widget_to_update=[],
+    )
 
 
 def update_halo():
