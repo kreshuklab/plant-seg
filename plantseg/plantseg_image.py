@@ -336,37 +336,37 @@ class PlantSegImage:
     def _check_shape(self, data: np.ndarray) -> None:
         if self.image_layout == ImageLayout.ZYX:
             if data.shape[0] == 1:
-                gui_logger.warn("Image layout is ZYX but data has only one z slice, casting to YX")
+                gui_logger.warning("Image layout is ZYX but data has only one z slice, casting to YX")
                 self._properties.image_layout = ImageLayout.YX
                 self._data = data[0]
         elif self.image_layout == ImageLayout.CZYX:
             if data.shape[0] == 1 and data.shape[1] == 1:
-                gui_logger.warn("Image layout is CZYX but data has only one z slice and one channel, casting to YX")
+                gui_logger.warning("Image layout is CZYX but data has only one z slice and one channel, casting to YX")
                 self._properties.image_layout = ImageLayout.YX
                 self._data = data[0, 0]
 
             elif data.shape[0] == 1 and data.shape[1] > 1:
-                gui_logger.warn("Image layout is CZYX but data has only one channel, casting to ZYX")
+                gui_logger.warning("Image layout is CZYX but data has only one channel, casting to ZYX")
                 self._properties.image_layout = ImageLayout.ZYX
                 self._data = data[0]
             elif data.shape[0] > 1 and data.shape[1] == 1:
-                gui_logger.warn("Image layout is CZYX but data has only one z slice, casting to CYX")
+                gui_logger.warning("Image layout is CZYX but data has only one z slice, casting to CYX")
                 self._properties.image_layout = ImageLayout.CYX
                 self._data = data[:, 0]
 
         elif self.image_layout == ImageLayout.ZCYX:
             if data.shape[1] == 1 and data.shape[2] == 1:
-                gui_logger.warn("Image layout is ZCYX but data has only one z slice and one channel, casting to YX")
+                gui_logger.warning("Image layout is ZCYX but data has only one z slice and one channel, casting to YX")
                 self._properties.image_layout = ImageLayout.YX
                 self._data = data[0, 0]
 
             elif data.shape[1] == 1 and data.shape[2] > 1:
-                gui_logger.warn("Image layout is ZCYX but data has only one channel, casting to ZYX")
+                gui_logger.warning("Image layout is ZCYX but data has only one channel, casting to ZYX")
                 self._properties.image_layout = ImageLayout.ZYX
                 self._data = data[0]
 
             elif data.shape[1] > 1 and data.shape[2] == 1:
-                gui_logger.warn("Image layout is ZCYX but data has only one z slice, casting to CYX")
+                gui_logger.warning("Image layout is ZCYX but data has only one z slice, casting to CYX")
                 self._properties.image_layout = ImageLayout.CYX
                 self._data = data[:, 0]
 

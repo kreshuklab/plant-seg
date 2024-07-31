@@ -97,7 +97,7 @@ def unet_predictions(
     if (
         int(model_config["out_channels"]) > 1 and handle_multichannel
     ):  # if multi-channel output and who called this function can handle it
-        gui_logger.warn(f"`unet_predictions()` has `handle_multichannel`={handle_multichannel}")
+        gui_logger.warning(f"`unet_predictions()` has `handle_multichannel`={handle_multichannel}")
         pmaps = fix_input_shape_to_CZYX(pmaps)  # make (C, Y, X) to (C, 1, Y, X) and keep (C, Z, Y, X) unchanged
     else:  # otherwise use old mechanism
         pmaps = fix_input_shape_to_ZYX(pmaps[0])
