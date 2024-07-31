@@ -8,8 +8,8 @@ from napari.layers import Image
 from napari.types import LayerDataTuple
 from enum import Enum
 from plantseg.models.zoo import model_zoo
-from plantseg.napari.logging import napari_formatted_logging
-from plantseg.napari.widgets.utils import schedule_task
+from plantseg.gui.logging import napari_formatted_logging
+from plantseg.gui.widgets.utils import schedule_task
 from plantseg.tasks.predictions_tasks import unet_predictions_task
 from plantseg.plantseg_image import PlantSegImage
 

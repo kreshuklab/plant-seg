@@ -1,13 +1,13 @@
 import napari
 
-from plantseg.napari.containers import (
+from plantseg.gui.containers import (
     get_data_io,
     get_preprocessing_tab,
     get_main_tab,
     get_extras_tab,
     get_proofreading_tab,
 )
-from plantseg.napari.logging import napari_formatted_logging
+from plantseg.gui.logging import napari_formatted_logging
 
 # from plantseg._viewer.widget.proofreading.proofreading import (
 #     setup_proofreading_keybindings,
