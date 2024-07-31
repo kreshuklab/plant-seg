@@ -1,6 +1,6 @@
 """Utility functions and classes for I/O operations."""
 
-from typing import Literal, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -35,11 +35,11 @@ class VoxelSize(BaseModel):
 
     Attributes:
         voxels_size (Optional[tuple[float, float, float]]): Size of the voxels in the image.
-        unit (Literal["um", "µm", "micron", "micrometers"]): Unit of the voxel size.
+        unit (str): Unit of the voxel size, starting with "u", "µ", or "micro".
     """
 
     voxels_size: Optional[tuple[float, float, float]] = None
-    unit: Literal["um", "µm", "micron", "micrometers"] = Field(default="um")
+    unit: str = Field(default="um")
 
     @field_validator("voxels_size")
     @classmethod
@@ -55,9 +55,9 @@ class VoxelSize(BaseModel):
     @field_validator("unit")
     @classmethod
     def _check_unit(cls, value: str) -> str:
-        if value in ["um", "µm", "micron", "micrometers"]:
+        if value.startswith(("u", "µ", "micro")):
             return "um"
-        raise ValueError("Only micrometers (um) are supported as unit")
+        raise ValueError("Only micrometers (um) are supported, i.e. units starting with 'u', 'µ', or 'micro'")
 
     def scalefactor_from_voxelsize(self, other: "VoxelSize") -> tuple[float, float, float]:
         """
