@@ -81,14 +81,14 @@ class VoxelSize(BaseModel):
     def x(self) -> float:
         """Safe access to the voxel size in the x direction. Returns 1.0 if the voxel size is not defined."""
         if self.voxels_size is not None:
-            return self.voxels_size[1]
+            return self.voxels_size[2]
         return 1.0
 
     @property
     def y(self) -> float:
         """Safe access to the voxel size in the y direction. Returns 1.0 if the voxel size is not defined."""
         if self.voxels_size is not None:
-            return self.voxels_size[2]
+            return self.voxels_size[1]
         return 1.0
 
     @property

@@ -125,7 +125,7 @@ def load_tiff(path: Path) -> np.ndarray:
     return tifffile.imread(path)
 
 
-def create_tiff(path: Path, stack: np.ndarray, voxel_size: VoxelSize, layout: str = "ZXY") -> None:
+def create_tiff(path: Path, stack: np.ndarray, voxel_size: VoxelSize, layout: str = "ZYX") -> None:
     """
     Create a tiff file from a numpy array
 
@@ -138,28 +138,28 @@ def create_tiff(path: Path, stack: np.ndarray, voxel_size: VoxelSize, layout: st
     """
     # taken from: https://pypi.org/project/tifffile docs
     # dimensions in TZCYXS order
-    if layout == "ZXY":
-        assert stack.ndim == 3, "Stack dimensions must be in ZXY order"
+    if layout == "ZYX":
+        assert stack.ndim == 3, "Stack dimensions must be in ZYX order"
         z, y, x = stack.shape
         stack = stack.reshape(1, z, 1, y, x, 1)
 
-    elif layout == "XY":
-        assert stack.ndim == 2, "Stack dimensions must be in XY order"
+    elif layout == "YX":
+        assert stack.ndim == 2, "Stack dimensions must be in YX order"
         y, x = stack.shape
         stack = stack.reshape(1, 1, 1, y, x, 1)
 
-    elif layout == "CXY":
-        assert stack.ndim == 3, "Stack dimensions must be in CXY order"
+    elif layout == "CYX":
+        assert stack.ndim == 3, "Stack dimensions must be in CYX order"
         c, y, x = stack.shape
         stack = stack.reshape(1, 1, c, y, x, 1)
 
-    elif layout == "ZCXY":
-        assert stack.ndim == 4, "Stack dimensions must be in ZCXY order"
+    elif layout == "ZCYX":
+        assert stack.ndim == 4, "Stack dimensions must be in ZCYX order"
         z, c, y, x = stack.shape
         stack = stack.reshape(1, z, c, y, x, 1)
 
-    elif layout == "CZXY":
-        assert stack.ndim == 4, "Stack dimensions must be in CZXY order"
+    elif layout == "CZYX":
+        assert stack.ndim == 4, "Stack dimensions must be in CZYX order"
         c, z, y, x = stack.shape
         stack = stack.reshape(1, z, c, y, x, 1)
 
