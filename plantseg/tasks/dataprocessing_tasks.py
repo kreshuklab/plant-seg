@@ -103,10 +103,10 @@ def image_rescale_to_voxel_size_task(image: PlantSegImage, new_voxel_size: Voxel
 
     if image.image_layout == ImageLayout.XY:
         scaling_factor = (spatial_scaling_factor[1], spatial_scaling_factor[2])
-    elif image.image_layout == ImageLayout.XYZ:
-        scaling_factor = spatial_scaling_factor
     elif image.image_layout == ImageLayout.CXY:
         scaling_factor = (1.0, spatial_scaling_factor[1], spatial_scaling_factor[2])
+    elif image.image_layout == ImageLayout.ZXY:
+        scaling_factor = spatial_scaling_factor
     elif image.image_layout == ImageLayout.CZXY:
         scaling_factor = (1.0, *spatial_scaling_factor)
     elif image.image_layout == ImageLayout.ZCXY:
