@@ -87,16 +87,24 @@ def clean_models() -> None:
 def check_version(
     current_version: str, plantseg_url: str = "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest"
 ) -> None:
-    """Check for the latest version of PlantSeg available on GitHub."""
+    """
+    Check for the latest version of PlantSeg available on GitHub.
+
+    Args:
+        current_version (str): The current version of PlantSeg in use.
+        plantseg_url (str): The URL to check the latest release of PlantSeg (default is the GitHub API URL).
+
+    Returns:
+        None
+    """
     try:
         response = requests.get(plantseg_url)
         response.raise_for_status()  # Raises an HTTPError if the response status code was unsuccessful
         latest_version = response.json()["tag_name"]
 
-        # Splitting the version string into components and comparing as tuples of integers
-        if tuple(map(int, latest_version.strip("v").split("."))) > tuple(
-            map(int, current_version.strip("v").split("."))
-        ):
+        current_version_tuple = tuple(map(int, current_version.strip("v").split(".")))
+        latest_version_tuple = tuple(map(int, latest_version.strip("v").split(".")))
+        if latest_version_tuple > current_version_tuple:
             print(f"New version of PlantSeg available: {latest_version}. Please update to the latest version.")
         else:
             print(f"You are using the latest version of PlantSeg: {current_version}.")

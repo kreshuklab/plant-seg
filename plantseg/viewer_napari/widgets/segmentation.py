@@ -4,7 +4,7 @@ from magicgui import magicgui
 from napari.layers import Labels, Image, Layer
 from napari.types import LayerDataTuple
 
-from plantseg.gui.widgets.utils import schedule_task
+from plantseg.viewer_napari.widgets.utils import schedule_task
 from plantseg.tasks.segmentation_tasks import clustering_segmentation_task
 from plantseg.plantseg_image import PlantSegImage
 

@@ -3,9 +3,9 @@ import webbrowser
 from PyQt5.QtCore import Qt
 from magicgui.widgets import MainWindow
 
-from plantseg.gui.widgets import widget_open_file, widget_export_stacks, widget_show_info, widget_infos
-from plantseg.gui.widgets import widget_gaussian_smoothing, widget_rescaling
-from plantseg.gui.widgets import widget_unet_predictions, widget_dt_ws, widget_agglomeration
+from plantseg.viewer_napari.widgets import widget_open_file, widget_export_stacks, widget_show_info, widget_infos
+from plantseg.viewer_napari.widgets import widget_gaussian_smoothing, widget_rescaling
+from plantseg.viewer_napari.widgets import widget_unet_predictions, widget_dt_ws, widget_agglomeration
 
 STYLE_SLIDER = "font-size: 9pt;"
 

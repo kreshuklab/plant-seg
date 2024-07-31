@@ -31,7 +31,7 @@ def create_parser():
 
 def launch_napari():
     """Launch the Napari viewer."""
-    from plantseg.gui.viewer import run_viewer
+    from plantseg.viewer_napari.viewer import run_viewer
 
     run_viewer()
 

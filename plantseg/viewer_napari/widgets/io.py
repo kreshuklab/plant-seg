@@ -18,12 +18,12 @@ from plantseg.io import (
 )
 from plantseg.io.h5 import list_h5_keys
 from plantseg.io.zarr import list_zarr_keys
-from plantseg.gui.widgets.utils import _return_value_if_widget, schedule_task
+from plantseg.viewer_napari.widgets.utils import _return_value_if_widget, schedule_task
 from enum import Enum
 from plantseg.plantseg_image import ImageLayout, ImageType, SemanticType
 from plantseg.tasks.workflow_handler import workflow_handler
 import time
-from plantseg.gui.logging import napari_formatted_logging
+from plantseg.viewer_napari.logging import napari_formatted_logging
 
 
 class PathMode(Enum):

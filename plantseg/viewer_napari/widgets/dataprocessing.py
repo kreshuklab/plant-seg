@@ -9,10 +9,10 @@ from plantseg.tasks.dataprocessing_tasks import gaussian_smoothing_task
 from plantseg.tasks.dataprocessing_tasks import set_voxel_size_task
 from plantseg.tasks.dataprocessing_tasks import image_rescale_to_shape_task
 from plantseg.tasks.dataprocessing_tasks import image_rescale_to_voxel_size_task
-from plantseg.gui.widgets.utils import schedule_task
+from plantseg.viewer_napari.widgets.utils import schedule_task
 from plantseg.plantseg_image import PlantSegImage
 from plantseg.models.zoo import model_zoo
-from plantseg.gui.logging import napari_formatted_logging
+from plantseg.viewer_napari.logging import napari_formatted_logging
 from plantseg.io import VoxelSize
 
 
