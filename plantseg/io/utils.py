@@ -50,7 +50,7 @@ class VoxelSize(BaseModel):
 
     @field_validator("unit")
     def _check_unit(cls, value):
-        if value in ["um", "\\u00B5m", "micrometers"]:
+        if value in ["um", "\\u00B5m", "micron", "micrometers"]:
             return "um"
 
         raise ValueError("Only micrometers (um) are supported as unit")
