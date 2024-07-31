@@ -76,7 +76,7 @@ def widget_open_file(
     layer_type: str = ImageType.IMAGE.value,
     new_layer_name: str = "",
     key: str = "",
-    stack_layout: str = ImageLayout.ZXY.value,
+    stack_layout: str = ImageLayout.ZYX.value,
 ) -> Future[LayerDataTuple]:
     """Open a file and return a napari layer."""
 

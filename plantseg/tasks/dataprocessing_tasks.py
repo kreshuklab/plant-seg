@@ -52,16 +52,16 @@ def image_rescale_to_shape_task(image: PlantSegImage, new_shape: tuple[int, ...]
         new_shape (tuple[int, ...]): new shape of the image
         order (int): order of the interpolation
     """
-    if image.image_layout == ImageLayout.XY:
+    if image.image_layout == ImageLayout.YX:
         scaling_factor = (new_shape[1] / image.shape[0], new_shape[2] / image.shape[1])
         spatial_scaling_factor = (1.0, scaling_factor[0], scaling_factor[1])
-    elif image.image_layout == ImageLayout.ZXY:
+    elif image.image_layout == ImageLayout.ZYX:
         scaling_factor = (new_shape[0] / image.shape[0], new_shape[1] / image.shape[1], new_shape[2] / image.shape[2])
         spatial_scaling_factor = scaling_factor
-    elif image.image_layout == ImageLayout.CXY:
+    elif image.image_layout == ImageLayout.CYX:
         scaling_factor = (1.0, new_shape[1] / image.shape[1], new_shape[2] / image.shape[2])
         spatial_scaling_factor = (1.0, scaling_factor[1], scaling_factor[2])
-    elif image.image_layout == ImageLayout.CZXY:
+    elif image.image_layout == ImageLayout.CZYX:
         scaling_factor = (
             1.0,
             new_shape[0] / image.shape[1],
@@ -69,7 +69,7 @@ def image_rescale_to_shape_task(image: PlantSegImage, new_shape: tuple[int, ...]
             new_shape[2] / image.shape[3],
         )
         spatial_scaling_factor = scaling_factor[1:]
-    elif image.image_layout == ImageLayout.ZCXY:
+    elif image.image_layout == ImageLayout.ZCYX:
         scaling_factor = (
             new_shape[0] / image.shape[0],
             1.0,
@@ -101,15 +101,15 @@ def image_rescale_to_voxel_size_task(image: PlantSegImage, new_voxel_size: Voxel
     """
     spatial_scaling_factor = image.voxel_size.scalefactor_from_voxelsize(new_voxel_size)
 
-    if image.image_layout == ImageLayout.XY:
+    if image.image_layout == ImageLayout.YX:
         scaling_factor = (spatial_scaling_factor[1], spatial_scaling_factor[2])
-    elif image.image_layout == ImageLayout.CXY:
+    elif image.image_layout == ImageLayout.CYX:
         scaling_factor = (1.0, spatial_scaling_factor[1], spatial_scaling_factor[2])
-    elif image.image_layout == ImageLayout.ZXY:
+    elif image.image_layout == ImageLayout.ZYX:
         scaling_factor = spatial_scaling_factor
-    elif image.image_layout == ImageLayout.CZXY:
+    elif image.image_layout == ImageLayout.CZYX:
         scaling_factor = (1.0, *spatial_scaling_factor)
-    elif image.image_layout == ImageLayout.ZCXY:
+    elif image.image_layout == ImageLayout.ZCYX:
         scaling_factor = (spatial_scaling_factor[0], 1.0, *spatial_scaling_factor[1:])
 
     out_data = image_rescale(image.get_data(), scaling_factor, order=order)

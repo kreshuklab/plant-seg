@@ -81,18 +81,18 @@ class ImageLayout(Enum):
     - C: Channel
 
     Attributes:
-        XY (str): 2D image with X and Y axis
-        CXY (str): 2D image with Channel, X and Y axis
-        ZXY (str): 3D image with Z, X and Y axis
-        CZXY (str): 3D image with Channel, Z, X and Y axis
-        ZCXY (str): 3D image with Z, Channel, X and
+        YX (str): 2D image with X and Y axis
+        CYX (str): 2D image with Channel, X and Y axis
+        ZYX (str): 3D image with Z, X and Y axis
+        CZYX (str): 3D image with Channel, Z, X and Y axis
+        ZCYX (str): 3D image with Z, Channel, X and
     """
 
-    XY = "XY"
-    CXY = "CXY"
-    ZXY = "ZXY"
-    CZXY = "CZXY"
-    ZCXY = "ZCXY"
+    YX = "YX"
+    CYX = "CYX"
+    ZYX = "ZYX"
+    CZYX = "CZYX"
+    ZCYX = "ZCYX"
 
     @classmethod
     def to_choices(cls) -> list[str]:
@@ -119,12 +119,12 @@ class ImageProperties(BaseModel):
 
     @property
     def dimensionality(self) -> ImageDimensionality:
-        if self.image_layout in (ImageLayout.XY, ImageLayout.CXY):
+        if self.image_layout in (ImageLayout.YX, ImageLayout.CYX):
             return ImageDimensionality.TWO
         elif self.image_layout in (
-            ImageLayout.ZXY,
-            ImageLayout.CZXY,
-            ImageLayout.ZCXY,
+            ImageLayout.ZYX,
+            ImageLayout.CZYX,
+            ImageLayout.ZCYX,
         ):
             return ImageDimensionality.THREE
         else:
@@ -144,12 +144,12 @@ class ImageProperties(BaseModel):
 
     @property
     def channel_axis(self) -> int:
-        if self.image_layout in (ImageLayout.CXY, ImageLayout.CZXY):
+        if self.image_layout in (ImageLayout.CYX, ImageLayout.CZYX):
             return 0
-        elif self.image_layout == ImageLayout.ZCXY:
+        elif self.image_layout == ImageLayout.ZCYX:
             return 1
 
-        elif self.image_layout in (ImageLayout.XY, ImageLayout.ZXY):
+        elif self.image_layout in (ImageLayout.YX, ImageLayout.ZYX):
             return None
         else:
             raise ValueError(f"Image layout {self.image_layout} not recognized")
@@ -164,23 +164,23 @@ class ImageProperties(BaseModel):
 
 
 def scale_to_voxelsize(scale: tuple[float, ...], layout: ImageLayout, unit: str = 'um') -> VoxelSize:
-    if layout == ImageLayout.XY:
+    if layout == ImageLayout.YX:
         assert len(scale) == 2, f"Scale should have 2 elements for layout {layout}"
         return VoxelSize(voxels_size=(1.0, scale[0], scale[1]), unit=unit)
 
-    elif layout == ImageLayout.CXY:
+    elif layout == ImageLayout.CYX:
         assert len(scale) == 3, f"Scale should have 3 elements for layout {layout}"
         return VoxelSize(voxels_size=(1.0, scale[1], scale[2]), unit=unit)
 
-    elif layout == ImageLayout.ZXY:
+    elif layout == ImageLayout.ZYX:
         assert len(scale) == 3, f"Scale should have 3 elements for layout {layout}"
         return VoxelSize(voxels_size=scale, unit=unit)
 
-    elif layout == ImageLayout.CZXY:
+    elif layout == ImageLayout.CZYX:
         assert len(scale) == 4, f"Scale should have 4 elements for layout {layout}"
         return VoxelSize(voxels_size=(scale[1], scale[2], scale[3]), unit=unit)
 
-    elif layout == ImageLayout.ZCXY:
+    elif layout == ImageLayout.ZCYX:
         assert len(scale) == 4, f"Scale should have 4 elements for layout {layout}"
         return VoxelSize(voxels_size=(scale[0], scale[2], scale[3]), unit=unit)
 
@@ -312,19 +312,19 @@ class PlantSegImage:
         )
 
     def _check_ndim(self, data: np.ndarray) -> None:
-        if self.image_layout in (ImageLayout.CXY, ImageLayout.ZXY):
+        if self.image_layout in (ImageLayout.CYX, ImageLayout.ZYX):
             if data.ndim != 3:
                 raise ValueError(
                     f"Data has shape {data.shape} but should have 3 dimensions for layout {self.image_layout}"
                 )
 
-        elif self.image_layout in (ImageLayout.CZXY, ImageLayout.ZCXY):
+        elif self.image_layout in (ImageLayout.CZYX, ImageLayout.ZCYX):
             if data.ndim != 4:
                 raise ValueError(
                     f"Data has shape {data.shape} but should have 4 dimensions for layout {self.image_layout}"
                 )
 
-        elif self.image_layout in (ImageLayout.XY,):
+        elif self.image_layout in (ImageLayout.YX,):
             if data.ndim != 2:
                 raise ValueError(
                     f"Data has shape {data.shape} but should have 2 dimensions for layout {self.image_layout}"
@@ -334,40 +334,40 @@ class PlantSegImage:
             raise ValueError(f"Image layout {self.image_layout} not recognized")
 
     def _check_shape(self, data: np.ndarray) -> None:
-        if self.image_layout == ImageLayout.ZXY:
+        if self.image_layout == ImageLayout.ZYX:
             if data.shape[0] == 1:
-                gui_logger.warn("Image layout is ZXY but data has only one z slice, casting to XY")
-                self._properties.image_layout = ImageLayout.XY
+                gui_logger.warn("Image layout is ZYX but data has only one z slice, casting to YX")
+                self._properties.image_layout = ImageLayout.YX
                 self._data = data[0]
-        elif self.image_layout == ImageLayout.CZXY:
+        elif self.image_layout == ImageLayout.CZYX:
             if data.shape[0] == 1 and data.shape[1] == 1:
-                gui_logger.warn("Image layout is CZXY but data has only one z slice and one channel, casting to XY")
-                self._properties.image_layout = ImageLayout.XY
+                gui_logger.warn("Image layout is CZYX but data has only one z slice and one channel, casting to YX")
+                self._properties.image_layout = ImageLayout.YX
                 self._data = data[0, 0]
 
             elif data.shape[0] == 1 and data.shape[1] > 1:
-                gui_logger.warn("Image layout is CZXY but data has only one channel, casting to ZXY")
-                self._properties.image_layout = ImageLayout.ZXY
+                gui_logger.warn("Image layout is CZYX but data has only one channel, casting to ZYX")
+                self._properties.image_layout = ImageLayout.ZYX
                 self._data = data[0]
             elif data.shape[0] > 1 and data.shape[1] == 1:
-                gui_logger.warn("Image layout is CZXY but data has only one z slice, casting to CXY")
-                self._properties.image_layout = ImageLayout.CXY
+                gui_logger.warn("Image layout is CZYX but data has only one z slice, casting to CYX")
+                self._properties.image_layout = ImageLayout.CYX
                 self._data = data[:, 0]
 
-        elif self.image_layout == ImageLayout.ZCXY:
+        elif self.image_layout == ImageLayout.ZCYX:
             if data.shape[1] == 1 and data.shape[2] == 1:
-                gui_logger.warn("Image layout is ZCXY but data has only one z slice and one channel, casting to XY")
-                self._properties.image_layout = ImageLayout.XY
+                gui_logger.warn("Image layout is ZCYX but data has only one z slice and one channel, casting to YX")
+                self._properties.image_layout = ImageLayout.YX
                 self._data = data[0, 0]
 
             elif data.shape[1] == 1 and data.shape[2] > 1:
-                gui_logger.warn("Image layout is ZCXY but data has only one channel, casting to ZXY")
-                self._properties.image_layout = ImageLayout.ZXY
+                gui_logger.warn("Image layout is ZCYX but data has only one channel, casting to ZYX")
+                self._properties.image_layout = ImageLayout.ZYX
                 self._data = data[0]
 
             elif data.shape[1] > 1 and data.shape[2] == 1:
-                gui_logger.warn("Image layout is ZCXY but data has only one z slice, casting to CXY")
-                self._properties.image_layout = ImageLayout.CXY
+                gui_logger.warn("Image layout is ZCYX but data has only one z slice, casting to CYX")
+                self._properties.image_layout = ImageLayout.CYX
                 self._data = data[:, 0]
 
     def _check_labels_have_no_channels(self, data: np.ndarray) -> None:
@@ -428,15 +428,15 @@ class PlantSegImage:
     @property
     def scale(self) -> tuple[float, ...]:
         """Returns the scale of the image. The scale is equal to the voxel size in each spatial dimension and 1 in other channels."""
-        if self.image_layout == ImageLayout.XY:
+        if self.image_layout == ImageLayout.YX:
             return (self.voxel_size.x, self.voxel_size.y)
-        elif self.image_layout == ImageLayout.ZXY:
+        elif self.image_layout == ImageLayout.ZYX:
             return (self.voxel_size.z, self.voxel_size.x, self.voxel_size.y)
-        elif self.image_layout == ImageLayout.CXY:
+        elif self.image_layout == ImageLayout.CYX:
             return (1.0, self.voxel_size.x, self.voxel_size.y)
-        elif self.image_layout == ImageLayout.CZXY:
+        elif self.image_layout == ImageLayout.CZYX:
             return (1.0, self.voxel_size.z, self.voxel_size.x, self.voxel_size.y)
-        elif self.image_layout == ImageLayout.ZCXY:
+        elif self.image_layout == ImageLayout.ZCYX:
             return (self.voxel_size.z, 1.0, self.voxel_size.x, self.voxel_size.y)
         else:
             raise ValueError(f"Image layout {self.image_layout} not recognized")
@@ -536,7 +536,7 @@ def import_image(
     key: str | None = None,
     image_name: str = "image",
     semantic_type: str = "raw",
-    stack_layout: str = "XY",
+    stack_layout: str = "YX",
     m_slicing: Optional[str] = None,
 ) -> PlantSegImage:
     """
@@ -547,7 +547,7 @@ def import_image(
         key (str): Key to load data from h5 or zarr files
         image_name (str): Name of the image (a unique name to identify the image)
         semantic_type (str): Semantic type of the image, should be raw, segmentation, prediction or label
-        stack_layout (str): Layout of the image, should be XY, CXY, ZXY, CZXY or ZCXY
+        stack_layout (str): Layout of the image, should be YX, CYX, ZYX, CZYX or ZCYX
         m_slicing (str): Slicing to apply to the image, should be a string with the format [start:stop, ...] for each dimension.
     """
     data, voxel_size = _load_data(path, key)
