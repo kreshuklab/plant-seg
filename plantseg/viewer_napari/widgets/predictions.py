@@ -1,17 +1,20 @@
+"""UNet Predictions Widget"""
+
 from concurrent.futures import Future
+from enum import Enum
+from typing import Optional
 
-
+import napari
 import torch.cuda
 from magicgui import magicgui
-from napari import Viewer
 from napari.layers import Image
 from napari.types import LayerDataTuple
-from enum import Enum
+
 from plantseg.models.zoo import model_zoo
+from plantseg.plantseg_image import PlantSegImage
+from plantseg.tasks.predictions_tasks import unet_predictions_task
 from plantseg.viewer_napari.logging import napari_formatted_logging
 from plantseg.viewer_napari.widgets.utils import schedule_task
-from plantseg.tasks.predictions_tasks import unet_predictions_task
-from plantseg.plantseg_image import PlantSegImage
 
 ALL = 'All'
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
@@ -34,7 +37,7 @@ class UNetPredictionsMode(Enum):
 
     @classmethod
     def to_choices(cls):
-        return [mode.value for mode in cls]
+        return [(mode.value, mode) for mode in cls]
 
 
 @magicgui(
@@ -107,12 +110,12 @@ class UNetPredictionsMode(Enum):
     device={'label': 'Device', 'choices': ALL_DEVICES},
 )
 def widget_unet_predictions(
-    viewer: Viewer,
+    viewer: napari.Viewer,
     image: Image,
-    mode: str = UNetPredictionsMode.PLANTSEG.value,
+    mode: UNetPredictionsMode = UNetPredictionsMode.PLANTSEG,
     plantseg_filter: bool = True,
-    model_name: str = model_zoo.list_models()[0],
-    model_id: str = model_zoo.get_bioimageio_zoo_plantseg_model_names()[0],
+    model_name: Optional[str] = None,
+    model_id: Optional[str] = None,
     dimensionality: str = ALL,
     modality: str = ALL,
     output_type: str = ALL,
@@ -122,13 +125,14 @@ def widget_unet_predictions(
     single_patch: bool = False,
     device: str = ALL_DEVICES[0],
 ) -> Future[LayerDataTuple]:
-    mode = UNetPredictionsMode(mode)
-    if mode == UNetPredictionsMode.PLANTSEG:
+    if mode is UNetPredictionsMode.PLANTSEG:
         suffix = model_name
         model_id = None
-    elif mode == UNetPredictionsMode.BIOIMAGEIO:
+    elif mode is UNetPredictionsMode.BIOIMAGEIO:
         suffix = model_id
         model_name = None
+    else:
+        raise NotImplementedError(f'Mode {mode} not implemented yet.')
 
     # TODO add halo support and multichannel support
 
@@ -177,7 +181,7 @@ def _on_widget_unet_predictions_refresh_halo_changed():
 
 
 @widget_unet_predictions.mode.changed.connect
-def _on_widget_unet_predictions_mode_change(mode: str):
+def _on_widget_unet_predictions_mode_change(mode: UNetPredictionsMode):
     widgets_p = [
         widget_unet_predictions.model_name,
         widget_unet_predictions.dimensionality,
@@ -188,12 +192,12 @@ def _on_widget_unet_predictions_mode_change(mode: str):
         widget_unet_predictions.model_id,
         widget_unet_predictions.plantseg_filter,
     ]
-    if mode == UNetPredictionsMode.PLANTSEG.value:
+    if mode is UNetPredictionsMode.PLANTSEG:
         for widget in widgets_p:
             widget.show()
         for widget in widgets_b:
             widget.hide()
-    elif mode == UNetPredictionsMode.BIOIMAGEIO.value:
+    elif mode is UNetPredictionsMode.BIOIMAGEIO:
         for widget in widgets_p:
             widget.hide()
         for widget in widgets_b:
