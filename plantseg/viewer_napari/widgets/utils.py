@@ -1,6 +1,6 @@
 import timeit
 from concurrent.futures import Future
-from typing import Callable
+from typing import Callable, Optional
 
 import napari
 from magicgui.widgets import Widget
@@ -16,7 +16,7 @@ def _return_value_if_widget(x):
     return x
 
 
-def setup_layers_suggestions(out_name: str, widgets: list):
+def setup_layers_suggestions(out_name: str, widgets: Optional[list]):
     """Update the widgets with the output of the task."""
     viewer = napari.current_viewer()
 
@@ -34,7 +34,7 @@ def setup_layers_suggestions(out_name: str, widgets: list):
         widget.value = out_layer
 
 
-def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: list[Widget] | None = None):
+def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: Optional[list[Widget]] | None = None):
     """Schedule a task to be executed in a separate thread and update the widgets with the result.
 
     Args:
