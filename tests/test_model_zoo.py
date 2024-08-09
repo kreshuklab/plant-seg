@@ -4,6 +4,7 @@ import pytest
 
 from plantseg.training.model import UNet2D
 from plantseg.models.zoo import model_zoo
+from tests.conftest import IS_CUDA_AVAILABLE
 
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 
@@ -17,6 +18,7 @@ MODEL_NAMES = [
 
 
 class TestModelZoo:
+    @pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason="Cuda is not available")
     @pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Github workflows do not allow model download for security reason")
     def test_model_output_normalisation(self):
         for model_name in MODEL_NAMES:

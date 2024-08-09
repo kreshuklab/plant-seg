@@ -9,7 +9,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from plantseg.pipeline import gui_logger
+from plantseg._pipeline import gui_logger
 from plantseg.training.model import UNet2D
 from plantseg.training.utils import RunningAverage
 
@@ -40,7 +40,7 @@ class UNetTrainer:
         loaders: dict,
         checkpoint_dir: str,
         max_num_iterations: int,
-        device: str = 'cuda',
+        device: str = "cuda",
         log_after_iters: int = 100,
         pre_trained: str = None,
     ):
@@ -51,37 +51,37 @@ class UNetTrainer:
         self.loaders = loaders
         self.checkpoint_dir = checkpoint_dir
         self.max_num_iterations = max_num_iterations
-        self.max_num_epochs = max_num_iterations // len(loaders['train']) + 1
+        self.max_num_epochs = max_num_iterations // len(loaders["train"]) + 1
         self.device = device
         self.log_after_iters = log_after_iters
-        self.best_eval_loss = float('+inf')
+        self.best_eval_loss = float("+inf")
 
         self.num_iterations = 1
         if pre_trained is not None:
             gui_logger.info(f"Logging pre-trained model from '{pre_trained}'...")
-            state = torch.load(pre_trained, map_location='cpu')
+            state = torch.load(pre_trained, map_location="cpu")
             self.model.load_state_dict(state)
 
         # init tensorboard logger
-        self.writer = SummaryWriter(log_dir=os.path.join(checkpoint_dir, 'logs'))
+        self.writer = SummaryWriter(log_dir=os.path.join(checkpoint_dir, "logs"))
 
     def train(self) -> None:
         for epoch in range(self.max_num_epochs):
-            print(f'Epoch [{epoch}/~{self.max_num_epochs}]')
+            print(f"Epoch [{epoch}/~{self.max_num_epochs}]")
             # train for one epoch
             should_terminate = self.train_epoch()
 
             if should_terminate:
-                gui_logger.info('Stopping criterion is satisfied. Finishing training')
+                gui_logger.info("Stopping criterion is satisfied. Finishing training")
                 return
 
-            print('Validating...')
+            print("Validating...")
             # set the model in eval mode
             self.model.eval()
             # evaluate on validation set
             eval_loss = self.validate()
-            gui_logger.info(f'Val Loss: {eval_loss}.')
-            self.writer.add_scalar('Loss/val', eval_loss, self.num_iterations)
+            gui_logger.info(f"Val Loss: {eval_loss}.")
+            self.writer.add_scalar("Loss/val", eval_loss, self.num_iterations)
             # set the model back to training mode
             self.model.train()
 
@@ -111,7 +111,7 @@ class UNetTrainer:
         # sets the model in training mode
         self.model.train()
 
-        for input, target in tqdm(self.loaders['train']):
+        for input, target in tqdm(self.loaders["train"]):
             input, target = input.to(self.device), target.to(self.device)
             output, loss = self._forward_pass(input, target)
 
@@ -124,8 +124,8 @@ class UNetTrainer:
 
             if self.num_iterations % self.log_after_iters == 0:
                 # log stats, params and images
-                gui_logger.info(f'Train Loss: {train_losses.avg}.')
-                self.writer.add_scalar('Loss/train', train_losses.avg, self.num_iterations)
+                gui_logger.info(f"Train Loss: {train_losses.avg}.")
+                self.writer.add_scalar("Loss/train", train_losses.avg, self.num_iterations)
 
                 if self.should_stop():
                     return True
@@ -140,13 +140,13 @@ class UNetTrainer:
         some predefined threshold (1e-6 in our case)
         """
         if self.max_num_iterations < self.num_iterations:
-            gui_logger.info(f'Maximum number of iterations {self.max_num_iterations} exceeded.')
+            gui_logger.info(f"Maximum number of iterations {self.max_num_iterations} exceeded.")
             return True
 
         min_lr = 1e-6
-        lr = self.optimizer.param_groups[0]['lr']
+        lr = self.optimizer.param_groups[0]["lr"]
         if lr < min_lr:
-            gui_logger.info(f'Learning rate below the minimum {min_lr}.')
+            gui_logger.info(f"Learning rate below the minimum {min_lr}.")
             return True
 
         return False
@@ -155,7 +155,7 @@ class UNetTrainer:
         val_losses = RunningAverage()
 
         with torch.no_grad():
-            for input, target in tqdm(self.loaders['val']):
+            for input, target in tqdm(self.loaders["val"]):
                 input, target = input.to(self.device), target.to(self.device)
 
                 output, loss = self._forward_pass(input, target)
@@ -184,13 +184,13 @@ class UNetTrainer:
         else:
             state_dict = self.model.state_dict()
 
-        last_file_path = os.path.join(self.checkpoint_dir, 'last_checkpoint.pytorch')
+        last_file_path = os.path.join(self.checkpoint_dir, "last_checkpoint.pytorch")
         gui_logger.info(f"Saving checkpoint to '{last_file_path}'")
 
         torch.save(state_dict, last_file_path)
         if is_best:
             gui_logger.info("Saving best checkpoint")
-            best_file_path = os.path.join(self.checkpoint_dir, 'best_checkpoint.pytorch')
+            best_file_path = os.path.join(self.checkpoint_dir, "best_checkpoint.pytorch")
             shutil.copyfile(last_file_path, best_file_path)
 
     @staticmethod
