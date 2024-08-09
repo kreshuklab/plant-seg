@@ -124,7 +124,7 @@ def widget_unet_predictions(
     recommend_halo: bool = False,
     single_patch: bool = False,
     device: str = ALL_DEVICES[0],
-) -> Future[LayerDataTuple]:
+) -> Future[list[LayerDataTuple]]:
     if mode is UNetPredictionsMode.PLANTSEG:
         suffix = model_name
         model_id = None

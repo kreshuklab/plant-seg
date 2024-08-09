@@ -1,13 +1,13 @@
-from magicgui.widgets import Widget
-from typing import Callable
 import timeit
 from concurrent.futures import Future
+from typing import Callable
 
+import napari
+from magicgui.widgets import Widget
 from napari.qt.threading import create_worker
 
-from plantseg.viewer_napari.logging import napari_formatted_logging
 from plantseg.plantseg_image import PlantSegImage
-import napari
+from plantseg.viewer_napari.logging import napari_formatted_logging
 
 
 def _return_value_if_widget(x):
@@ -52,7 +52,7 @@ def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: list[Widg
     future = Future()
     timer_start = timeit.default_timer()
 
-    def on_done(task_result: PlantSegImage | tuple[PlantSegImage, ...] | None):
+    def on_done(task_result: PlantSegImage | list[PlantSegImage] | None):
         timer = timeit.default_timer() - timer_start
         napari_formatted_logging(f"{task_name} complete in {timer:.2f}s", thread='Task')
 
@@ -65,8 +65,7 @@ def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: list[Widg
                 if not isinstance(ps_im, PlantSegImage):
                     raise ValueError(f"Task {task_name} returned an unexpected value {task_result}")
 
-            layers_tuple = tuple([ps_im.to_napari_layer_tuple() for ps_im in task_result])
-            future.set_result(layers_tuple)
+            future.set_result([ps_im.to_napari_layer_tuple() for ps_im in task_result])
 
             [setup_layers_suggestions(out_name=ps_im.name, widgets=widget_to_update) for ps_im in task_result]
 
