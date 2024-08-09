@@ -1,7 +1,8 @@
-from plantseg.functionals.predictions import unet_predictions
-from plantseg.tasks import task_tracker
-from plantseg.plantseg_image import PlantSegImage, SemanticType
 from pathlib import Path
+
+from plantseg.functionals.predictions import unet_predictions
+from plantseg.plantseg_image import PlantSegImage, SemanticType, ImageLayout
+from plantseg.tasks import task_tracker
 
 
 @task_tracker
@@ -17,7 +18,7 @@ def unet_predictions_task(
     disable_tqdm: bool = False,
     config_path: Path | None = None,
     model_weights_path: Path | None = None,
-) -> PlantSegImage:
+) -> list[PlantSegImage]:
     """
     Apply a trained U-Net model to a PlantSegImage object.
 
@@ -30,16 +31,9 @@ def unet_predictions_task(
         single_batch_mode (bool): whether to use a single batch for prediction
         device (str): the computation device ('cpu', 'cuda', etc.)
         model_update (bool): whether to update the model to the latest version
-
-
     """
-    if image.is_multichannel:
-        handle_multichannel = True
-    else:
-        handle_multichannel = False
-
     data = image.get_data()
-    pmap = unet_predictions(
+    pmaps = unet_predictions(
         raw=data,
         model_name=model_name,
         model_id=model_id,
@@ -48,10 +42,22 @@ def unet_predictions_task(
         device=device,
         model_update=model_update,
         disable_tqdm=disable_tqdm,
-        handle_multichannel=handle_multichannel,
+        handle_multichannel=True,  # always receive a (C, Z, Y, X) prediction
         config_path=config_path,
         model_weights_path=model_weights_path,
     )
+    assert pmaps.ndim == 4, f"Expected 4D prediction, got {pmaps.ndim}D"
 
-    new_image = image.derive_new(pmap, name=f"{image.name}_{suffix}", semantic_type=SemanticType.PREDICTION)
-    return new_image
+    new_images = []
+    image_layout = ImageLayout.ZYX if pmaps.shape[1] > 1 else ImageLayout.YX
+    for i, pmap in enumerate(pmaps):
+        new_images.append(
+            image.derive_new(
+                pmap.squeeze(),  # pmap is a (Z, Y, X) prediction, Z >= 1
+                name=f"{image.name}_{suffix}_{i}",
+                semantic_type=SemanticType.PREDICTION,
+                image_layout=image_layout,
+            )
+        )
+
+    return new_images
