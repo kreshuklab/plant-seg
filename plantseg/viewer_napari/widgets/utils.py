@@ -67,7 +67,7 @@ def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: list[Widg
 
             future.set_result([ps_im.to_napari_layer_tuple() for ps_im in task_result])
 
-            [setup_layers_suggestions(out_name=ps_im.name, widgets=widget_to_update) for ps_im in task_result]
+            setup_layers_suggestions(out_name=task_result[-1].name, widgets=widget_to_update)
 
         elif task_result is None:
             future.set_result(None)
