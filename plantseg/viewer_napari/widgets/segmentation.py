@@ -5,7 +5,7 @@ from napari.layers import Image, Labels, Layer
 from napari.types import LayerDataTuple
 
 from plantseg.plantseg_image import PlantSegImage
-from plantseg.tasks.segmentation_tasks import clustering_segmentation_task
+from plantseg.tasks.segmentation_tasks import clustering_segmentation_task, dt_watershed_task
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 ########################################################################################################################
@@ -118,25 +118,10 @@ def widget_lifted_multicut(
 ########################################################################################################################
 
 
-def dtws_wrapper(
-    boundary_pmaps,
-    stacked: bool = True,
-    threshold: float = 0.5,
-    min_size: int = 100,
-    sigma_seeds: float = 0.2,
-    sigma_weights: float = 2.0,
-    alpha: float = 1.0,
-    pixel_pitch: tuple[int, int, int] = (1, 1, 1),
-    apply_nonmax_suppression: bool = False,
-    nuclei: bool = False,
-):
-    pass
-
-
 @magicgui(
     call_button='Run Watershed',
     image={
-        'label': 'Pmap/Image',
+        'label': 'Image or Probability Map',
         'tooltip': 'Raw or boundary image to use as input for Watershed.',
     },
     stacked={
@@ -155,7 +140,7 @@ def dtws_wrapper(
         'min': 0.0,
     },
     min_size={
-        'label': 'Min-size',
+        'label': 'Minimum segment size',
         'tooltip': 'Minimum segment size allowed in voxels.',
     },
     # Advanced parameters
@@ -170,7 +155,7 @@ def dtws_wrapper(
     use_pixel_pitch={'label': 'Use pixel pitch'},
     pixel_pitch={'label': 'Pixel pitch'},
     apply_nonmax_suppression={'label': 'Apply nonmax suppression'},
-    nuclei={'label': 'Is image Nuclei'},
+    is_nuclei_image={'label': 'Is nuclei image'},
 )
 def widget_dt_ws(
     image: Image,
@@ -184,9 +169,25 @@ def widget_dt_ws(
     use_pixel_pitch: bool = False,
     pixel_pitch: tuple[int, int, int] = (1, 1, 1),
     apply_nonmax_suppression: bool = False,
-    nuclei: bool = False,
+    is_nuclei_image: bool = False,
 ) -> Future[LayerDataTuple]:
-    pass
+    ps_image = PlantSegImage.from_napari_layer(image)
+
+    return schedule_task(
+        dt_watershed_task,
+        task_kwargs={
+            "image": ps_image,
+            "threshold": threshold,
+            "sigma_seeds": sigma_seeds,
+            "stacked": stacked,
+            "sigma_weights": sigma_weights,
+            "min_size": min_size,
+            "alpha": alpha,
+            "pixel_pitch": pixel_pitch if use_pixel_pitch else None,
+            "apply_nonmax_suppression": apply_nonmax_suppression,
+            "is_nuclei_image": is_nuclei_image,
+        },
+    )
 
 
 widget_dt_ws.sigma_seeds.hide()
@@ -195,7 +196,7 @@ widget_dt_ws.alpha.hide()
 widget_dt_ws.use_pixel_pitch.hide()
 widget_dt_ws.pixel_pitch.hide()
 widget_dt_ws.apply_nonmax_suppression.hide()
-widget_dt_ws.nuclei.hide()
+widget_dt_ws.is_nuclei_image.hide()
 
 
 @widget_dt_ws.show_advanced.changed.connect
@@ -207,7 +208,7 @@ def _on_show_advanced_changed(state: bool):
         widget_dt_ws.use_pixel_pitch.show()
         widget_dt_ws.pixel_pitch.show()
         widget_dt_ws.apply_nonmax_suppression.show()
-        widget_dt_ws.nuclei.show()
+        widget_dt_ws.is_nuclei_image.show()
     else:
         widget_dt_ws.sigma_seeds.hide()
         widget_dt_ws.sigma_weights.hide()
@@ -215,4 +216,4 @@ def _on_show_advanced_changed(state: bool):
         widget_dt_ws.use_pixel_pitch.hide()
         widget_dt_ws.pixel_pitch.hide()
         widget_dt_ws.apply_nonmax_suppression.hide()
-        widget_dt_ws.nuclei.hide()
+        widget_dt_ws.is_nuclei_image.hide()

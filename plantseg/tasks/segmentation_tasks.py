@@ -1,5 +1,4 @@
-import numpy as np
-
+from plantseg.functionals.dataprocessing.dataprocessing import normalize_01
 from plantseg.functionals.segmentation import dt_watershed, gasp, multicut, mutex_ws
 from plantseg.loggers import gui_logger
 from plantseg.plantseg_image import PlantSegImage, SemanticType
@@ -18,7 +17,7 @@ def dt_watershed_task(
     pixel_pitch: tuple[int, ...] | None = None,
     apply_nonmax_suppression: bool = False,
     n_threads: int | None = None,
-    mask: np.ndarray | None = None,
+    is_nuclei_image: bool = False,
 ) -> PlantSegImage:
     """Distance transform watershed segmentation task.
 
@@ -43,7 +42,14 @@ def dt_watershed_task(
             "The input image is not a boundary probability map. The task will still attempt to run, but the results may not be as expected."
         )
 
-    boundary_pmaps = image.get_data()
+    if is_nuclei_image:
+        boundary_pmaps = normalize_01(image.get_data())
+        boundary_pmaps = 1.0 - boundary_pmaps
+        mask = boundary_pmaps < threshold
+    else:
+        boundary_pmaps = image.get_data()
+        mask = None
+
     dt_seg = dt_watershed(
         boundary_pmaps=boundary_pmaps,
         threshold=threshold,
