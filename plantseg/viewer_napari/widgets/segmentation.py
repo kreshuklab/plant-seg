@@ -1,12 +1,12 @@
 from concurrent.futures import Future
 
 from magicgui import magicgui
-from napari.layers import Labels, Image, Layer
+from napari.layers import Image, Labels, Layer
 from napari.types import LayerDataTuple
 
-from plantseg.viewer_napari.widgets.utils import schedule_task
-from plantseg.tasks.segmentation_tasks import clustering_segmentation_task
 from plantseg.plantseg_image import PlantSegImage
+from plantseg.tasks.segmentation_tasks import clustering_segmentation_task
+from plantseg.viewer_napari.widgets.utils import schedule_task
 
 ########################################################################################################################
 #                                                                                                                      #
@@ -23,7 +23,7 @@ STACKED = [('2D', True), ('3D', False)]
         'label': 'Pmap/Image',
         'tooltip': 'Raw or boundary image to use as input for clustering.',
     },
-    labels={
+    _labels={
         'label': 'Over-segmentation',
         'tooltip': 'Over-segmentation labels layer to use as input for clustering.',
     },
@@ -47,13 +47,13 @@ STACKED = [('2D', True), ('3D', False)]
 )
 def widget_agglomeration(
     image: Image,
-    labels: Labels,
+    _labels: Labels,
     mode: str = "GASP",
     beta: float = 0.6,
     minsize: int = 100,
 ) -> Future[LayerDataTuple]:
     ps_image = PlantSegImage.from_napari_layer(image)
-    ps_labels = PlantSegImage.from_napari_layer(labels)
+    ps_labels = PlantSegImage.from_napari_layer(_labels)
 
     return schedule_task(
         clustering_segmentation_task,
@@ -84,7 +84,7 @@ def widget_agglomeration(
         'label': 'Nuclei',
         'tooltip': 'Nuclei binary predictions or Nuclei segmentation.',
     },
-    labels={
+    _labels={
         'label': 'Over-segmentation',
         'tooltip': 'Over-segmentation labels layer to use as input for clustering.',
     },
@@ -102,7 +102,11 @@ def widget_agglomeration(
     },
 )
 def widget_lifted_multicut(
-    image: Image, nuclei: Layer, labels: Labels, beta: float = 0.5, minsize: int = 100
+    image: Image,
+    nuclei: Layer,
+    _labels: Labels,
+    beta: float = 0.5,
+    minsize: int = 100,
 ) -> Future[LayerDataTuple]:
     pass
 
