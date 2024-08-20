@@ -51,7 +51,7 @@ class ImageType(Enum):
     """
 
     IMAGE = "image"
-    LABEL = "label"
+    LABEL = "labels"
 
     @classmethod
     def to_choices(cls):
