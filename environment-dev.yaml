@@ -1,4 +1,4 @@
-name: plant-seg-dev
+name: plantseg-v2-dev
 channels:
   - pytorch
   - nvidia
@@ -34,4 +34,4 @@ dependencies:
   - mkdocstrings-python
   - pip:
       - markdown-exec
-# then `pip install -e .`
+      - -e .
