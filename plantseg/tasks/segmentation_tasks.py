@@ -1,5 +1,12 @@
 from plantseg.functionals.dataprocessing.dataprocessing import normalize_01
-from plantseg.functionals.segmentation import dt_watershed, gasp, multicut, mutex_ws
+from plantseg.functionals.segmentation import (
+    dt_watershed,
+    gasp,
+    lifted_multicut_from_nuclei_pmaps,
+    lifted_multicut_from_nuclei_segmentation,
+    multicut,
+    mutex_ws,
+)
 from plantseg.loggers import gui_logger
 from plantseg.plantseg_image import PlantSegImage, SemanticType
 from plantseg.tasks import task_tracker
@@ -118,3 +125,45 @@ def clustering_segmentation_task(
 
     seg_image = image.derive_new(seg, name=f"{image.name}_{mode}", semantic_type=SemanticType.SEGMENTATION)
     return seg_image
+
+
+@task_tracker
+def lmc_segmentation_task(
+    boundary_pmap: PlantSegImage,
+    superpixels: PlantSegImage,
+    nuclei: PlantSegImage,
+    beta: float = 0.5,
+    post_min_size: int = 100,
+) -> PlantSegImage:
+    """Lifted multicut segmentation task.
+
+    Args:
+        boundary_pmap (PlantSegImage): cell boundary prediction, PlantSegImage of shape (Z, Y, X) with values between 0 and 1.
+        superpixels (PlantSegImage): superpixels/over-segmentation. Must have the same shape as boundary_pmap.
+        nuclei (PlantSegImage): a nuclear segmentation or prediction map. Must have the same shape as boundary_pmap.
+        beta (float): beta parameter for the Multicut.
+            A small value will steer the segmentation towards under-segmentation, while
+            a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
+        post_min_size (int): minimal size of the segments after Multicut. (default: 100)
+    """
+    if nuclei.semantic_type is SemanticType.PREDICTION or nuclei.semantic_type is SemanticType.IMAGE:
+        lmc = lifted_multicut_from_nuclei_pmaps
+        extra_key = "nuclei_pmaps"
+    else:
+        lmc = lifted_multicut_from_nuclei_segmentation
+        extra_key = "nuclei_seg"
+
+    segmentation = lmc(
+        boundary_pmaps=boundary_pmap.get_data(),
+        superpixels=superpixels.get_data(),
+        **{extra_key: nuclei.get_data()},
+        beta=beta,
+        post_minsize=post_min_size,
+    )
+
+    ps_seg = superpixels.derive_new(
+        segmentation,
+        name=f"{superpixels.name}_lmc",
+        semantic_type=SemanticType.SEGMENTATION,
+    )
+    return ps_seg

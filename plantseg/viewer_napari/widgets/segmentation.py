@@ -1,11 +1,11 @@
 from concurrent.futures import Future
 
 from magicgui import magicgui
-from napari.layers import Image, Labels, Layer
+from napari.layers import Image, Labels
 from napari.types import LayerDataTuple
 
 from plantseg.plantseg_image import PlantSegImage
-from plantseg.tasks.segmentation_tasks import clustering_segmentation_task, dt_watershed_task
+from plantseg.tasks.segmentation_tasks import clustering_segmentation_task, dt_watershed_task, lmc_segmentation_task
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 ########################################################################################################################
@@ -103,12 +103,25 @@ def widget_agglomeration(
 )
 def widget_lifted_multicut(
     image: Image,
-    nuclei: Layer,
+    nuclei: Image | Labels,
     _labels: Labels,
     beta: float = 0.5,
     minsize: int = 100,
 ) -> Future[LayerDataTuple]:
-    pass
+    ps_image = PlantSegImage.from_napari_layer(image)
+    ps_labels = PlantSegImage.from_napari_layer(_labels)
+    ps_nuclei = PlantSegImage.from_napari_layer(nuclei)
+
+    return schedule_task(
+        lmc_segmentation_task,
+        task_kwargs={
+            "boundary_pmap": ps_image,
+            "superpixels": ps_labels,
+            "nuclei": ps_nuclei,
+            "beta": beta,
+            "post_min_size": minsize,
+        },
+    )
 
 
 ########################################################################################################################
