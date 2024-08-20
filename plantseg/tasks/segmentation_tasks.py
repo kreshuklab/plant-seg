@@ -1,13 +1,9 @@
-from plantseg.functionals.segmentation import (
-    dt_watershed,
-    gasp,
-    multicut,
-    mutex_ws,
-)
-from plantseg.tasks import task_tracker
-from plantseg.plantseg_image import PlantSegImage, SemanticType
 import numpy as np
+
+from plantseg.functionals.segmentation import dt_watershed, gasp, multicut, mutex_ws
 from plantseg.loggers import gui_logger
+from plantseg.plantseg_image import PlantSegImage, SemanticType
+from plantseg.tasks import task_tracker
 
 
 @task_tracker
@@ -91,25 +87,26 @@ def clustering_segmentation_task(
             "The input image is not a boundary probability map. The task will still attempt to run, but the results may not be as expected."
         )
 
-    if over_segmentation.semantic_type != SemanticType.SEGMENTATION:
-        raise ValueError("The input over_segmentation is not a segmentation map.")
-
     boundary_pmaps = image.get_data()
 
     if over_segmentation is None:
         superpixels = None
     else:
+        if over_segmentation.semantic_type != SemanticType.SEGMENTATION:
+            raise ValueError("The input over_segmentation is not a segmentation map.")
         superpixels = over_segmentation.get_data()
 
         if boundary_pmaps.shape != superpixels.shape:
             raise ValueError("The boundary probability map and the over-segmentation map should have the same shape.")
 
     if mode == "gasp":
-        seg = gasp(boundary_pmaps, superpixels=superpixels, beta=beta, post_min_size=post_min_size)
+        seg = gasp(boundary_pmaps, superpixels=superpixels, beta=beta, post_minsize=post_min_size)
     elif mode == "multicut":
-        seg = multicut(boundary_pmaps, superpixels=superpixels, beta=beta, post_min_size=post_min_size)
+        if superpixels is None:
+            raise ValueError("The superpixels are required for the multicut mode.")
+        seg = multicut(boundary_pmaps, superpixels=superpixels, beta=beta, post_minsize=post_min_size)
     elif mode == "mutex_ws":
-        seg = mutex_ws(boundary_pmaps, superpixels=superpixels, beta=beta, post_min_size=post_min_size)
+        seg = mutex_ws(boundary_pmaps, superpixels=superpixels, beta=beta, post_minsize=post_min_size)
     else:
         raise ValueError(f"Unknown mode: {mode}, select one of ['gasp', 'multicut', 'mutex_ws']")
 

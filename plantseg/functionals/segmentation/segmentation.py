@@ -2,21 +2,21 @@ from typing import Optional
 
 import nifty
 import numpy as np
-from elf.segmentation import GaspFromAffinities
-from elf.segmentation import stacked_watershed, lifted_multicut as lmc, project_node_labels_to_pixels
+from elf.segmentation import GaspFromAffinities, project_node_labels_to_pixels, stacked_watershed
+from elf.segmentation import lifted_multicut as lmc
 from elf.segmentation.features import compute_rag, lifted_problem_from_probabilities, lifted_problem_from_segmentation
 from elf.segmentation.multicut import multicut_kernighan_lin
-from elf.segmentation.watershed import distance_transform_watershed, apply_size_filter
+from elf.segmentation.watershed import apply_size_filter, distance_transform_watershed
 from vigra.filters import gaussianSmoothing
 
-from plantseg.functionals.segmentation.utils import shift_affinities, compute_mc_costs
+from plantseg.functionals.segmentation.utils import compute_mc_costs, shift_affinities
 
 try:
-    import SimpleITK as sitk  # type: ignore
+    import SimpleITK as sitk  # type: ignore[import]
 
-    sitk_installed = True
+    SIMPLE_ITK_INSTALLED = True
 except ImportError:
-    sitk_installed = False
+    SIMPLE_ITK_INSTALLED = False
 
 
 def dt_watershed(
@@ -171,7 +171,10 @@ def mutex_ws(
 
 
 def multicut(
-    boundary_pmaps: np.ndarray, superpixels: np.ndarray, beta: float = 0.5, post_minsize: int = 50
+    boundary_pmaps: np.ndarray,
+    superpixels: np.ndarray,
+    beta: float = 0.5,
+    post_minsize: int = 50,
 ) -> np.ndarray:
     """
     Multicut segmentation from boundary predictions.
@@ -308,7 +311,10 @@ def lifted_multicut_from_nuclei_segmentation(
 
 
 def simple_itk_watershed(
-    boundary_pmaps: np.ndarray, threshold: float = 0.5, sigma: float = 1.0, minsize: int = 100
+    boundary_pmaps: np.ndarray,
+    threshold: float = 0.5,
+    sigma: float = 1.0,
+    minsize: int = 100,
 ) -> np.ndarray:
     """
     Simple itk watershed segmentation.
@@ -323,7 +329,7 @@ def simple_itk_watershed(
         segmentation (np.ndarray): watershed output segmentation (using SimpleITK)
 
     """
-    if not sitk_installed:
+    if not SIMPLE_ITK_INSTALLED:
         raise ValueError('please install sitk before running this process')
 
     if sigma > 0:
@@ -341,8 +347,8 @@ def simple_itk_watershed(
     return segmentation
 
 
-def simple_itk_watershed_from_markers(boundary_pmaps: np.ndarray, seeds: np.ndarray):
-    if not sitk_installed:
+def simple_itk_watershed_from_markers(boundary_pmaps: np.ndarray, seeds: np.ndarray) -> np.ndarray:
+    if not SIMPLE_ITK_INSTALLED:
         raise ValueError('please install sitk before running this process')
 
     itk_pmaps = sitk.GetImageFromArray(boundary_pmaps)
