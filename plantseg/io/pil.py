@@ -1,8 +1,8 @@
-from PIL import Image
-from PIL.ImageOps import grayscale
-import numpy as np
 from pathlib import Path
 
+import numpy as np
+from PIL import Image
+from PIL.ImageOps import grayscale
 
 PIL_EXTENSIONS = [".png", ".jpg", ".jpeg"]
 

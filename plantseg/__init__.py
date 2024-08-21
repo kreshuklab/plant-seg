@@ -2,9 +2,9 @@
 
 from os import getenv
 from pathlib import Path
+
 import torch  # noqa: F401; required to patch #273
 import yaml
-
 
 PATH_PLANTSEG_GLOBAL = Path(__file__).parent.resolve()
 

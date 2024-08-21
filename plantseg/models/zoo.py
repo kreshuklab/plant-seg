@@ -1,34 +1,31 @@
 """Model Zoo Singleton"""
 
 import json
-from warnings import warn
 from pathlib import Path
 from shutil import copy2
-from typing import List, Tuple, Optional, Self
-
-from pandas import DataFrame, concat
-from pydantic import BaseModel, Field, AliasChoices, model_validator
+from typing import List, Optional, Self, Tuple
+from warnings import warn
 
 import pooch
 from bioimageio.spec import InvalidDescr, load_description
 from bioimageio.spec.model.v0_4 import ModelDescr as ModelDescr_v0_4
 from bioimageio.spec.model.v0_5 import ModelDescr as ModelDescr_v0_5
 from bioimageio.spec.utils import download
-
-from torch.nn import MaxPool3d, MaxPool2d, Conv3d, Conv2d, Module
-from plantseg.training.model import InterpolateUpsampling, AbstractUNet, UNet2D, UNet3D
-
-from plantseg.utils import get_class, load_config, save_config, download_files
-from plantseg.models import zoo_logger
+from pandas import DataFrame, concat
+from pydantic import AliasChoices, BaseModel, Field, model_validator
+from torch.nn import Conv2d, Conv3d, MaxPool2d, MaxPool3d, Module
 
 from plantseg import (
+    FILE_BEST_MODEL_PYTORCH,
+    FILE_CONFIG_TRAIN_YAML,
+    FILE_LAST_MODEL_PYTORCH,
     PATH_MODEL_ZOO,
     PATH_MODEL_ZOO_CUSTOM,
     PATH_PLANTSEG_MODELS,
-    FILE_CONFIG_TRAIN_YAML,
-    FILE_BEST_MODEL_PYTORCH,
-    FILE_LAST_MODEL_PYTORCH,
 )
+from plantseg.models import zoo_logger
+from plantseg.training.model import AbstractUNet, InterpolateUpsampling, UNet2D, UNet3D
+from plantseg.utils import download_files, get_class, load_config, save_config
 
 AUTHOR_BIOIMAGEIO = 'bioimage.io'
 AUTHOR_PLANTSEG = 'plantseg'

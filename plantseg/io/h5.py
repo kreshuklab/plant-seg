@@ -1,10 +1,11 @@
 import warnings
+from pathlib import Path
 from typing import Optional
-from plantseg.io.utils import VoxelSize
 
 import h5py
 import numpy as np
-from pathlib import Path
+
+from plantseg.io.utils import VoxelSize
 
 # allowed h5 keys
 H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]

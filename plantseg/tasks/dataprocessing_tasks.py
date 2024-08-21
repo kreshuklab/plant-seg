@@ -1,10 +1,10 @@
-from plantseg.tasks import task_tracker
-from plantseg.functionals.dataprocessing import image_gaussian_smoothing
-from plantseg.plantseg_image import PlantSegImage, ImageLayout
-from plantseg.io.utils import VoxelSize
 from plantseg.functionals.dataprocessing import (
+    image_gaussian_smoothing,
     image_rescale,
 )
+from plantseg.io.utils import VoxelSize
+from plantseg.plantseg_image import ImageLayout, PlantSegImage
+from plantseg.tasks import task_tracker
 
 
 @task_tracker

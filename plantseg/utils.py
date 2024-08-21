@@ -1,8 +1,8 @@
 import importlib
-from shutil import rmtree
-from pathlib import Path
-from warnings import warn
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from shutil import rmtree
+from warnings import warn
 
 import requests
 import yaml

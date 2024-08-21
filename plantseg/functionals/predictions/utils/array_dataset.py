@@ -1,12 +1,12 @@
 import collections
-from typing import Callable, Tuple, Optional
+from typing import Callable, Optional, Tuple
 
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from plantseg.loggers import gui_logger
 from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
+from plantseg.loggers import gui_logger
 
 
 def mirror_pad(image: np.ndarray, padding_shape: tuple[int, int, int], multichannel: bool) -> np.ndarray:

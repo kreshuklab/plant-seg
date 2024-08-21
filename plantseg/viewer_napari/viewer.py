@@ -2,9 +2,9 @@ import napari
 
 from plantseg.viewer_napari.containers import (
     get_data_io,
-    get_preprocessing_tab,
-    get_main_tab,
     get_extras_tab,
+    get_main_tab,
+    get_preprocessing_tab,
     get_proofreading_tab,
 )
 from plantseg.viewer_napari.logging import napari_formatted_logging

@@ -1,7 +1,7 @@
 # pylint: disable=missing-docstring,import-outside-toplevel
 
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 import pytest
 import torch

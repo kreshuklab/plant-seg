@@ -1,18 +1,18 @@
 import numpy as np
+
 from plantseg.functionals.dataprocessing import (
     compute_scaling_factor,
     compute_scaling_voxelsize,
-    scale_image_to_voxelsize,
-    image_rescale,
-    image_median,
-    image_gaussian_smoothing,
-    image_crop,
     fix_input_shape,
+    image_crop,
+    image_gaussian_smoothing,
+    image_median,
+    image_rescale,
     normalize_01,
+    scale_image_to_voxelsize,
     select_channel,
 )
-
-from plantseg.functionals.dataprocessing.labelprocessing import set_background_to_value, relabel_segmentation
+from plantseg.functionals.dataprocessing.labelprocessing import relabel_segmentation, set_background_to_value
 
 
 class TestDataProcessing:

@@ -2,8 +2,8 @@ import csv
 import glob
 import os
 from datetime import datetime
-import numpy as np
 
+import numpy as np
 from rand import adapted_rand
 from voi import voi
 

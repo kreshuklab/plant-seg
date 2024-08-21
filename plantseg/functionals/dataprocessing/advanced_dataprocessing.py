@@ -5,8 +5,8 @@ import numba
 import numpy as np
 import tqdm
 from skimage.filters import gaussian
-from skimage.segmentation import watershed, relabel_sequential
 from skimage.measure import regionprops
+from skimage.segmentation import relabel_sequential, watershed
 
 
 def get_bbox(mask: np.ndarray, pixel_toll: int = 0) -> tuple[tuple, int, int, int]:

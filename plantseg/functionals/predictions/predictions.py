@@ -1,17 +1,17 @@
-from typing import Tuple, Optional
 from pathlib import Path
+from typing import Optional, Tuple
 
 import numpy as np
 import torch
 
-from plantseg.loggers import gui_logger
-from plantseg.models.zoo import model_zoo
-from plantseg.training.augs import get_test_augmentations
-from plantseg.functionals.dataprocessing.dataprocessing import fix_input_shape_to_ZYX, fix_input_shape_to_CZYX
+from plantseg.functionals.dataprocessing.dataprocessing import fix_input_shape_to_CZYX, fix_input_shape_to_ZYX
 from plantseg.functionals.predictions.utils.array_dataset import ArrayDataset
 from plantseg.functionals.predictions.utils.array_predictor import ArrayPredictor
 from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
 from plantseg.functionals.predictions.utils.utils import get_patch_halo, get_stride_shape
+from plantseg.loggers import gui_logger
+from plantseg.models.zoo import model_zoo
+from plantseg.training.augs import get_test_augmentations
 
 
 def unet_predictions(

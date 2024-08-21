@@ -1,8 +1,8 @@
 # Code ported from pytorch-3dunet package
 # https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/unet3d/model.py
 
-from typing import List, Self
 from functools import partial
+from typing import List, Self
 
 import torch
 import torch.nn as nn

@@ -1,10 +1,11 @@
 import warnings
+from pathlib import Path
 from xml.etree import cElementTree as ElementTree
 
 import numpy as np
 import tifffile
+
 from plantseg.io.utils import VoxelSize
-from pathlib import Path
 from plantseg.loggers import gui_logger
 
 TIFF_EXTENSIONS = [".tiff", ".tif"]

@@ -1,20 +1,20 @@
+from plantseg.functionals.dataprocessing.advanced_dataprocessing import (
+    fix_over_under_segmentation_from_nuclei,
+)
 from plantseg.functionals.dataprocessing.dataprocessing import (
-    image_gaussian_smoothing,
-    image_rescale,
-    image_crop,
-    image_median,
     fix_input_shape,
+    image_crop,
+    image_gaussian_smoothing,
+    image_median,
+    image_rescale,
     normalize_01,
     normalize_01_channel_wise,
-    select_channel,
     scale_image_to_voxelsize,
+    select_channel,
 )
 from plantseg.functionals.dataprocessing.labelprocessing import (
     relabel_segmentation,
     set_background_to_value,
-)
-from plantseg.functionals.dataprocessing.advanced_dataprocessing import (
-    fix_over_under_segmentation_from_nuclei,
 )
 
 # Use __all__ to let type checkers know what is part of the public API.

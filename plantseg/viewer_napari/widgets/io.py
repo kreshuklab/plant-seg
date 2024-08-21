@@ -1,16 +1,13 @@
+import time
+from concurrent.futures import Future
+from enum import Enum
 from pathlib import Path
 from typing import List, Tuple
-from concurrent.futures import Future
 
 from magicgui import magicgui
 from magicgui.widgets import Label
-from napari.layers import Layer, Image, Labels
+from napari.layers import Image, Labels, Layer
 from napari.types import LayerDataTuple
-from plantseg.plantseg_image import PlantSegImage
-from plantseg.tasks.io_tasks import (
-    import_image_task,
-    export_image_task,
-)
 
 from plantseg.io import (
     H5_EXTENSIONS,
@@ -18,12 +15,14 @@ from plantseg.io import (
 )
 from plantseg.io.h5 import list_h5_keys
 from plantseg.io.zarr import list_zarr_keys
-from plantseg.viewer_napari.widgets.utils import _return_value_if_widget, schedule_task
-from enum import Enum
-from plantseg.plantseg_image import ImageLayout, ImageType, SemanticType
+from plantseg.plantseg_image import ImageLayout, ImageType, PlantSegImage, SemanticType
+from plantseg.tasks.io_tasks import (
+    export_image_task,
+    import_image_task,
+)
 from plantseg.tasks.workflow_handler import workflow_handler
-import time
 from plantseg.viewer_napari.logging import napari_formatted_logging
+from plantseg.viewer_napari.widgets.utils import _return_value_if_widget, schedule_task
 
 
 class PathMode(Enum):

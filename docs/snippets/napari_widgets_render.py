@@ -1,7 +1,8 @@
-from PyQt5 import QtGui, QtCore
+import base64
+
 from napari.qt import get_stylesheet
 from napari.resources._icons import _theme_path
-import base64
+from PyQt5 import QtCore, QtGui
 
 css_style = """
     <style>

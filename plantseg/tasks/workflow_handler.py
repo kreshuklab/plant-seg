@@ -1,12 +1,14 @@
+import json
+from enum import Enum
+from pathlib import Path
+from typing import Callable
+from uuid import UUID, uuid4
+
+import yaml
+from pydantic import BaseModel, Field
+
 from plantseg.__version__ import __version__
 from plantseg.plantseg_image import PlantSegImage
-from pydantic import BaseModel, Field
-from typing import Callable
-from enum import Enum
-import yaml
-import json
-from pathlib import Path
-from uuid import uuid4, UUID
 
 
 class NodeType(str, Enum):

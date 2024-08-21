@@ -1,8 +1,9 @@
-import zipfile
-import requests
-import subprocess
 import os
+import subprocess
 import sys
+import zipfile
+
+import requests
 import yaml
 
 __version__ = '0.0.1'

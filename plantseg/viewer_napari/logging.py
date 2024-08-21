@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from napari.utils.notifications import show_info, show_warning, show_error, show_console_notification
+from napari.utils.notifications import show_console_notification, show_error, show_info, show_warning
 
 napari_notifications = {
     'info': show_info,

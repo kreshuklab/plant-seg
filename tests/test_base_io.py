@@ -1,7 +1,8 @@
-from plantseg.io.utils import VoxelSize
 import numpy as np
-from plantseg.io import smart_load
 import pytest
+
+from plantseg.io import smart_load
+from plantseg.io.utils import VoxelSize
 
 
 class TestIO:
@@ -82,6 +83,7 @@ class TestIO:
     def test_read_jpg(self, path_jpg):
         import numpy as np
         from PIL import Image
+
         from plantseg.io.pil import load_pil
 
         # Create a JPG file

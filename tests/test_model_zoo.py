@@ -1,9 +1,10 @@
 import os
-import torch
-import pytest
 
-from plantseg.training.model import UNet2D
+import pytest
+import torch
+
 from plantseg.models.zoo import model_zoo
+from plantseg.training.model import UNet2D
 from tests.conftest import IS_CUDA_AVAILABLE
 
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"

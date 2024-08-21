@@ -1,9 +1,8 @@
-import pytest
 import napari
 import numpy as np
+import pytest
 
-from plantseg._viewer.widget.dataprocessing import widget_rescaling
-from plantseg._viewer.widget.dataprocessing import WidgetName, RescaleModes
+from plantseg._viewer.widget.dataprocessing import RescaleModes, WidgetName, widget_rescaling
 from plantseg._viewer.widget.utils import create_layer_name
 
 

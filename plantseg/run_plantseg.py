@@ -2,8 +2,9 @@
 
 import argparse
 from pathlib import Path
+
 from plantseg.__version__ import __version__
-from plantseg.utils import check_version, load_config, clean_models
+from plantseg.utils import check_version, clean_models, load_config
 
 
 def create_parser():

@@ -5,9 +5,9 @@ import torch
 import yaml
 from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torch.utils.data import DataLoader, ConcatDataset
+from torch.utils.data import ConcatDataset, DataLoader
 
-from plantseg import PATH_HOME, DIR_PLANTSEG_MODELS, PATH_TRAIN_TEMPLATE, FILE_CONFIG_TRAIN_YAML
+from plantseg import DIR_PLANTSEG_MODELS, FILE_CONFIG_TRAIN_YAML, PATH_HOME, PATH_TRAIN_TEMPLATE
 from plantseg._pipeline import gui_logger
 from plantseg.training.augs import Augmenter
 from plantseg.training.h5dataset import HDF5Dataset

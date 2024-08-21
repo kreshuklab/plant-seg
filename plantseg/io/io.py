@@ -1,12 +1,13 @@
 import os
-
-import numpy as np
 from pathlib import Path
 from typing import Optional
-from plantseg.io.h5 import load_h5, H5_EXTENSIONS
-from plantseg.io.tiff import load_tiff, TIFF_EXTENSIONS
-from plantseg.io.pil import load_pil, PIL_EXTENSIONS
-from plantseg.io.zarr import load_zarr, ZARR_EXTENSIONS
+
+import numpy as np
+
+from plantseg.io.h5 import H5_EXTENSIONS, load_h5
+from plantseg.io.pil import PIL_EXTENSIONS, load_pil
+from plantseg.io.tiff import TIFF_EXTENSIONS, load_tiff
+from plantseg.io.zarr import ZARR_EXTENSIONS, load_zarr
 
 allowed_data_format = TIFF_EXTENSIONS + H5_EXTENSIONS + PIL_EXTENSIONS + ZARR_EXTENSIONS
 

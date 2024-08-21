@@ -11,9 +11,8 @@ from difflib import SequenceMatcher
 import h5py
 import numpy as np
 import yaml
-from scipy.ndimage import zoom
-
 from rand import adapted_rand
+from scipy.ndimage import zoom
 from simple_hash import simple_hash
 from voi import voi
 

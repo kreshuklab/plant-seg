@@ -1,27 +1,31 @@
-from typing import Optional
-import numpy as np
-from pydantic import BaseModel
 from enum import Enum
-from plantseg.io.utils import VoxelSize
 from pathlib import Path
-import plantseg.functionals.dataprocessing as dp
-from plantseg.io import load_h5, load_pil, load_tiff, load_zarr
-from plantseg.io import create_h5, create_tiff, create_zarr
-from napari.types import LayerDataTuple
-from napari.layers import Image, Labels
-from uuid import uuid4, UUID
-from plantseg.loggers import gui_logger
+from typing import Optional
+from uuid import UUID, uuid4
 
+import numpy as np
+from napari.layers import Image, Labels
+from napari.types import LayerDataTuple
+from pydantic import BaseModel
+
+import plantseg.functionals.dataprocessing as dp
 from plantseg.io import (
+    H5_EXTENSIONS,
+    PIL_EXTENSIONS,
+    TIFF_EXTENSIONS,
+    create_h5,
+    create_tiff,
+    create_zarr,
+    load_h5,
+    load_pil,
+    load_tiff,
+    load_zarr,
     read_h5_voxel_size,
     read_tiff_voxel_size,
     read_zarr_voxel_size,
 )
-from plantseg.io import (
-    PIL_EXTENSIONS,
-    H5_EXTENSIONS,
-    TIFF_EXTENSIONS,
-)
+from plantseg.io.utils import VoxelSize
+from plantseg.loggers import gui_logger
 
 
 class SemanticType(Enum):

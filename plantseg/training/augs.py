@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 import torch
-from scipy.ndimage import rotate, map_coordinates, gaussian_filter, convolve
+from scipy.ndimage import convolve, gaussian_filter, map_coordinates, rotate
 from skimage import measure
 from skimage.filters import gaussian
 from skimage.segmentation import find_boundaries

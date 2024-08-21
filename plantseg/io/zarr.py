@@ -8,14 +8,13 @@ Notes:
 """
 
 import warnings
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
-import zarr
 import numpy as np
+import zarr
 
 from plantseg.io.utils import VoxelSize
-
 
 ZARR_EXTENSIONS = [".zarr"]
 ZARR_KEYS = ["raw", "predictions", "segmentation"]

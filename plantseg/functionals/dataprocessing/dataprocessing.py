@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.ndimage import zoom
 from skimage.filters import median
-from skimage.morphology import disk, ball
+from skimage.morphology import ball, disk
 from vigra import gaussianSmoothing
+
 from plantseg.io.utils import compute_scaling_factor
 
 
