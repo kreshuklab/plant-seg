@@ -513,7 +513,7 @@ class PlantSegImage:
         return self.original_voxel_size.is_valid
 
 
-def _load_data(path: Path, key: str) -> tuple[np.ndarray, VoxelSize]:
+def _load_data(path: Path, key: Optional[str]) -> tuple[np.ndarray, VoxelSize]:
     """Load data and voxel size from a file."""
     ext = path.suffix
 
@@ -556,7 +556,10 @@ def import_image(
     """
     data, voxel_size = _load_data(path, key)
 
-    stack_layout = ImageLayout(stack_layout)
+    image_layout = ImageLayout(stack_layout)
+    if image_layout is ImageLayout.ZCYX:  # then make it CZYX
+        data = np.moveaxis(data, 0, 1)
+        image_layout = ImageLayout.CZYX
 
     if m_slicing is not None:
         data = dp.image_crop(data, m_slicing)
@@ -565,7 +568,7 @@ def import_image(
         name=image_name,
         semantic_type=SemanticType(semantic_type),
         voxel_size=voxel_size,
-        image_layout=stack_layout,
+        image_layout=image_layout,
         original_voxel_size=voxel_size,
     )
 
