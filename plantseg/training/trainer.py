@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import Tuple
+from typing import Optional
 
 import torch
 import torch.optim as optim
@@ -14,7 +14,7 @@ from plantseg.training.model import UNet2D
 from plantseg.training.utils import RunningAverage
 
 
-# copied from https://github.com/wolny/pytorch-3dunet
+# adapted from https://github.com/wolny/pytorch-3dunet
 class UNetTrainer:
     """UNet trainer.
 
@@ -42,7 +42,7 @@ class UNetTrainer:
         max_num_iterations: int,
         device: str = "cuda",
         log_after_iters: int = 100,
-        pre_trained: str = None,
+        pre_trained: Optional[str] = None,
     ):
         self.model = model
         self.optimizer = optimizer
@@ -111,11 +111,11 @@ class UNetTrainer:
         # sets the model in training mode
         self.model.train()
 
-        for input, target in tqdm(self.loaders["train"]):
-            input, target = input.to(self.device), target.to(self.device)
-            output, loss = self._forward_pass(input, target)
+        for _input, target in tqdm(self.loaders["train"]):
+            _input, target = _input.to(self.device), target.to(self.device)
+            output, loss = self._forward_pass(_input, target)
 
-            train_losses.update(loss.item(), self._batch_size(input))
+            train_losses.update(loss.item(), self._batch_size(_input))
 
             # compute gradients and update parameters
             self.optimizer.zero_grad()
@@ -155,25 +155,25 @@ class UNetTrainer:
         val_losses = RunningAverage()
 
         with torch.no_grad():
-            for input, target in tqdm(self.loaders["val"]):
-                input, target = input.to(self.device), target.to(self.device)
+            for _input, target in tqdm(self.loaders["val"]):
+                _input, target = _input.to(self.device), target.to(self.device)
 
-                output, loss = self._forward_pass(input, target)
-                val_losses.update(loss.item(), self._batch_size(input))
+                output, loss = self._forward_pass(_input, target)
+                val_losses.update(loss.item(), self._batch_size(_input))
 
             return val_losses.avg
 
-    def _forward_pass(self, input: torch.Tensor, target: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _forward_pass(self, _input: torch.Tensor, target: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         if isinstance(self.model, UNet2D):
             # remove the singleton z-dimension from the input
-            input = torch.squeeze(input, dim=-3)
+            _input = torch.squeeze(_input, dim=-3)
             # forward pass
-            output = self.model(input)
+            output = self.model(_input)
             # add the singleton z-dimension to the output
             output = torch.unsqueeze(output, dim=-3)
         else:
             # forward pass
-            output = self.model(input)
+            output = self.model(_input)
 
         loss = self.loss_criterion(output, target)
         return output, loss
@@ -194,8 +194,8 @@ class UNetTrainer:
             shutil.copyfile(last_file_path, best_file_path)
 
     @staticmethod
-    def _batch_size(input):
-        if isinstance(input, list) or isinstance(input, tuple):
-            return input[0].size(0)
+    def _batch_size(_input):
+        if isinstance(_input, (list, tuple)):
+            return _input[0].size(0)
         else:
-            return input.size(0)
+            return _input.size(0)
