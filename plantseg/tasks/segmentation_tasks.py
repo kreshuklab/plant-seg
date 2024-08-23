@@ -1,3 +1,5 @@
+import logging
+
 from plantseg.functionals.dataprocessing.dataprocessing import normalize_01
 from plantseg.functionals.segmentation import (
     dt_watershed,
@@ -7,9 +9,10 @@ from plantseg.functionals.segmentation import (
     multicut,
     mutex_ws,
 )
-from plantseg.loggers import gui_logger
 from plantseg.plantseg_image import PlantSegImage, SemanticType
 from plantseg.tasks import task_tracker
+
+logger = logging.getLogger(__name__)
 
 
 @task_tracker
@@ -45,7 +48,7 @@ def dt_watershed_task(
         raise ValueError("Multichannel images are not supported for this task.")
 
     if image.semantic_type != SemanticType.PREDICTION:
-        gui_logger.warning(
+        logger.warning(
             "The input image is not a boundary probability map. The task will still attempt to run, but the results may not be as expected."
         )
 
@@ -96,7 +99,7 @@ def clustering_segmentation_task(
         raise ValueError("Multichannel images are not supported for this task.")
 
     if image.semantic_type != SemanticType.PREDICTION:
-        gui_logger.warning(
+        logger.warning(
             "The input image is not a boundary probability map. The task will still attempt to run, but the results may not be as expected."
         )
 

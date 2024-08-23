@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -9,9 +10,10 @@ from plantseg.functionals.predictions.utils.array_dataset import ArrayDataset
 from plantseg.functionals.predictions.utils.array_predictor import ArrayPredictor
 from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
 from plantseg.functionals.predictions.utils.utils import get_patch_halo, get_stride_shape
-from plantseg.loggers import gui_logger
 from plantseg.models.zoo import model_zoo
 from plantseg.training.augs import get_test_augmentations
+
+logger = logging.getLogger(__name__)
 
 
 def unet_predictions(
@@ -47,13 +49,13 @@ def unet_predictions(
         pmap (np.ndarray): The predicted boundaries as a 3D (Z, Y, X) or 4D (C, Z, Y, X) array, normalized between 0 and 1.
     """
     if config_path is not None:  # Safari mode for custom models outside zoos
-        gui_logger.info("Safari prediction: Running model from custom config path.")
+        logger.info("Safari prediction: Running model from custom config path.")
         model, model_config, model_path = model_zoo.get_model_by_config_path(config_path, model_weights_path)
     elif model_id is not None:  # BioImage.IO zoo mode
-        gui_logger.info("BioImage.IO prediction: Running model from BioImage.IO model zoo.")
+        logger.info("BioImage.IO prediction: Running model from BioImage.IO model zoo.")
         model, model_config, model_path = model_zoo.get_model_by_id(model_id)
     elif model_name is not None:  # PlantSeg zoo mode
-        gui_logger.info("Zoo prediction: Running model from PlantSeg official zoo.")
+        logger.info("Zoo prediction: Running model from PlantSeg official zoo.")
         model, model_config, model_path = model_zoo.get_model_by_name(model_name, model_update=model_update)
     else:
         raise ValueError("Either `model_name` or `model_id` or `model_path` must be provided.")
@@ -97,7 +99,7 @@ def unet_predictions(
     if (
         int(model_config["out_channels"]) > 1 and handle_multichannel
     ):  # if multi-channel output and who called this function handles (C, Z, Y, X)
-        gui_logger.warning(f"`unet_predictions()` has `handle_multichannel`={handle_multichannel}")
+        logger.warning(f"`unet_predictions()` has `handle_multichannel`={handle_multichannel}")
         pmaps = fix_input_shape_to_CZYX(
             pmaps,
         )  # (C, Y, X) to (C, 1, Y, X); (C, Z, Y, X) unchanged

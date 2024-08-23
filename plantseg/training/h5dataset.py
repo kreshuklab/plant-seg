@@ -1,9 +1,12 @@
+import logging
+
 import h5py
 import numpy as np
 from torch.utils.data import Dataset
 
-from plantseg._pipeline import gui_logger
 from plantseg.predictions.utils.slice_builder import FilterSliceBuilder
+
+logger = logging.getLogger(__name__)
 
 
 # copied from https://github.com/wolny/pytorch-3dunet
@@ -51,7 +54,7 @@ class HDF5Dataset(Dataset):
             self.label_slices = slice_builder.label_slices
 
             self.patch_count = len(self.raw_slices)
-            gui_logger.info(f"{self.patch_count} patches found in {file_path}")
+            logger.info(f"{self.patch_count} patches found in {file_path}")
 
     @staticmethod
     def load_dataset(input_file, internal_path):

@@ -13,6 +13,3 @@ logger_root.setLevel(logging.INFO)
 logger_root.addHandler(stream_handler)
 
 logger_logger = logging.getLogger("PlantSeg.Logger")
-
-# Create a PlantSeg logger  TODO: Modules should use their own logger, not gui_logger
-gui_logger = logging.getLogger("PlantSeg.Base")

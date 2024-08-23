@@ -1,4 +1,5 @@
 import collections
+import logging
 from typing import Callable, Optional, Tuple
 
 import numpy as np
@@ -6,7 +7,8 @@ import torch
 from torch.utils.data import Dataset
 
 from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
-from plantseg.loggers import gui_logger
+
+logger = logging.getLogger(__name__)
 
 
 def mirror_pad(image: np.ndarray, padding_shape: tuple[int, int, int], multichannel: bool) -> np.ndarray:
@@ -111,7 +113,7 @@ class ArrayDataset(Dataset):
         self.raw_padded = mirror_pad(self.raw, self.halo_shape, multichannel)
 
         if verbose_logging:
-            gui_logger.info(f"Number of patches: {len(self.raw_slices)}")
+            logger.info(f"Number of patches: {len(self.raw_slices)}")
 
     def __getitem__(self, idx):
         if idx >= len(self):

@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 from typing import Optional
@@ -9,9 +10,10 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from plantseg._pipeline import gui_logger
 from plantseg.training.model import UNet2D
 from plantseg.training.utils import RunningAverage
+
+logger = logging.getLogger(__name__)
 
 
 # adapted from https://github.com/wolny/pytorch-3dunet
@@ -58,7 +60,7 @@ class UNetTrainer:
 
         self.num_iterations = 1
         if pre_trained is not None:
-            gui_logger.info(f"Logging pre-trained model from '{pre_trained}'...")
+            logger.info(f"Logging pre-trained model from '{pre_trained}'...")
             state = torch.load(pre_trained, map_location="cpu")
             self.model.load_state_dict(state)
 
@@ -67,20 +69,20 @@ class UNetTrainer:
 
     def train(self) -> None:
         for epoch in range(self.max_num_epochs):
-            print(f"Epoch [{epoch}/~{self.max_num_epochs}]")
+            logger.info(f"Epoch [{epoch}/~{self.max_num_epochs}]")
             # train for one epoch
             should_terminate = self.train_epoch()
 
             if should_terminate:
-                gui_logger.info("Stopping criterion is satisfied. Finishing training")
+                logger.info("Stopping criterion is satisfied. Finishing training")
                 return
 
-            print("Validating...")
+            logger.info("Validating...")
             # set the model in eval mode
             self.model.eval()
             # evaluate on validation set
             eval_loss = self.validate()
-            gui_logger.info(f"Val Loss: {eval_loss}.")
+            logger.info(f"Val Loss: {eval_loss}.")
             self.writer.add_scalar("Loss/val", eval_loss, self.num_iterations)
             # set the model back to training mode
             self.model.train()
@@ -98,7 +100,7 @@ class UNetTrainer:
             # save checkpoint
             self._save_checkpoint(is_best)
 
-        gui_logger.info(f"Reached maximum number of epochs: {self.max_num_epochs}. Finishing training...")
+        logger.info(f"Reached maximum number of epochs: {self.max_num_epochs}. Finishing training...")
 
     def train_epoch(self):
         """Trains the model for 1 epoch.
@@ -124,7 +126,7 @@ class UNetTrainer:
 
             if self.num_iterations % self.log_after_iters == 0:
                 # log stats, params and images
-                gui_logger.info(f"Train Loss: {train_losses.avg}.")
+                logger.info(f"Train Loss: {train_losses.avg}.")
                 self.writer.add_scalar("Loss/train", train_losses.avg, self.num_iterations)
 
                 if self.should_stop():
@@ -140,13 +142,13 @@ class UNetTrainer:
         some predefined threshold (1e-6 in our case)
         """
         if self.max_num_iterations < self.num_iterations:
-            gui_logger.info(f"Maximum number of iterations {self.max_num_iterations} exceeded.")
+            logger.info(f"Maximum number of iterations {self.max_num_iterations} exceeded.")
             return True
 
         min_lr = 1e-6
         lr = self.optimizer.param_groups[0]["lr"]
         if lr < min_lr:
-            gui_logger.info(f"Learning rate below the minimum {min_lr}.")
+            logger.info(f"Learning rate below the minimum {min_lr}.")
             return True
 
         return False
@@ -185,11 +187,11 @@ class UNetTrainer:
             state_dict = self.model.state_dict()
 
         last_file_path = os.path.join(self.checkpoint_dir, "last_checkpoint.pytorch")
-        gui_logger.info(f"Saving checkpoint to '{last_file_path}'")
+        logger.info(f"Saving checkpoint to '{last_file_path}'")
 
         torch.save(state_dict, last_file_path)
         if is_best:
-            gui_logger.info("Saving best checkpoint")
+            logger.info("Saving best checkpoint")
             best_file_path = os.path.join(self.checkpoint_dir, "best_checkpoint.pytorch")
             shutil.copyfile(last_file_path, best_file_path)
 

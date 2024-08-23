@@ -9,7 +9,6 @@ import requests
 import yaml
 
 from plantseg import PATH_PLANTSEG_MODELS
-from plantseg.loggers import gui_logger
 
 logger = logging.getLogger(__name__)
 
@@ -51,10 +50,10 @@ def download_files(urls: dict, out_dir: Path) -> None:
         for filename, url in urls.items():
             file_path = out_dir / filename
             if not file_path.exists():  # Skip download if file already exists
-                gui_logger.info(f"Downloading file {filename} from {url}...")
+                logger.info(f"Downloading file {filename} from {url}...")
                 futures.append(executor.submit(download_file, url, file_path))
             else:
-                gui_logger.info(f"File {filename} already exists. Skipping download.")
+                logger.info(f"File {filename} already exists. Skipping download.")
 
         for future in futures:
             future.result()  # Wait for all downloads to complete

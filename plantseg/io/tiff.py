@@ -1,3 +1,4 @@
+import logging
 import warnings
 from pathlib import Path
 from xml.etree import cElementTree as ElementTree
@@ -6,7 +7,8 @@ import numpy as np
 import tifffile
 
 from plantseg.io.utils import VoxelSize
-from plantseg.loggers import gui_logger
+
+logger = logging.getLogger(__name__)
 
 TIFF_EXTENSIONS = [".tiff", ".tif"]
 
@@ -36,7 +38,7 @@ def _read_imagej_meta(tiff) -> VoxelSize:
     # return voxel size
 
     if x is None or y is None:
-        gui_logger.warning("Error parsing imagej tiff meta.")
+        logger.warning("Error parsing imagej tiff meta.")
         return VoxelSize()
 
     return VoxelSize(voxels_size=(z, y, x), unit=voxel_size_unit)

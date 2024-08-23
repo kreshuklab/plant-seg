@@ -1,4 +1,5 @@
 import logging
+
 import numpy as np
 import torch
 import tqdm
@@ -10,7 +11,6 @@ from plantseg.functionals.predictions.utils.array_dataset import (
     default_prediction_collate,
     remove_padding,
 )
-from plantseg.loggers import gui_logger
 from plantseg.training.embeddings import embeddings_to_affinities
 from plantseg.training.model import UNet2D
 
@@ -191,12 +191,12 @@ class ArrayPredictor:
             if self.batch_size < 1:
                 raise RuntimeError("Could not determine a feasible batch size for the given model and patch size/halo.")
 
-        gui_logger.info(f"Using batch size of {self.batch_size} for prediction")
+        logger.info(f"Using batch size of {self.batch_size} for prediction")
 
         # Use all available GPUs for headless mode
         if torch.cuda.device_count() > 1 and device != "cpu" and headless:
             model = nn.DataParallel(model)
-            gui_logger.info(
+            logger.info(
                 f"Using {torch.cuda.device_count()} GPUs for prediction. "
                 f"Increasing batch size to {torch.cuda.device_count()} * {self.batch_size}"
             )
@@ -224,7 +224,7 @@ class ArrayPredictor:
         )
 
         if self.verbose_logging:
-            gui_logger.info(f"Running prediction on {len(test_loader)} batches")
+            logger.info(f"Running prediction on {len(test_loader)} batches")
 
         # dimensionality of the output predictions
         volume_shape = self.volume_shape(test_dataset)
@@ -242,10 +242,10 @@ class ArrayPredictor:
         prediction_maps_shape = (out_channels,) + volume_shape
 
         if self.verbose_logging:
-            gui_logger.info(f"The shape of the output prediction maps (CDHW): {prediction_maps_shape}")
-            gui_logger.info(f"Using patch_halo: {self.patch_halo}")
+            logger.info(f"The shape of the output prediction maps (CDHW): {prediction_maps_shape}")
+            logger.info(f"Using patch_halo: {self.patch_halo}")
             # allocate prediction and normalization arrays
-            gui_logger.info("Allocating prediction and normalization arrays...")
+            logger.info("Allocating prediction and normalization arrays...")
 
         # initialize the output prediction arrays
         prediction_map = np.zeros(prediction_maps_shape, dtype="float32")
@@ -296,7 +296,7 @@ class ArrayPredictor:
                     normalization_mask[index] += 1
 
         if self.verbose_logging:
-            gui_logger.info("Prediction finished")
+            logger.info("Prediction finished")
 
         # normalize results and return
         return prediction_map / normalization_mask
