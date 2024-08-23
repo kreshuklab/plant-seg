@@ -10,7 +10,7 @@ from napari.types import LayerDataTuple
 
 from plantseg.functionals.proofreading.split_merge_tools import split_merge_from_seeds
 from plantseg.functionals.proofreading.utils import get_bboxes
-from plantseg.plantseg_image import PlantSegImage, SemanticType
+from plantseg.plantseg_image import ImageLayout, ImageProperties, PlantSegImage, SemanticType
 from plantseg.viewer_napari.logging import napari_formatted_logging
 
 DEFAULT_KEY_BINDING_PROOFREAD = 'n'
@@ -47,7 +47,7 @@ class ProofreadingHandler:
         return self._current_seg_layer_name
 
     @property
-    def seg_properties(self):
+    def seg_properties(self) -> ImageProperties:
         return self._current_seg_properties
 
     @property
@@ -89,6 +89,7 @@ class ProofreadingHandler:
 
         self._status = True
         segmentation_data = segmentation.get_data()
+
         self._current_seg_layer_name = segmentation.name
         self._current_seg_properties = segmentation.properties
         self.scale = segmentation.scale
@@ -210,11 +211,8 @@ def widget_add_label_to_corrected(viewer: napari.Viewer, position: tuple[int, ..
     if segmentation_handler.corrected_cells_layer_name not in viewer.layers:
         return None
 
-    if len(position) == 2:
-        position = [0, *position]
-
     position = [int(p / s) for p, s in zip(position, segmentation_handler.scale)]
-    cell_id = segmentation_handler.segmentation[position[0], position[1], position[2]]
+    cell_id = segmentation_handler.segmentation[*position]
     segmentation_handler.toggle_corrected_cell(cell_id)
     segmentation_handler.update_corrected_cells_mask_to_viewer(viewer)
 
@@ -248,14 +246,6 @@ def widget_split_and_merge_from_scribbles(
     segmentation: Labels,
     image: Image,
 ) -> None:
-    if segmentation is None:
-        napari_formatted_logging('Segmentation Layer not defined', thread='Proofreading tool', level='error')
-        return None
-
-    if image is None:
-        napari_formatted_logging('Image Layer not defined', thread='Proofreading tool', level='error')
-        return None
-
     ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
     ps_image = PlantSegImage.from_napari_layer(image)
 
@@ -275,8 +265,6 @@ def widget_split_and_merge_from_scribbles(
             thread='Proofreading tool',
             level='error',
         )
-
-    image_data = ps_image.get_data()
 
     if initialize_proofreading(viewer, ps_segmentation):
         napari_formatted_logging('Proofreading initialized', thread='Proofreading tool')
@@ -300,7 +288,7 @@ def widget_split_and_merge_from_scribbles(
         new_seg, region_slice, bboxes = split_merge_from_seeds(
             segmentation_handler.scribbles,
             segmentation_handler.segmentation,
-            image=image_data,
+            image=ps_image.get_data(),
             bboxes=segmentation_handler.bboxes,
             max_label=segmentation_handler.max_label,
             correct_labels=segmentation_handler.corrected_cells,
@@ -334,11 +322,20 @@ def widget_filter_segmentation() -> Future[LayerDataTuple]:
         filtered_seg = segmentation_handler.segmentation.copy()
         filtered_seg[segmentation_handler.corrected_cells_mask == 0] = 0
 
-        new_ps_seg = PlantSegImage(filtered_seg, segmentation_handler.seg_properties)
-        new_seg_layer = new_ps_seg.to_napari_layer()
+        properties = segmentation_handler.seg_properties
+
+        new_seg_properties = ImageProperties(
+            name=f'{properties.name}_corrected',
+            semantic_type=SemanticType.LABEL,
+            voxel_size=properties.voxel_size,
+            image_layout=properties.image_layout,
+            original_voxel_size=properties.original_voxel_size,
+        )
+        new_ps_seg = PlantSegImage(filtered_seg, new_seg_properties)
+        new_seg_layer_tuple = new_ps_seg.to_napari_layer_tuple()
 
         segmentation_handler.unlock()
-        return new_seg_layer
+        return new_seg_layer_tuple
 
     def on_done(result):
         future.set_result(result)

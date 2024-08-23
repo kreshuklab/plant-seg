@@ -2,8 +2,8 @@ import numba
 import numpy as np
 
 
-@numba.njit(parallel=True)
-def _get_bboxes(segmentation, labels_idx):
+@numba.njit
+def _get_bboxes3D(segmentation, labels_idx):
     shape = segmentation.shape
 
     bboxes = {}
@@ -11,7 +11,7 @@ def _get_bboxes(segmentation, labels_idx):
         _x = np.array([[shape[0], shape[1], shape[2]], [0, 0, 0]])
         bboxes[idx] = _x
 
-    for z in numba.prange(shape[0]):
+    for z in range(shape[0]):
         for x in range(shape[1]):
             for y in range(shape[2]):
                 idx = segmentation[z, x, y]
@@ -35,15 +35,56 @@ def _get_bboxes(segmentation, labels_idx):
     return bboxes
 
 
+@numba.njit
+def _get_bboxes2D(segmentation, labels_idx):
+    shape = segmentation.shape
+
+    bboxes = {}
+    for idx in labels_idx:
+        _x = np.array([[shape[0], shape[1]], [0, 0]])
+        bboxes[idx] = _x
+
+    for x in range(shape[0]):
+        for y in range(shape[1]):
+            idx = segmentation[x, y]
+            if idx > 0:
+                xmin, ymin = bboxes[idx][0]
+                xmax, ymax = bboxes[idx][1]
+
+                if x < xmin:
+                    bboxes[idx][0, 0] = x
+                if y < ymin:
+                    bboxes[idx][0, 1] = y
+
+                if x > xmax:
+                    bboxes[idx][1, 0] = x
+                if y > ymax:
+                    bboxes[idx][1, 1] = y
+    return bboxes
+
+
+def _get_bboxes(segmentation, labels_idx):
+    if len(segmentation.shape) == 3:
+        return _get_bboxes3D(segmentation, labels_idx)
+    elif len(segmentation.shape) == 2:
+        return _get_bboxes2D(segmentation, labels_idx)
+    else:
+        raise ValueError("Segmentation shape not supported")
+
+
 def get_bboxes(segmentation, slack=(1, 3, 3)):
     segmentation = segmentation.astype('int64')
     labels_idx = np.unique(segmentation)
     bboxes = _get_bboxes(segmentation, labels_idx)
 
     slack = np.array(slack)
+
+    if len(segmentation.shape) == 2:
+        slack = slack[1:]
+
     bboxes_out = {}
     for key, values in bboxes.items():
-        values[0] = np.maximum(values[0] - slack, [0, 0, 0])
+        values[0] = np.maximum(values[0] - slack, np.zeros_like(slack))
         values[1] = np.minimum(values[1] + slack, segmentation.shape)
         bboxes_out[int(key)] = values
     return bboxes_out
