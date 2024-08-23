@@ -29,3 +29,7 @@ class NapariHandler(logging.Handler):
 napari_handler = NapariHandler()
 napari_handler.setFormatter(PlantSegFormatter("Napari"))
 gui_logger.addHandler(napari_handler)
+
+
+def napari_formatted_logging(message: str, thread: str, level: str = 'info'):
+    gui_logger.log(logging.getLevelName(level.upper()), message)
