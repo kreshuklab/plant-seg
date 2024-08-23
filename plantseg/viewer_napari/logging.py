@@ -25,6 +25,10 @@ class NapariHandler(logging.Handler):
             self.handleError(record)
 
 
+def napari_formatted_logging(message: str, thread: str, level: str = 'info'):
+    gui_logger.log(logging.getLevelName(level.upper()), message)
+
+
 # Add the NapariHandler to the PlantSeg logger; TODO: Should be done according to the mode
 napari_handler = NapariHandler()
 napari_handler.setFormatter(PlantSegFormatter("Napari"))
