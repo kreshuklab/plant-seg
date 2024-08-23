@@ -1,6 +1,9 @@
+import logging
 from pathlib import Path
 
 from plantseg.tasks.workflow_handler import DAG, Task, WorkflowHandler
+
+logger = logging.getLogger(__name__)
 
 
 class SerialRunner:
@@ -14,7 +17,7 @@ class SerialRunner:
             raise FileNotFoundError(f"File {dag_path} not found")
 
         self.func_registry = WorkflowHandler().func_registry
-        print(self.func_registry.list_funcs())
+        logger.info(self.func_registry.list_funcs())
 
     def find_next_task(self, dag: DAG, var_set: set[str]):
         for task in dag.list_tasks:

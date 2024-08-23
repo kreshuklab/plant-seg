@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from typing import Optional
@@ -8,6 +9,8 @@ from plantseg.io.h5 import H5_EXTENSIONS, load_h5
 from plantseg.io.pil import PIL_EXTENSIONS, load_pil
 from plantseg.io.tiff import TIFF_EXTENSIONS, load_tiff
 from plantseg.io.zarr import ZARR_EXTENSIONS, load_zarr
+
+logger = logging.getLogger(__name__)
 
 allowed_data_format = TIFF_EXTENSIONS + H5_EXTENSIONS + PIL_EXTENSIONS + ZARR_EXTENSIONS
 
@@ -45,5 +48,5 @@ def smart_load(path: Path, key: Optional[str] = None, default=load_tiff) -> np.n
         return load_zarr(path, key)
 
     else:
-        print(f"No default found for {ext}, reverting to default loader")
+        logger.warning(f"No default found for {ext}, reverting to default loader.")
         return default(path)

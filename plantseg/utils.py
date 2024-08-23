@@ -1,4 +1,5 @@
 import importlib
+import logging
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from shutil import rmtree
@@ -9,6 +10,8 @@ import yaml
 
 from plantseg import PATH_PLANTSEG_MODELS
 from plantseg.loggers import gui_logger
+
+logger = logging.getLogger(__name__)
 
 
 def load_config(config_path: Path) -> dict:
@@ -71,17 +74,17 @@ def clean_models() -> None:
         if answer == "y":
             try:
                 rmtree(PATH_PLANTSEG_MODELS, ignore_errors=True)
-                print("All models deleted successfully.")
+                logger.info("All models deleted successfully.")
             except Exception as e:
-                print(f"An error occurred while trying to delete models: {e}")
+                logger.warning(f"An error occurred while trying to delete models: {e}")
             finally:
-                print("Operation complete. PlantSeg will now close.")
+                logger.info("Operation complete. PlantSeg will now close.")
                 break
         elif answer == "n":
-            print("Operation cancelled. No models were deleted.")
+            logger.info("Operation cancelled. No models were deleted.")
             break
         else:
-            print("Invalid input, please type 'y' or 'n'.")
+            logger.warning("Invalid input, please type 'y' or 'n'.")
 
 
 def check_version(
@@ -105,9 +108,9 @@ def check_version(
         current_version_tuple = tuple(map(int, current_version.strip("v").split(".")))
         latest_version_tuple = tuple(map(int, latest_version.strip("v").split(".")))
         if latest_version_tuple > current_version_tuple:
-            print(f"New version of PlantSeg available: {latest_version}. Please update to the latest version.")
+            logger.warning(f"New version of PlantSeg available: {latest_version}. Please update to the latest version.")
         else:
-            print(f"You are using the latest version of PlantSeg: {current_version}.")
+            logger.info(f"You are using the latest version of PlantSeg: {current_version}.")
     except requests.RequestException as e:
         warn(f"Could not check for new version. Error: {e}")
 

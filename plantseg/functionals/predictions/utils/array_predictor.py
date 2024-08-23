@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import torch
 import tqdm
@@ -12,6 +13,8 @@ from plantseg.functionals.predictions.utils.array_dataset import (
 from plantseg.loggers import gui_logger
 from plantseg.training.embeddings import embeddings_to_affinities
 from plantseg.training.model import UNet2D
+
+logger = logging.getLogger(__name__)
 
 
 def _is_2d_model(model: nn.Module) -> bool:
@@ -115,7 +118,9 @@ def will_CUDA_OOM(
     except RuntimeError as e:
         if "out of memory" in str(e):
             OOM_error = True
-            print(f"Using patch shape {patch_shape}, halo {patch_halo}, and batch size {batch_size} will cause OOM.")
+            logger.info(
+                f"Using patch shape {patch_shape}, halo {patch_halo}, and batch size {batch_size} will cause OOM."
+            )
         else:
             raise  # Re-raise if it's not an OOM error
     finally:
