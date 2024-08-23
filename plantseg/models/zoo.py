@@ -1,6 +1,7 @@
 """Model Zoo Singleton"""
 
 import json
+import logging
 from pathlib import Path
 from shutil import copy2
 from typing import List, Optional, Self, Tuple
@@ -23,9 +24,10 @@ from plantseg import (
     PATH_MODEL_ZOO_CUSTOM,
     PATH_PLANTSEG_MODELS,
 )
-from plantseg.models import zoo_logger
 from plantseg.training.model import AbstractUNet, InterpolateUpsampling, UNet2D, UNet3D
 from plantseg.utils import download_files, get_class, load_config, save_config
+
+logger_zoo = logging.getLogger("PlantSeg.Zoo")
 
 AUTHOR_BIOIMAGEIO = 'bioimage.io'
 AUTHOR_PLANTSEG = 'plantseg'
@@ -304,7 +306,7 @@ class ModelZoo:
         model = self._create_model_by_config(model_config)
         if model_weights_path is None:
             model_weights_path = config_path.parent / FILE_BEST_MODEL_PYTORCH
-        zoo_logger.info(f"Loaded model from user specified weights: {model_weights_path}")
+        logger_zoo.info(f"Loaded model from user specified weights: {model_weights_path}")
         return model, model_config, model_weights_path
 
     def get_model_by_name(self, model_name: str, model_update: bool = False):
@@ -312,7 +314,7 @@ class ModelZoo:
         self.check_models(model_name, update_files=model_update)
         config_path = self._get_model_config_path_by_name(model_name)
         model_weights_path = PATH_PLANTSEG_MODELS / model_name / FILE_BEST_MODEL_PYTORCH
-        zoo_logger.info(f"Loaded model from PlantSeg zoo: {model_name}")
+        logger_zoo.info(f"Loaded model from PlantSeg zoo: {model_name}")
         return self.get_model_by_config_path(config_path, model_weights_path)
 
     def get_model_by_id(self, model_id: str):
@@ -354,7 +356,7 @@ class ModelZoo:
         elif isinstance(model_description, ModelDescr_v0_5):  # then it is `ArchitectureDescr` with `callable`
             architecture_callable = model_description.weights.pytorch_state_dict.architecture.callable
             architecture_kwargs = model_description.weights.pytorch_state_dict.architecture.kwargs
-        zoo_logger.info(f"Got {architecture_callable} model with kwargs {architecture_kwargs}.")
+        logger_zoo.info(f"Got {architecture_callable} model with kwargs {architecture_kwargs}.")
 
         # Create model from architecture and kwargs
         architecture = str(architecture_callable)  # e.g. 'plantseg.models.model.UNet3D'
@@ -372,8 +374,8 @@ class ModelZoo:
         model = self._create_model_by_config(model_config)
         model_weights_path = download(model_description.weights.pytorch_state_dict.source).path
 
-        zoo_logger.info(f"Created {architecture} model with kwargs {model_config}.")
-        zoo_logger.info(f"Loaded model from BioImage.IO Model Zoo: {model_id}")
+        logger_zoo.info(f"Created {architecture} model with kwargs {model_config}.")
+        logger_zoo.info(f"Loaded model from BioImage.IO Model Zoo: {model_id}")
         return model, model_config, model_weights_path
 
     def refresh_bioimageio_zoo_urls(self):
@@ -382,7 +384,7 @@ class ModelZoo:
         The BioImage.IO Model Zoo collection is not downloaded during ModelZoo initialization to avoid unnecessary
         network requests. This method downloads the collection and extracts the model URLs for all models.
         """
-        zoo_logger.info(f"Fetching BioImage.IO Model Zoo collection from {BIOIMAGE_IO_COLLECTION_URL}")
+        logger_zoo.info(f"Fetching BioImage.IO Model Zoo collection from {BIOIMAGE_IO_COLLECTION_URL}")
         collection_path = Path(pooch.retrieve(BIOIMAGE_IO_COLLECTION_URL, known_hash=None))
         with collection_path.open(encoding='utf-8') as f:
             collection = json.load(f)

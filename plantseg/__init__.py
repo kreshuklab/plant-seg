@@ -6,6 +6,10 @@ from pathlib import Path
 import torch  # noqa: F401; required to patch #273
 import yaml
 
+from plantseg.loggers import logger_logger
+
+logger_logger.info("Logger configured at initialisation.")
+
 PATH_PLANTSEG_GLOBAL = Path(__file__).parent.resolve()
 
 # Files in code repository
