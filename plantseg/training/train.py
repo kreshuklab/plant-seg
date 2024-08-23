@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Tuple
 
@@ -8,12 +9,13 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import ConcatDataset, DataLoader
 
 from plantseg import DIR_PLANTSEG_MODELS, FILE_CONFIG_TRAIN_YAML, PATH_HOME, PATH_TRAIN_TEMPLATE
-from plantseg._pipeline import gui_logger
 from plantseg.training.augs import Augmenter
 from plantseg.training.h5dataset import HDF5Dataset
 from plantseg.training.losses import DiceLoss
 from plantseg.training.model import UNet2D, UNet3D
 from plantseg.training.trainer import UNetTrainer
+
+logger = logging.getLogger(__name__)
 
 
 def create_model_config(
@@ -65,21 +67,21 @@ def unet_training(
         model = UNet3D(
             in_channels=in_channels, out_channels=out_channels, f_maps=feature_maps, final_sigmoid=final_sigmoid
         )
-    gui_logger.info(f"Using {model.__class__.__name__} model for training.")
+    logger.info(f"Using {model.__class__.__name__} model for training.")
 
     # Device configuration
     batch_size = 1
     if torch.cuda.device_count() > 1 and device != "cpu":
         model = nn.DataParallel(model)
-        gui_logger.info(f"Using {torch.cuda.device_count()} GPUs for prediction.")
+        logger.info(f"Using {torch.cuda.device_count()} GPUs for prediction.")
         batch_size *= torch.cuda.device_count()
         device = "cuda"
 
-    gui_logger.info(f"Sending model to {device}")
+    logger.info(f"Sending model to {device}")
     model = model.to(device)
 
     # Data loaders setup
-    gui_logger.info(f"Creating train/val loaders with batch size {batch_size}")
+    logger.info(f"Creating train/val loaders with batch size {batch_size}")
     train_datasets = create_datasets(dataset_dir, "train", patch_size)
     val_datasets = create_datasets(dataset_dir, "val", patch_size)
     loaders = {
@@ -94,7 +96,7 @@ def unet_training(
     # Optimizer and training environment setup
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
     checkpoint_dir = PATH_HOME / DIR_PLANTSEG_MODELS / model_name
-    gui_logger.info(f"Saving training files in {checkpoint_dir}")
+    logger.info(f"Saving training files in {checkpoint_dir}")
     assert not checkpoint_dir.exists(), f"Checkpoint dir {checkpoint_dir} already exists!"
 
     create_model_config(

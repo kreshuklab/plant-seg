@@ -1,10 +1,13 @@
+import logging
+
 from plantseg import PATH_PREDICT_TEMPLATE
 from plantseg.functionals.predictions.utils.array_dataset import ArrayDataset
 from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
-from plantseg.loggers import gui_logger
 from plantseg.models.zoo import model_zoo
 from plantseg.training.augs import get_test_augmentations
 from plantseg.utils import load_config
+
+logger = logging.getLogger(__name__)
 
 
 def get_predict_template():
@@ -15,7 +18,7 @@ def get_predict_template():
 def get_array_dataset(raw, model_name, patch, stride_ratio, halo_shape, multichannel, global_normalization=True):
     if model_name == "UNet2D":
         if patch[0] != 1:
-            gui_logger.warning(
+            logger.warning(
                 f"Incorrect z-dimension in the patch_shape for the 2D UNet prediction. {patch[0]}"
                 f" was given, but has to be 1. Setting to 1"
             )
