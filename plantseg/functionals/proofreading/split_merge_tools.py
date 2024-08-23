@@ -19,8 +19,8 @@ def _merge_from_seeds(segmentation, region_slice, region_bbox, bboxes, all_idx):
     return region_segmentation, region_slice, bboxes
 
 
-def _split_from_seed(segmentation, sz, sx, sy, region_slice, all_idx, offsets, bboxes, image, seeds_values, max_label):
-    local_sz, local_sx, local_sy = sz - offsets[0], sx - offsets[1], sy - offsets[2]
+def _split_from_seed(segmentation, seeds_list, region_slice, all_idx, offsets, bboxes, image, seeds_values, max_label):
+    local_seeds_list = [ls - of for ls, of in zip(seeds_list, offsets)]
 
     region_image = image[region_slice]
     region_segmentation = segmentation[region_slice]
@@ -28,7 +28,7 @@ def _split_from_seed(segmentation, sz, sx, sy, region_slice, all_idx, offsets, b
     region_seeds = np.zeros_like(region_segmentation)
 
     seeds_values += max_label
-    region_seeds[local_sz, local_sx, local_sy] = seeds_values
+    region_seeds[*local_seeds_list] = seeds_values
 
     mask = [region_segmentation == idx for idx in all_idx]
     mask = np.logical_or.reduce(mask)
@@ -48,12 +48,12 @@ def _split_from_seed(segmentation, sz, sx, sy, region_slice, all_idx, offsets, b
 
 def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label, correct_labels):
     # find seeds location ad label value
-    sz, sx, sy = np.nonzero(seeds)
+    seeds_list = np.nonzero(seeds)
 
-    seeds_values = seeds[sz, sx, sy]
+    seeds_values = seeds[*seeds_list]
     seeds_idx = np.unique(seeds_values)
 
-    all_idx = segmentation[sz, sx, sy]
+    all_idx = segmentation[*seeds_list]
     all_idx = np.unique(all_idx)
 
     region_slice, region_bbox, offsets = get_idx_slice(all_idx, bboxes_dict=bboxes)
@@ -69,5 +69,5 @@ def split_merge_from_seeds(seeds, segmentation, image, bboxes, max_label, correc
         return _merge_from_seeds(segmentation, region_slice, region_bbox, bboxes, all_idx)
     else:
         return _split_from_seed(
-            segmentation, sz, sx, sy, region_slice, all_idx, offsets, bboxes, image, seeds_values, max_label
+            segmentation, seeds_list, region_slice, all_idx, offsets, bboxes, image, seeds_values, max_label
         )

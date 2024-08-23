@@ -453,6 +453,11 @@ class PlantSegImage:
         return self._data.shape
 
     @property
+    def properties(self) -> ImageProperties:
+        """Returns the properties of the image."""
+        return self._properties
+
+    @property
     def voxel_size(self) -> VoxelSize:
         """Returns the voxel size of the image."""
         return self._properties.voxel_size
