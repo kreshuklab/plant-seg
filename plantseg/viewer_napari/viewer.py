@@ -8,10 +8,7 @@ from plantseg.viewer_napari.containers import (
     get_proofreading_tab,
 )
 from plantseg.viewer_napari.logging import napari_formatted_logging
-
-# from plantseg._viewer.widget.proofreading.proofreading import (
-#     setup_proofreading_keybindings,
-# )
+from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybindings
 
 
 def run_viewer():
@@ -19,7 +16,7 @@ def run_viewer():
     main_container = get_data_io()
     main_w = viewer.window.add_dock_widget(main_container, name="Data")
 
-    # setup_proofreading_keybindings(viewer)
+    setup_proofreading_keybindings(viewer)
 
     for _containers, name in [
         (get_preprocessing_tab(), "Preprocessing"),

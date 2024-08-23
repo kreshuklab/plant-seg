@@ -1,0 +1,46 @@
+inputs:
+  input_path_0: FILL THIS VALUE TO RUN THE WORKFLOW
+  input_path_1: FILL THIS VALUE TO RUN THE WORKFLOW
+  output_directory_0: FILL THIS VALUE TO RUN THE WORKFLOW
+  output_file_name_0: FILL THIS VALUE TO RUN THE WORKFLOW
+list_tasks:
+- func: import_image_workflow
+  id: a134dcd5-84ac-421e-84ca-3c92fc3f3e7b
+  images_inputs:
+    input_path: input_path_0
+  list_private_parameters:
+  - image_type
+  - stack_layout
+  node_type: root
+  outputs:
+  - ovule_sample_fdc536e1-d9fd-4a50-bacf-cc59b5b09e2f
+  parameters:
+    image_name: ovule_sample
+    image_type: raw
+    key: raw
+    stack_layout: ZXY
+- func: gaussian_smoothing_workflow
+  id: 90468102-6dcd-4b23-8ca2-7cd87f7bd7ca
+  images_inputs:
+    image: ovule_sample_fdc536e1-d9fd-4a50-bacf-cc59b5b09e2f
+  list_private_parameters: []
+  node_type: node
+  outputs:
+  - ovule_sample_smoothed_c26c08bc-e68d-40c2-8e39-fa7c91262ceb
+  parameters:
+    sigma: 1.0
+- func: export_image_workflow
+  id: 99e29181-d10a-4de8-925c-472c0e87a431
+  images_inputs:
+    image: ovule_sample_smoothed_c26c08bc-e68d-40c2-8e39-fa7c91262ceb
+    output_directory: output_directory_0
+    output_file_name: output_file_name_0
+  list_private_parameters: []
+  node_type: leaf
+  outputs: []
+  parameters:
+    custom_key: smoothed
+    dtype: uint16
+    file_format: tiff
+    scale_to_origin: true
+plantseg_version: 1.8.1
