@@ -5,13 +5,17 @@ from PyQt5.QtCore import Qt
 
 from plantseg.viewer_napari.widgets import (
     widget_agglomeration,
+    widget_clean_scribble,
     widget_dt_ws,
     widget_export_stacks,
+    widget_filter_segmentation,
     widget_gaussian_smoothing,
     widget_infos,
+    widget_lifted_multicut,
     widget_open_file,
     widget_rescaling,
     widget_show_info,
+    widget_split_and_merge_from_scribbles,
     widget_unet_predictions,
 )
 
@@ -41,7 +45,7 @@ def get_data_io():
 
 
 def get_preprocessing_tab():
-    # widget_cropping.crop_z.native.setStyleSheet(STYLE_SLIDER) # TODO remove comment when widget_cropping is implemented
+    # widget_cropping.crop_z.native.setStyleSheet(STYLE_SLIDER)  # TODO: remove comment when widget_cropping is implemented
     container = MainWindow(
         widgets=[
             widget_gaussian_smoothing,
@@ -66,10 +70,10 @@ def get_main_tab():
 
 
 def get_extras_tab():
-    # widet_fix_over_under_segmentation_from_nuclei.threshold.native.setStyleSheet(STYLE_SLIDER)
+    # widget_fix_over_under_segmentation_from_nuclei.threshold.native.setStyleSheet(STYLE_SLIDER)
     # widget_fix_over_under_segmentation_from_nuclei.quantile.native.setStyleSheet(STYLE_SLIDER)
     container = MainWindow(
-        widgets=[],
+        widgets=[widget_lifted_multicut],
         labels=False,
     )
     container = setup_menu(
@@ -80,7 +84,11 @@ def get_extras_tab():
 
 def get_proofreading_tab():
     container = MainWindow(
-        widgets=[],
+        widgets=[
+            widget_split_and_merge_from_scribbles,
+            widget_clean_scribble,
+            widget_filter_segmentation,
+        ],
         labels=False,
     )
     container = setup_menu(
