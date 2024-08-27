@@ -93,7 +93,9 @@ def image_rescale_to_shape_task(image: PlantSegImage, new_shape: tuple[int, ...]
 @task_tracker
 def image_rescale_to_voxel_size_task(image: PlantSegImage, new_voxel_size: VoxelSize, order: int = 0) -> PlantSegImage:
     """Rescale an image to a new voxel size.
+
     If the voxel size is not defined in the input image, use the set voxel size task to set the voxel size.
+
     Args:
         image (PlantSegImage): input image
         new_voxel_size (VoxelSize): new voxel size
