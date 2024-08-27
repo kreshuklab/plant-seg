@@ -23,6 +23,7 @@ class NapariHandler(logging.Handler):
 
     def emit(self, record):
         try:
+            record.handler_name = self.get_name()
             message = self.format(record)
             level = record.levelno
             napari_notifications[level](message)
@@ -37,6 +38,7 @@ def napari_formatted_logging(message: str, thread: str, level: str = 'info'):
 
 # Set up logging from Napari
 napari_handler = NapariHandler()
+napari_handler.set_name("N")
 napari_handler.setFormatter(formatter_viewer_napari)
 
 logger_viewer_napari = logging.getLogger("PlantSeg.Napari")
