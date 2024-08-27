@@ -4,6 +4,7 @@ from magicgui.widgets import MainWindow
 from PyQt5.QtCore import Qt
 
 from plantseg.viewer_napari.widgets import (
+    widget_add_custom_model,
     widget_agglomeration,
     widget_clean_scribble,
     widget_dt_ws,
@@ -73,7 +74,7 @@ def get_extras_tab():
     # widget_fix_over_under_segmentation_from_nuclei.threshold.native.setStyleSheet(STYLE_SLIDER)
     # widget_fix_over_under_segmentation_from_nuclei.quantile.native.setStyleSheet(STYLE_SLIDER)
     container = MainWindow(
-        widgets=[widget_lifted_multicut],
+        widgets=[widget_add_custom_model, widget_lifted_multicut],
         labels=False,
     )
     container = setup_menu(
