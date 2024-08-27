@@ -2,6 +2,7 @@
 
 from concurrent.futures import Future
 from enum import Enum
+from pathlib import Path
 from typing import Optional
 
 import napari
@@ -13,7 +14,8 @@ from napari.types import LayerDataTuple
 from plantseg.models.zoo import model_zoo
 from plantseg.plantseg_image import PlantSegImage
 from plantseg.tasks.predictions_tasks import unet_predictions_task
-from plantseg.viewer_napari.logging import napari_formatted_logging
+from plantseg.viewer_napari import log
+from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws, widget_lifted_multicut
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 ALL = 'All'
@@ -31,6 +33,8 @@ AUTO_REFRESH_HALO = [("Enable", True), ("Disable", False)]
 # UNet Predictions Widget                                                                                              #
 #                                                                                                                      #
 ########################################################################################################################
+
+
 class UNetPredictionsMode(Enum):
     PLANTSEG = 'PlantSeg Zoo'
     BIOIMAGEIO = 'BioImage.IO Zoo'
@@ -148,31 +152,37 @@ def widget_unet_predictions(
             "single_batch_mode": single_patch,
             "device": device,
         },
-        widget_to_update=[],
+        widget_to_update=[
+            widget_dt_ws.image,
+            widget_agglomeration.image,
+            widget_lifted_multicut.image,
+        ],
     )
 
 
 def update_halo():
     if widget_unet_predictions.recommend_halo.value:
-        napari_formatted_logging(
+        log(
             'Refreshing halo for the selected model; this might take a while...',
-            thread='UNet Predictions',
+            thread='UNet predictions',
             level='info',
         )
-        if widget_unet_predictions.mode.value == UNetPredictionsMode.PLANTSEG:
+        if widget_unet_predictions.mode.value is UNetPredictionsMode.PLANTSEG:
             widget_unet_predictions.patch_halo.value = model_zoo.compute_3D_halo_for_zoo_models(
                 widget_unet_predictions.model_name.value
             )
-        elif widget_unet_predictions.mode.value == UNetPredictionsMode.BIOIMAGEIO:
+        elif widget_unet_predictions.mode.value is UNetPredictionsMode.BIOIMAGEIO:
             widget_unet_predictions.patch_halo.value = model_zoo.compute_3D_halo_for_bioimageio_models(
                 widget_unet_predictions.model_id.value
             )
         else:
             raise NotImplementedError(f'Automatic halo not implemented for {widget_unet_predictions.mode.value} mode.')
-    else:
-        napari_formatted_logging(
-            'User selected another model but disabled halo recommendation.', thread='UNet Predictions', level='info'
-        )
+    elif (
+        widget_unet_predictions.mode.value is UNetPredictionsMode.BIOIMAGEIO and widget_unet_predictions.model_id.value
+    ) or (
+        widget_unet_predictions.mode.value is UNetPredictionsMode.PLANTSEG and widget_unet_predictions.model_name.value
+    ):
+        log('User selected another model but disabled halo recommendation.', thread='UNet predictions', level='info')
 
 
 @widget_unet_predictions.recommend_halo.changed.connect
@@ -255,9 +265,7 @@ def _on_model_name_changed(model_name: str):
     if patch_size is not None:
         widget_unet_predictions.patch_size.value = tuple(patch_size)
     else:
-        napari_formatted_logging(
-            f'No recommended patch size for {model_name}', thread='UNet Predictions', level='warning'
-        )
+        log(f'No recommended patch size for {model_name}', thread='UNet predictions', level='warning')
 
     description = model_zoo.get_model_description(model_name)
     if description is None:
@@ -269,3 +277,69 @@ def _on_model_name_changed(model_name: str):
 @widget_unet_predictions.model_id.changed.connect
 def _on_model_id_changed():
     update_halo()
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Add Custom Model Widget                                                                                              #
+#                                                                                                                      #
+########################################################################################################################
+
+
+@magicgui(
+    call_button='Add Custom Model',
+    new_model_name={'label': 'New model name'},
+    model_location={'label': 'Model location', 'mode': 'd'},
+    resolution={'label': 'Resolution', 'options': {'step': 0.00001}},
+    description={'label': 'Description'},
+    dimensionality={
+        'label': 'Dimensionality',
+        'tooltip': 'Dimensionality of the model (2D or 3D). Any 2D model can be used for 3D data.',
+        'widget_type': 'ComboBox',
+        'choices': model_zoo.get_unique_dimensionalities(),
+    },
+    modality={
+        'label': 'Microscopy modality',
+        'tooltip': 'Modality of the model (e.g. confocal, light-sheet ...).',
+        'widget_type': 'ComboBox',
+        'choices': model_zoo.get_unique_modalities(),
+    },
+    output_type={
+        'label': 'Prediction type',
+        'widget_type': 'ComboBox',
+        'tooltip': 'Type of prediction (e.g. cell boundaries predictions or nuclei...).',
+        'choices': model_zoo.get_unique_output_types(),
+    },
+)
+def widget_add_custom_model(
+    new_model_name: str = 'custom_model',
+    model_location: Path = Path.home(),
+    resolution: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    description: str = 'A model trained by the user.',
+    dimensionality: str = model_zoo.get_unique_dimensionalities()[0],
+    modality: str = model_zoo.get_unique_modalities()[0],
+    output_type: str = model_zoo.get_unique_output_types()[0],
+) -> None:
+    finished, error_msg = model_zoo.add_custom_model(
+        new_model_name=new_model_name,
+        location=model_location,
+        resolution=resolution,
+        description=description,
+        dimensionality=dimensionality,
+        modality=modality,
+        output_type=output_type,
+    )
+
+    if finished:
+        log(
+            f'New model {new_model_name} added to the list of available models.',
+            level='info',
+            thread='Add Custom Model',
+        )
+        widget_unet_predictions.model_name.choices = model_zoo.list_models()
+    else:
+        log(
+            f'Error adding new model {new_model_name} to the list of available models: ' f'{error_msg}',
+            level='error',
+            thread='Add Custom Model',
+        )

@@ -2,6 +2,7 @@
 
 import json
 import logging
+from enum import Enum
 from pathlib import Path
 from shutil import copy2
 from typing import List, Optional, Self, Tuple
@@ -29,9 +30,12 @@ from plantseg.utils import download_files, get_class, load_config, save_config
 
 logger_zoo = logging.getLogger("PlantSeg.Zoo")
 
-AUTHOR_BIOIMAGEIO = 'bioimage.io'
-AUTHOR_PLANTSEG = 'plantseg'
-AUTHOR_USER = 'user'
+
+class Author(str, Enum):
+    BIOIMAGEIO = 'bioimage.io'
+    PLANTSEG = 'plantseg'
+    USER = 'user'
+
 
 BIOIMAGE_IO_COLLECTION_URL = (
     "https://raw.githubusercontent.com/bioimage-io/collection-bioimage-io/gh-pages/collection.json"
@@ -116,11 +120,11 @@ class ModelZoo:
         records = []
         for name, model in self._zoo_dict.items():
             model['name'] = name
-            records.append(ModelZooRecord(**model, added_by=AUTHOR_PLANTSEG).model_dump())
+            records.append(ModelZooRecord(**model, added_by=Author.PLANTSEG).model_dump())
 
         for name, model in self._zoo_custom_dict.items():
             model['name'] = name
-            records.append(ModelZooRecord(**model, added_by=AUTHOR_USER).model_dump())
+            records.append(ModelZooRecord(**model, added_by=Author.USER).model_dump())
 
         self.models = DataFrame(
             records,
@@ -159,7 +163,7 @@ class ModelZoo:
             filtered_df = filtered_df[filtered_df['output_type'].isin(output_type_filter)]
 
         if not use_custom_models:
-            filtered_df = filtered_df[filtered_df['added_by'] != AUTHOR_USER]
+            filtered_df = filtered_df[filtered_df['added_by'] != Author.USER]
 
         return filtered_df.index.tolist()
 
@@ -249,7 +253,7 @@ class ModelZoo:
             "modality": modality,
             "output_type": output_type,
         }
-        self._add_model_record(ModelZooRecord(name=new_model_name, **new_model_record, added_by=AUTHOR_USER))
+        self._add_model_record(ModelZooRecord(name=new_model_name, **new_model_record, added_by=Author.USER))
 
         # Update the custom zoo dictionary in ModelZoo and save to file
         self._zoo_custom_dict[new_model_name] = new_model_record

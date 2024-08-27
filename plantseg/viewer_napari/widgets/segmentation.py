@@ -6,6 +6,7 @@ from napari.types import LayerDataTuple
 
 from plantseg.plantseg_image import PlantSegImage
 from plantseg.tasks.segmentation_tasks import clustering_segmentation_task, dt_watershed_task, lmc_segmentation_task
+from plantseg.viewer_napari.widgets.dataprocessing import widget_remove_false_positives_by_foreground
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 ########################################################################################################################
@@ -23,7 +24,7 @@ STACKED = [('2D', True), ('3D', False)]
         'label': 'Pmap/Image',
         'tooltip': 'Raw or boundary image to use as input for clustering.',
     },
-    _labels={
+    superpixels={
         'label': 'Over-segmentation',
         'tooltip': 'Over-segmentation labels layer to use as input for clustering.',
     },
@@ -47,13 +48,13 @@ STACKED = [('2D', True), ('3D', False)]
 )
 def widget_agglomeration(
     image: Image,
-    _labels: Labels,
+    superpixels: Labels,
     mode: str = "GASP",
     beta: float = 0.6,
     minsize: int = 100,
 ) -> Future[LayerDataTuple]:
     ps_image = PlantSegImage.from_napari_layer(image)
-    ps_labels = PlantSegImage.from_napari_layer(_labels)
+    ps_labels = PlantSegImage.from_napari_layer(superpixels)
 
     return schedule_task(
         clustering_segmentation_task,
@@ -84,7 +85,7 @@ def widget_agglomeration(
         'label': 'Nuclei',
         'tooltip': 'Nuclei binary predictions or Nuclei segmentation.',
     },
-    _labels={
+    superpixels={
         'label': 'Over-segmentation',
         'tooltip': 'Over-segmentation labels layer to use as input for clustering.',
     },
@@ -104,12 +105,12 @@ def widget_agglomeration(
 def widget_lifted_multicut(
     image: Image,
     nuclei: Image | Labels,
-    _labels: Labels,
+    superpixels: Labels,
     beta: float = 0.5,
     minsize: int = 100,
 ) -> Future[LayerDataTuple]:
     ps_image = PlantSegImage.from_napari_layer(image)
-    ps_labels = PlantSegImage.from_napari_layer(_labels)
+    ps_labels = PlantSegImage.from_napari_layer(superpixels)
     ps_nuclei = PlantSegImage.from_napari_layer(nuclei)
 
     return schedule_task(
@@ -200,6 +201,11 @@ def widget_dt_ws(
             "apply_nonmax_suppression": apply_nonmax_suppression,
             "is_nuclei_image": is_nuclei_image,
         },
+        widget_to_update=[
+            widget_agglomeration.superpixels,
+            widget_lifted_multicut.superpixels,
+            widget_remove_false_positives_by_foreground.segmentation,
+        ],
     )
 
 

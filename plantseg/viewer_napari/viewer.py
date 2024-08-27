@@ -1,5 +1,6 @@
 import napari
 
+from plantseg.viewer_napari import log
 from plantseg.viewer_napari.containers import (
     get_data_io,
     get_extras_tab,
@@ -7,7 +8,6 @@ from plantseg.viewer_napari.containers import (
     get_preprocessing_tab,
     get_proofreading_tab,
 )
-from plantseg.viewer_napari.logging import napari_formatted_logging
 from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybindings
 
 
@@ -27,5 +27,5 @@ def run_viewer():
         _container_w = viewer.window.add_dock_widget(_containers, name=name)
         viewer.window._qt_window.tabifyDockWidget(main_w, _container_w)
 
-    napari_formatted_logging("Plantseg is ready!", thread="run_viewer", level="info")
+    log("Plantseg is ready!", thread="Run viewer", level="info")
     napari.run()

@@ -180,7 +180,7 @@ def fix_over_segmentation(
     nuclei_idx: Optional[list[int]] = None,
 ) -> np.ndarray:
     """
-    this function attempts to fix cell over segmentation by merging cells that splits in two a nucleus
+    This function attempts to fix cell over-segmentation by merging cells that share the same nucleus.
     """
     _segmentation = copy.deepcopy(segmentation)
     print(" -fixing over segmentation")

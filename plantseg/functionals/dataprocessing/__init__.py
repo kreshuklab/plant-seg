@@ -1,5 +1,6 @@
 from plantseg.functionals.dataprocessing.advanced_dataprocessing import (
     fix_over_under_segmentation_from_nuclei,
+    remove_false_positives_by_foreground_probability,
 )
 from plantseg.functionals.dataprocessing.dataprocessing import (
     fix_input_shape,
@@ -31,4 +32,5 @@ __all__ = [
     "relabel_segmentation",
     "set_background_to_value",
     "fix_over_under_segmentation_from_nuclei",
+    "remove_false_positives_by_foreground_probability",
 ]

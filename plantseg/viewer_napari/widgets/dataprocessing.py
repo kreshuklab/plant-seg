@@ -12,9 +12,10 @@ from plantseg.tasks.dataprocessing_tasks import (
     gaussian_smoothing_task,
     image_rescale_to_shape_task,
     image_rescale_to_voxel_size_task,
+    remove_false_positives_by_foreground_probability_task,
     set_voxel_size_task,
 )
-from plantseg.viewer_napari.logging import napari_formatted_logging
+from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 
@@ -316,9 +317,47 @@ def _on_rescale_order_changed(order):
         return None
 
     if isinstance(current_image, Labels) and order != RescaleType.NEAREST.int_val:
-        napari_formatted_logging(
+        log(
             "Labels can only be rescaled with nearest interpolation",
             thread=WidgetName.RESCALING.step_name,
             level="warning",
         )
         widget_rescaling.order.value = RescaleType.NEAREST.int_val
+
+
+@magicgui(
+    call_button="Remove False Positives",
+    segmentation={
+        "label": "Segmentation",
+        "tooltip": "Segmentation layer to remove false positives.",
+    },
+    foreground={
+        "label": "Foreground",
+        "tooltip": "Foreground probability layer.",
+    },
+    threshold={
+        "label": "Threshold",
+        "tooltip": "Threshold value to remove false positives.",
+        'widget_type': 'FloatSlider',
+        "max": 1.0,
+        "min": 0.0,
+        "step": 0.01,
+    },
+)
+def widget_remove_false_positives_by_foreground(
+    segmentation: Labels, foreground: Image, threshold: float = 0.5
+) -> Future[LayerDataTuple]:
+    """Remove false positives from a segmentation layer using a foreground probability layer."""
+
+    ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
+    ps_foreground = PlantSegImage.from_napari_layer(foreground)
+
+    return schedule_task(
+        remove_false_positives_by_foreground_probability_task,
+        task_kwargs={
+            "segmentation": ps_segmentation,
+            "foreground": ps_foreground,
+            "threshold": threshold,
+        },
+        widget_to_update=[],
+    )

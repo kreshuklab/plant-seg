@@ -4,6 +4,7 @@ from magicgui.widgets import MainWindow
 from PyQt5.QtCore import Qt
 
 from plantseg.viewer_napari.widgets import (
+    widget_add_custom_model,
     widget_agglomeration,
     widget_clean_scribble,
     widget_dt_ws,
@@ -13,6 +14,7 @@ from plantseg.viewer_napari.widgets import (
     widget_infos,
     widget_lifted_multicut,
     widget_open_file,
+    widget_remove_false_positives_by_foreground,
     widget_rescaling,
     widget_show_info,
     widget_split_and_merge_from_scribbles,
@@ -73,7 +75,7 @@ def get_extras_tab():
     # widget_fix_over_under_segmentation_from_nuclei.threshold.native.setStyleSheet(STYLE_SLIDER)
     # widget_fix_over_under_segmentation_from_nuclei.quantile.native.setStyleSheet(STYLE_SLIDER)
     container = MainWindow(
-        widgets=[widget_lifted_multicut],
+        widgets=[widget_add_custom_model, widget_lifted_multicut],
         labels=False,
     )
     container = setup_menu(
@@ -88,6 +90,7 @@ def get_proofreading_tab():
             widget_split_and_merge_from_scribbles,
             widget_clean_scribble,
             widget_filter_segmentation,
+            widget_remove_false_positives_by_foreground,
         ],
         labels=False,
     )

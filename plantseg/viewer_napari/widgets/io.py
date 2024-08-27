@@ -15,7 +15,7 @@ from plantseg.io.zarr import list_zarr_keys
 from plantseg.plantseg_image import ImageLayout, ImageType, PlantSegImage, SemanticType
 from plantseg.tasks.io_tasks import export_image_task, import_image_task
 from plantseg.tasks.workflow_handler import workflow_handler
-from plantseg.viewer_napari.logging import napari_formatted_logging
+from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.utils import _return_value_if_widget, schedule_task
 
 
@@ -168,7 +168,7 @@ def widget_export_stacks(
     workflow_name: str = "workflow",
 ) -> None:
     timer = time.time()
-    napari_formatted_logging("export_image_task started", thread="Task", level="info")
+    log("export_image_task started", thread="Export stacks", level="info")
 
     for i, (image, image_custom_name) in enumerate(images):
         # parse and check input to the function
@@ -190,7 +190,7 @@ def widget_export_stacks(
     workflow_path = Path(directory) / f"{workflow_name}.yaml"
     workflow_handler.save_to_yaml(path=workflow_path)
 
-    napari_formatted_logging(f"export_image_task completed in {time.time() - timer:.2f}s", thread="Task", level="info")
+    log(f"export_image_task completed in {time.time() - timer:.2f}s", thread="Export stacks", level="info")
 
 
 widget_export_stacks.directory.hide()
@@ -239,7 +239,7 @@ def widget_show_info(layer: Layer, update_other_widgets: bool = False) -> None:
 
 
 widget_infos = Label(
-    value="Infos will be shown here...", label="Infos", tooltip="Information about the selected layer."
+    value="Select layer to show information here...", label="Infos", tooltip="Information about the selected layer."
 )
 
 
