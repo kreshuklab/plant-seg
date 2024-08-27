@@ -1,4 +1,8 @@
-from plantseg.viewer_napari.widgets.dataprocessing import widget_gaussian_smoothing, widget_rescaling
+from plantseg.viewer_napari.widgets.dataprocessing import (
+    widget_gaussian_smoothing,
+    widget_rescaling,
+    widget_remove_false_positives_by_foreground,
+)
 from plantseg.viewer_napari.widgets.io import widget_export_stacks, widget_infos, widget_open_file, widget_show_info
 from plantseg.viewer_napari.widgets.predictions import widget_add_custom_model, widget_unet_predictions
 from plantseg.viewer_napari.widgets.proofreading import (
@@ -31,4 +35,5 @@ __all__ = [
     "widget_clean_scribble",
     "widget_filter_segmentation",
     "widget_add_label_to_corrected",  # XXX: Not used in container
+    "widget_remove_false_positives_by_foreground",
 ]

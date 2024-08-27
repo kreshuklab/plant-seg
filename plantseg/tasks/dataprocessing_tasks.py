@@ -1,6 +1,7 @@
 from plantseg.functionals.dataprocessing import (
     image_gaussian_smoothing,
     image_rescale,
+    remove_false_positives_by_foreground_probability,
 )
 from plantseg.io.utils import VoxelSize
 from plantseg.plantseg_image import ImageLayout, PlantSegImage
@@ -114,4 +115,26 @@ def image_rescale_to_voxel_size_task(image: PlantSegImage, new_voxel_size: Voxel
 
     out_data = image_rescale(image.get_data(), scaling_factor, order=order)
     new_image = image.derive_new(out_data, name=f"{image.name}_rescaled", voxel_size=new_voxel_size)
+    return new_image
+
+
+@task_tracker
+def remove_false_positives_by_foreground_probability_task(
+    segmentation: PlantSegImage, foreground: PlantSegImage, threshold: float
+) -> PlantSegImage:
+    """Remove false positives from a segmentation based on the foreground probability.
+
+    Args:
+        segmentation (PlantSegImage): input segmentation
+        foreground (PlantSegImage): input foreground probability
+        threshold (float): threshold value
+
+    """
+    if segmentation.shape != foreground.shape:
+        raise ValueError("Segmentation and foreground probability must have the same shape.")
+
+    out_data = remove_false_positives_by_foreground_probability(
+        segmentation.get_data(), foreground.get_data(), threshold
+    )
+    new_image = segmentation.derive_new(out_data, name=f"{segmentation.name}_fg_filtered")
     return new_image

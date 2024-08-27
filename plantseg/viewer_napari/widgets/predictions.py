@@ -15,6 +15,7 @@ from plantseg.models.zoo import model_zoo
 from plantseg.plantseg_image import PlantSegImage
 from plantseg.tasks.predictions_tasks import unet_predictions_task
 from plantseg.viewer_napari.logging import napari_formatted_logging
+from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws, widget_lifted_multicut
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 ALL = 'All'
@@ -151,7 +152,11 @@ def widget_unet_predictions(
             "single_batch_mode": single_patch,
             "device": device,
         },
-        widget_to_update=[],
+        widget_to_update=[
+            widget_dt_ws.image,
+            widget_agglomeration.image,
+            widget_lifted_multicut.image,
+        ],
     )
 
 

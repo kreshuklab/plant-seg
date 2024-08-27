@@ -14,6 +14,7 @@ from plantseg.viewer_napari.widgets import (
     widget_infos,
     widget_lifted_multicut,
     widget_open_file,
+    widget_remove_false_positives_by_foreground,
     widget_rescaling,
     widget_show_info,
     widget_split_and_merge_from_scribbles,
@@ -89,6 +90,7 @@ def get_proofreading_tab():
             widget_split_and_merge_from_scribbles,
             widget_clean_scribble,
             widget_filter_segmentation,
+            widget_remove_false_positives_by_foreground,
         ],
         labels=False,
     )

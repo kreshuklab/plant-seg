@@ -6,6 +6,7 @@ from napari.types import LayerDataTuple
 
 from plantseg.plantseg_image import PlantSegImage
 from plantseg.tasks.segmentation_tasks import clustering_segmentation_task, dt_watershed_task, lmc_segmentation_task
+from plantseg.viewer_napari.widgets.dataprocessing import widget_remove_false_positives_by_foreground
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 ########################################################################################################################
@@ -200,6 +201,11 @@ def widget_dt_ws(
             "apply_nonmax_suppression": apply_nonmax_suppression,
             "is_nuclei_image": is_nuclei_image,
         },
+        widget_to_update=[
+            widget_agglomeration._labels,
+            widget_lifted_multicut._labels,
+            widget_remove_false_positives_by_foreground.segmentation,
+        ],
     )
 
 
