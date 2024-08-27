@@ -15,15 +15,13 @@ napari_notifications = {  # Mapping logging levels to Napari notification functi
 class NapariHandler(logging.Handler):
     """Custom logging handler for logging into Napari GUI with default logging API.
 
-    i.e.
-    use `logging.getLogger("PlantSeg.Napari").info("message")`,
-    instead of `napari_formatted_logging("message", "thread")` from PlantSeg V1,
-    or napari.utils.notifications.show_info("message") from Napari.
+    To show widget name in the log message.
     """
 
     def emit(self, record):
         try:
             record.handler_name = self.get_name()
+            assert hasattr(record, "widget_name"), "For Napari logging, use 'napari_formatted_logging' in log record."
             message = self.format(record)
             level = record.levelno
             napari_notifications[level](message)

@@ -8,9 +8,14 @@ logger_viewer_napari.addHandler(napari_handler)
 
 # Avoid propagating to loggers.stream_handler
 logger_viewer_napari.propagate = False
-logger_viewer_napari.info("Napari logger configured. Napari logger name: {__name__}")
 
 
-def napari_formatted_logging(message: str, thread: str, level: str = 'info'):
-    """Deprecated function for logging into Napari GUI."""
-    logger_viewer_napari.log(logging.getLevelName(level.upper()), message)
+def log(message: str, thread: str, level: str = 'info', logger: logging.Logger = logger_viewer_napari):
+    """Wrapper function for logging into Napari GUI.
+
+    For historical reasons, the `thread` argument is used to identify the widget that is logging.
+    """
+    logger.log(logging.getLevelName(level.upper()), message, extra={'widget_name': thread})
+
+
+log(message="Napari logger configured. Napari logger name: {__name__}", thread="Napari GUI Logger", level="info")

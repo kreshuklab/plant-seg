@@ -7,7 +7,7 @@ from magicgui.widgets import Widget
 from napari.qt.threading import create_worker
 
 from plantseg.plantseg_image import PlantSegImage
-from plantseg.viewer_napari import napari_formatted_logging
+from plantseg.viewer_napari import log
 
 
 def _return_value_if_widget(x):
@@ -54,7 +54,7 @@ def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: Optional[
 
     def on_done(task_result: PlantSegImage | list[PlantSegImage] | None):
         timer = timeit.default_timer() - timer_start
-        napari_formatted_logging(f"{task_name} complete in {timer:.2f}s", thread='Task')
+        log(f"{task_name} complete in {timer:.2f}s", thread='Task')
 
         if isinstance(task_result, PlantSegImage):
             future.set_result(task_result.to_napari_layer_tuple())
@@ -78,5 +78,5 @@ def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: Optional[
     worker = create_worker(task, **task_kwargs)
     worker.returned.connect(on_done)
     worker.start()
-    napari_formatted_logging(f"{task_name} started", thread='Task')
+    log(f"{task_name} started", thread='Task')
     return future

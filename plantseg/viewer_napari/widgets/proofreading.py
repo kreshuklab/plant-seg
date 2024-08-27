@@ -11,7 +11,7 @@ from napari.types import LayerDataTuple
 from plantseg.functionals.proofreading.split_merge_tools import split_merge_from_seeds
 from plantseg.functionals.proofreading.utils import get_bboxes
 from plantseg.plantseg_image import ImageProperties, PlantSegImage, SemanticType
-from plantseg.viewer_napari import napari_formatted_logging
+from plantseg.viewer_napari import log
 
 DEFAULT_KEY_BINDING_PROOFREAD = 'n'
 DEFAULT_KEY_BINDING_CLEAN = 'b'
@@ -190,14 +190,10 @@ segmentation_handler = ProofreadingHandler()
 @magicgui(call_button=f'Clean scribbles - < {DEFAULT_KEY_BINDING_CLEAN} >')
 def widget_clean_scribble(viewer: napari.Viewer):
     if not segmentation_handler.status:
-        napari_formatted_logging(
-            'Proofreading widget not initialized. Run the proofreading widget tool once first', thread='Clean scribble'
-        )
+        log('Proofreading widget not initialized. Run the proofreading widget tool once first', thread='Clean scribble')
 
     if 'Scribbles' not in viewer.layers:
-        napari_formatted_logging(
-            'Scribble Layer not defined. Run the proofreading widget tool once first', thread='Clean scribble'
-        )
+        log('Scribble Layer not defined. Run the proofreading widget tool once first', thread='Clean scribble')
         return None
 
     segmentation_handler.reset_scribbles()
@@ -250,7 +246,7 @@ def widget_split_and_merge_from_scribbles(
     ps_image = PlantSegImage.from_napari_layer(image)
 
     if ps_image.semantic_type == SemanticType.RAW:
-        napari_formatted_logging(
+        log(
             'Pmap/Image layer appears to be a raw image and not a boundary probability map. '
             'For the best proofreading results, try to use a boundaries probability layer '
             '(e.g. from the Run Prediction widget)',
@@ -259,7 +255,7 @@ def widget_split_and_merge_from_scribbles(
         )
 
     if ps_image.is_multichannel:
-        napari_formatted_logging(
+        log(
             'Pmap/Image layer appears to be a multichannel image. '
             'Proofreading does not support multichannel images. ',
             thread='Proofreading tool',
@@ -267,7 +263,7 @@ def widget_split_and_merge_from_scribbles(
         )
 
     if initialize_proofreading(viewer, ps_segmentation):
-        napari_formatted_logging('Proofreading initialized', thread='Proofreading tool')
+        log('Proofreading initialized', thread='Proofreading tool')
         widget_clean_scribble.show()
         widget_filter_segmentation.show()
         widget_split_and_merge_from_scribbles.call_button.text = f'Split / Merge - < {DEFAULT_KEY_BINDING_PROOFREAD} >'
@@ -281,7 +277,7 @@ def widget_split_and_merge_from_scribbles(
             return None
 
         if segmentation_handler.scribbles.sum() == 0:
-            napari_formatted_logging('No scribbles found', thread='Proofreading tool')
+            log('No scribbles found', thread='Proofreading tool')
             return None
 
         segmentation_handler.lock()
@@ -304,7 +300,7 @@ def widget_split_and_merge_from_scribbles(
 @magicgui(call_button='Extract correct labels')
 def widget_filter_segmentation() -> Future[LayerDataTuple]:
     if not segmentation_handler.status:
-        napari_formatted_logging(
+        log(
             'Proofreading widget not initialized. Run the proofreading widget tool once first',
             thread='Export correct labels',
             level='error',

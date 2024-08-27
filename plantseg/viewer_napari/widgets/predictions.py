@@ -14,7 +14,7 @@ from napari.types import LayerDataTuple
 from plantseg.models.zoo import model_zoo
 from plantseg.plantseg_image import PlantSegImage
 from plantseg.tasks.predictions_tasks import unet_predictions_task
-from plantseg.viewer_napari import napari_formatted_logging
+from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws, widget_lifted_multicut
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
@@ -162,25 +162,27 @@ def widget_unet_predictions(
 
 def update_halo():
     if widget_unet_predictions.recommend_halo.value:
-        napari_formatted_logging(
+        log(
             'Refreshing halo for the selected model; this might take a while...',
-            thread='UNet Predictions',
+            thread='UNet predictions',
             level='info',
         )
-        if widget_unet_predictions.mode.value == UNetPredictionsMode.PLANTSEG:
+        if widget_unet_predictions.mode.value is UNetPredictionsMode.PLANTSEG:
             widget_unet_predictions.patch_halo.value = model_zoo.compute_3D_halo_for_zoo_models(
                 widget_unet_predictions.model_name.value
             )
-        elif widget_unet_predictions.mode.value == UNetPredictionsMode.BIOIMAGEIO:
+        elif widget_unet_predictions.mode.value is UNetPredictionsMode.BIOIMAGEIO:
             widget_unet_predictions.patch_halo.value = model_zoo.compute_3D_halo_for_bioimageio_models(
                 widget_unet_predictions.model_id.value
             )
         else:
             raise NotImplementedError(f'Automatic halo not implemented for {widget_unet_predictions.mode.value} mode.')
-    else:
-        napari_formatted_logging(
-            'User selected another model but disabled halo recommendation.', thread='UNet Predictions', level='info'
-        )
+    elif (
+        widget_unet_predictions.mode.value is UNetPredictionsMode.BIOIMAGEIO and widget_unet_predictions.model_id.value
+    ) or (
+        widget_unet_predictions.mode.value is UNetPredictionsMode.PLANTSEG and widget_unet_predictions.model_name.value
+    ):
+        log('User selected another model but disabled halo recommendation.', thread='UNet predictions', level='info')
 
 
 @widget_unet_predictions.recommend_halo.changed.connect
@@ -263,9 +265,7 @@ def _on_model_name_changed(model_name: str):
     if patch_size is not None:
         widget_unet_predictions.patch_size.value = tuple(patch_size)
     else:
-        napari_formatted_logging(
-            f'No recommended patch size for {model_name}', thread='UNet Predictions', level='warning'
-        )
+        log(f'No recommended patch size for {model_name}', thread='UNet predictions', level='warning')
 
     description = model_zoo.get_model_description(model_name)
     if description is None:
@@ -331,14 +331,14 @@ def widget_add_custom_model(
     )
 
     if finished:
-        napari_formatted_logging(
+        log(
             f'New model {new_model_name} added to the list of available models.',
             level='info',
             thread='Add Custom Model',
         )
         widget_unet_predictions.model_name.choices = model_zoo.list_models()
     else:
-        napari_formatted_logging(
+        log(
             f'Error adding new model {new_model_name} to the list of available models: ' f'{error_msg}',
             level='error',
             thread='Add Custom Model',

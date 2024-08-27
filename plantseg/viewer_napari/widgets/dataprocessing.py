@@ -12,10 +12,10 @@ from plantseg.tasks.dataprocessing_tasks import (
     gaussian_smoothing_task,
     image_rescale_to_shape_task,
     image_rescale_to_voxel_size_task,
-    set_voxel_size_task,
     remove_false_positives_by_foreground_probability_task,
+    set_voxel_size_task,
 )
-from plantseg.viewer_napari import napari_formatted_logging
+from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 
@@ -317,7 +317,7 @@ def _on_rescale_order_changed(order):
         return None
 
     if isinstance(current_image, Labels) and order != RescaleType.NEAREST.int_val:
-        napari_formatted_logging(
+        log(
             "Labels can only be rescaled with nearest interpolation",
             thread=WidgetName.RESCALING.step_name,
             level="warning",
