@@ -1,14 +1,13 @@
 """Initialise model registry at startup"""
 
+import logging
 from os import getenv
 from pathlib import Path
 
 import torch  # noqa: F401; required to patch #273
 import yaml
 
-from plantseg.loggers import logger_logger
-
-logger_logger.info("Logger configured at initialisation.")
+from plantseg.loggers import stream_handler
 
 PATH_PLANTSEG_GLOBAL = Path(__file__).parent.resolve()
 
@@ -47,3 +46,9 @@ PATH_CONFIGS.mkdir(parents=True, exist_ok=True)
 if not PATH_MODEL_ZOO_CUSTOM.exists():
     with PATH_MODEL_ZOO_CUSTOM.open('w') as file:
         yaml.dump({}, file)
+
+# Set up logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(stream_handler)
+logger.info(f"Logger configured at initialisation. PlantSeg logger name: {__name__}")

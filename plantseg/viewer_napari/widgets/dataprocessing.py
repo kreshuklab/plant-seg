@@ -15,7 +15,7 @@ from plantseg.tasks.dataprocessing_tasks import (
     set_voxel_size_task,
     remove_false_positives_by_foreground_probability_task,
 )
-from plantseg.viewer_napari.logging import napari_formatted_logging
+from plantseg.viewer_napari import napari_formatted_logging
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 

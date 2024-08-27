@@ -2,7 +2,7 @@ import numpy as np
 from skimage.segmentation import watershed
 
 from plantseg.functionals.proofreading.utils import get_bboxes, get_idx_slice
-from plantseg.viewer_napari.logging import napari_formatted_logging
+from plantseg.viewer_napari import napari_formatted_logging
 
 
 def _merge_from_seeds(segmentation, region_slice, region_bbox, bboxes, all_idx):

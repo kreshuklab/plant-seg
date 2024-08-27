@@ -15,7 +15,7 @@ from plantseg.io.zarr import list_zarr_keys
 from plantseg.plantseg_image import ImageLayout, ImageType, PlantSegImage, SemanticType
 from plantseg.tasks.io_tasks import export_image_task, import_image_task
 from plantseg.tasks.workflow_handler import workflow_handler
-from plantseg.viewer_napari.logging import napari_formatted_logging
+from plantseg.viewer_napari import napari_formatted_logging
 from plantseg.viewer_napari.widgets.utils import _return_value_if_widget, schedule_task
 
 
@@ -239,7 +239,7 @@ def widget_show_info(layer: Layer, update_other_widgets: bool = False) -> None:
 
 
 widget_infos = Label(
-    value="Infos will be shown here...", label="Infos", tooltip="Information about the selected layer."
+    value="Select layer to show information here...", label="Infos", tooltip="Information about the selected layer."
 )
 
 

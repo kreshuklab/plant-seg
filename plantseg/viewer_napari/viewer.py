@@ -7,7 +7,7 @@ from plantseg.viewer_napari.containers import (
     get_preprocessing_tab,
     get_proofreading_tab,
 )
-from plantseg.viewer_napari.logging import napari_formatted_logging
+from plantseg.viewer_napari import napari_formatted_logging
 from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybindings
 
 

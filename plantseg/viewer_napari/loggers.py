@@ -31,19 +31,7 @@ class NapariHandler(logging.Handler):
             self.handleError(record)
 
 
-def napari_formatted_logging(message: str, thread: str, level: str = 'info'):
-    """Deprecated function for logging into Napari GUI."""
-    logger_viewer_napari.log(logging.getLevelName(level.upper()), message)
-
-
 # Set up logging from Napari
 napari_handler = NapariHandler()
 napari_handler.set_name("N")
 napari_handler.setFormatter(formatter_viewer_napari)
-
-logger_viewer_napari = logging.getLogger("PlantSeg.Napari")
-logger_viewer_napari.setLevel(logging.INFO)
-logger_viewer_napari.addHandler(napari_handler)
-
-# Avoid propagating to loggers.stream_handler
-logger_viewer_napari.propagate = False

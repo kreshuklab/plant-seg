@@ -7,7 +7,7 @@ from magicgui.widgets import Widget
 from napari.qt.threading import create_worker
 
 from plantseg.plantseg_image import PlantSegImage
-from plantseg.viewer_napari.logging import napari_formatted_logging
+from plantseg.viewer_napari import napari_formatted_logging
 
 
 def _return_value_if_widget(x):
