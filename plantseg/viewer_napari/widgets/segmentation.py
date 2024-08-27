@@ -24,7 +24,7 @@ STACKED = [('2D', True), ('3D', False)]
         'label': 'Pmap/Image',
         'tooltip': 'Raw or boundary image to use as input for clustering.',
     },
-    _labels={
+    superpixels={
         'label': 'Over-segmentation',
         'tooltip': 'Over-segmentation labels layer to use as input for clustering.',
     },
@@ -48,13 +48,13 @@ STACKED = [('2D', True), ('3D', False)]
 )
 def widget_agglomeration(
     image: Image,
-    _labels: Labels,
+    superpixels: Labels,
     mode: str = "GASP",
     beta: float = 0.6,
     minsize: int = 100,
 ) -> Future[LayerDataTuple]:
     ps_image = PlantSegImage.from_napari_layer(image)
-    ps_labels = PlantSegImage.from_napari_layer(_labels)
+    ps_labels = PlantSegImage.from_napari_layer(superpixels)
 
     return schedule_task(
         clustering_segmentation_task,
@@ -85,7 +85,7 @@ def widget_agglomeration(
         'label': 'Nuclei',
         'tooltip': 'Nuclei binary predictions or Nuclei segmentation.',
     },
-    _labels={
+    superpixels={
         'label': 'Over-segmentation',
         'tooltip': 'Over-segmentation labels layer to use as input for clustering.',
     },
@@ -105,12 +105,12 @@ def widget_agglomeration(
 def widget_lifted_multicut(
     image: Image,
     nuclei: Image | Labels,
-    _labels: Labels,
+    superpixels: Labels,
     beta: float = 0.5,
     minsize: int = 100,
 ) -> Future[LayerDataTuple]:
     ps_image = PlantSegImage.from_napari_layer(image)
-    ps_labels = PlantSegImage.from_napari_layer(_labels)
+    ps_labels = PlantSegImage.from_napari_layer(superpixels)
     ps_nuclei = PlantSegImage.from_napari_layer(nuclei)
 
     return schedule_task(
@@ -202,8 +202,8 @@ def widget_dt_ws(
             "is_nuclei_image": is_nuclei_image,
         },
         widget_to_update=[
-            widget_agglomeration._labels,
-            widget_lifted_multicut._labels,
+            widget_agglomeration.superpixels,
+            widget_lifted_multicut.superpixels,
             widget_remove_false_positives_by_foreground.segmentation,
         ],
     )
