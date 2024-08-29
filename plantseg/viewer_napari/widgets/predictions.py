@@ -138,8 +138,6 @@ def widget_unet_predictions(
     else:
         raise NotImplementedError(f'Mode {mode} not implemented yet.')
 
-    # TODO add halo support and multichannel support
-
     ps_image = PlantSegImage.from_napari_layer(image)
     return schedule_task(
         unet_predictions_task,
@@ -149,6 +147,7 @@ def widget_unet_predictions(
             "model_id": model_id,
             "suffix": suffix,
             "patch": patch_size,
+            "patch_halo": patch_halo,
             "single_batch_mode": single_patch,
             "device": device,
         },
