@@ -10,7 +10,7 @@ from napari.types import LayerDataTuple
 
 from plantseg.functionals.proofreading.split_merge_tools import split_merge_from_seeds
 from plantseg.functionals.proofreading.utils import get_bboxes
-from plantseg.plantseg_image import ImageProperties, PlantSegImage, SemanticType
+from plantseg.core.image import ImageProperties, PlantSegImage, SemanticType
 from plantseg.viewer_napari import log
 
 DEFAULT_KEY_BINDING_PROOFREAD = 'n'

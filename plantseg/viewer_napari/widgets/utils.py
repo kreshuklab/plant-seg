@@ -6,7 +6,7 @@ import napari
 from magicgui.widgets import Widget
 from napari.qt.threading import create_worker
 
-from plantseg.plantseg_image import PlantSegImage
+from plantseg.core.image import PlantSegImage
 from plantseg.viewer_napari import log
 
 

@@ -363,7 +363,7 @@ class ModelZoo:
         logger_zoo.info(f"Got {architecture_callable} model with kwargs {architecture_kwargs}.")
 
         # Create model from architecture and kwargs
-        architecture = str(architecture_callable)  # e.g. 'plantseg.models.model.UNet3D'
+        architecture = str(architecture_callable)  # e.g. 'plantseg.training.model.UNet3D'
         architecture = 'UNet3D' if 'UNet3D' in architecture else 'UNet2D'
         model_config = {
             'name': architecture,

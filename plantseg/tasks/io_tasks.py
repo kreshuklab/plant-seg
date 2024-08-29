@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from plantseg.plantseg_image import PlantSegImage, import_image, save_image
+from plantseg.core.image import PlantSegImage, import_image, save_image
 from plantseg.tasks import task_tracker
 
 

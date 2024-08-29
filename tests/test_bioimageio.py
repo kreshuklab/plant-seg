@@ -1,6 +1,6 @@
 import torch
 
-from plantseg.models.zoo import model_zoo
+from plantseg.core.zoo import model_zoo
 
 
 def test_get_3D_model_by_id():

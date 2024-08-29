@@ -11,7 +11,7 @@ from napari.types import LayerDataTuple
 from plantseg.io import H5_EXTENSIONS, ZARR_EXTENSIONS
 from plantseg.io.h5 import list_h5_keys
 from plantseg.io.zarr import list_zarr_keys
-from plantseg.plantseg_image import ImageLayout, ImageType, PlantSegImage, SemanticType
+from plantseg.core.image import ImageLayout, ImageType, PlantSegImage, SemanticType
 from plantseg.tasks.io_tasks import export_image_task, import_image_task
 from plantseg.tasks.workflow_handler import workflow_handler
 from plantseg.viewer_napari import log

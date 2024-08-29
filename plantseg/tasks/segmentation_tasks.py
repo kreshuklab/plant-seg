@@ -9,7 +9,7 @@ from plantseg.functionals.segmentation import (
     multicut,
     mutex_ws,
 )
-from plantseg.plantseg_image import PlantSegImage, SemanticType
+from plantseg.core.image import PlantSegImage, SemanticType
 from plantseg.tasks import task_tracker
 
 logger = logging.getLogger(__name__)

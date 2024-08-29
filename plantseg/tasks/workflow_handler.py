@@ -8,7 +8,7 @@ import yaml
 from pydantic import BaseModel, Field
 
 from plantseg.__version__ import __version__
-from plantseg.plantseg_image import PlantSegImage
+from plantseg.core.image import PlantSegImage
 
 
 class NodeType(str, Enum):
