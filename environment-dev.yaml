@@ -7,7 +7,7 @@ dependencies:
   - python
   # Neural Network and GPU
   - conda-forge::cudnn=9
-  - pytorch
+  - pytorch=2.4
   - torchvision
   - pytorch-cuda=12.1
   - cuda-version>=12.1
@@ -29,9 +29,10 @@ dependencies:
   - pydantic>2
   - pytest
   - pytest-qt
-  # Extra
+  # CI/CD
   - pre-commit
   - bump-my-version
+  # Docs
   - mkdocs-material
   - mkdocs-autorefs
   - mkdocs-git-revision-date-localized-plugin
@@ -39,4 +40,5 @@ dependencies:
   - mkdocstrings-python
   - pip:
       - markdown-exec
+      # PlantSeg
       - -e .
