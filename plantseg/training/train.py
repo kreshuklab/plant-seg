@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from typing import Tuple
 
 import torch
 import yaml
@@ -51,7 +50,7 @@ def unet_training(
     in_channels: int,
     out_channels: int,
     feature_maps: tuple,
-    patch_size: Tuple[int, int, int],
+    patch_size: tuple[int, int, int],
     max_num_iters: int,
     dimensionality: str,
     sparse: bool,

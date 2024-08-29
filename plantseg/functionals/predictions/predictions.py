@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 
 import numpy as np
 import torch
@@ -20,7 +20,7 @@ def unet_predictions(
     raw: np.ndarray,
     model_name: Optional[str],
     model_id: Optional[str],
-    patch: Tuple[int, int, int] = (80, 160, 160),
+    patch: tuple[int, int, int] = (80, 160, 160),
     single_batch_mode: bool = True,
     device: str = "cuda",
     model_update: bool = False,
@@ -38,7 +38,7 @@ def unet_predictions(
     Args:
         raw (np.ndarray): Raw input data as a 3D array of shape (Z, Y, X).
         model_name (str): The name of the model to use.
-        patch (Tuple[int, int, int], optional): Patch size for prediction. Defaults to (80, 160, 160).
+        patch (tuple[int, int, int], optional): Patch size for prediction. Defaults to (80, 160, 160).
         single_batch_mode (bool, optional): Whether to use a single batch for prediction. Defaults to True.
         device (str, optional): The computation device ('cpu', 'cuda', etc.). Defaults to 'cuda'.
         model_update (bool, optional): Whether to update the model to the latest version. Defaults to False.

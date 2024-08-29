@@ -1,6 +1,6 @@
 import collections
 import logging
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional
 
 import numpy as np
 import torch
@@ -92,7 +92,7 @@ class ArrayDataset(Dataset):
         raw: np.ndarray,
         slice_builder: SliceBuilder,
         augs: Callable[[np.ndarray], torch.Tensor],
-        halo_shape: Optional[Tuple[int, int, int]] = None,
+        halo_shape: Optional[tuple[int, int, int]] = None,
         multichannel: bool = False,
         verbose_logging: bool = True,
     ):

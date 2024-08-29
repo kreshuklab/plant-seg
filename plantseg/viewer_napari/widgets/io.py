@@ -2,7 +2,6 @@ import time
 from concurrent.futures import Future
 from enum import Enum
 from pathlib import Path
-from typing import List, Tuple
 
 from magicgui import magicgui
 from magicgui.widgets import Label
@@ -160,7 +159,7 @@ def _on_done(*args):
     },
 )
 def widget_export_stacks(
-    images: List[Tuple[Layer, str]],
+    images: list[tuple[Layer, str]],
     directory: Path = Path.home(),
     export_format: str = "tiff",
     rescale_to_original_resolution: bool = True,
@@ -201,7 +200,7 @@ widget_export_stacks.workflow_name.hide()
 
 
 @widget_export_stacks.images.changed.connect
-def _on_images_changed(images_list: List[Tuple[Layer, str]]):
+def _on_images_changed(images_list: list[tuple[Layer, str]]):
     images_list = _return_value_if_widget(images_list)
     if len(images_list) > 0:
         widget_export_stacks.directory.show()
