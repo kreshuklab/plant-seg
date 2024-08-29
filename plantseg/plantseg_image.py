@@ -518,23 +518,22 @@ class PlantSegImage:
 def _load_data(path: Path, key: str | None) -> tuple[np.ndarray, VoxelSize]:
     """Load data and voxel size from a file."""
     ext = path.suffix
+    if key == "":
+        key = None
 
     if ext in H5_EXTENSIONS:
-        h5_key = key if key else None
-        return load_h5(path, h5_key), read_h5_voxel_size(path, h5_key)
+        return load_h5(path, key), read_h5_voxel_size(path, key)
 
-    elif ext in TIFF_EXTENSIONS:
+    if ext in TIFF_EXTENSIONS:
         return load_tiff(path), read_tiff_voxel_size(path)
 
-    elif ext in PIL_EXTENSIONS:
+    if ext in PIL_EXTENSIONS:
         return load_pil(path), VoxelSize()
 
-    elif str(path).find(".zarr") != -1:
-        zarr_key = key if key else None
-        return load_zarr(path, zarr_key), read_zarr_voxel_size(path, zarr_key)
+    if ".zarr" in path.suffixes:
+        return load_zarr(path, key), read_zarr_voxel_size(path, key)
 
-    else:
-        raise NotImplementedError()
+    raise NotImplementedError(f"File extension '{ext}' is not supported for path: {path}")
 
 
 def import_image(
