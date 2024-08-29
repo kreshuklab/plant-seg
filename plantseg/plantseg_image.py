@@ -24,7 +24,7 @@ from plantseg.io import (
     read_tiff_voxel_size,
     read_zarr_voxel_size,
 )
-from plantseg.io.utils import VoxelSize
+from plantseg.io.voxelsize import VoxelSize
 
 logger = logging.getLogger(__name__)
 

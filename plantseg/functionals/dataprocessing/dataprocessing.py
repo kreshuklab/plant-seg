@@ -4,7 +4,29 @@ from skimage.filters import median
 from skimage.morphology import ball, disk
 from vigra import gaussianSmoothing
 
-from plantseg.io.utils import compute_scaling_factor
+
+def compute_scaling_factor(
+    input_voxel_size: tuple[float, float, float], output_voxel_size: tuple[float, float, float]
+) -> tuple[float, float, float]:
+    """
+    Compute the scaling factor to rescale an image from input voxel size to output voxel size.
+    """
+    scaling = tuple(i_size / o_size for i_size, o_size in zip(input_voxel_size, output_voxel_size))
+    if len(scaling) != 3:
+        raise ValueError(f"Expected scaling factor to be 3D, but got {len(scaling)}D input")
+    return scaling
+
+
+def compute_scaling_voxelsize(
+    input_voxel_size: tuple[float, float, float], scaling_factor: tuple[float, float, float]
+) -> tuple[float, float, float]:
+    """
+    Compute the output voxel size after scaling an image with a given scaling factor.
+    """
+    output_voxel_size = tuple(i_size / s_size for i_size, s_size in zip(input_voxel_size, scaling_factor))
+    if len(output_voxel_size) != 3:
+        raise ValueError(f"Expected output voxel size to be 3D, but got {len(output_voxel_size)}D input")
+    return output_voxel_size
 
 
 def scale_image_to_voxelsize(

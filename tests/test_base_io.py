@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from plantseg.io import smart_load
-from plantseg.io.utils import VoxelSize
+from plantseg.io.voxelsize import VoxelSize
 
 
 class TestIO:

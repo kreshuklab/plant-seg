@@ -3,7 +3,7 @@ from plantseg.functionals.dataprocessing import (
     image_rescale,
     remove_false_positives_by_foreground_probability,
 )
-from plantseg.io.utils import VoxelSize
+from plantseg.io.voxelsize import VoxelSize
 from plantseg.plantseg_image import ImageLayout, PlantSegImage
 from plantseg.tasks import task_tracker
 
