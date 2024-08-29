@@ -526,7 +526,7 @@ def _load_data(path: Path, key: Optional[str]) -> tuple[np.ndarray, VoxelSize]:
 
     if ext in H5_EXTENSIONS:
         h5_key = key if key else None
-        return load_h5(path, key), read_h5_voxel_size(path, h5_key)
+        return load_h5(path, h5_key), read_h5_voxel_size(path, h5_key)
 
     elif ext in TIFF_EXTENSIONS:
         return load_tiff(path), read_tiff_voxel_size(path)
@@ -536,7 +536,7 @@ def _load_data(path: Path, key: Optional[str]) -> tuple[np.ndarray, VoxelSize]:
 
     elif str(path).find(".zarr") != -1:
         zarr_key = key if key else None
-        return load_zarr(path, key), read_zarr_voxel_size(path, zarr_key)
+        return load_zarr(path, zarr_key), read_zarr_voxel_size(path, zarr_key)
 
     else:
         raise NotImplementedError()
