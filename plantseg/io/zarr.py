@@ -1,5 +1,5 @@
 """
-Reading and writing zarrs. Created in the same format as h5.py.
+Reading and writing Zarr files. This is created in the same format as h5.py.
 
 Notes:
 1. Although the function is called "open", there is no need to close an array: data is automatically flushed to disk, and files are automatically closed whenever an array is modified. [Ref](https://zarr.readthedocs.io/en/stable/tutorial.html#persistent-arrays).
@@ -9,7 +9,6 @@ Notes:
 
 import warnings
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import zarr
@@ -62,7 +61,7 @@ def _find_input_key(zarr_file: zarr.Group) -> str:
         )
 
 
-def _get_zarr_dataset(zarr_path: Path, key: Optional[str] = None) -> zarr.Array:
+def _get_zarr_dataset(zarr_path: Path, key: str | None = None) -> zarr.Array:
     zarr_file = zarr.open_group(zarr_path, mode="r")
     if key is None:
         key = _find_input_key(zarr_file)
@@ -76,18 +75,18 @@ def _get_zarr_dataset(zarr_path: Path, key: Optional[str] = None) -> zarr.Array:
 
 def load_zarr(
     path: Path,
-    key: Optional[str],
-    slices: Optional[slice] = None,
+    key: str | None,
+    slices: slice | None = None,
 ) -> np.ndarray:
     """Load a dataset from a Zarr file and return it or its meta-information.
 
     Args:
         path (Path): The path to the Zarr file.
-        key (str): The internal key of the desired dataset.
-        slices (Optional[slice], optional): Slice to load. Defaults to None.
+        key (str | None): The internal key of the desired dataset.
+        slices (slice | None, optional): Slice to load. Defaults to None.
 
     Returns:
-        Union[tuple, tuple[np.ndarray, tuple]]: The dataset as a NumPy array, and meta-information.
+        np.ndarray: The dataset as a NumPy array.
     """
     _validate_zarr_file(path)
     data = _get_zarr_dataset(path, key)
@@ -95,15 +94,15 @@ def load_zarr(
     return data
 
 
-def read_zarr_shape(path: Path, key: Optional[str] = None) -> tuple[int, ...]:
+def read_zarr_shape(path: Path, key: str | None = None) -> tuple[int, ...]:
     """Read the shape of a dataset in a Zarr file.
 
     Args:
         path (Path): The path to the Zarr file.
-        key (Optional[str], optional): The internal key of the desired dataset. Defaults to None.
+        key (str | None, optional): The internal key of the desired dataset. Defaults to None.
 
     Returns:
-        tuple[int]: The shape of the dataset.
+        tuple[int, ...]: The shape of the dataset.
     """
     _validate_zarr_file(path)
     data = _get_zarr_dataset(path, key)
@@ -115,7 +114,7 @@ def read_zarr_voxel_size(path: Path, key: str | None) -> VoxelSize:
 
     Args:
         path (Path): The path to the Zarr file.
-        key (str): The internal key of the desired dataset.
+        key (str | None): The internal key of the desired dataset.
 
     Returns:
         VoxelSize: The voxel size of the dataset.
@@ -163,7 +162,7 @@ def list_zarr_keys(path: Path) -> list[str]:
         path (Path): The path to the Zarr file.
 
     Returns:
-        keys (list[str]): A list of keys in the Zarr file.
+        list[str]: A list of keys in the Zarr file.
     """
 
     def _recursive_find_keys(zarr_group: zarr.Group, base: Path = Path("")) -> list[str]:
@@ -195,7 +194,7 @@ def del_zarr_key(path: Path, key: str, mode: str = "a") -> None:
         del zarr_file[key]
 
 
-def rename_zarr_key(path: Path, old_key: str, new_key: str, mode="r+") -> None:
+def rename_zarr_key(path: Path, old_key: str, new_key: str, mode: str = "r+") -> None:
     """
     Rename a dataset in a Zarr file.
 
