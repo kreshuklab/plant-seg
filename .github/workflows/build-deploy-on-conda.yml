@@ -62,8 +62,14 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate plant-seg
-          pytest --cov
+          pytest --cov --cov-report=xml
           conda deactivate
+
+      # Upload Codecov report
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.2.0
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       # Deploy the package to Anaconda (only on tag push)
       - name: Deploy to conda-forge
