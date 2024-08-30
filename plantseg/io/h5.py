@@ -5,7 +5,7 @@ from typing import Optional
 import h5py
 import numpy as np
 
-from plantseg.io.utils import VoxelSize
+from plantseg.core.voxelsize import VoxelSize
 
 # allowed h5 keys
 H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]
@@ -80,7 +80,7 @@ def load_h5(
         data = _get_h5_dataset(f, key)
         data = data[...] if slices is None else data[slices]
 
-    return data  # type: ignore
+    return data
 
 
 def read_h5_shape(path: Path, key: Optional[str] = None) -> tuple[int]:

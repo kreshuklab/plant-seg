@@ -5,7 +5,7 @@ import logging
 from enum import Enum
 from pathlib import Path
 from shutil import copy2
-from typing import List, Optional, Self, Tuple
+from typing import Optional, Self
 from warnings import warn
 
 import pooch
@@ -50,10 +50,10 @@ class ModelZooRecord(BaseModel):
     path: Optional[str] = None
     id: Optional[str] = None
     description: Optional[str] = None
-    resolution: Optional[Tuple[float, float, float]] = None
+    resolution: Optional[tuple[float, float, float]] = None
     dimensionality: Optional[str] = None
     modality: Optional[str] = None
-    recommended_patch_size: Optional[Tuple[float, float, float]] = None
+    recommended_patch_size: Optional[tuple[float, float, float]] = None
     output_type: Optional[str] = None
     doi: Optional[str] = None
     added_by: Optional[str] = None
@@ -145,10 +145,10 @@ class ModelZoo:
     def list_models(
         self,
         use_custom_models: bool = True,
-        modality_filter: Optional[List[str]] = None,
-        output_type_filter: Optional[List[str]] = None,
-        dimensionality_filter: Optional[List[str]] = None,
-    ) -> List[str]:
+        modality_filter: Optional[list[str]] = None,
+        output_type_filter: Optional[list[str]] = None,
+        dimensionality_filter: Optional[list[str]] = None,
+    ) -> list[str]:
         """Return a list of model names, filtered by the specified criteria"""
         filtered_df: DataFrame = self.models
 
@@ -167,7 +167,7 @@ class ModelZoo:
 
         return filtered_df.index.tolist()
 
-    def get_model_names(self) -> List[str]:
+    def get_model_names(self) -> list[str]:
         return self.models.index.to_list()
 
     def _get_model_record(self, name) -> ModelZooRecord:
@@ -176,23 +176,23 @@ class ModelZoo:
     def get_model_description(self, model_name: str) -> Optional[str]:
         return self._get_model_record(model_name).description
 
-    def get_model_resolution(self, model_name: str) -> Optional[Tuple[float, float, float]]:
+    def get_model_resolution(self, model_name: str) -> Optional[tuple[float, float, float]]:
         return self._get_model_record(model_name).resolution
 
-    def get_model_patch_size(self, model_name: str) -> Optional[Tuple[float, float, float]]:
+    def get_model_patch_size(self, model_name: str) -> Optional[tuple[float, float, float]]:
         return self._get_model_record(model_name).recommended_patch_size
 
-    def _get_unique_metadata(self, metadata_key: str) -> List[str]:
+    def _get_unique_metadata(self, metadata_key: str) -> list[str]:
         metadata = self.models.loc[:, metadata_key].dropna().unique()
         return [str(x) for x in metadata]
 
-    def get_unique_dimensionalities(self) -> List[str]:
+    def get_unique_dimensionalities(self) -> list[str]:
         return self._get_unique_metadata('dimensionality')
 
-    def get_unique_modalities(self) -> List[str]:
+    def get_unique_modalities(self) -> list[str]:
         return self._get_unique_metadata('modality')
 
-    def get_unique_output_types(self) -> List[str]:
+    def get_unique_output_types(self) -> list[str]:
         return self._get_unique_metadata('output_type')
 
     def _add_model_record(self, model_record: ModelZooRecord) -> None:
@@ -207,12 +207,12 @@ class ModelZoo:
         self,
         new_model_name: str,
         location: Path = Path.home(),
-        resolution: Tuple[float, float, float] = (1.0, 1.0, 1.0),
+        resolution: tuple[float, float, float] = (1.0, 1.0, 1.0),
         description: str = '',
         dimensionality: str = '',
         modality: str = '',
         output_type: str = '',
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, Optional[str]]:
         """Add a custom trained model in the model zoo local record file"""
 
         dest_dir = PATH_PLANTSEG_MODELS / new_model_name
@@ -363,7 +363,7 @@ class ModelZoo:
         logger_zoo.info(f"Got {architecture_callable} model with kwargs {architecture_kwargs}.")
 
         # Create model from architecture and kwargs
-        architecture = str(architecture_callable)  # e.g. 'plantseg.models.model.UNet3D'
+        architecture = str(architecture_callable)  # e.g. 'plantseg.training.model.UNet3D'
         architecture = 'UNet3D' if 'UNet3D' in architecture else 'UNet2D'
         model_config = {
             'name': architecture,
@@ -414,25 +414,25 @@ class ModelZoo:
         normalized_tags = ["".join(filter(str.isalnum, tag.lower())) for tag in tags]
         return 'plantseg' in normalized_tags
 
-    def get_bioimageio_zoo_plantseg_model_names(self) -> List[str]:
+    def get_bioimageio_zoo_plantseg_model_names(self) -> list[str]:
         """Return a list of model names in the BioImage.IO Model Zoo tagged with 'plantseg'."""
         if not self._bioimageio_zoo_plantseg_model_url_dict:
             self.refresh_bioimageio_zoo_urls()
         return sorted(list(self._bioimageio_zoo_plantseg_model_url_dict.keys()))
 
-    def get_bioimageio_zoo_all_model_names(self) -> List[str]:
+    def get_bioimageio_zoo_all_model_names(self) -> list[str]:
         """Return a list of all model names in the BioImage.IO Model Zoo."""
         if not self._bioimageio_zoo_all_model_url_dict:
             self.refresh_bioimageio_zoo_urls()
         return sorted(list(self._bioimageio_zoo_all_model_url_dict.keys()))
 
-    def get_bioimageio_zoo_other_model_names(self) -> List[str]:
+    def get_bioimageio_zoo_other_model_names(self) -> list[str]:
         """Return a list of model names in the BioImage.IO Model Zoo not tagged with 'plantseg'."""
         return sorted(
             list(set(self.get_bioimageio_zoo_all_model_names()) - set(self.get_bioimageio_zoo_plantseg_model_names()))
         )
 
-    def _flatten_module(self, module: Module) -> List[Module]:
+    def _flatten_module(self, module: Module) -> list[Module]:
         """Recursively flatten a PyTorch nn.Module into a list of its elemental layers."""
         layers = []
         for child in module.children():

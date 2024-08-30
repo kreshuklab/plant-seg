@@ -11,8 +11,8 @@ from magicgui import magicgui
 from napari.layers import Image
 from napari.types import LayerDataTuple
 
-from plantseg.models.zoo import model_zoo
-from plantseg.plantseg_image import PlantSegImage
+from plantseg.core.image import PlantSegImage
+from plantseg.core.zoo import model_zoo
 from plantseg.tasks.predictions_tasks import unet_predictions_task
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws, widget_lifted_multicut
@@ -138,8 +138,6 @@ def widget_unet_predictions(
     else:
         raise NotImplementedError(f'Mode {mode} not implemented yet.')
 
-    # TODO add halo support and multichannel support
-
     ps_image = PlantSegImage.from_napari_layer(image)
     return schedule_task(
         unet_predictions_task,
@@ -149,6 +147,7 @@ def widget_unet_predictions(
             "model_id": model_id,
             "suffix": suffix,
             "patch": patch_size,
+            "patch_halo": patch_halo,
             "single_batch_mode": single_patch,
             "device": device,
         },

@@ -1,12 +1,12 @@
 import timeit
 from concurrent.futures import Future
-from typing import Callable, Optional
+from typing import Callable
 
 import napari
 from magicgui.widgets import Widget
 from napari.qt.threading import create_worker
 
-from plantseg.plantseg_image import PlantSegImage
+from plantseg.core.image import PlantSegImage
 from plantseg.viewer_napari import log
 
 
@@ -16,8 +16,13 @@ def _return_value_if_widget(x):
     return x
 
 
-def setup_layers_suggestions(out_name: str, widgets: Optional[list]):
-    """Update the widgets with the output of the task."""
+def setup_layers_suggestions(out_name: str, widgets: list[Widget] | None):
+    """Update the widgets with the output of the task.
+
+    Args:
+        out_name (str): The name of the output layer.
+        widgets (list[Widget] | None): List of widgets to be updated, if any.
+    """
     viewer = napari.current_viewer()
 
     if viewer is None:
@@ -34,14 +39,17 @@ def setup_layers_suggestions(out_name: str, widgets: Optional[list]):
         widget.value = out_layer
 
 
-def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: Optional[list[Widget]] | None = None):
+def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: list[Widget] | None = None) -> Future:
     """Schedule a task to be executed in a separate thread and update the widgets with the result.
 
     Args:
-        func (Callable): Function to be executed, the function should be a workflow task,
-            and return a PlantSegImage or a tuple of PlantSegImage, or None.
+        task (Callable): Function to be executed, the function should be a workflow task,
+            and return a PlantSegImage or a tuple/list of PlantSegImage, or None.
         task_kwargs (dict): Keyword arguments for the function.
-        widget_to_update (list[Widget], optional): Widgets to be updated with the result. Defaults to None.
+        widget_to_update (list[Widget] | None, optional): Widgets to be updated with the result. Defaults to None.
+
+    Returns:
+        Future: A Future object representing the asynchronous execution of the task.
     """
 
     if hasattr(task, '__plantseg_task__'):
@@ -60,13 +68,12 @@ def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: Optional[
             future.set_result(task_result.to_napari_layer_tuple())
             setup_layers_suggestions(out_name=task_result.name, widgets=widget_to_update)
 
-        elif isinstance(task_result, tuple) or isinstance(task_result, list):
+        elif isinstance(task_result, (tuple, list)):
             for ps_im in task_result:
                 if not isinstance(ps_im, PlantSegImage):
                     raise ValueError(f"Task {task_name} returned an unexpected value {task_result}")
 
             future.set_result([ps_im.to_napari_layer_tuple() for ps_im in task_result])
-
             setup_layers_suggestions(out_name=task_result[-1].name, widgets=widget_to_update)
 
         elif task_result is None:

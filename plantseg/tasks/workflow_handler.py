@@ -8,7 +8,7 @@ import yaml
 from pydantic import BaseModel, Field
 
 from plantseg.__version__ import __version__
-from plantseg.plantseg_image import PlantSegImage
+from plantseg.core.image import PlantSegImage
 
 
 class NodeType(str, Enum):
@@ -28,17 +28,17 @@ class Task(BaseModel):
 
     """
     A task is a single operation in the workflow. It is defined by:
-    
+
     Attributes:
         func (str): The name of the function to be executed
-        images_inputs (dict): A image input represent a Image object. 
+        images_inputs (dict): A image input represent a Image object.
             The key is the name of the parameter in the function, and the value is the name of the image.
         parameters (dict): The kwargs parameters of the workflow function.
         list_private_parameters (list[str]): A list of the names of the private parameters.
         outputs (list[str]): A list of the names of the output images.
         node_type (NodeType): The type of the node in the workflow (ROOT, LEAF, NODE)
         id (UUID): A unique identifier for the task.
-        
+
     """
 
 
@@ -49,12 +49,12 @@ class DAG(BaseModel):
 
     """
     This model represents the Directed Acyclic Graph (DAG) of the workflow.
-    
+
     Attributes:
         plantseg_version (str): The version of PlantSeg used to create the workflow.
         inputs (dict[str, Any]): A dictionary of the inputs of the workflow. For example path to the images and other runtime parameters.
         list_tasks (list[Task]): A list of the tasks in the workflow.
-    
+
     """
 
     @property
@@ -302,7 +302,7 @@ def task_tracker(
                     list_outputs.append(img.unique_name)
             else:
                 raise ValueError(
-                    f"Output of a workflow function should be one of None, Image or Tuple of Images. Got {type(out_image)}"
+                    f"Output of a workflow function should be one of None, Image or tuple of Images. Got {type(out_image)}"
                 )
 
             for name in list_outputs:

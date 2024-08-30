@@ -3,6 +3,8 @@ from plantseg.functionals.dataprocessing.advanced_dataprocessing import (
     remove_false_positives_by_foreground_probability,
 )
 from plantseg.functionals.dataprocessing.dataprocessing import (
+    compute_scaling_factor,
+    compute_scaling_voxelsize,
     fix_input_shape,
     image_crop,
     image_gaussian_smoothing,
@@ -24,6 +26,8 @@ __all__ = [
     "image_rescale",
     "image_crop",
     "image_median",
+    "compute_scaling_factor",
+    "compute_scaling_voxelsize",
     "scale_image_to_voxelsize",
     "normalize_01",
     "normalize_01_channel_wise",

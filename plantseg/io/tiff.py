@@ -6,7 +6,7 @@ from xml.etree import cElementTree as ElementTree
 import numpy as np
 import tifffile
 
-from plantseg.io.utils import VoxelSize
+from plantseg.core.voxelsize import VoxelSize
 
 logger = logging.getLogger(__name__)
 

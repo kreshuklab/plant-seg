@@ -1,16 +1,15 @@
 import logging
 from pathlib import Path
-from typing import Optional, Tuple
 
 import numpy as np
 import torch
 
+from plantseg.core.zoo import model_zoo
 from plantseg.functionals.dataprocessing.dataprocessing import fix_input_shape_to_CZYX, fix_input_shape_to_ZYX
 from plantseg.functionals.predictions.utils.array_dataset import ArrayDataset
 from plantseg.functionals.predictions.utils.array_predictor import ArrayPredictor
 from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
 from plantseg.functionals.predictions.utils.utils import get_patch_halo, get_stride_shape
-from plantseg.models.zoo import model_zoo
 from plantseg.training.augs import get_test_augmentations
 
 logger = logging.getLogger(__name__)
@@ -18,17 +17,17 @@ logger = logging.getLogger(__name__)
 
 def unet_predictions(
     raw: np.ndarray,
-    model_name: Optional[str],
-    model_id: Optional[str],
-    patch: Tuple[int, int, int] = (80, 160, 160),
+    model_name: str | None,
+    model_id: str | None,
+    patch: tuple[int, int, int] = (80, 160, 160),
+    patch_halo: tuple[int, int, int] | None = None,
     single_batch_mode: bool = True,
     device: str = "cuda",
     model_update: bool = False,
     disable_tqdm: bool = False,
     handle_multichannel: bool = False,
-    config_path: Optional[Path] = None,
-    model_weights_path: Optional[Path] = None,
-    **kwargs,
+    config_path: Path | None = None,
+    model_weights_path: Path | None = None,
 ) -> np.ndarray:
     """Generate predictions from raw data using a specified 3D U-Net model.
 
@@ -37,16 +36,23 @@ def unet_predictions(
 
     Args:
         raw (np.ndarray): Raw input data as a 3D array of shape (Z, Y, X).
-        model_name (str): The name of the model to use.
-        patch (Tuple[int, int, int], optional): Patch size for prediction. Defaults to (80, 160, 160).
+        model_name (str | None): The name of the model to use.
+        model_id (str | None): The ID of the model from the BioImage.IO model zoo.
+        patch (tuple[int, int, int], optional): Patch size for prediction. Defaults to (80, 160, 160).
+        patch_halo (tuple[int, int, int] | None, optional): Halo size around patches. Defaults to None.
         single_batch_mode (bool, optional): Whether to use a single batch for prediction. Defaults to True.
         device (str, optional): The computation device ('cpu', 'cuda', etc.). Defaults to 'cuda'.
         model_update (bool, optional): Whether to update the model to the latest version. Defaults to False.
         disable_tqdm (bool, optional): If True, disables the tqdm progress bar. Defaults to False.
         handle_multichannel (bool, optional): If True, handles multi-channel output properly. Defaults to False.
+        config_path (Path | None, optional): Path to the model configuration file. Defaults to None.
+        model_weights_path (Path | None, optional): Path to the model weights file. Defaults to None.
 
     Returns:
-        pmap (np.ndarray): The predicted boundaries as a 3D (Z, Y, X) or 4D (C, Z, Y, X) array, normalized between 0 and 1.
+        np.ndarray: The predicted boundaries as a 3D (Z, Y, X) or 4D (C, Z, Y, X) array, normalized between 0 and 1.
+
+    Raises:
+        ValueError: If neither `model_name`, `model_id`, nor `config_path` are provided.
     """
     if config_path is not None:  # Safari mode for custom models outside zoos
         logger.info("Safari prediction: Running model from custom config path.")
@@ -65,7 +71,8 @@ def unet_predictions(
         state = state["model_state_dict"]
     model.load_state_dict(state)
 
-    patch_halo = kwargs["patch_halo"] if "patch_halo" in kwargs else get_patch_halo(model_name)  # lazy else statement
+    if patch_halo is None:
+        patch_halo = get_patch_halo(model_name)
 
     predictor = ArrayPredictor(
         model=model,

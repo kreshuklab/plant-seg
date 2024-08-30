@@ -1,7 +1,6 @@
 import logging
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 from uuid import UUID, uuid4
 
 import numpy as np
@@ -10,6 +9,7 @@ from napari.types import LayerDataTuple
 from pydantic import BaseModel
 
 import plantseg.functionals.dataprocessing as dp
+from plantseg.core.voxelsize import VoxelSize
 from plantseg.io import (
     H5_EXTENSIONS,
     PIL_EXTENSIONS,
@@ -25,7 +25,6 @@ from plantseg.io import (
     read_tiff_voxel_size,
     read_zarr_voxel_size,
 )
-from plantseg.io.utils import VoxelSize
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +59,7 @@ class ImageType(Enum):
     LABEL = "labels"
 
     @classmethod
-    def to_choices(cls):
+    def to_choices(cls) -> list[str]:
         return [member.value for member in cls]
 
 
@@ -149,18 +148,17 @@ class ImageProperties(BaseModel):
             raise ValueError(f"Semantic type {self.semantic_type} not recognized")
 
     @property
-    def channel_axis(self) -> int:
+    def channel_axis(self) -> int | None:
         if self.image_layout in (ImageLayout.CYX, ImageLayout.CZYX):
             return 0
         elif self.image_layout == ImageLayout.ZCYX:
             return 1
-
         elif self.image_layout in (ImageLayout.YX, ImageLayout.ZYX):
             return None
         else:
             raise ValueError(f"Image layout {self.image_layout} not recognized")
 
-    def interpolation_order(self, image_default=1) -> int:
+    def interpolation_order(self, image_default: int = 1) -> int:
         if self.image_type == ImageType.LABEL:
             return 0
         elif self.image_type == ImageType.IMAGE:
@@ -195,9 +193,7 @@ def scale_to_voxelsize(scale: tuple[float, ...], layout: ImageLayout, unit: str 
 
 
 class PlantSegImage:
-    """
-    Image class represent an image with its metadata and data.
-    """
+    """Image class represents an image with its metadata and data."""
 
     _data: np.ndarray
     _properties: ImageProperties
@@ -205,7 +201,6 @@ class PlantSegImage:
     def __init__(self, data: np.ndarray, properties: ImageProperties):
         self._data = data
         self._properties = properties
-
         self._check_shape(data)
         self._check_ndim(data)
         self._check_labels_have_no_channels(data)
@@ -309,7 +304,7 @@ class PlantSegImage:
         """
         metadata = self._properties.model_dump()
 
-        # When going to we need to preserve the id
+        # We need to preserve the id
         metadata["id"] = self.id
         return (
             self.get_data(),
@@ -355,6 +350,7 @@ class PlantSegImage:
                 logger.warning("Image layout is CZYX but data has only one channel, casting to ZYX")
                 self._properties.image_layout = ImageLayout.ZYX
                 self._data = data[0]
+
             elif data.shape[0] > 1 and data.shape[1] == 1:
                 logger.warning("Image layout is CZYX but data has only one z slice, casting to CYX")
                 self._properties.image_layout = ImageLayout.CYX
@@ -383,7 +379,7 @@ class PlantSegImage:
 
     @property
     def requires_scaling(self) -> bool:
-        """Returns True if the image has a different voxelsize."""
+        """Returns True if the image has a different voxel size."""
         if self.voxel_size != self.original_voxel_size:
             return True
         return False
@@ -433,7 +429,10 @@ class PlantSegImage:
 
     @property
     def scale(self) -> tuple[float, ...]:
-        """Returns the scale of the image. The scale is equal to the voxel size in each spatial dimension and 1 in other channels."""
+        """Returns the scale of the image.
+
+        The scale is equal to the voxel size in each spatial dimension and 1 in other channels.
+        """
         if self.image_layout == ImageLayout.YX:
             return (self.voxel_size.x, self.voxel_size.y)
         elif self.image_layout == ImageLayout.ZYX:
@@ -495,7 +494,7 @@ class PlantSegImage:
         return self._properties.dimensionality
 
     @property
-    def channel_axis(self) -> int:
+    def channel_axis(self) -> int | None:
         return self._properties.channel_axis
 
     @property
@@ -504,42 +503,37 @@ class PlantSegImage:
         return self.channel_axis is not None
 
     def interpolation_order(self, image_default: int = 1) -> int:
-        """Returns the default interpolation order use for the image."""
+        """Returns the default interpolation order used for the image."""
         return self._properties.interpolation_order(image_default)
 
     def has_valid_voxel_size(self) -> bool:
-        """
-        Returns True if the voxel size is valid (not None), False otherwise.
-        """
+        """Returns True if the voxel size is valid (not None), False otherwise."""
         return self.voxel_size.is_valid
 
     def has_valid_original_voxel_size(self) -> bool:
-        """
-        Returns True if the original voxel size is valid (not None), False otherwise.
-        """
+        """Returns True if the original voxel size is valid (not None), False otherwise."""
         return self.original_voxel_size.is_valid
 
 
-def _load_data(path: Path, key: Optional[str]) -> tuple[np.ndarray, VoxelSize]:
+def _load_data(path: Path, key: str | None) -> tuple[np.ndarray, VoxelSize]:
     """Load data and voxel size from a file."""
     ext = path.suffix
+    if key == "":
+        key = None
 
     if ext in H5_EXTENSIONS:
-        h5_key = key if key else None
-        return load_h5(path, key), read_h5_voxel_size(path, h5_key)
+        return load_h5(path, key), read_h5_voxel_size(path, key)
 
-    elif ext in TIFF_EXTENSIONS:
+    if ext in TIFF_EXTENSIONS:
         return load_tiff(path), read_tiff_voxel_size(path)
 
-    elif ext in PIL_EXTENSIONS:
+    if ext in PIL_EXTENSIONS:
         return load_pil(path), VoxelSize()
 
-    elif str(path).find(".zarr") != -1:
-        zarr_key = key if key else None
-        return load_zarr(path, key), read_zarr_voxel_size(path, zarr_key)
+    if ".zarr" in path.suffixes:
+        return load_zarr(path, key), read_zarr_voxel_size(path, key)
 
-    else:
-        raise NotImplementedError()
+    raise NotImplementedError(f"File extension '{ext}' is not supported for path: {path}")
 
 
 def import_image(
@@ -548,7 +542,7 @@ def import_image(
     image_name: str = "image",
     semantic_type: str = "raw",
     stack_layout: str = "YX",
-    m_slicing: Optional[str] = None,
+    m_slicing: str | None = None,
 ) -> PlantSegImage:
     """
     Open an image file and create a PlantSegImage object.
@@ -582,7 +576,9 @@ def import_image(
     return PlantSegImage(data=data, properties=image_properties)
 
 
-def _image_postprocessing(image: PlantSegImage, scale_to_origin: bool, export_dtype) -> PlantSegImage:
+def _image_postprocessing(
+    image: PlantSegImage, scale_to_origin: bool, export_dtype: str
+) -> tuple[np.ndarray, VoxelSize]:
     if scale_to_origin and image.requires_scaling:
         data = dp.scale_image_to_voxelsize(
             image.get_data(),
@@ -602,15 +598,12 @@ def _image_postprocessing(image: PlantSegImage, scale_to_origin: bool, export_dt
             data = (data * max_val).astype(export_dtype)
         elif export_dtype in ["float32", "float64"]:
             data = data.astype(export_dtype)
-
         else:
             raise ValueError(f"Data type {export_dtype} not recognized, should be uint8, uint16, float32 or float64")
-
     elif image.image_type == ImageType.LABEL:
         if export_dtype in ["float32", "float64"]:
             raise ValueError(f"Data type {export_dtype} not recognized for label image, should be uint8 or uint16")
         data = data.astype(export_dtype)
-
     else:
         raise ValueError(f"Image type {image.image_type} not recognized, should be image or label")
 
@@ -627,7 +620,7 @@ def save_image(
     dtype: str = "uint16",
 ) -> None:
     """
-    Write an PlantSegImage object to disk.
+    Write a PlantSegImage object to disk.
 
     Args:
         image (PlantSegImage): Image to save

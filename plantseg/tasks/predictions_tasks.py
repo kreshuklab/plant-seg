@@ -1,7 +1,7 @@
 from pathlib import Path
 
+from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.functionals.predictions import unet_predictions
-from plantseg.plantseg_image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.tasks import task_tracker
 
 
@@ -12,6 +12,7 @@ def unet_predictions_task(
     model_id: str | None,
     suffix: str = "_predictions",
     patch: tuple[int, int, int] = (80, 160, 160),
+    patch_halo: tuple[int, int, int] | None = None,
     single_batch_mode: bool = True,
     device: str = "cuda",
     model_update: bool = False,
@@ -38,6 +39,7 @@ def unet_predictions_task(
         model_name=model_name,
         model_id=model_id,
         patch=patch,
+        patch_halo=patch_halo,
         single_batch_mode=single_batch_mode,
         device=device,
         model_update=model_update,

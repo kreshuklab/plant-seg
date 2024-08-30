@@ -2,7 +2,7 @@
 # https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/unet3d/model.py
 
 from functools import partial
-from typing import List, Self
+from typing import Self
 
 import torch
 import torch.nn as nn
@@ -592,7 +592,7 @@ class SpocoNet(nn.Module):
 
     @classmethod
     def from_unet_params(
-        cls, in_channels: int, out_channels: int, f_maps: List[int], layer_order='bcr', m=0.999, init_equal=True
+        cls, in_channels: int, out_channels: int, f_maps: list[int], layer_order='bcr', m=0.999, init_equal=True
     ) -> Self:
         net_f = UNet2D(in_channels, out_channels, f_maps=f_maps, layer_order=layer_order)
         net_g = UNet2D(in_channels, out_channels, f_maps=f_maps, layer_order=layer_order)
@@ -627,7 +627,7 @@ def number_of_features_per_level(init_channel_number, num_levels):
     return [init_channel_number * 2**k for k in range(num_levels)]
 
 
-def get_spoco(in_channels: int, out_channels: int, f_maps: List[int], layer_order='bcr') -> SpocoNet:
+def get_spoco(in_channels: int, out_channels: int, f_maps: list[int], layer_order='bcr') -> SpocoNet:
     net_f = UNet2D(in_channels=in_channels, out_channels=out_channels, f_maps=f_maps, layer_order=layer_order)
 
     net_g = UNet2D(in_channels=in_channels, out_channels=out_channels, f_maps=f_maps, layer_order=layer_order)
