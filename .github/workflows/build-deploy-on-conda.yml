@@ -55,14 +55,14 @@ jobs:
       # Create a Conda environment for testing
       - name: Create PlantSeg Test Environment
         run: |
-          conda create -n plant-seg -c local -c conda-forge pyqt plantseg pytest pytest-qt
+          conda create -n plant-seg -c local -c conda-forge pyqt plantseg pytest pytest-qt pytest-cov
 
       # Run tests using pytest
       - name: Run Tests with Pytest
         shell: bash -l {0}
         run: |
           conda activate plant-seg
-          pytest
+          pytest --cov
           conda deactivate
 
       # Deploy the package to Anaconda (only on tag push)
