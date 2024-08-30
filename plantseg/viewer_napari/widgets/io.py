@@ -86,7 +86,7 @@ def widget_open_file(
             "semantic_type": semantic_type,
             "stack_layout": stack_layout,
         },
-        widget_to_update=[],
+        widgets_to_update=[],
     )
 
 

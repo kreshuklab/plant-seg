@@ -151,7 +151,7 @@ def widget_unet_predictions(
             "single_batch_mode": single_patch,
             "device": device,
         },
-        widget_to_update=[
+        widgets_to_update=[
             widget_dt_ws.image,
             widget_agglomeration.image,
             widget_lifted_multicut.image,

@@ -63,13 +63,16 @@ def widget_gaussian_smoothing(
     """Apply Gaussian smoothing to an image layer."""
 
     ps_image = PlantSegImage.from_napari_layer(image)
+
+    widgets_to_update = []  # TODO
+
     return schedule_task(
         gaussian_smoothing_task,
         task_kwargs={
             "image": ps_image,
             "sigma": sigma,
         },
-        widget_to_update=[],
+        widgets_to_update=widgets_to_update if update_other_widgets else [],
     )
 
 
@@ -187,7 +190,7 @@ def widget_rescaling(
                 "image": ps_image,
                 "voxel_size": out_voxel_size,
             },
-            widget_to_update=widgets_to_update,
+            widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
 
     if mode in [RescaleModes.TO_LAYER_SHAPE, RescaleModes.TO_SHAPE]:
@@ -204,7 +207,7 @@ def widget_rescaling(
                 "new_shape": output_shape,
                 "order": order,
             },
-            widget_to_update=widgets_to_update,
+            widgets_to_update=widgets_to_update,
         )
 
     # Cover rescale that requires a valid voxel size
@@ -234,7 +237,7 @@ def widget_rescaling(
             "new_voxel_size": out_voxel_size,
             "order": order,
         },
-        widget_to_update=widgets_to_update,
+        widgets_to_update=widgets_to_update,
     )
 
 
@@ -359,5 +362,5 @@ def widget_remove_false_positives_by_foreground(
             "foreground": ps_foreground,
             "threshold": threshold,
         },
-        widget_to_update=[],
+        widgets_to_update=[],
     )

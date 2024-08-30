@@ -39,14 +39,14 @@ def setup_layers_suggestions(out_name: str, widgets: list[Widget] | None):
         widget.value = out_layer
 
 
-def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: list[Widget] | None = None) -> Future:
+def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Widget] | None = None) -> Future:
     """Schedule a task to be executed in a separate thread and update the widgets with the result.
 
     Args:
         task (Callable): Function to be executed, the function should be a workflow task,
             and return a PlantSegImage or a tuple/list of PlantSegImage, or None.
         task_kwargs (dict): Keyword arguments for the function.
-        widget_to_update (list[Widget] | None, optional): Widgets to be updated with the result. Defaults to None.
+        widgets_to_update (list[Widget] | None, optional): Widgets to be updated with the result. Defaults to None.
 
     Returns:
         Future: A Future object representing the asynchronous execution of the task.
@@ -66,7 +66,7 @@ def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: list[Widg
 
         if isinstance(task_result, PlantSegImage):
             future.set_result(task_result.to_napari_layer_tuple())
-            setup_layers_suggestions(out_name=task_result.name, widgets=widget_to_update)
+            setup_layers_suggestions(out_name=task_result.name, widgets=widgets_to_update)
 
         elif isinstance(task_result, (tuple, list)):
             for ps_im in task_result:
@@ -74,7 +74,7 @@ def schedule_task(task: Callable, task_kwargs: dict, widget_to_update: list[Widg
                     raise ValueError(f"Task {task_name} returned an unexpected value {task_result}")
 
             future.set_result([ps_im.to_napari_layer_tuple() for ps_im in task_result])
-            setup_layers_suggestions(out_name=task_result[-1].name, widgets=widget_to_update)
+            setup_layers_suggestions(out_name=task_result[-1].name, widgets=widgets_to_update)
 
         elif task_result is None:
             future.set_result(None)
