@@ -4,12 +4,12 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from plantseg.core.zoo import model_zoo
 from plantseg.functionals.dataprocessing.dataprocessing import fix_input_shape_to_CZYX, fix_input_shape_to_ZYX
 from plantseg.functionals.predictions.utils.array_dataset import ArrayDataset
 from plantseg.functionals.predictions.utils.array_predictor import ArrayPredictor
 from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
 from plantseg.functionals.predictions.utils.utils import get_patch_halo, get_stride_shape
-from plantseg.core.zoo import model_zoo
 from plantseg.training.augs import get_test_augmentations
 
 logger = logging.getLogger(__name__)

@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from plantseg.functionals.predictions import unet_predictions
 from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
+from plantseg.functionals.predictions import unet_predictions
 from plantseg.tasks import task_tracker
 
 

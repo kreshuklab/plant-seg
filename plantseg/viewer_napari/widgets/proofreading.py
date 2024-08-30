@@ -8,9 +8,9 @@ from napari.layers import Image, Labels
 from napari.qt.threading import thread_worker
 from napari.types import LayerDataTuple
 
+from plantseg.core.image import ImageProperties, PlantSegImage, SemanticType
 from plantseg.functionals.proofreading.split_merge_tools import split_merge_from_seeds
 from plantseg.functionals.proofreading.utils import get_bboxes
-from plantseg.core.image import ImageProperties, PlantSegImage, SemanticType
 from plantseg.viewer_napari import log
 
 DEFAULT_KEY_BINDING_PROOFREAD = 'n'

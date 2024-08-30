@@ -1,5 +1,6 @@
 import logging
 
+from plantseg.core.image import PlantSegImage, SemanticType
 from plantseg.functionals.dataprocessing.dataprocessing import normalize_01
 from plantseg.functionals.segmentation import (
     dt_watershed,
@@ -9,7 +10,6 @@ from plantseg.functionals.segmentation import (
     multicut,
     mutex_ws,
 )
-from plantseg.core.image import PlantSegImage, SemanticType
 from plantseg.tasks import task_tracker
 
 logger = logging.getLogger(__name__)

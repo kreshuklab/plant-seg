@@ -9,6 +9,7 @@ from napari.types import LayerDataTuple
 from pydantic import BaseModel
 
 import plantseg.functionals.dataprocessing as dp
+from plantseg.core.voxelsize import VoxelSize
 from plantseg.io import (
     H5_EXTENSIONS,
     PIL_EXTENSIONS,
@@ -24,7 +25,6 @@ from plantseg.io import (
     read_tiff_voxel_size,
     read_zarr_voxel_size,
 )
-from plantseg.core.voxelsize import VoxelSize
 
 logger = logging.getLogger(__name__)
 

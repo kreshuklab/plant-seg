@@ -1,9 +1,9 @@
 import logging
 
 from plantseg import PATH_PREDICT_TEMPLATE
+from plantseg.core.zoo import model_zoo
 from plantseg.functionals.predictions.utils.array_dataset import ArrayDataset
 from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
-from plantseg.core.zoo import model_zoo
 from plantseg.training.augs import get_test_augmentations
 from plantseg.utils import load_config
 
