@@ -1,4 +1,3 @@
-from plantseg.core.voxelsize import VoxelSize
 from plantseg.io.h5 import H5_EXTENSIONS, create_h5, load_h5, read_h5_voxel_size
 from plantseg.io.io import allowed_data_format, smart_load
 from plantseg.io.pil import PIL_EXTENSIONS, load_pil
@@ -23,5 +22,4 @@ __all__ = [
     "create_zarr",
     "read_zarr_voxel_size",
     "ZARR_EXTENSIONS",
-    "VoxelSize",
 ]
