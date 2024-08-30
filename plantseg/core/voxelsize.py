@@ -1,4 +1,7 @@
-"""Voxel size of an image."""
+"""Voxel size of an image.
+
+This separates from plantseg.core.image to avoid circular imports.
+"""
 
 from typing import Optional
 

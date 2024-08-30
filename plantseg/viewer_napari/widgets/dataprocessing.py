@@ -6,8 +6,8 @@ from napari.layers import Image, Labels, Layer
 from napari.types import LayerDataTuple
 
 from plantseg.core.image import PlantSegImage
+from plantseg.core.voxelsize import VoxelSize
 from plantseg.core.zoo import model_zoo
-from plantseg.io import VoxelSize
 from plantseg.tasks.dataprocessing_tasks import (
     gaussian_smoothing_task,
     image_rescale_to_shape_task,
@@ -17,19 +17,6 @@ from plantseg.tasks.dataprocessing_tasks import (
 )
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.utils import schedule_task
-
-
-class WidgetName(Enum):
-    RESCALING = ("Rescaling", "Rescaled")
-    SMOOTHING = ("Gaussian Smoothing", "Smoothed")
-    CROPPING = ("Cropping", "Cropped")
-    MERGING = ("Layer Merging", None)  # Merged image has special layer names
-    CLEANING_LABEL = ("Label Cleaning", "Cleaned")
-
-    def __init__(self, step_name, layer_suffix):
-        self.step_name = step_name
-        self.layer_suffix = layer_suffix
-
 
 ########################################################################################################################
 #                                                                                                                      #
@@ -63,13 +50,16 @@ def widget_gaussian_smoothing(
     """Apply Gaussian smoothing to an image layer."""
 
     ps_image = PlantSegImage.from_napari_layer(image)
+
+    widgets_to_update = []  # TODO
+
     return schedule_task(
         gaussian_smoothing_task,
         task_kwargs={
             "image": ps_image,
             "sigma": sigma,
         },
-        widget_to_update=[],
+        widgets_to_update=widgets_to_update if update_other_widgets else [],
     )
 
 
@@ -109,7 +99,7 @@ class RescaleModes(Enum):
 
 
 @magicgui(
-    call_button=f"Run {WidgetName.RESCALING.step_name}",
+    call_button=f"Run Rescaling",
     image={
         "label": "Image or Label",
         "tooltip": "Layer to apply the rescaling.",
@@ -187,7 +177,7 @@ def widget_rescaling(
                 "image": ps_image,
                 "voxel_size": out_voxel_size,
             },
-            widget_to_update=widgets_to_update,
+            widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
 
     if mode in [RescaleModes.TO_LAYER_SHAPE, RescaleModes.TO_SHAPE]:
@@ -204,7 +194,7 @@ def widget_rescaling(
                 "new_shape": output_shape,
                 "order": order,
             },
-            widget_to_update=widgets_to_update,
+            widgets_to_update=widgets_to_update,
         )
 
     # Cover rescale that requires a valid voxel size
@@ -234,7 +224,7 @@ def widget_rescaling(
             "new_voxel_size": out_voxel_size,
             "order": order,
         },
-        widget_to_update=widgets_to_update,
+        widgets_to_update=widgets_to_update,
     )
 
 
@@ -319,7 +309,7 @@ def _on_rescale_order_changed(order):
     if isinstance(current_image, Labels) and order != RescaleType.NEAREST.int_val:
         log(
             "Labels can only be rescaled with nearest interpolation",
-            thread=WidgetName.RESCALING.step_name,
+            thread="Rescaling",
             level="warning",
         )
         widget_rescaling.order.value = RescaleType.NEAREST.int_val
@@ -359,5 +349,5 @@ def widget_remove_false_positives_by_foreground(
             "foreground": ps_foreground,
             "threshold": threshold,
         },
-        widget_to_update=[],
+        widgets_to_update=[],
     )

@@ -37,9 +37,11 @@ def set_voxel_size_task(image: PlantSegImage, voxel_size: tuple[float, float, fl
 
     """
     new_voxel_size = VoxelSize(voxels_size=voxel_size)
-    new_name = f"{image.name}_set_voxel_size"
     new_image = image.derive_new(
-        image._data, name=new_name, voxel_size=new_voxel_size, original_voxel_size=new_voxel_size
+        image._data,
+        name=f"{image.name}_set_voxel_size",
+        voxel_size=new_voxel_size,
+        original_voxel_size=new_voxel_size,
     )
     return new_image
 

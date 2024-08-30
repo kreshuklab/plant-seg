@@ -300,17 +300,26 @@ class PlantSegImage:
         All the metadata will be stored in the metadata of the layer.
 
         Returns:
-            LayerDataTuple: Tuple containing the data, metadata and type of the image
+            LayerDataTuple: Tuple containing the data, metadata, and type of the image
         """
+        # Dump the model properties to a dictionary
         metadata = self._properties.model_dump()
 
-        # We need to preserve the id
+        # Preserve the ID in the metadata
         metadata["id"] = self.id
-        return (
+
+        # Create the LayerDataTuple
+        layer_data_tuple = (
             self.get_data(),
-            {"name": self.name, "scale": self.scale, "metadata": metadata},
+            {
+                "name": self.name,
+                "scale": self.scale,
+                "metadata": metadata,
+            },
             self.image_type.value,
         )
+
+        return LayerDataTuple(layer_data_tuple)
 
     def _check_ndim(self, data: np.ndarray) -> None:
         if self.image_layout in (ImageLayout.CYX, ImageLayout.ZYX):

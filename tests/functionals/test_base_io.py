@@ -97,7 +97,7 @@ class TestIO:
         assert data.shape[:2] == data_read.shape, "Data read from JPG file is not equal to the original data"
 
     def test_voxel_size(self):
-        from plantseg.io import VoxelSize
+        from plantseg.core.voxelsize import VoxelSize
 
         voxel_size = VoxelSize(voxels_size=(0.2, 0.1, 0.1))
         target_voxel_size = VoxelSize(voxels_size=(0.2, 0.2, 0.2))

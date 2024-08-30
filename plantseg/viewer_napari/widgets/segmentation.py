@@ -201,7 +201,7 @@ def widget_dt_ws(
             "apply_nonmax_suppression": apply_nonmax_suppression,
             "is_nuclei_image": is_nuclei_image,
         },
-        widget_to_update=[
+        widgets_to_update=[
             widget_agglomeration.superpixels,
             widget_lifted_multicut.superpixels,
             widget_remove_false_positives_by_foreground.segmentation,
