@@ -18,19 +18,6 @@ from plantseg.tasks.dataprocessing_tasks import (
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
-
-class WidgetName(Enum):
-    RESCALING = ("Rescaling", "Rescaled")
-    SMOOTHING = ("Gaussian Smoothing", "Smoothed")
-    CROPPING = ("Cropping", "Cropped")
-    MERGING = ("Layer Merging", None)  # Merged image has special layer names
-    CLEANING_LABEL = ("Label Cleaning", "Cleaned")
-
-    def __init__(self, step_name, layer_suffix):
-        self.step_name = step_name
-        self.layer_suffix = layer_suffix
-
-
 ########################################################################################################################
 #                                                                                                                      #
 # Gaussian Smoothing Widget                                                                                            #
@@ -112,7 +99,7 @@ class RescaleModes(Enum):
 
 
 @magicgui(
-    call_button=f"Run {WidgetName.RESCALING.step_name}",
+    call_button=f"Run Rescaling",
     image={
         "label": "Image or Label",
         "tooltip": "Layer to apply the rescaling.",
@@ -322,7 +309,7 @@ def _on_rescale_order_changed(order):
     if isinstance(current_image, Labels) and order != RescaleType.NEAREST.int_val:
         log(
             "Labels can only be rescaled with nearest interpolation",
-            thread=WidgetName.RESCALING.step_name,
+            thread="Rescaling",
             level="warning",
         )
         widget_rescaling.order.value = RescaleType.NEAREST.int_val
