@@ -1,15 +1,10 @@
 import numpy as np
 
-from plantseg.functionals.dataprocessing.labelprocessing import relabel_segmentation, set_background_to_value
-
-
-class TestDataProcessing:
-    def test_set_background_to_value(self):
-        segmentation = np.ones((10, 10))
-        segmentation[1, 1] = 2
-        segmentation[5, 5] = 3
-        new_segmentation = set_background_to_value(segmentation, 0)
-        assert np.allclose(np.unique(new_segmentation), [0, 3, 4])
+from plantseg.functionals.dataprocessing.labelprocessing import (
+    relabel_segmentation,
+    set_background_to_value,
+    set_biggest_instance_to_value,
+)
 
 
 # Test relabel_segmentation
@@ -96,7 +91,6 @@ def test_set_background_to_value():
 
     assert np.array_equal(new_segmentation_image, expected_image)
 
-    # Case 2: Background is not the largest label
     segmentation_image = np.array(
         [
             [1, 1, 0, 0],
@@ -107,18 +101,16 @@ def test_set_background_to_value():
 
     new_segmentation_image = set_background_to_value(segmentation_image, value=5)
 
-    # Expected output: label 2 should be set to 5 because it's the largest segment
     expected_image = np.array(
         [
-            [1, 1, 0, 0],
             [1, 1, 5, 5],
-            [5, 5, 5, 5],
+            [1, 1, 2, 2],
+            [2, 2, 2, 2],
         ]
     )
 
     assert np.array_equal(new_segmentation_image, expected_image)
 
-    # Case 3: 3D segmentation example
     segmentation_image = np.array(
         [
             [
@@ -134,7 +126,58 @@ def test_set_background_to_value():
 
     new_segmentation_image = set_background_to_value(segmentation_image, value=7)
 
-    # Expected output: label 2 should be set to 7 because it's the largest segment
+    expected_image = np.array(
+        [
+            [
+                [1, 1, 7],
+                [7, 7, 2],
+            ],
+            [
+                [1, 1, 2],
+                [2, 2, 2],
+            ],
+        ]
+    )
+
+    assert np.array_equal(new_segmentation_image, expected_image)
+
+
+def test_set_biggest_instance_to_value():
+    segmentation_image = np.array(
+        [
+            [1, 1, 0, 0],
+            [1, 1, 2, 2],
+            [2, 2, 2, 2],
+        ]
+    )
+
+    new_segmentation_image = set_biggest_instance_to_value(segmentation_image, value=5)
+
+    expected_image = np.array(
+        [
+            [1, 1, 0, 0],
+            [1, 1, 5, 5],
+            [5, 5, 5, 5],
+        ]
+    )
+    # with pytest.raises(ValueError):  # This function changes all labels
+    assert np.array_equal(new_segmentation_image, expected_image)
+
+    segmentation_image = np.array(
+        [
+            [
+                [1, 1, 0],
+                [0, 0, 2],
+            ],
+            [
+                [1, 1, 2],
+                [2, 2, 2],
+            ],
+        ]
+    )
+
+    new_segmentation_image = set_biggest_instance_to_value(segmentation_image, value=7)
+
     expected_image = np.array(
         [
             [
@@ -149,3 +192,11 @@ def test_set_background_to_value():
     )
 
     assert np.array_equal(new_segmentation_image, expected_image)
+
+    segmentation = np.ones((10, 10))
+    segmentation[1, 1] = 2
+    segmentation[5, 5] = 3
+    new_segmentation = set_biggest_instance_to_value(segmentation, 0)
+    assert np.allclose(np.unique(new_segmentation), [0, 2, 3])
+    new_segmentation = set_biggest_instance_to_value(segmentation, 0, instance_could_be_zero=True)
+    assert np.allclose(np.unique(new_segmentation), [0, 3, 4])
