@@ -23,6 +23,54 @@ def _is_2d_model(model: nn.Module) -> bool:
     return isinstance(model, UNet2D)
 
 
+def find_patch_and_halo_shapes(
+    full_volume_shape: tuple[int, int, int],
+    max_patch_shape: tuple[int, int, int],
+    min_halo_shape: tuple[int, int, int],
+) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
+    """
+    Recommend patch shape and halo size for a given 3D sample shape.
+
+    Args:
+        full_volume_shape (tuple[int, int, int]): Shape of the entire 3D sample.
+        max_patch_shape (tuple[int, int, int]): Maximum feasible patch shape for the selected GPU.
+        min_halo_shape (tuple[int, int, int]): Minimum halo size, counting both sides.
+
+    Returns:
+        tuple[tuple[int, int, int], tuple[int, int, int]]: Recommended patch shape and halo shape.
+    """
+    full_volume_shape = np.array(full_volume_shape)
+    max_patch_shape = np.array(max_patch_shape)
+    min_halo_shape = np.array(min_halo_shape)
+
+    n_voxels_patch = np.prod(max_patch_shape)
+    n_voxels_sample = np.prod(full_volume_shape)
+
+    if n_voxels_patch >= n_voxels_sample:
+        return tuple(full_volume_shape), (0, 0, 0)
+
+    # Adjust patch shape if necessary
+    shrink = max_patch_shape > full_volume_shape
+    adjusted_patch_shape = np.minimum(full_volume_shape, max_patch_shape)
+
+    if np.any(shrink):
+        n_shrink_dims = np.sum(shrink)
+        if n_shrink_dims == 2:
+            remaining_dim = np.flatnonzero(~shrink)
+            adjusted_patch_shape[remaining_dim] = min(
+                n_voxels_patch // np.prod(full_volume_shape[shrink]), full_volume_shape[remaining_dim]
+            )
+        elif n_shrink_dims == 1:
+            remaining_dims = np.flatnonzero(~shrink)
+            max_area = n_voxels_patch // full_volume_shape[shrink]
+            if max_area <= np.prod(full_volume_shape[remaining_dims]):
+                adjusted_patch_shape[remaining_dims] = int(np.sqrt(max_area))
+            else:
+                return tuple(full_volume_shape), (0, 0, 0)
+    halo_shape = np.where(shrink, 0, min_halo_shape)
+    return tuple(adjusted_patch_shape - halo_shape), tuple(halo_shape)
+
+
 def find_batch_size(
     model: nn.Module,
     in_channels: int,
