@@ -1,5 +1,4 @@
 import copy
-from typing import Optional
 
 import numba
 import numpy as np
@@ -9,40 +8,60 @@ from skimage.measure import regionprops
 from skimage.segmentation import relabel_sequential, watershed
 
 
-def get_bbox(mask: np.ndarray, pixel_toll: int = 0) -> tuple[tuple, int, int, int]:
+def get_bbox(mask: np.ndarray, pixel_tolerance: int = 0) -> tuple[tuple[slice, slice, slice], int, int, int]:
     """
-    returns the bounding box around a binary mask
+    Returns the bounding box around a binary mask with optional padding.
+
+    Args:
+        mask (np.ndarray): Binary mask to calculate the bounding box.
+        pixel_tolerance (int): Padding around the bounding box.
+
+    Returns:
+        tuple[tuple[slice, slice, slice], int, int, int]: Bounding box slices and minimum coordinates.
     """
-    max_shape = mask.shape
     coords = np.nonzero(mask)
-    z_min, z_max = max(coords[0].min() - pixel_toll, 0), min(coords[0].max() + pixel_toll, max_shape[0])
-    z_max = z_max if z_max - z_min > 0 else 1
-    x_min, x_max = max(coords[1].min() - pixel_toll, 0), min(coords[1].max() + pixel_toll, max_shape[1])
-    y_min, y_max = max(coords[2].min() - pixel_toll, 0), min(coords[2].max() + pixel_toll, max_shape[2])
+
+    z_min, z_max = max(coords[0].min() - pixel_tolerance, 0), min(coords[0].max() + pixel_tolerance, mask.shape[0])
+    z_max = max(z_max, z_min + 1)  # Ensure non-zero size
+    x_min, x_max = max(coords[1].min() - pixel_tolerance, 0), min(coords[1].max() + pixel_tolerance, mask.shape[1])
+    y_min, y_max = max(coords[2].min() - pixel_tolerance, 0), min(coords[2].max() + pixel_tolerance, mask.shape[2])
+
     return (slice(z_min, z_max), slice(x_min, x_max), slice(y_min, y_max)), z_min, x_min, y_min
 
 
-def get_quantile_mask(counts: np.ndarray, quantile: tuple[float, float] = (0.2, 0.99)) -> np.ndarray:
+def get_quantile_mask(counts: np.ndarray, quantile_range: tuple[float, float] = (0.2, 0.99)) -> np.ndarray:
     """
-    filters counts by quantiles
+    Filters counts by quantiles.
+
+    Args:
+        counts (np.ndarray): Array of counts to filter.
+        quantile_range (tuple[float, float]): Lower and upper quantiles.
+
+    Returns:
+        np.ndarray: Boolean mask indicating which counts are within the quantile range.
     """
-    mask_low = np.quantile(counts, quantile[0]) < counts
-    mask_up = np.quantile(counts, quantile[1]) > counts
-    mask = np.logical_and(mask_low, mask_up)
-    return mask
+    lower_mask = counts > np.quantile(counts, quantile_range[0])
+    upper_mask = counts < np.quantile(counts, quantile_range[1])
+    return np.logical_and(lower_mask, upper_mask)
 
 
 @numba.njit(parallel=True)
-def numba_find_overlaps(cell_seg: np.ndarray, n_seg: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def numba_find_overlaps(cell_seg: np.ndarray, nuc_seg: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    given a cell_seg: cell segmentation and a n_seg: nuclei segmentation
-    returns: cell_sizes, nuclei_sizes, pixel overlap
+    Finds overlaps between cell segmentation and nuclei segmentation.
+
+    Args:
+        cell_seg (np.ndarray): Cell segmentation array.
+        nuc_seg (np.ndarray): Nuclei segmentation array.
+
+    Returns:
+        tuple[np.ndarray, np.ndarray, np.ndarray]: Cell sizes, nuclei sizes, and pixel overlap counts.
     """
     shape_x, shape_y, shape_z = cell_seg.shape
 
-    cell_counts = np.zeros(cell_seg.max() + 1).astype(np.uint16)
-    n_counts = np.zeros(n_seg.max() + 1).astype(np.uint16)
-    overlap_counts = np.zeros((cell_seg.max() + 1, n_seg.max() + 1)).astype(np.uint16)
+    cell_counts = np.zeros(cell_seg.max() + 1, dtype=np.uint16)
+    n_counts = np.zeros(nuc_seg.max() + 1, dtype=np.uint16)
+    overlap_counts = np.zeros((cell_seg.max() + 1, nuc_seg.max() + 1), dtype=np.uint16)
 
     for x in numba.prange(shape_x):
         for y in range(shape_y):
@@ -51,7 +70,7 @@ def numba_find_overlaps(cell_seg: np.ndarray, n_seg: np.ndarray) -> tuple[np.nda
                 if seg_id > 0:
                     cell_counts[seg_id] += 1
 
-                n_id = n_seg[x, y, z]
+                n_id = nuc_seg[x, y, z]
                 if n_id > 0:
                     n_counts[n_id] += 1
 
@@ -67,57 +86,70 @@ def find_potential_under_seg(
     intersection_counts: np.ndarray,
     threshold: float = 0.9,
     quantiles_clip: tuple[float, float] = (0.2, 0.99),
-) -> dict:
+) -> dict[int, dict[str, np.ndarray]]:
     """
-    returns for each cell idx a dict containing the overlap profile between said cell and the nuclei
+    Identifies potential under-segmentation by analyzing overlap between cells and nuclei.
+
+    Args:
+        nuclei_counts (np.ndarray): Array of nuclei sizes.
+        cell_counts (np.ndarray): Array of cell sizes.
+        intersection_counts (np.ndarray): Overlap between cells and nuclei.
+        threshold (float): Minimum overlap ratio to consider a cell under-segmented.
+        quantiles_clip (tuple[float, float]): Quantile range for filtering nuclei.
+
+    Returns:
+        dict[int, dict[str, np.ndarray]]: Mapping of cell indices to their overlap profile with nuclei.
     """
-    nuclei_counts_mask = get_quantile_mask(nuclei_counts, quantiles_clip)
+    nuclei_mask = get_quantile_mask(nuclei_counts, quantiles_clip)
     cell_assignment = {}
-    for idx in range(cell_counts.shape[0]):
-        n_idx = np.nonzero(intersection_counts[idx])[0]
-        r_intersection = [intersection_counts[idx, _n_idx] / nuclei_counts[_n_idx] for _n_idx in n_idx]
 
-        under_seg_n_idx = []
-        for _n_idx, r_i in zip(n_idx, r_intersection):
-            if r_i > threshold and nuclei_counts_mask[_n_idx]:
-                under_seg_n_idx.append(_n_idx)
+    for cell_idx in range(cell_counts.shape[0]):
+        nuclei_idx = np.nonzero(intersection_counts[cell_idx])[0]
+        overlap_ratios = intersection_counts[cell_idx, nuclei_idx] / nuclei_counts[nuclei_idx]
 
-        is_under_seg = True if len(under_seg_n_idx) > 1 else False
+        under_seg_nuclei = nuclei_idx[(overlap_ratios > threshold) & nuclei_mask[nuclei_idx]]
 
-        if is_under_seg:
-            cell_assignment[idx] = {
-                'n_idx': n_idx,
-                'under_seg_idx': under_seg_n_idx,
-                'is_under_seg': is_under_seg,
-                'r_intersection': r_intersection,
+        if len(under_seg_nuclei) > 1:
+            cell_assignment[cell_idx] = {
+                'n_idx': nuclei_idx,
+                'under_seg_idx': under_seg_nuclei,
+                'is_under_seg': True,
+                'r_intersection': overlap_ratios,
             }
+
     return cell_assignment
 
 
-def find_potential_over_seg(nuclei_counts: np.ndarray, intersection_counts: np.ndarray, threshold: float = 0.3) -> dict:
+def find_potential_over_seg(
+    nuclei_counts: np.ndarray, intersection_counts: np.ndarray, threshold: float = 0.3
+) -> dict[int, dict[str, np.ndarray]]:
     """
-    returns for each nucleus idx a dict containing the overlap profile between said nucleus and the segmentation
-    """
+    Identifies potential over-segmentation by analyzing overlap between cells and nuclei.
 
+    Args:
+        nuclei_counts (np.ndarray): Array of nuclei sizes.
+        intersection_counts (np.ndarray): Overlap between cells and nuclei.
+        threshold (float): Minimum overlap ratio to consider a nucleus over-segmented.
+
+    Returns:
+        dict[int, dict[str, np.ndarray]]: Mapping of nuclei indices to their overlap profile with cells.
+    """
     nuclei_assignment = {}
-    for idx in range(nuclei_counts.shape[0]):
-        c_idx = np.nonzero(intersection_counts[:, idx])[0]
 
-        r_intersection = [intersection_counts[_c_idx, idx] / nuclei_counts[idx] for _c_idx in c_idx]
+    for nuclei_idx in range(nuclei_counts.shape[0]):
+        cell_idx = np.nonzero(intersection_counts[:, nuclei_idx])[0]
+        overlap_ratios = intersection_counts[cell_idx, nuclei_idx] / nuclei_counts[nuclei_idx]
 
-        over_seg_c_idx = []
-        for _c_idx, r_i in zip(c_idx, r_intersection):
-            if r_i > threshold:
-                over_seg_c_idx.append(_c_idx)
+        over_seg_cells = cell_idx[overlap_ratios > threshold]
 
-        is_over_seg = True if len(over_seg_c_idx) > 1 else False
-        if is_over_seg:
-            nuclei_assignment[idx] = {
-                'c_idx': c_idx,
-                'over_seg_idx': over_seg_c_idx,
-                'is_over_seg': is_over_seg,
-                'r_intersection': r_intersection,
+        if len(over_seg_cells) > 1:
+            nuclei_assignment[nuclei_idx] = {
+                'c_idx': cell_idx,
+                'over_seg_idx': over_seg_cells,
+                'is_over_seg': True,
+                'r_intersection': overlap_ratios,
             }
+
     return nuclei_assignment
 
 
@@ -128,68 +160,94 @@ def split_from_seeds(
     all_idx: list[int],
 ) -> np.ndarray:
     """
-    Split a segmentation using seeds watershed
+    Splits a segmentation using seeded watershed.
+
+    Args:
+        segmentation (np.ndarray): Input segmentation array.
+        boundary_pmap (np.ndarray): Boundary probability map.
+        seeds (np.ndarray): Seed markers for watershed.
+        all_idx (list[int]): List of indices to split.
+
+    Returns:
+        np.ndarray: Segmentation array after splitting.
     """
-    # find seeds location ad label value
-    c_segmentation = copy.deepcopy(segmentation)
+    segmentation_copy = copy.deepcopy(segmentation)
+    mask = np.isin(segmentation_copy, all_idx)
+    bbox, _, _, _ = get_bbox(mask)
 
-    # create bbox from mask
-    mask = np.logical_or.reduce([c_segmentation == label_idx for label_idx in all_idx])
-    bbox, z_min, x_min, y_min = get_bbox(mask)
+    cropped_boundary_pmap = boundary_pmap[bbox]
+    cropped_seeds = seeds[bbox]
+    cropped_mask = np.isin(segmentation_copy[bbox], all_idx)
 
-    _boundary_pmap = boundary_pmap[bbox]
-    _seeds = seeds[bbox]
-    _mask = np.logical_or.reduce([c_segmentation[bbox] == label_idx for label_idx in all_idx])
+    smoothed_pmap = gaussian(cropped_boundary_pmap / cropped_boundary_pmap.max(), sigma=2.0)
+    local_seg = watershed(smoothed_pmap, markers=cropped_seeds, compactness=0.001)
 
-    # tobe refactored watershed segmentation
-    _boundary_pmap = gaussian(_boundary_pmap / _boundary_pmap.max(), 2.0)
-    local_seg = watershed(_boundary_pmap, markers=_seeds, compactness=0.001)
-    max_id = c_segmentation.max()
+    local_seg += segmentation_copy.max() + 1
+    segmentation_copy[bbox][cropped_mask] = local_seg[cropped_mask]
 
-    # copy unique labels in the source data
-    local_seg += max_id + 1
-    c_segmentation[bbox][_mask] = local_seg[_mask].ravel()
-    return c_segmentation
+    return segmentation_copy
 
 
 def fix_under_segmentation(
     segmentation: np.ndarray,
     nuclei_segmentation: np.ndarray,
     boundary_pmap: np.ndarray,
-    cell_assignments: dict,
-    cell_idx: Optional[list[int]] = None,
+    cell_assignments: dict[int, dict[str, np.ndarray]],
+    cell_idx: list[int] | None = None,
 ) -> np.ndarray:
     """
-    this function attempts to fix cell under segmentation in the cells by splitting cells with multiple nuclei
-    """
-    _segmentation = copy.deepcopy(segmentation)
-    print(" -fixing under segmentation")
-    for c_idx, value in tqdm.tqdm(cell_assignments.items()):
-        if cell_idx is None or c_idx in cell_idx:
-            _nuclei_seeds = np.zeros_like(_segmentation)
-            for i, n_idx in enumerate(value['under_seg_idx']):
-                _nuclei_seeds[n_idx == nuclei_segmentation] = i + 1
+    Attempts to fix cell under-segmentation by splitting cells with multiple nuclei.
 
-            _segmentation = split_from_seeds(_segmentation, boundary_pmap, _nuclei_seeds, all_idx=[c_idx])
-    return _segmentation
+    Args:
+        segmentation (np.ndarray): Input cell segmentation.
+        nuclei_segmentation (np.ndarray): Nuclei segmentation.
+        boundary_pmap (np.ndarray): Boundary probability map.
+        cell_assignments (dict[int, dict[str, np.ndarray]]): Under-segmentation information for cells.
+        cell_idx (list[int] | None): Specific cell indices to process. If None, process all.
+
+    Returns:
+        np.ndarray: Segmentation array after fixing under-segmentation.
+    """
+    segmentation_copy = copy.deepcopy(segmentation)
+    print("Fixing under-segmentation...")
+
+    for c_idx, assignment in tqdm.tqdm(cell_assignments.items()):
+        if cell_idx is None or c_idx in cell_idx:
+            seeds = np.zeros_like(segmentation_copy)
+            for i, n_idx in enumerate(assignment['under_seg_idx']):
+                seeds[nuclei_segmentation == n_idx] = i + 1
+
+            segmentation_copy = split_from_seeds(segmentation_copy, boundary_pmap, seeds, all_idx=[c_idx])
+
+    return segmentation_copy
 
 
 def fix_over_segmentation(
     segmentation: np.ndarray,
-    nuclei_assignments: dict,
-    nuclei_idx: Optional[list[int]] = None,
+    nuclei_assignments: dict[int, dict[str, np.ndarray]],
+    nuclei_idx: list[int] | None = None,
 ) -> np.ndarray:
     """
-    This function attempts to fix cell over-segmentation by merging cells that share the same nucleus.
+    Attempts to fix cell over-segmentation by merging cells that share the same nucleus.
+
+    Args:
+        segmentation (np.ndarray): Input cell segmentation.
+        nuclei_assignments (dict[int, dict[str, np.ndarray]]): Over-segmentation information for nuclei.
+        nuclei_idx (list[int] | None): Specific nuclei indices to process. If None, process all.
+
+    Returns:
+        np.ndarray: Segmentation array after fixing over-segmentation.
     """
-    _segmentation = copy.deepcopy(segmentation)
-    print(" -fixing over segmentation")
-    for n_idx, value in tqdm.tqdm(nuclei_assignments.items()):
+    segmentation_copy = copy.deepcopy(segmentation)
+    print("Fixing over-segmentation...")
+
+    for n_idx, assignment in tqdm.tqdm(nuclei_assignments.items()):
         if nuclei_idx is None or n_idx in nuclei_idx:
-            new_value = value['over_seg_idx'][0]
-            for i, c_idx in enumerate(value['over_seg_idx']):
-                _segmentation[segmentation == c_idx] = new_value
-    return _segmentation
+            target_value = assignment['over_seg_idx'][0]
+            for c_idx in assignment['over_seg_idx']:
+                segmentation_copy[segmentation == c_idx] = target_value
+
+    return segmentation_copy
 
 
 def fix_over_under_segmentation_from_nuclei(
@@ -198,39 +256,28 @@ def fix_over_under_segmentation_from_nuclei(
     threshold_merge: float = 0.33,
     threshold_split: float = 0.66,
     quantiles_nuclei: tuple[float, float] = (0.3, 0.99),
-    boundary: Optional[np.ndarray] = None,
+    boundary: np.ndarray | None = None,
 ) -> np.ndarray:
     """
-    This function attempts to fix cell under and over segmentation, given a trusted nuclei segmentation of the
-    same image.
-    - To fix cell under segmentation, it will try to splitting cells with multiple nuclei
-    - To fix cell over segmentation, it will try to merge cells that splits in two a nucleus
+    Attempts to fix both over-segmentation and under-segmentation of cells using a trusted nuclei segmentation.
 
     Args:
-        cell_seg (np.ndarray): numpy array containing the cell segmentation
-        nuclei_seg (np.ndarray): numpy array containing the nuclei segmentation
-        threshold_merge (float, optional): percentage of the nucleus overlapping each cell segment.
-            If the overlap is smaller than the defined threshold, the script will not merge the two cells.
-            Defaults to 0.33.
-        threshold_split (float, optional): percentage of the nucleus overlapping each cell segment.
-            If the overlap is smaller than the defined threshold, the script will not split the two cells.
-            Defaults to 0.66.
-        quantiles_nuclei (tuple[float, float], optional): Remove nuclei too small or too large according to
-            their quantiles. Defaults to (0.3, 0.99).
-        boundary (Optional[np.ndarray], optional): Optional numpy array containing the boundary signal or,
-            better, a boundary pmap. Defaults to None.
-    Returns:
-        np.ndarray: The new cell segmentation
-    """
+        cell_seg (np.ndarray): Cell segmentation array.
+        nuclei_seg (np.ndarray): Nuclei segmentation array.
+        threshold_merge (float): Overlap threshold for merging cells. Default is 0.33.
+        threshold_split (float): Overlap threshold for splitting cells. Default is 0.66.
+        quantiles_nuclei (tuple[float, float]): Quantiles to filter nuclei by size. Default is (0.3, 0.99).
+        boundary (np.ndarray | None): Boundary probability map. If None, uses a constant array.
 
-    # measure the overlap between cell and nuclei 1st time
+    Returns:
+        np.ndarray: Corrected cell segmentation array.
+    """
     cell_counts, nuclei_counts, cell_nuclei_counts = numba_find_overlaps(cell_seg, nuclei_seg)
     nuclei_assignments = find_potential_over_seg(nuclei_counts, cell_nuclei_counts, threshold=threshold_merge)
 
-    _cell_seg = fix_over_segmentation(cell_seg, nuclei_assignments, nuclei_idx=None)
+    corrected_seg = fix_over_segmentation(cell_seg, nuclei_assignments)
 
-    # measure the overlap between cell and nuclei 2nd time after the merges
-    cell_counts, nuclei_counts, cell_nuclei_counts = numba_find_overlaps(_cell_seg, nuclei_seg)
+    cell_counts, nuclei_counts, cell_nuclei_counts = numba_find_overlaps(corrected_seg, nuclei_seg)
     cell_assignments = find_potential_under_seg(
         nuclei_counts,
         cell_counts,
@@ -240,8 +287,7 @@ def fix_over_under_segmentation_from_nuclei(
     )
 
     boundary_pmap = np.ones_like(cell_seg) if boundary is None else boundary
-    _cell_seg = fix_under_segmentation(_cell_seg, nuclei_seg, boundary_pmap, cell_assignments, cell_idx=None)
-    return _cell_seg
+    return fix_under_segmentation(corrected_seg, nuclei_seg, boundary_pmap, cell_assignments, cell_idx=None)
 
 
 def remove_false_positives_by_foreground_probability(
@@ -250,48 +296,45 @@ def remove_false_positives_by_foreground_probability(
     threshold: float,
 ) -> np.ndarray:
     """
-    Remove false positive regions in a segmentation based on a foreground probability map in a smart way.
-    If the mean(an instance * its own probability region) < threshold, it is removed.
+    Removes false positive regions in a segmentation based on a foreground probability map.
+
+    1. Labels are not preserved.
+    2. If the mean(an instance * its own probability region) < threshold, it is removed.
 
     Args:
-        segmentation (np.ndarray): The segmentation array, where each unique non-zero value indicates a distinct region.
-        foreground (np.ndarray): The foreground probability map, same shape as `segmentation`.
+        segmentation (np.ndarray): Segmentation array where each unique non-zero value indicates a distinct region.
+        foreground (np.ndarray): Foreground probability map of the same shape as `segmentation`.
         threshold (float): Probability threshold below which regions are considered false positives.
 
     Returns:
-        np.ndarray: The modified segmentation array with false positives removed.
+        np.ndarray: Segmentation array with false positives removed.
     """
     # TODO: make a channel for removed regions for easier inspection
     # TODO: use `relabel_sequential` to recover the original labels
 
-    if not segmentation.shape == foreground.shape:
-        raise ValueError("Shape of segmentation and probability map must match.")
+    if segmentation.shape != foreground.shape:
+        raise ValueError("Segmentation and probability map must have the same shape.")
     if foreground.max() > 1:
-        raise ValueError("Foreground must be a probability map probability map.")
+        raise ValueError("Foreground must be a probability map with values in [0, 1].")
 
-    instances, _, _ = relabel_sequential(segmentation)
+    instances, _, _ = relabel_sequential(segmentation)  # The label 0 is assumed to denote the bg and is never remapped.
+    regions = regionprops(instances)  # Labels with value 0 are ignored.
 
-    regions = regionprops(instances)
-    to_keep = np.ones(len(regions) + 1)
     pixel_count = np.zeros(len(regions) + 1)
     pixel_value = np.zeros(len(regions) + 1)
+    pixel_count[0] = 1  # Avoid division by zero: pixel_count[0] and pixel_value[0] are fixed throughout.
 
     for region in tqdm.tqdm(regions):
         bbox = region.bbox
-        cube = (
-            instances[bbox[0] : bbox[3], bbox[1] : bbox[4], bbox[2] : bbox[5]] == region.label
-        )  # other instances may exist, don't use `> 0`
+        region_mask = instances[bbox[0] : bbox[3], bbox[1] : bbox[4], bbox[2] : bbox[5]] == region.label
         prob = foreground[bbox[0] : bbox[3], bbox[1] : bbox[4], bbox[2] : bbox[5]]
+
         pixel_count[region.label] = region.area
-        pixel_value[region.label] = (cube * prob).sum()
+        pixel_value[region.label] = (region_mask * prob).sum()
 
     likelihood = pixel_value / pixel_count
-    to_keep[likelihood < threshold] = 0
-    ids_to_delete = np.argwhere(to_keep == 0)
-    assert ids_to_delete.shape[1] == 1
-    ids_to_delete = ids_to_delete.flatten()
-    # print(f"    Removing instance {region.label}: pixel count: {pixel_count}, pixel value: {pixel_value}, likelihood: {likelihood}")
+    to_remove = likelihood < threshold
 
-    instances[np.isin(instances, ids_to_delete)] = 0
+    instances[np.isin(instances, np.nonzero(to_remove)[0])] = 0
     instances, _, _ = relabel_sequential(instances)
     return instances

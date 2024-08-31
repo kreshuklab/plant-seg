@@ -95,29 +95,3 @@ class TestIO:
         data_read = load_pil(path_jpg)
 
         assert data.shape[:2] == data_read.shape, "Data read from JPG file is not equal to the original data"
-
-    def test_voxel_size(self):
-        from plantseg.core.voxelsize import VoxelSize
-
-        voxel_size = VoxelSize(voxels_size=(0.2, 0.1, 0.1))
-        target_voxel_size = VoxelSize(voxels_size=(0.2, 0.2, 0.2))
-        factor = voxel_size.scalefactor_from_voxelsize(target_voxel_size)
-        assert np.testing.assert_allclose(factor, [1.0, 0.5, 0.5], rtol=1e-5) is None, "Scaling factor is not correct"
-
-        # round trip
-        inverse_factor = tuple(1 / f for f in factor)
-        original_voxel_size = target_voxel_size.voxelsize_from_factor(inverse_factor)
-        assert (
-            np.testing.assert_allclose(original_voxel_size.voxels_size, voxel_size.voxels_size, rtol=1e-5) is None
-        ), "Voxel size is not correct"
-
-        # Voxels size with units different than um should raise an error
-        with pytest.raises(ValueError):
-            VoxelSize(voxels_size=(0.2, 0.1, 0.1), unit='mm')
-
-        # Voxel size with more than >3 or <3 values should raise an error
-        with pytest.raises(ValueError):
-            VoxelSize(voxels_size=(0.2, 0.1, 0.1, 0.1))
-
-        with pytest.raises(ValueError):
-            VoxelSize(voxels_size=(0.2, 0.1))

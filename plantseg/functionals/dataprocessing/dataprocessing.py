@@ -74,18 +74,27 @@ def image_median(image: np.ndarray, radius: int) -> np.ndarray:
     Apply median smoothing on an image with a given radius.
 
     Args:
-        image (np.ndarray): Input image to apply median smoothing
-        radius (int): Radius of the median filter
+        image (np.ndarray): Input image to apply median smoothing.
+        radius (int): Radius of the median filter.
 
     Returns:
-        median_image (np.ndarray): Median smoothed image as numpy array
+        np.ndarray: Median smoothed image.
     """
-    if image.shape[0] == 1 or image.ndim == 2:
-        shape = image.shape
-        median_image = median(image[0], disk(radius))
-        return median_image.reshape(shape)
+    if radius <= 0:
+        raise ValueError("Radius must be a positive integer.")
+
+    if image.ndim == 2:
+        # 2D image
+        return median(image, disk(radius))
+    elif image.ndim == 3:
+        if image.shape[0] == 1:
+            # Single slice (ZYX or YX) case
+            return median(image[0], disk(radius)).reshape(image.shape)
+        else:
+            # 3D image
+            return median(image, ball(radius))
     else:
-        return median(image, ball(radius))
+        raise ValueError("Unsupported image dimensionality. Image must be either 2D or 3D.")
 
 
 def image_gaussian_smoothing(image: np.ndarray, sigma: float) -> np.ndarray:
@@ -192,7 +201,7 @@ def select_channel(data: np.ndarray, channel: int, channel_axis: int = 0) -> np.
     return np.take(data, channel, axis=channel_axis)
 
 
-def normalize_01_channel_wise(data: np.ndarray, channel_axis: int = 0, eps=1e-12):
+def normalize_01_channel_wise(data: np.ndarray, channel_axis: int = 0, eps=1e-12) -> np.ndarray:
     """
     Normalize each channel of a numpy array between 0 and 1 and converts it to float32.
 
@@ -202,11 +211,13 @@ def normalize_01_channel_wise(data: np.ndarray, channel_axis: int = 0, eps=1e-12
         eps (float): A small value added to the denominator for numerical stability
 
     Returns:
-        normalized_data (np.ndarray): Normalized numpy array
+        np.ndarray: Normalized numpy array
     """
+    # Move the channel axis to the first axis
+    data = np.moveaxis(data, channel_axis, 0)
 
-    for i in range(data.shape[channel_axis]):
-        _data = select_channel(data, i, channel_axis)
-        _data = normalize_01(_data, eps=eps)
-        data = np.insert(data, i, _data, axis=channel_axis)
-    return data
+    # Normalize each channel independently
+    normalized_channels = np.array([normalize_01(channel, eps=eps) for channel in data])
+
+    # Move the axis back to its original position
+    return np.moveaxis(normalized_channels, 0, channel_axis)

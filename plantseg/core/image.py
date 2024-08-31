@@ -296,11 +296,12 @@ class PlantSegImage:
 
     def to_napari_layer_tuple(self) -> LayerDataTuple:
         """
-        Prepare the image to be loaded as a napari layer.
+        Prepare and normalise the image to be loaded as a napari layer.
+
         All the metadata will be stored in the metadata of the layer.
 
         Returns:
-            LayerDataTuple: Tuple containing the data, metadata, and type of the image
+            LayerDataTuple: Tuple containing the 0-1-normalised data, metadata, and type of the image.
         """
         # Dump the model properties to a dictionary
         metadata = self._properties.model_dump()
