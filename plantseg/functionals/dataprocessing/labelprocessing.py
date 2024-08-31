@@ -7,6 +7,14 @@ def relabel_segmentation(segmentation_image: np.ndarray) -> np.ndarray:
     Relabel contiguously a segmentation image, non-touching instances with same id will be relabeled differently.
     To be noted that measure.label is different from ndimage.label.
 
+    1-connectivity     2-connectivity     diagonal connection close-up
+
+         [ ]           [ ]  [ ]  [ ]             [ ]
+          |               \  |  /                 |  <- hop 2
+    [ ]--[x]--[ ]      [ ]--[x]--[ ]        [x]--[ ]
+          |               /  |  \             hop 1
+         [ ]           [ ]  [ ]  [ ]
+
     Args:
         segmentation_image (np.ndarray): segmentation image to relabel
 
@@ -14,7 +22,12 @@ def relabel_segmentation(segmentation_image: np.ndarray) -> np.ndarray:
         new_segmentation_image (np.ndarray): relabeled segmentation image
 
     """
-    return measure.label(segmentation_image)
+    return measure.label(
+        segmentation_image,
+        background=0,
+        return_num=False,
+        connectivity=2,
+    )
 
 
 def set_background_to_value(segmentation_image: np.ndarray, value: int = 0) -> np.ndarray:
