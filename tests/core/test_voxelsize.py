@@ -32,6 +32,13 @@ def test_voxel_size_invalid_initialization():
     with pytest.raises(ValidationError):
         VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="nm")
 
+    # Voxel size with more than >3 or <3 values should raise an error
+    with pytest.raises(ValidationError):
+        VoxelSize(voxels_size=(0.2, 0.1, 0.1, 0.1))
+
+    with pytest.raises(ValidationError):
+        VoxelSize(voxels_size=(0.2, 0.1))
+
 
 def test_voxel_size_scalefactor_from_voxelsize():
     vs1 = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
