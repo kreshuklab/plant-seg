@@ -64,7 +64,7 @@ def find_patch_and_halo_shapes(
             remaining_dims = np.flatnonzero(~shrink)
             max_area = n_voxels_patch // full_volume_shape[shrink]
             if max_area <= np.prod(full_volume_shape[remaining_dims]):
-                adjusted_patch_shape[remaining_dims] = int(np.sqrt(max_area))
+                adjusted_patch_shape[remaining_dims] = np.sqrt(max_area).astype(int)
             else:
                 return tuple(full_volume_shape), (0, 0, 0)
     halo_shape = np.where(shrink, 0, min_halo_shape)
