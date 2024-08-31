@@ -74,18 +74,27 @@ def image_median(image: np.ndarray, radius: int) -> np.ndarray:
     Apply median smoothing on an image with a given radius.
 
     Args:
-        image (np.ndarray): Input image to apply median smoothing
-        radius (int): Radius of the median filter
+        image (np.ndarray): Input image to apply median smoothing.
+        radius (int): Radius of the median filter.
 
     Returns:
-        median_image (np.ndarray): Median smoothed image as numpy array
+        np.ndarray: Median smoothed image.
     """
-    if image.shape[0] == 1 or image.ndim == 2:
-        shape = image.shape
-        median_image = median(image[0], disk(radius))
-        return median_image.reshape(shape)
+    if radius <= 0:
+        raise ValueError("Radius must be a positive integer.")
+
+    if image.ndim == 2:
+        # 2D image
+        return median(image, disk(radius))
+    elif image.ndim == 3:
+        if image.shape[0] == 1:
+            # Single slice (ZYX or YX) case
+            return median(image[0], disk(radius)).reshape(image.shape)
+        else:
+            # 3D image
+            return median(image, ball(radius))
     else:
-        return median(image, ball(radius))
+        raise ValueError("Unsupported image dimensionality. Image must be either 2D or 3D.")
 
 
 def image_gaussian_smoothing(image: np.ndarray, sigma: float) -> np.ndarray:
