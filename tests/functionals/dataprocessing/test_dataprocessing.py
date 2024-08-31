@@ -99,13 +99,20 @@ def test_image_crop():
 
 # Test fix_input_shape
 def test_fix_input_shape():
-    data_2d = np.random.rand(10, 10)
-    fixed_data = fix_input_shape(data_2d, ndim=3)
-    assert fixed_data.shape == (1, 10, 10)
+    for shape_in, shape_out in [
+        ((10, 10), (1, 10, 10)),
+        ((10, 10, 10), (10, 10, 10)),
+        ((1, 10, 10, 10), (10, 10, 10)),
+    ]:
+        image = np.random.rand(*shape_in)
+        assert fix_input_shape(image, ndim=3).shape == shape_out
 
-    data_3d = np.random.rand(10, 10, 10)
-    fixed_data = fix_input_shape(data_3d, ndim=3)
-    assert fixed_data.shape == (10, 10, 10)
+    for shape_in, shape_out in [
+        ((10, 10, 10), (10, 1, 10, 10)),
+        ((2, 10, 10, 10), (2, 10, 10, 10)),
+    ]:
+        image = np.random.rand(*shape_in)
+        assert fix_input_shape(image, ndim=4).shape == shape_out
 
 
 # Test fix_input_shape_to_ZYX
@@ -140,11 +147,14 @@ def test_normalize_01():
     normalized_data = normalize_01(data)
     assert np.allclose(np.min(normalized_data), 0)
     assert np.allclose(np.max(normalized_data), 1)
+    assert normalized_data.min() >= 0.0
+    assert normalized_data.max() <= 1.0 + 1e-6
 
 
 # Test select_channel
 def test_select_channel():
     data = np.random.rand(5, 10, 10, 10)
+
     channel_data = select_channel(data, 2, channel_axis=0)
     assert channel_data.shape == (10, 10, 10)
 

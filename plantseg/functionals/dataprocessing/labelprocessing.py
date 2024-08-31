@@ -3,7 +3,7 @@ from skimage import measure
 
 
 def relabel_segmentation(segmentation_image: np.ndarray) -> np.ndarray:
-    """
+    r"""
     Relabel contiguously a segmentation image, non-touching instances with same id will be relabeled differently.
     To be noted that measure.label is different from ndimage.label.
 
