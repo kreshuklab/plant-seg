@@ -46,7 +46,7 @@ def test_relabel_segmentation():
 
     # Expected relabeling: the two 2-connectivity-connected regions should not be relabeled differently
     assert relabeled_image[0, 0] == 1
-    assert relabeled_image[3, 3] == 1  # Becuase PlantSeg uses 2-connectivity by default
+    assert relabeled_image[3, 3] == 1  # Because PlantSeg uses 2-connectivity by default
     np.testing.assert_allclose(np.unique(relabeled_image), [0, 1])
 
     # Case 3: 2D segmentation with non-contiguous regions with 2-connectivity
