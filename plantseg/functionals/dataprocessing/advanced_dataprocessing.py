@@ -250,48 +250,45 @@ def remove_false_positives_by_foreground_probability(
     threshold: float,
 ) -> np.ndarray:
     """
-    Remove false positive regions in a segmentation based on a foreground probability map in a smart way.
-    If the mean(an instance * its own probability region) < threshold, it is removed.
+    Removes false positive regions in a segmentation based on a foreground probability map.
+
+    1. Labels are not preserved.
+    2. If the mean(an instance * its own probability region) < threshold, it is removed.
 
     Args:
-        segmentation (np.ndarray): The segmentation array, where each unique non-zero value indicates a distinct region.
-        foreground (np.ndarray): The foreground probability map, same shape as `segmentation`.
+        segmentation (np.ndarray): Segmentation array where each unique non-zero value indicates a distinct region.
+        foreground (np.ndarray): Foreground probability map of the same shape as `segmentation`.
         threshold (float): Probability threshold below which regions are considered false positives.
 
     Returns:
-        np.ndarray: The modified segmentation array with false positives removed.
+        np.ndarray: Segmentation array with false positives removed.
     """
     # TODO: make a channel for removed regions for easier inspection
     # TODO: use `relabel_sequential` to recover the original labels
 
-    if not segmentation.shape == foreground.shape:
-        raise ValueError("Shape of segmentation and probability map must match.")
+    if segmentation.shape != foreground.shape:
+        raise ValueError("Segmentation and probability map must have the same shape.")
     if foreground.max() > 1:
-        raise ValueError("Foreground must be a probability map probability map.")
+        raise ValueError("Foreground must be a probability map with values in [0, 1].")
 
-    instances, _, _ = relabel_sequential(segmentation)
+    instances, _, _ = relabel_sequential(segmentation)  # The label 0 is assumed to denote the bg and is never remapped.
+    regions = regionprops(instances)  # Labels with value 0 are ignored.
 
-    regions = regionprops(instances)
-    to_keep = np.ones(len(regions) + 1)
     pixel_count = np.zeros(len(regions) + 1)
     pixel_value = np.zeros(len(regions) + 1)
+    pixel_count[0] = 1  # Avoid division by zero: pixel_count[0] and pixel_value[0] are fixed throughout.
 
     for region in tqdm.tqdm(regions):
         bbox = region.bbox
-        cube = (
-            instances[bbox[0] : bbox[3], bbox[1] : bbox[4], bbox[2] : bbox[5]] == region.label
-        )  # other instances may exist, don't use `> 0`
+        region_mask = instances[bbox[0] : bbox[3], bbox[1] : bbox[4], bbox[2] : bbox[5]] == region.label
         prob = foreground[bbox[0] : bbox[3], bbox[1] : bbox[4], bbox[2] : bbox[5]]
+
         pixel_count[region.label] = region.area
-        pixel_value[region.label] = (cube * prob).sum()
+        pixel_value[region.label] = (region_mask * prob).sum()
 
     likelihood = pixel_value / pixel_count
-    to_keep[likelihood < threshold] = 0
-    ids_to_delete = np.argwhere(to_keep == 0)
-    assert ids_to_delete.shape[1] == 1
-    ids_to_delete = ids_to_delete.flatten()
-    # print(f"    Removing instance {region.label}: pixel count: {pixel_count}, pixel value: {pixel_value}, likelihood: {likelihood}")
+    to_remove = likelihood < threshold
 
-    instances[np.isin(instances, ids_to_delete)] = 0
+    instances[np.isin(instances, np.nonzero(to_remove)[0])] = 0
     instances, _, _ = relabel_sequential(instances)
     return instances
