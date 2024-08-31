@@ -201,7 +201,7 @@ def select_channel(data: np.ndarray, channel: int, channel_axis: int = 0) -> np.
     return np.take(data, channel, axis=channel_axis)
 
 
-def normalize_01_channel_wise(data: np.ndarray, channel_axis: int = 0, eps=1e-12):
+def normalize_01_channel_wise(data: np.ndarray, channel_axis: int = 0, eps=1e-12) -> np.ndarray:
     """
     Normalize each channel of a numpy array between 0 and 1 and converts it to float32.
 
@@ -211,11 +211,13 @@ def normalize_01_channel_wise(data: np.ndarray, channel_axis: int = 0, eps=1e-12
         eps (float): A small value added to the denominator for numerical stability
 
     Returns:
-        normalized_data (np.ndarray): Normalized numpy array
+        np.ndarray: Normalized numpy array
     """
+    # Move the channel axis to the first axis
+    data = np.moveaxis(data, channel_axis, 0)
 
-    for i in range(data.shape[channel_axis]):
-        _data = select_channel(data, i, channel_axis)
-        _data = normalize_01(_data, eps=eps)
-        data = np.insert(data, i, _data, axis=channel_axis)
-    return data
+    # Normalize each channel independently
+    normalized_channels = np.array([normalize_01(channel, eps=eps) for channel in data])
+
+    # Move the axis back to its original position
+    return np.moveaxis(normalized_channels, 0, channel_axis)
