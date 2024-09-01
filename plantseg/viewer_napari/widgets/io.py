@@ -51,10 +51,15 @@ class PathMode(Enum):
         "orientation": "horizontal",
         "choices": ImageType.to_choices(),
     },
-    key={
+    dataset_key={
         "label": "Key (h5/zarr only)",
         "choices": [""],
         "tooltip": "Key to be loaded from h5",
+    },
+    refresh_keys={
+        "label": "Refresh keys",
+        "tooltip": "Refresh the keys available in the file",
+        "widget_type": "PushButton",
     },
     stack_layout={
         "label": "Stack Layout",
@@ -63,11 +68,12 @@ class PathMode(Enum):
     },
 )
 def widget_open_file(
+    refresh_keys,
     path_mode: str = PathMode.FILE.value,
     path: Path = Path.home(),
     layer_type: str = ImageType.IMAGE.value,
     new_layer_name: str = "",
-    key: str = "",
+    dataset_key: str = "",
     stack_layout: str = ImageLayout.ZYX.value,
 ) -> Future[LayerDataTuple]:
     """Open a file and return a napari layer."""
@@ -81,7 +87,7 @@ def widget_open_file(
         import_image_task,
         task_kwargs={
             "input_path": path,
-            "key": key,
+            "key": dataset_key,
             "image_name": new_layer_name,
             "semantic_type": semantic_type,
             "stack_layout": stack_layout,
@@ -90,7 +96,32 @@ def widget_open_file(
     )
 
 
-widget_open_file.key.hide()
+widget_open_file.dataset_key.hide()
+
+
+def generate_layer_name(path: Path, dataset_key: str) -> str:
+    dataset_key = dataset_key.replace("/", "_")
+    return path.stem + dataset_key
+
+
+def look_up_dataset_keys(path: Path):
+    print("look_up_dataset_keys")
+    path = _return_value_if_widget(path)
+    ext = path.suffix
+
+    if ext in H5_EXTENSIONS:
+        widget_open_file.dataset_key.show()
+        dataset_keys = list_h5_keys(path)
+        widget_open_file.dataset_key.choices = dataset_keys
+        widget_open_file.dataset_key.value = dataset_keys[0]
+
+    elif ext in ZARR_EXTENSIONS:
+        widget_open_file.dataset_key.show()
+        dataset_keys = list_zarr_keys(path)
+        widget_open_file.dataset_key.choices = dataset_keys
+        widget_open_file.dataset_key.value = dataset_keys[0]
+
+    widget_open_file.new_layer_name.value = generate_layer_name(path, dataset_keys[0])
 
 
 @widget_open_file.path_mode.changed.connect
@@ -106,27 +137,27 @@ def _on_path_mode_changed(path_mode: str):
 
 @widget_open_file.path.changed.connect
 def _on_path_changed(path: Path):
-    path = _return_value_if_widget(path)
-    widget_open_file.new_layer_name.value = path.stem
-    ext = path.suffix
-
-    if ext in H5_EXTENSIONS:
-        widget_open_file.key.show()
-        keys = list_h5_keys(path)
-        widget_open_file.key.choices = keys
-        widget_open_file.key.value = keys[0]
-
-    elif ext in ZARR_EXTENSIONS:
-        widget_open_file.key.show()
-        keys = list_zarr_keys(path)
-        widget_open_file.key.choices = keys
-        widget_open_file.key.value = keys[0]
+    look_up_dataset_keys(path)
 
 
-# For some reason after the widget is called the keys are deleted, so we need to reassign them after the widget is called
+@widget_open_file.dataset_key.changed.connect
+def _on_dataset_key_changed(dataset_key: str):
+    dataset_key = _return_value_if_widget(dataset_key)
+    if dataset_key:
+        widget_open_file.new_layer_name.value = generate_layer_name(widget_open_file.path.value, dataset_key)
+
+
+@widget_open_file.refresh_keys.changed.connect
+def _on_refresh_keys():
+    look_up_dataset_keys(widget_open_file.path.value)
+
+
+# FIXME: After the widget is called the keys are deleted, _on_done cannot refresh the keys
+#        Waiting for future causes the software to hang
 @widget_open_file.called.connect
 def _on_done(*args):
-    _on_path_changed(widget_open_file.path.value)
+    # need to open the same file again
+    look_up_dataset_keys(widget_open_file.path.value)
 
 
 @magicgui(
