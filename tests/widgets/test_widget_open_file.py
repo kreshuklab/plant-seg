@@ -15,7 +15,6 @@ def test_widget_open_file(make_napari_viewer_proxy, path_h5):
     create_h5(path_h5, data, "prob", voxel_size=voxel_size)
 
     widget_open_file(
-        refresh_keys=False,
         path_mode=PathMode.FILE.value,
         path=path_h5,
         layer_type="image",

@@ -20,7 +20,9 @@ from plantseg.viewer_napari.widgets.utils import _return_value_if_widget, schedu
 current_dataset_keys: list[str] | None = None
 
 
-def get_current_dataset_keys(widget) -> list[str] | list[None]:
+def get_current_dataset_keys(
+    widget,  # Required by magicgui. pylint: disable=unused-argument
+) -> list[str] | list[None]:
     if current_dataset_keys is None:
         return [None]
     return current_dataset_keys
@@ -65,11 +67,6 @@ class PathMode(Enum):
         "choices": get_current_dataset_keys,
         "tooltip": "Key to be loaded from h5",
     },
-    refresh_keys={
-        "label": "Refresh keys",
-        "tooltip": "Refresh the keys available in the file",
-        "widget_type": "PushButton",
-    },
     stack_layout={
         "label": "Stack Layout",
         "choices": ImageLayout.to_choices(),
@@ -77,7 +74,6 @@ class PathMode(Enum):
     },
 )
 def widget_open_file(
-    refresh_keys: bool = False,
     path_mode: str = PathMode.FILE.value,
     path: Path = Path.home(),
     layer_type: str = ImageType.IMAGE.value,
@@ -161,13 +157,8 @@ def _on_dataset_key_changed(dataset_key: str):
         widget_open_file.new_layer_name.value = generate_layer_name(widget_open_file.path.value, dataset_key)
 
 
-@widget_open_file.refresh_keys.changed.connect
-def _on_refresh_keys():
-    look_up_dataset_keys(widget_open_file.path.value)
-
-
 @widget_open_file.called.connect
-def _on_done(*args):
+def _on_done(*args):  # Required by magicgui. pylint: disable=unused-argument
     look_up_dataset_keys(widget_open_file.path.value)
 
 
@@ -215,6 +206,8 @@ def widget_export_stacks(
         # parse and check input to the function
 
         image_custom_name = f"exported_image_{i}" if image_custom_name == "" else image_custom_name
+        if not isinstance(image, (Image, Labels)):
+            raise ValueError("Only Image and Labels layers are supported for PlantSeg export.")
         ps_image = PlantSegImage.from_napari_layer(image)
 
         export_image_task(
@@ -292,6 +285,7 @@ def _on_layer_changed(layer):
     ps_image = PlantSegImage.from_napari_layer(layer)
     if ps_image.has_valid_voxel_size():
         voxel_size_formatted = "("
+        assert ps_image.voxel_size.voxels_size is not None, "`.has_valid_voxel_size()` should return False"
         for vs in ps_image.voxel_size.voxels_size:
             voxel_size_formatted += f"{vs:.2f}, "
 
