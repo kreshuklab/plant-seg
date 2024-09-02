@@ -37,7 +37,13 @@ def setup_menu(container, path=None):
 
 def get_data_io():
     container = MainWindow(
-        widgets=[widget_open_file, widget_export_stacks, widget_show_info, widget_infos], labels=False
+        widgets=[
+            widget_open_file,
+            widget_export_stacks,
+            widget_show_info,
+            widget_infos,
+        ],
+        labels=False,
     )
     container = setup_menu(
         container,
@@ -63,7 +69,14 @@ def get_preprocessing_tab():
 
 
 def get_main_tab():
-    container = MainWindow(widgets=[widget_unet_predictions, widget_dt_ws, widget_agglomeration], labels=False)
+    container = MainWindow(
+        widgets=[
+            widget_unet_predictions,
+            widget_dt_ws,
+            widget_agglomeration,
+        ],
+        labels=False,
+    )
     container = setup_menu(
         container,
         path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/unet_gasp_workflow/',
@@ -75,7 +88,10 @@ def get_extras_tab():
     # widget_fix_over_under_segmentation_from_nuclei.threshold.native.setStyleSheet(STYLE_SLIDER)
     # widget_fix_over_under_segmentation_from_nuclei.quantile.native.setStyleSheet(STYLE_SLIDER)
     container = MainWindow(
-        widgets=[widget_add_custom_model, widget_lifted_multicut],
+        widgets=[
+            widget_add_custom_model,
+            widget_lifted_multicut,
+        ],
         labels=False,
     )
     container = setup_menu(

@@ -17,6 +17,14 @@ from plantseg.tasks.workflow_handler import workflow_handler
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.utils import _return_value_if_widget, schedule_task
 
+current_dataset_keys: list[str] | None = None
+
+
+def get_current_dataset_keys(widget) -> list[str] | list[None]:
+    if current_dataset_keys is None:
+        return [None]
+    return current_dataset_keys
+
 
 class PathMode(Enum):
     FILE = "tiff, h5, etc.."
@@ -53,7 +61,8 @@ class PathMode(Enum):
     },
     dataset_key={
         "label": "Key (h5/zarr only)",
-        "choices": [""],
+        "widget_type": "ComboBox",
+        "choices": get_current_dataset_keys,
         "tooltip": "Key to be loaded from h5",
     },
     refresh_keys={
@@ -68,12 +77,12 @@ class PathMode(Enum):
     },
 )
 def widget_open_file(
-    refresh_keys,
+    refresh_keys: bool = False,
     path_mode: str = PathMode.FILE.value,
     path: Path = Path.home(),
     layer_type: str = ImageType.IMAGE.value,
     new_layer_name: str = "",
-    dataset_key: str = "",
+    dataset_key: str | None = None,
     stack_layout: str = ImageLayout.ZYX.value,
 ) -> Future[LayerDataTuple]:
     """Open a file and return a napari layer."""
@@ -105,23 +114,28 @@ def generate_layer_name(path: Path, dataset_key: str) -> str:
 
 
 def look_up_dataset_keys(path: Path):
-    print("look_up_dataset_keys")
     path = _return_value_if_widget(path)
     ext = path.suffix
 
     if ext in H5_EXTENSIONS:
         widget_open_file.dataset_key.show()
         dataset_keys = list_h5_keys(path)
-        widget_open_file.dataset_key.choices = dataset_keys
-        widget_open_file.dataset_key.value = dataset_keys[0]
 
     elif ext in ZARR_EXTENSIONS:
         widget_open_file.dataset_key.show()
         dataset_keys = list_zarr_keys(path)
-        widget_open_file.dataset_key.choices = dataset_keys
-        widget_open_file.dataset_key.value = dataset_keys[0]
 
-    widget_open_file.new_layer_name.value = generate_layer_name(path, dataset_keys[0])
+    else:
+        return
+
+    global current_dataset_keys
+    current_dataset_keys = dataset_keys.copy()  # Update the global variable
+    widget_open_file.dataset_key.choices = dataset_keys
+    if dataset_keys == [None]:
+        widget_open_file.dataset_key.hide()
+    if widget_open_file.dataset_key.value not in dataset_keys:
+        widget_open_file.dataset_key.value = dataset_keys[0]
+        widget_open_file.new_layer_name.value = generate_layer_name(path, widget_open_file.dataset_key.value)
 
 
 @widget_open_file.path_mode.changed.connect
@@ -152,11 +166,8 @@ def _on_refresh_keys():
     look_up_dataset_keys(widget_open_file.path.value)
 
 
-# FIXME: After the widget is called the keys are deleted, _on_done cannot refresh the keys
-#        Waiting for future causes the software to hang
 @widget_open_file.called.connect
 def _on_done(*args):
-    # need to open the same file again
     look_up_dataset_keys(widget_open_file.path.value)
 
 
