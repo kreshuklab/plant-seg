@@ -67,6 +67,11 @@ class PathMode(Enum):
         "choices": get_current_dataset_keys,
         "tooltip": "Key to be loaded from h5",
     },
+    refresh_keys={
+        "label": "Refresh keys",
+        "tooltip": "Refresh the keys available in the file",
+        "widget_type": "PushButton",
+    },
     stack_layout={
         "label": "Stack Layout",
         "choices": ImageLayout.to_choices(),
@@ -74,6 +79,7 @@ class PathMode(Enum):
     },
 )
 def widget_open_file(
+    refresh_keys,
     path_mode: str = PathMode.FILE.value,
     path: Path = Path.home(),
     layer_type: str = ImageType.IMAGE.value,
