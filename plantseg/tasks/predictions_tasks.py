@@ -11,7 +11,7 @@ def unet_predictions_task(
     model_name: str | None,
     model_id: str | None,
     suffix: str = "_predictions",
-    patch: tuple[int, int, int] = (80, 160, 160),
+    patch: tuple[int, int, int] | None = None,
     patch_halo: tuple[int, int, int] | None = None,
     single_batch_mode: bool = True,
     device: str = "cuda",

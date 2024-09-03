@@ -25,7 +25,7 @@ ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ['cpu']
 
 BIOIMAGEIO_FILTER = [("PlantSeg Only", True), ("All", False)]
 SINGLE_PATCH_MODE = [("Auto", False), ("One (lower VRAM usage)", True)]
-AUTO_REFRESH_HALO = [("Enable", True), ("Disable", False)]
+ADVANCED_SETTINGS = [("Enable", True), ("Disable", False)]
 
 
 ########################################################################################################################
@@ -91,18 +91,18 @@ class UNetPredictionsMode(Enum):
         'orientation': 'horizontal',
         'choices': BIOIMAGEIO_FILTER,
     },
+    advanced={
+        'label': 'Advanced Settings',
+        'tooltip': 'Change the patch shape, halo shape and batch size.',
+        'widget_type': 'RadioButtons',
+        'orientation': 'horizontal',
+        'choices': ADVANCED_SETTINGS,
+    },
     patch_size={'label': 'Patch size', 'tooltip': 'Patch size use to processed the data.'},
     patch_halo={
         'label': 'Patch halo',
         'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'
         'The value is for one side of a given dimension.',
-    },
-    recommend_halo={
-        'label': 'Recommend halo',
-        'tooltip': 'Refresh the halo based on the selected model.',
-        'widget_type': 'RadioButtons',
-        'orientation': 'horizontal',
-        'choices': AUTO_REFRESH_HALO,
     },
     single_patch={
         'label': 'Batch size',
@@ -123,11 +123,11 @@ def widget_unet_predictions(
     dimensionality: str = ALL,
     modality: str = ALL,
     output_type: str = ALL,
-    patch_size: tuple[int, int, int] = (80, 170, 170),
-    patch_halo: tuple[int, int, int] = model_zoo.compute_3D_halo_for_zoo_models(model_zoo.list_models()[0]),
-    recommend_halo: bool = False,
-    single_patch: bool = False,
     device: str = ALL_DEVICES[0],
+    advanced: bool = False,
+    patch_size: tuple[int, int, int] = (80, 170, 170),
+    patch_halo: tuple[int, int, int] = (0, 0, 0),
+    single_patch: bool = False,
 ) -> Future[list[LayerDataTuple]]:
     if mode is UNetPredictionsMode.PLANTSEG:
         suffix = model_name
@@ -146,9 +146,9 @@ def widget_unet_predictions(
             "model_name": model_name,
             "model_id": model_id,
             "suffix": suffix,
-            "patch": patch_size,
-            "patch_halo": patch_halo,
-            "single_batch_mode": single_patch,
+            "patch": patch_size if advanced else None,
+            "patch_halo": patch_halo if advanced else None,
+            "single_batch_mode": single_patch if advanced else False,
             "device": device,
         },
         widgets_to_update=[
@@ -159,8 +159,16 @@ def widget_unet_predictions(
     )
 
 
+advanced_unet_predictions_widgets = [
+    widget_unet_predictions.patch_size,
+    widget_unet_predictions.patch_halo,
+    widget_unet_predictions.single_patch,
+]
+[widget.hide() for widget in advanced_unet_predictions_widgets]
+
+
 def update_halo():
-    if widget_unet_predictions.recommend_halo.value:
+    if widget_unet_predictions.advanced.value:
         log(
             'Refreshing halo for the selected model; this might take a while...',
             thread='UNet predictions',
@@ -176,17 +184,15 @@ def update_halo():
             )
         else:
             raise NotImplementedError(f'Automatic halo not implemented for {widget_unet_predictions.mode.value} mode.')
-    elif (
-        widget_unet_predictions.mode.value is UNetPredictionsMode.BIOIMAGEIO and widget_unet_predictions.model_id.value
-    ) or (
-        widget_unet_predictions.mode.value is UNetPredictionsMode.PLANTSEG and widget_unet_predictions.model_name.value
-    ):
-        log('User selected another model but disabled halo recommendation.', thread='UNet predictions', level='info')
 
 
-@widget_unet_predictions.recommend_halo.changed.connect
-def _on_widget_unet_predictions_refresh_halo_changed():
-    update_halo()
+@widget_unet_predictions.advanced.changed.connect
+def _on_widget_unet_predictions_advanced_changed(advanced):
+    if advanced:
+        update_halo()
+        [widget.show() for widget in advanced_unet_predictions_widgets]
+    else:
+        [widget.hide() for widget in advanced_unet_predictions_widgets]
 
 
 @widget_unet_predictions.mode.changed.connect
@@ -213,7 +219,9 @@ def _on_widget_unet_predictions_mode_change(mode: UNetPredictionsMode):
             widget.show()
     else:
         raise NotImplementedError(f'Mode {mode} not implemented yet.')
-    update_halo()
+
+    if widget_unet_predictions.advanced.value:
+        update_halo()
 
 
 @widget_unet_predictions.plantseg_filter.changed.connect
@@ -260,22 +268,18 @@ widget_unet_predictions.dimensionality.changed.connect(
 
 @widget_unet_predictions.model_name.changed.connect
 def _on_model_name_changed(model_name: str):
-    patch_size = model_zoo.get_model_patch_size(model_name)
-    if patch_size is not None:
-        widget_unet_predictions.patch_size.value = tuple(patch_size)
-    else:
-        log(f'No recommended patch size for {model_name}', thread='UNet predictions', level='warning')
-
     description = model_zoo.get_model_description(model_name)
     if description is None:
         description = 'No description available for this model.'
     widget_unet_predictions.model_name.tooltip = f'Select a pretrained model. Current model description: {description}'
-    update_halo()
+    if widget_unet_predictions.advanced.value:
+        update_halo()
 
 
 @widget_unet_predictions.model_id.changed.connect
-def _on_model_id_changed():
-    update_halo()
+def _on_model_id_changed(model_id: str):
+    if widget_unet_predictions.advanced.value:
+        update_halo()
 
 
 ########################################################################################################################

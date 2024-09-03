@@ -19,6 +19,7 @@ def find_patch_and_halo_shapes(
     full_volume_shape: tuple[int, int, int],
     max_patch_shape: tuple[int, int, int],
     min_halo_shape: tuple[int, int, int],
+    both_sides: bool = False,
 ) -> tuple[tuple[int, int, int], tuple[int, int, int]]:
     """
     Recommend patch shape and halo size for a given 3D sample shape.
@@ -26,14 +27,15 @@ def find_patch_and_halo_shapes(
     Args:
         full_volume_shape (tuple[int, int, int]): Shape of the entire 3D sample.
         max_patch_shape (tuple[int, int, int]): Maximum feasible patch shape for the selected GPU.
-        min_halo_shape (tuple[int, int, int]): Minimum halo size, counting both sides.
+        min_halo_shape (tuple[int, int, int]): Minimum halo size, counting one side by default.
+        both_sides (bool, optional): Whether the halo size is counted on both sides. Defaults to False.
 
     Returns:
-        tuple[tuple[int, int, int], tuple[int, int, int]]: Recommended patch shape and halo shape.
+        tuple[tuple[int, int, int], tuple[int, int, int]]: Recommended patch shape and 1-side halo shape.
     """
     shape_volume = np.array(full_volume_shape)
     shape_patch_max = np.array(max_patch_shape)
-    shape_halo_min = np.array(min_halo_shape)
+    shape_halo_min = np.array(min_halo_shape) // 2 if both_sides else np.array(min_halo_shape)
 
     n_voxels_patch = np.prod(shape_patch_max)
     n_voxels_sample = np.prod(shape_volume)
@@ -60,7 +62,7 @@ def find_patch_and_halo_shapes(
             else:
                 return tuple(shape_volume), (0, 0, 0)
     halo_shape = np.where(shrink, 0, shape_halo_min)
-    return tuple(adjusted_patch_shape - halo_shape), tuple(halo_shape)
+    return tuple(adjusted_patch_shape - halo_shape * 2), tuple(halo_shape)
 
 
 def find_patch_shape(

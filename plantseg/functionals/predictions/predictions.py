@@ -8,8 +8,9 @@ from plantseg.core.zoo import model_zoo
 from plantseg.functionals.dataprocessing.dataprocessing import fix_input_shape_to_CZYX, fix_input_shape_to_ZYX
 from plantseg.functionals.predictions.utils.array_dataset import ArrayDataset
 from plantseg.functionals.predictions.utils.array_predictor import ArrayPredictor
+from plantseg.functionals.predictions.utils.size_finder import find_patch_and_halo_shapes, find_patch_shape
 from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
-from plantseg.functionals.predictions.utils.utils import get_patch_halo, get_stride_shape
+from plantseg.functionals.predictions.utils.utils import get_stride_shape
 from plantseg.training.augs import get_test_augmentations
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ def unet_predictions(
     raw: np.ndarray,
     model_name: str | None,
     model_id: str | None,
-    patch: tuple[int, int, int] = (80, 160, 160),
+    patch: tuple[int, int, int] | None = None,
     patch_halo: tuple[int, int, int] | None = None,
     single_batch_mode: bool = True,
     device: str = "cuda",
@@ -72,7 +73,18 @@ def unet_predictions(
     model.load_state_dict(state)
 
     if patch_halo is None:
-        patch_halo = get_patch_halo(model_name)
+        try:
+            logger.info("Computing theoretical minimum halo from model.")
+            patch_halo = model_zoo.compute_3D_halo_for_pytorch3dunet(model)
+        except Exception:
+            logger.warning("Could not compute halo from model. Using 0 halo size, you may experience edge artifacts.")
+            patch_halo = (0, 0, 0)
+
+    if patch is None:
+        maxinum_patch_shape = find_patch_shape(model, model_config["in_channels"], device)
+        patch, patch_halo = find_patch_and_halo_shapes(raw.shape, maxinum_patch_shape, patch_halo, both_sides=False)
+
+    print(f"For raw in shape {raw.shape}, Patch shape: {patch}", f"Patch halo shape: {patch_halo}")
 
     predictor = ArrayPredictor(
         model=model,
