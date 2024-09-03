@@ -482,7 +482,7 @@ class ModelZoo:
             return halo, halo, halo
         elif isinstance(module, UNet2D):
             halo = self.compute_halo(module)
-            return 1, halo, halo
+            return 0, halo, halo
         else:
             raise ValueError(f"Unsupported model type: {type(module).__name__}")
 
