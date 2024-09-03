@@ -1,16 +1,19 @@
+import os
+
 import pytest
 import torch
 
 from plantseg.core.zoo import model_zoo
 from plantseg.functionals.predictions.utils.size_finder import find_patch_and_halo_shapes, find_patch_shape
 
+IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 MAX_PATCH_SHAPES = {
     'generic_confocal_3D_unet': {
         "NVIDIA GeForce RTX 2080 Ti": (208, 208, 208),
         "NVIDIA GeForce RTX 3090": (256, 256, 256),
     }
 }
-GPU_DEVICE_NAME = torch.cuda.get_device_name(0)
+GPU_DEVICE_NAME = torch.cuda.get_device_name(0) if not IN_GITHUB_ACTIONS else ""
 
 
 @pytest.mark.parametrize(
