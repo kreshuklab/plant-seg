@@ -68,7 +68,7 @@ def find_patch_shape(
     in_channels: int,
     device: str,
 ) -> tuple[int, int, int]:
-    """Determine the maximum feasible patch shape for a given model based on available GPU memory."""
+    """Determine the maximum feasible patch shape for a given model based on available GPU memory using binary search."""
 
     if device == "cpu":
         return (256, 256, 256)
@@ -77,26 +77,32 @@ def find_patch_shape(
 
     model = model.to(device)
     model.eval()
+
+    low, high = N_MIN, N_MAX
+    best_n = low
+
     with torch.no_grad():
-        for n in range(N_MIN, N_MAX):
-            patch_shape = (16 * n,) * 3
+        while low <= high:
+            mid = (low + high) // 2
+            patch_shape = (16 * mid,) * 3
             try:
-                print(f"Trying patch shape {patch_shape} - {n}")
                 x = torch.randn((1, in_channels) + patch_shape).to(device)
                 _ = model(x)
+                best_n = mid  # Update best_n if successful
+                low = mid + 1  # Try larger patches
             except RuntimeError as e:
-                print(f"Patch shape {patch_shape} failed")
                 if "out of memory" in str(e):
-                    n -= 1
-                    break
+                    high = mid - 1  # Try smaller patches
                 else:
                     raise
             finally:
                 del x
                 torch.cuda.empty_cache()
+
     del model
     torch.cuda.empty_cache()
-    return (16 * n, 16 * n, 16 * n)
+
+    return (16 * best_n, 16 * best_n, 16 * best_n)
 
 
 def find_batch_size(
