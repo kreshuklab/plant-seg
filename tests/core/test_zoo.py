@@ -21,7 +21,7 @@ MODEL_NAMES = [
 class TestPlantSegModelZoo:
     """Test the PlantSeg model zoo"""
 
-    @pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason="Cuda is not available")
+    @pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason="CUDA is not available")
     @pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Github workflows do not allow model download for security reason")
     @pytest.mark.parametrize("model_name", MODEL_NAMES)
     def test_model_output_normalisation(self, model_name):
