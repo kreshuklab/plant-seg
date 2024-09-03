@@ -23,48 +23,42 @@ class TestPlantSegModelZoo:
 
     @pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason="Cuda is not available")
     @pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Github workflows do not allow model download for security reason")
-    def test_model_output_normalisation(self):
-        for model_name in MODEL_NAMES:
-            model, _, model_path = model_zoo.get_model_by_name(model_name, model_update=True)
-            state = torch.load(model_path, map_location='cpu', weights_only=True)
-            model.load_state_dict(state)
-            model.eval()
-            if isinstance(model, UNet2D):
-                x = torch.randn(4, 1, 260, 260)
-            else:
-                x = torch.randn(4, 1, 80, 160, 160)
-            y = model(x)
-            # assert output normalized
-            assert torch.all(0 <= y) and torch.all(y <= 1)
+    @pytest.mark.parametrize("model_name", MODEL_NAMES)
+    def test_model_output_normalisation(self, model_name):
+        model, _, model_path = model_zoo.get_model_by_name(model_name, model_update=True)
+        state = torch.load(model_path, map_location='cpu', weights_only=True)
+        model.load_state_dict(state)
+        model.eval()
+        if isinstance(model, UNet2D):
+            x = torch.randn(4, 1, 260, 260)
+        else:
+            x = torch.randn(4, 1, 80, 160, 160)
+        y = model(x)
+        # assert output normalized
+        assert torch.all(0 <= y) and torch.all(y <= 1)
+
+
+MODEL_IDS = [  # These two models has halo 44 on each side
+    'efficient-chipmunk',  # Qin Yu's 3D nuclear segmentation model.
+    'pioneering-rhino',  # Adrian's 2D cell-wall segmentation model.
+]
 
 
 class TestBioImageIOModelZoo:
     """Test the BioImage.IO model zoo"""
 
-    def test_get_3D_model_by_id(self):
-        """Try to load a 3D model from the BioImage.IO model zoo.
-
-        Load Qin Yu's nuclear segmentation model 'efficient-chipmunk'.
-        """
-        model, _, model_path = model_zoo.get_model_by_id('efficient-chipmunk')
+    @pytest.mark.parametrize("model_id", MODEL_IDS)
+    def test_get_model_by_id(self, model_id):
+        """Try to load a model from the BioImage.IO model zoo by ID."""
+        model, _, model_path = model_zoo.get_model_by_id(model_id)
         state = torch.load(model_path, map_location='cpu', weights_only=True)
         if 'model_state_dict' in state:  # Model weights format may vary between versions
             state = state['model_state_dict']
         model.load_state_dict(state)
 
-    def test_get_2D_model_by_id(self):
-        """Try to load a 2D model from the BioImage.IO model zoo.
-
-        Load Adrian's 2D cell-wall segmentation model 'pioneering-rhino'.
-        """
-        model, _, model_path = model_zoo.get_model_by_id('pioneering-rhino')
-        state = torch.load(model_path, map_location='cpu', weights_only=True)
-        if 'model_state_dict' in state:  # Model weights format may vary between versions
-            state = state['model_state_dict']
-        model.load_state_dict(state)
-
-    def test_halo_computation_for_bioimageio_model(self):
+    @pytest.mark.parametrize("model_id", MODEL_IDS)
+    def test_halo_computation_for_bioimageio_model(self, model_id):
         """Compute the halo for a BioImage.IO model."""
-        model, _, _ = model_zoo.get_model_by_id('efficient-chipmunk')
+        model, _, _ = model_zoo.get_model_by_id(model_id)
         halo = model_zoo.compute_halo(model)
         assert halo == 44
