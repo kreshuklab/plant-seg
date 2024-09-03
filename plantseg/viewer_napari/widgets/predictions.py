@@ -92,11 +92,8 @@ class UNetPredictionsMode(Enum):
         'choices': BIOIMAGEIO_FILTER,
     },
     advanced={
-        'label': 'Advanced Settings',
+        'label': 'Show Advanced Parameters',
         'tooltip': 'Change the patch shape, halo shape and batch size.',
-        'widget_type': 'RadioButtons',
-        'orientation': 'horizontal',
-        'choices': ADVANCED_SETTINGS,
     },
     patch_size={'label': 'Patch size', 'tooltip': 'Patch size use to processed the data.'},
     patch_halo={
