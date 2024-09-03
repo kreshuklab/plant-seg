@@ -81,8 +81,8 @@ def unet_predictions(
             patch_halo = (0, 0, 0)
 
     if patch is None:
-        maxinum_patch_shape = find_patch_shape(model, model_config["in_channels"], device)
-        patch, patch_halo = find_patch_and_halo_shapes(raw.shape, maxinum_patch_shape, patch_halo, both_sides=False)
+        maximum_patch_shape = find_patch_shape(model, model_config["in_channels"], device)
+        patch, patch_halo = find_patch_and_halo_shapes(raw.shape, maximum_patch_shape, patch_halo, both_sides=False)
 
     print(f"For raw in shape {raw.shape}, Patch shape: {patch}", f"Patch halo shape: {patch_halo}")
 
