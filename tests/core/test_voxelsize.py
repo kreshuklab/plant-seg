@@ -90,14 +90,6 @@ def test_voxel_size_properties():
     assert vs_empty.z == 1.0
 
 
-def test_voxel_size_is_valid():
-    vs = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
-    assert vs.is_valid is True
-
-    vs_invalid = VoxelSize(unit="um")
-    assert vs_invalid.is_valid is False
-
-
 def test_voxel_size_iter():
     vs = VoxelSize(voxels_size=(1.0, 2.0, 3.0), unit="um")
     assert list(vs) == [1.0, 2.0, 3.0]

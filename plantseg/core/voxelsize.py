@@ -3,8 +3,6 @@
 This module handles voxel size operations to avoid circular imports with plantseg.core.image.
 """
 
-from typing import Iterator
-
 import numpy as np
 from pydantic import BaseModel, Field, field_validator
 
@@ -52,18 +50,13 @@ class VoxelSize(BaseModel):
         """Voxel size in the z direction, or 1.0 if not defined."""
         return self.voxels_size[0] if self.voxels_size else 1.0  # pylint: disable=unsubscriptable-object
 
-    @property
-    def is_valid(self) -> bool:  # type checker does not recognize the property
-        """Check if the voxel size is valid (i.e., defined)."""
-        return self.voxels_size is not None
-
     def __len__(self) -> int:
         """Return the number of dimensions of the voxel size."""
         if self.voxels_size is None:
             raise ValueError("Voxel size must be defined to get the length")
         return len(self.voxels_size)
 
-    def __iter__(self) -> Iterator[float]:
+    def __iter__(self):
         """Allow the VoxelSize instance to be unpacked as a tuple."""
         if self.voxels_size is None:
             raise ValueError("Voxel size must be defined to iterate")
