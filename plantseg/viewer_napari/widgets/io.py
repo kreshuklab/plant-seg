@@ -285,8 +285,7 @@ def _on_layer_changed(layer):
     ps_image = PlantSegImage.from_napari_layer(layer)
     if ps_image.has_valid_voxel_size():
         voxel_size_formatted = "("
-        assert ps_image.voxel_size.voxels_size is not None, "`.has_valid_voxel_size()` should return False"
-        for vs in ps_image.voxel_size.voxels_size:
+        for vs in ps_image.voxel_size:
             voxel_size_formatted += f"{vs:.2f}, "
 
         voxel_size_formatted = voxel_size_formatted[:-2] + f") {ps_image.voxel_size.unit}"

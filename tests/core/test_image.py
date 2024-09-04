@@ -226,6 +226,7 @@ def test_plantseg_image_from_napari_layer():
     assert ps_image.name == "test_image"
     assert ps_image.shape == (10, 10, 10)
     assert ps_image.voxel_size.voxels_size == voxel_size
+    assert tuple(ps_image.voxel_size) == voxel_size
 
 
 def test_plantseg_image_to_napari_layer_tuple():
@@ -242,6 +243,7 @@ def test_plantseg_image_to_napari_layer_tuple():
     layer_tuple = ps_image.to_napari_layer_tuple()
 
     assert isinstance(layer_tuple, tuple)
+    layer_tuple = tuple(layer_tuple)
     np.testing.assert_allclose(layer_tuple[0], ps_image.get_data(normalize_01=True))
     assert "metadata" in layer_tuple[1]
     assert layer_tuple[2] == ps_image.image_type.value
@@ -259,3 +261,36 @@ def test_plantseg_image_scale_property():
     )
     ps_image = PlantSegImage(data, image_props)
     assert ps_image.scale == (0.5, 1.0, 1.0)
+
+
+def test_requires_scaling():
+    data = np.random.rand(10, 10, 10)
+
+    voxel_size = VoxelSize(voxels_size=(0.5, 1.0, 1.0), unit="um")
+    same_voxel_size = VoxelSize(voxels_size=(0.5, 1.0, 1.0), unit="um")
+    original_voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
+    assert same_voxel_size == voxel_size
+    assert original_voxel_size != voxel_size
+
+    image_props = ImageProperties(
+        name="scaled_image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.ZYX,
+        original_voxel_size=original_voxel_size,
+    )
+    ps_image = PlantSegImage(data, image_props)
+    assert ps_image.requires_scaling is True
+
+    image_props = ImageProperties(
+        name="scaled_image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.ZYX,
+        original_voxel_size=same_voxel_size,
+    )
+    ps_image = PlantSegImage(data, image_props)
+    assert ps_image.requires_scaling is False
+
+    assert same_voxel_size == voxel_size
+    assert original_voxel_size != voxel_size

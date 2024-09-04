@@ -40,6 +40,14 @@ def test_voxel_size_invalid_initialization():
         VoxelSize(voxels_size=(0.2, 0.1))
 
 
+def test_voxel_size_equality():
+    voxel_size = VoxelSize(voxels_size=(0.5, 1.0, 1.0), unit="um")
+    same_voxel_size = VoxelSize(voxels_size=(0.5, 1.0, 1.0), unit="um")
+    original_voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
+    assert same_voxel_size == voxel_size, "Pydanctic models should be equal if their attributes are equal"
+    assert original_voxel_size != voxel_size, "Pydanctic models should not be equal if their attributes are not equal"
+
+
 def test_voxel_size_scalefactor_from_voxelsize():
     vs1 = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
     vs2 = VoxelSize(voxels_size=(2.0, 2.0, 2.0), unit="um")
@@ -87,3 +95,18 @@ def test_voxel_size_is_valid():
 
     vs_invalid = VoxelSize(unit="um")
     assert vs_invalid.is_valid is False
+
+
+def test_voxel_size_iter():
+    vs = VoxelSize(voxels_size=(1.0, 2.0, 3.0), unit="um")
+    assert list(vs) == [1.0, 2.0, 3.0]
+
+    with pytest.raises(TypeError):
+        assert vs[2] == 3.0, "VoxelSize object is not subscriptable, encouraging users to use .x, .y, .z properties"
+
+    for v in vs:
+        assert v in vs, "VoxelSize object should be iterable"
+
+    vs_empty = VoxelSize(unit="um")
+    with pytest.raises(ValueError):
+        list(vs_empty)
