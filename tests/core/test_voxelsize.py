@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 from pydantic import ValidationError
 
@@ -110,3 +111,12 @@ def test_voxel_size_iter():
     vs_empty = VoxelSize(unit="um")
     with pytest.raises(ValueError):
         list(vs_empty)
+
+
+def test_voxel_size_array():
+    """Test the __array__ method"""
+    vs = VoxelSize(voxels_size=(1.0, 2.0, 3.0), unit="um")
+    np.testing.assert_allclose(vs, [1.0, 2.0, 3.0])
+
+    with pytest.raises(ValueError):
+        np.array(VoxelSize(unit="um"))

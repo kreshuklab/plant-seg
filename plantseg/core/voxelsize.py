@@ -5,6 +5,7 @@ This module handles voxel size operations to avoid circular imports with plantse
 
 from typing import Iterator
 
+import numpy as np
 from pydantic import BaseModel, Field, field_validator
 
 from plantseg.functionals.dataprocessing import compute_scaling_factor, compute_scaling_voxelsize
@@ -56,11 +57,22 @@ class VoxelSize(BaseModel):
         """Check if the voxel size is valid (i.e., defined)."""
         return self.voxels_size is not None
 
+    def __len__(self) -> int:
+        """Return the number of dimensions of the voxel size."""
+        if self.voxels_size is None:
+            raise ValueError("Voxel size must be defined to get the length")
+        return len(self.voxels_size)
+
     def __iter__(self) -> Iterator[float]:
         """Allow the VoxelSize instance to be unpacked as a tuple."""
         if self.voxels_size is None:
             raise ValueError("Voxel size must be defined to iterate")
         return iter(self.voxels_size)
+
+    def __array__(self):
+        if self.voxels_size is None:
+            raise ValueError("Voxel size is not defined")
+        return np.array(self.voxels_size)
 
     def as_tuple(self) -> tuple[float, float, float]:
         """Convert VoxelSize to a tuple."""

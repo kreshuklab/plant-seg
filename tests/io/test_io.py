@@ -9,9 +9,11 @@ class TestIO:
 
     def _check_voxel_size(self, voxel_size):
         assert isinstance(voxel_size, VoxelSize)
-        (
-            np.testing.assert_allclose(voxel_size.voxels_size, self.voxel_size.voxels_size, rtol=1e-5),
-            "Voxel size read from file is not equal to the original voxel size",
+        np.testing.assert_allclose(
+            voxel_size.voxels_size,
+            self.voxel_size,
+            rtol=1e-5,
+            err_msg="Voxel size read from file is not equal to the original voxel size",
         )
 
     def test_create_read_h5(self, path_h5):
@@ -54,7 +56,7 @@ class TestIO:
         # Read the voxel size of the Zarr file
         voxel_size = read_zarr_voxel_size(path_zarr, "raw")
         assert np.allclose(
-            voxel_size.voxels_size, self.voxel_size.voxels_size
+            voxel_size.voxels_size, self.voxel_size
         ), "Voxel size read from Zarr file is not equal to the original voxel size"
 
         data_read2 = smart_load(path_zarr, "raw")
