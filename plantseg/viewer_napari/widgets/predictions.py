@@ -8,6 +8,7 @@ from typing import Optional
 import napari
 import torch.cuda
 from magicgui import magicgui
+from magicgui.types import Separator
 from napari.layers import Image
 from napari.types import LayerDataTuple
 
@@ -93,12 +94,12 @@ class UNetPredictionsMode(Enum):
     },
     advanced={
         'label': 'Show Advanced Parameters',
-        'tooltip': 'Change the patch shape, halo shape and batch size.',
+        'tooltip': 'Change the patch shape, halo shape, and batch size.',
     },
-    patch_size={'label': 'Patch size', 'tooltip': 'Patch size use to processed the data.'},
+    patch_size={'label': 'Patch size', 'tooltip': 'Patch size used to process the data.'},
     patch_halo={
         'label': 'Patch halo',
-        'tooltip': 'Patch halo is extra padding for correct prediction on image boarder.'
+        'tooltip': 'Patch halo is extra padding for correct prediction on image borders. '
         'The value is for one side of a given dimension.',
     },
     single_patch={
@@ -226,7 +227,11 @@ def _on_widget_unet_predictions_plantseg_filter_change(plantseg_filter: bool):
     if plantseg_filter:
         widget_unet_predictions.model_id.choices = model_zoo.get_bioimageio_zoo_plantseg_model_names()
     else:
-        widget_unet_predictions.model_id.choices = model_zoo.get_bioimageio_zoo_all_model_names()
+        widget_unet_predictions.model_id.choices = (
+            model_zoo.get_bioimageio_zoo_plantseg_model_names()
+            + [Separator]
+            + model_zoo.get_bioimageio_zoo_other_model_names()
+        )
 
 
 # TODO reinsert this code when _on_prediction_input_image_change is implemented
