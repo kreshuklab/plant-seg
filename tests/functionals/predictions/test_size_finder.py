@@ -4,14 +4,18 @@ import pytest
 import torch
 
 from plantseg.core.zoo import model_zoo
-from plantseg.functionals.predictions.utils.size_finder import find_patch_and_halo_shapes, find_patch_shape
+from plantseg.functionals.predictions.utils.size_finder import find_a_max_patch_shape, find_patch_and_halo_shapes
 
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 MAX_PATCH_SHAPES = {
     'generic_confocal_3D_unet': {
         "NVIDIA GeForce RTX 2080 Ti": (208, 208, 208),
         "NVIDIA GeForce RTX 3090": (256, 256, 256),
-    }
+    },
+    'confocal_2D_unet_ovules_ds2x': {
+        "NVIDIA GeForce RTX 2080 Ti": (1, 1920, 1920),  # (1, 2048, 2048) if search step is 1.
+        "NVIDIA GeForce RTX 3090": (1, 2880, 2880),  # (1, 2960, 2960) if search step is 1.
+    },
 }
 GPU_DEVICE_NAME = torch.cuda.get_device_name(0) if not IN_GITHUB_ACTIONS else ""
 
@@ -43,6 +47,6 @@ def test_find_patch_and_halo_shapes(full_volume_shape, max_patch_shape, min_halo
 @pytest.mark.parametrize("model_name", MAX_PATCH_SHAPES.keys())
 def test_find_patch_shape(model_name):
     model, _, _ = model_zoo.get_model_by_name(model_name, model_update=False)
-    found_patch_shape = find_patch_shape(model, 1, "cuda:0")
+    found_patch_shape = find_a_max_patch_shape(model, 1, "cuda:0")
     expected_patch_shape = MAX_PATCH_SHAPES[model_name][GPU_DEVICE_NAME]
     assert found_patch_shape == expected_patch_shape
