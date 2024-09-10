@@ -185,8 +185,7 @@ def scale_to_voxelsize(scale: tuple[float, ...], layout: ImageLayout, unit: str 
         return VoxelSize(voxels_size=(scale[1], scale[2], scale[3]), unit=unit)
 
     elif layout == ImageLayout.ZCYX:
-        assert len(scale) == 4, f"Scale should have 4 elements for layout {layout}"
-        return VoxelSize(voxels_size=(scale[0], scale[2], scale[3]), unit=unit)
+        raise ValueError(f"Image layout {layout} not supported, should have been converted to CZYX")
 
     else:
         raise ValueError(f"Image layout {layout} not recognized")
@@ -367,20 +366,7 @@ class PlantSegImage:
                 self._data = data[:, 0]
 
         elif self.image_layout == ImageLayout.ZCYX:
-            if data.shape[1] == 1 and data.shape[2] == 1:
-                logger.warning("Image layout is ZCYX but data has only one z slice and one channel, casting to YX")
-                self._properties.image_layout = ImageLayout.YX
-                self._data = data[0, 0]
-
-            elif data.shape[1] == 1 and data.shape[2] > 1:
-                logger.warning("Image layout is ZCYX but data has only one channel, casting to ZYX")
-                self._properties.image_layout = ImageLayout.ZYX
-                self._data = data[0]
-
-            elif data.shape[1] > 1 and data.shape[2] == 1:
-                logger.warning("Image layout is ZCYX but data has only one z slice, casting to CYX")
-                self._properties.image_layout = ImageLayout.CYX
-                self._data = data[:, 0]
+            raise ValueError(f"Image layout {self.image_layout} not supported, should have been converted to CZYX")
 
     def _check_labels_have_no_channels(self, data: np.ndarray) -> None:
         if self.image_type == ImageType.LABEL:
@@ -452,7 +438,7 @@ class PlantSegImage:
         elif self.image_layout == ImageLayout.CZYX:
             return (1.0, self.voxel_size.z, self.voxel_size.x, self.voxel_size.y)
         elif self.image_layout == ImageLayout.ZCYX:
-            return (self.voxel_size.z, 1.0, self.voxel_size.x, self.voxel_size.y)
+            raise ValueError(f"Image layout {self.image_layout} not supported, should have been converted to CZYX")
         else:
             raise ValueError(f"Image layout {self.image_layout} not recognized")
 
