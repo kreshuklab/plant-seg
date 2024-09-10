@@ -4,9 +4,6 @@ import pytest
 from plantseg.functionals.dataprocessing.dataprocessing import (
     compute_scaling_factor,
     compute_scaling_voxelsize,
-    fix_input_shape,
-    fix_input_shape_to_CZYX,
-    fix_input_shape_to_ZYX,
     image_crop,
     image_gaussian_smoothing,
     image_median,
@@ -95,50 +92,6 @@ def test_image_crop():
 
     cropped_image = image_crop(image, "[2:, :8, :8]")
     assert cropped_image.shape == (8, 8, 8)
-
-
-# Test fix_input_shape
-def test_fix_input_shape():
-    for shape_in, shape_out in [
-        ((10, 10), (1, 10, 10)),
-        ((10, 10, 10), (10, 10, 10)),
-        ((1, 10, 10, 10), (10, 10, 10)),
-    ]:
-        image = np.random.rand(*shape_in)
-        assert fix_input_shape(image, ndim=3).shape == shape_out
-
-    for shape_in, shape_out in [
-        ((10, 10, 10), (10, 1, 10, 10)),
-        ((2, 10, 10, 10), (2, 10, 10, 10)),
-    ]:
-        image = np.random.rand(*shape_in)
-        assert fix_input_shape(image, ndim=4).shape == shape_out
-
-
-# Test fix_input_shape_to_ZYX
-def test_fix_input_shape_to_ZYX():
-    data_2d = np.random.rand(10, 10)
-    fixed_data = fix_input_shape_to_ZYX(data_2d)
-    assert fixed_data.shape == (1, 10, 10)
-
-    data_3d = np.random.rand(10, 10, 10)
-    fixed_data = fix_input_shape_to_ZYX(data_3d)
-    assert fixed_data.shape == (10, 10, 10)
-
-    data_4d = np.random.rand(5, 10, 10, 10)
-    fixed_data = fix_input_shape_to_ZYX(data_4d)
-    assert fixed_data.shape == (10, 10, 10)
-
-
-# Test fix_input_shape_to_CZYX
-def test_fix_input_shape_to_CZYX():
-    data_3d = np.random.rand(10, 10, 10)
-    fixed_data = fix_input_shape_to_CZYX(data_3d)
-    assert fixed_data.shape == (10, 1, 10, 10)
-
-    data_4d = np.random.rand(2, 5, 10, 10)
-    fixed_data = fix_input_shape_to_CZYX(data_4d)
-    assert fixed_data.shape == (2, 5, 10, 10)
 
 
 # Test normalize_01

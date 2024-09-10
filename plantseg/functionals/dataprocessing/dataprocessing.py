@@ -1,3 +1,5 @@
+from typing import Literal
+
 import numpy as np
 from scipy.ndimage import zoom
 from skimage.filters import median
@@ -133,43 +135,171 @@ def image_crop(image: np.ndarray, crop_str: str) -> np.ndarray:
     return image[slices]
 
 
-def fix_input_shape(data: np.ndarray, ndim=3) -> np.ndarray:
-    assert ndim in [3, 4]
-    if ndim == 3:
-        return fix_input_shape_to_ZYX(data)
+ImageLayout = Literal["ZYX", "YX", "CZYX", "CYX"]
+
+
+def fix_layout_to_YX(data: np.ndarray, input_layout: ImageLayout) -> np.ndarray:
+    """
+    Fix the layout of the input data from any supported layout to YX layout.
+
+    Args:
+        data (np.ndarray): Input data
+        input_layout (ImageLayout): Input layout of the data
+
+    Returns:
+        np.ndarray: Data in YX layout
+    """
+    if input_layout == "ZYX":
+        if data.shape[0] != 1:
+            raise ValueError("Cannot convert multi-channel image ZYX to YX layout")
+        _data = data[0]
+
+    elif input_layout == "YX":
+        _data = data
+
+    elif input_layout == "CZYX":
+        if data.shape[0] != 1 and data.shape[1] != 1:
+            raise ValueError("Cannot convert multi-channel image CZYX to YX layout")
+        _data = data[0, 0]
+
+    elif input_layout == "CYX":
+        if data.shape[0] != 1:
+            raise ValueError("Cannot convert multi-channel image CYX to YX layout")
+        _data = data[0]
     else:
-        return fix_input_shape_to_CZYX(data)
+        raise ValueError(f"Unsupported input layout {input_layout}")
+
+    if _data.ndim != 2:
+        raise ValueError(f"Expected 2D image, but got {_data.ndim}D image")
+
+    return _data
 
 
-def fix_input_shape_to_ZYX(data: np.ndarray) -> np.ndarray:
+def fix_layout_to_ZYX(data: np.ndarray, input_layout: ImageLayout) -> np.ndarray:
     """
-    Fix array ndim to be always 3
+    Fix the layout of the input data from any supported layout to ZYX layout.
+
+    Args:
+        data (np.ndarray): Input data
+        input_layout (ImageLayout): Input layout of the data
+
+    Returns:
+        np.ndarray: Data in ZYX layout
     """
-    if data.ndim == 2:
-        return data.reshape(1, data.shape[0], data.shape[1])
+    if input_layout == "ZYX":
+        _data = data
 
-    elif data.ndim == 3:
-        return data
+    elif input_layout == "YX":
+        _data = data[None, ...]
 
-    elif data.ndim == 4:
-        return data[0]
+    elif input_layout == "CZYX":
+        if data.shape[0] != 1:
+            raise ValueError("Cannot convert multi-channel image CZYX to ZYX layout")
+        _data = data[0]
+
+    elif input_layout == "CYX":
+        _data = data
 
     else:
-        raise RuntimeError(f"Expected input data to be 2d, 3d or 4d, but got {data.ndim}d input")
+        raise ValueError(f"Unsupported input layout {input_layout}")
+
+    if _data.ndim != 3:
+        raise ValueError(f"Expected 3D image, but got {_data.ndim}D image")
+
+    return _data
 
 
-def fix_input_shape_to_CZYX(data: np.ndarray) -> np.ndarray:
+def fix_layout_to_CZYX(data: np.ndarray, input_layout: ImageLayout) -> np.ndarray:
     """
-    Fix array ndim to be 4 and return it in (C x Z x Y x X) e.g. 2 x 1 x 512 x 512
-    """
-    if data.ndim == 4:
-        return data
+    Fix the layout of the input data from any supported layout to CZYX layout.
 
-    elif data.ndim == 3:
-        return data.reshape(data.shape[0], 1, data.shape[1], data.shape[2])
+    Args:
+        data (np.ndarray): Input data
+        input_layout (ImageLayout): Input layout of the data
+    """
+    if input_layout == "ZYX":
+        _data = data[None, ...]
+
+    elif input_layout == "YX":
+        _data = data[None, None, ...]
+
+    elif input_layout == "CZYX":
+        _data = data
+
+    elif input_layout == "CYX":
+        _data = data[:, None, ...]
 
     else:
-        raise RuntimeError(f"Expected input data to be 3d or 4d, but got {data.ndim}d input")
+        raise ValueError(f"Unsupported input layout {input_layout}")
+
+    if _data.ndim != 4:
+        raise ValueError(f"Expected 4D image, but got {_data.ndim}D image")
+
+    return _data
+
+
+def fix_layout_to_CYX(data: np.ndarray, input_layout: ImageLayout) -> np.ndarray:
+    """
+    Fix the layout of the input data from any supported layout to CYX layout.
+
+    Args:
+        data (np.ndarray): Input data
+        input_layout (ImageLayout): Input layout of the data
+
+    Returns:
+        np.ndarray: Data in CYX layout
+    """
+    if input_layout == "ZYX":
+        if data.shape[0] != 1:
+            raise ValueError("Cannot convert multi-channel image ZYX to CYX layout")
+        _data = data
+
+    elif input_layout == "YX":
+        if data.shape[0] != 1:
+            raise ValueError("Cannot convert multi-channel image YX to CYX layout")
+        _data = data[None, ...]
+
+    elif input_layout == "CZYX":
+        if data.shape[1] != 1:
+            raise ValueError("Cannot convert multi-channel image CZYX to CYX layout")
+        _data = data[:, 0]
+
+    elif input_layout == "CYX":
+        _data = data
+
+    else:
+        raise ValueError(f"Unsupported input layout {input_layout}")
+
+    if _data.ndim != 3:
+        raise ValueError(f"Expected 3D image, but got {_data.ndim}D image")
+
+
+def fix_layout(data: np.ndarray, input_layout: ImageLayout, output_layout: ImageLayout) -> np.ndarray:
+    """
+    Fix the layout of the input data from any supported layout to the desired output layout.
+
+    Args:
+        data (np.ndarray): Input data
+        input_layout (ImageLayout): Input layout of the data
+        output_layout (ImageLayout): Desired output layout of the data
+
+    Returns:
+        np.ndarray: Data in the desired output layout
+    """
+    if output_layout == "ZYX":
+        return fix_layout_to_ZYX(data, input_layout)
+
+    elif output_layout == "YX":
+        return fix_layout_to_YX(data, input_layout)
+
+    elif output_layout == "CZYX":
+        return fix_layout_to_CZYX(data, input_layout)
+
+    elif output_layout == "CYX":
+        return fix_layout_to_CYX(data, input_layout)
+
+    else:
+        raise ValueError(f"Unsupported output layout {output_layout}")
 
 
 def normalize_01(data: np.ndarray, eps=1e-12) -> np.ndarray:
