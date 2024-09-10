@@ -122,6 +122,7 @@ def look_up_dataset_keys(path: Path):
         dataset_keys = list_zarr_keys(path)
 
     else:
+        widget_open_file.new_layer_name.value = generate_layer_name(path, "")
         return
 
     global current_dataset_keys
