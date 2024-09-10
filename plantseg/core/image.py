@@ -518,11 +518,11 @@ class PlantSegImage:
 
     def has_valid_voxel_size(self) -> bool:
         """Returns True if the voxel size is valid (not None), False otherwise."""
-        return self.voxel_size.is_valid
+        return self.voxel_size.voxels_size is not None
 
     def has_valid_original_voxel_size(self) -> bool:
         """Returns True if the original voxel size is valid (not None), False otherwise."""
-        return self.original_voxel_size.is_valid
+        return self.original_voxel_size.voxels_size is not None
 
 
 def _load_data(path: Path, key: str | None) -> tuple[np.ndarray, VoxelSize]:
