@@ -97,7 +97,7 @@ class ImageLayout(Enum):
     CYX = "CYX"
     ZYX = "ZYX"
     CZYX = "CZYX"
-    ZCYX = "ZCYX"
+    ZCYX = "ZCYX"  # This is not supported, should be converted to CZYX during import
 
     @classmethod
     def to_choices(cls) -> list[str]:
