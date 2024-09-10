@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
+from plantseg.functionals.dataprocessing import fix_layout
 from plantseg.functionals.predictions import unet_predictions
 from plantseg.tasks import task_tracker
 
@@ -34,8 +35,11 @@ def unet_predictions_task(
         model_update (bool): whether to update the model to the latest version
     """
     data = image.get_data()
+    input_layout = image.image_layout
+
     pmaps = unet_predictions(
         raw=data,
+        input_layout=input_layout.value,
         model_name=model_name,
         model_id=model_id,
         patch=patch,
@@ -48,17 +52,19 @@ def unet_predictions_task(
         config_path=config_path,
         model_weights_path=model_weights_path,
     )
-    assert pmaps.ndim == 4, f"Expected 4D prediction, got {pmaps.ndim}D"
+    assert pmaps.ndim == 4, f"Expected 4D CZXY prediction, got {pmaps.ndim}D"
 
     new_images = []
-    image_layout = ImageLayout.ZYX if pmaps.shape[1] > 1 else ImageLayout.YX
+
     for i, pmap in enumerate(pmaps):
+        # Input layout is always ZYX this loop
+        pmap = fix_layout(pmap, input_layout=ImageLayout.ZYX.value, output_layout=input_layout.value)
         new_images.append(
             image.derive_new(
-                pmap.squeeze(),  # pmap is a (Z, Y, X) prediction, Z >= 1
+                pmap,
                 name=f"{image.name}_{suffix}_{i}",
                 semantic_type=SemanticType.PREDICTION,
-                image_layout=image_layout,
+                image_layout=input_layout,
             )
         )
 

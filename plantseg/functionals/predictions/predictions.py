@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 from plantseg.core.zoo import model_zoo
-from plantseg.functionals.dataprocessing.dataprocessing import fix_input_shape_to_CZYX, fix_input_shape_to_ZYX
+from plantseg.functionals.dataprocessing.dataprocessing import ImageLayout, fix_layout_to_CZYX, fix_layout_to_ZYX
 from plantseg.functionals.predictions.utils.array_dataset import ArrayDataset
 from plantseg.functionals.predictions.utils.array_predictor import ArrayPredictor
 from plantseg.functionals.predictions.utils.size_finder import find_patch_and_halo_shapes, find_patch_shape
@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 def unet_predictions(
     raw: np.ndarray,
+    input_layout: ImageLayout,
     model_name: str | None,
     model_id: str | None,
     patch: tuple[int, int, int] | None = None,
@@ -36,7 +37,8 @@ def unet_predictions(
     returning appropriately shaped arrays based on the output channel configuration.
 
     Args:
-        raw (np.ndarray): Raw input data as a 3D array of shape (Z, Y, X).
+        raw (np.ndarray): Raw input data.
+        Input_layout (ImageLayout): The layout of the input data.
         model_name (str | None): The name of the model to use.
         model_id (str | None): The ID of the model from the BioImage.IO model zoo.
         patch (tuple[int, int, int], optional): Patch size for prediction. Defaults to (80, 160, 160).
@@ -55,6 +57,7 @@ def unet_predictions(
     Raises:
         ValueError: If neither `model_name`, `model_id`, nor `config_path` are provided.
     """
+
     if config_path is not None:  # Safari mode for custom models outside zoos
         logger.info("Safari prediction: Running model from custom config path.")
         model, model_config, model_path = model_zoo.get_model_by_config_path(config_path, model_weights_path)
@@ -100,10 +103,10 @@ def unet_predictions(
     )
 
     if int(model_config["in_channels"]) > 1:  # if multi-channel input
-        raw = fix_input_shape_to_CZYX(raw)
+        raw = fix_layout_to_CZYX(raw, input_layout)
         multichannel_input = True
     else:
-        raw = fix_input_shape_to_ZYX(raw)
+        raw = fix_layout_to_ZYX(raw, input_layout)
         multichannel_input = False
     raw = raw.astype("float32")
     augs = get_test_augmentations(raw)  # using full raw to compute global normalization mean and std
@@ -114,15 +117,4 @@ def unet_predictions(
     )
 
     pmaps = predictor(test_dataset)  # pmaps either (C, Z, Y, X) or (C, Y, X)
-
-    if (
-        int(model_config["out_channels"]) > 1 and handle_multichannel
-    ):  # if multi-channel output and who called this function handles (C, Z, Y, X)
-        logger.warning(f"`unet_predictions()` has `handle_multichannel`={handle_multichannel}")
-        pmaps = fix_input_shape_to_CZYX(
-            pmaps,
-        )  # (C, Y, X) to (C, 1, Y, X); (C, Z, Y, X) unchanged
-    else:  # (C, Z, Y, X) to (Z, Y, X); (Y, X) to (1, Y, X); (Z, Y, X) unchanged
-        pmaps = fix_input_shape_to_ZYX(pmaps[0])
-
     return pmaps
