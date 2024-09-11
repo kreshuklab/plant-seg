@@ -97,10 +97,13 @@ def gasp(
     Returns:
         np.ndarray: GASP output segmentation.
     """
+    remove_singleton = False
     if superpixels is not None:
         assert boundary_pmaps.shape == superpixels.shape, "Shape mismatch between boundary_pmaps and superpixels."
         if superpixels.ndim == 2:  # Ensure superpixels is 3D if provided
             superpixels = superpixels[None, ...]
+            boundary_pmaps = boundary_pmaps[None, ...]
+            remove_singleton = True
 
     # Prepare the arguments for running GASP
     run_GASP_kwargs = {
@@ -133,6 +136,9 @@ def gasp(
     # Apply size filtering if specified
     if post_minsize > 0:
         segmentation, _ = apply_size_filter(segmentation.astype('uint32'), boundary_pmaps, post_minsize)
+
+    if remove_singleton:
+        segmentation = segmentation[0]
 
     return segmentation
 
