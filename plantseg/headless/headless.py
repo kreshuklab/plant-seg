@@ -5,6 +5,7 @@ from typing import Literal
 import yaml
 
 from plantseg.headless.basic_runner import SerialRunner
+from plantseg.tasks.workflow_handler import TaskUserInput
 
 logger = logging.getLogger(__name__)
 
@@ -13,57 +14,76 @@ Runners = Literal["serial"]
 _implemented_runners = {'serial': SerialRunner}
 
 
-def parse_input_path(input_path: str | list[str]):
-    if isinstance(input_path, str):
-        path = Path(input_path)
+def parse_input_path(user_input: TaskUserInput):
+    value = user_input.value
+    if value is None:
+        raise ValueError("Input path must be provided.")
 
+    elif isinstance(value, str):
+        path = Path(value)
         if not path.exists():
             raise FileNotFoundError(f"Input path {path} does not exist.")
 
-        elif path.is_file():
-            paths = [path]
+        return [path]
 
-        elif path.is_dir():
-            paths = list(path.glob("*"))
-
-    elif isinstance(input_path, list):
-        paths = [Path(p) for p in input_path]
-
+    elif isinstance(value, list):
+        paths = [Path(p) for p in value]
         for path in paths:
             if not path.exists():
                 raise FileNotFoundError(f"Input path {path} does not exist.")
 
+        return paths
+
     else:
         raise ValueError("Input path must be a string or a list of strings.")
 
-    return paths
 
+def output_directory(user_input: TaskUserInput):
+    user_input = user_input.value
+    if user_input is None:
+        raise ValueError("Output directory must be provided.")
 
-def output_directory(output_dir: str):
-    output_dir = Path(output_dir)
+    if not isinstance(user_input, str):
+        raise ValueError("Output directory must be a string.")
+
+    output_dir = Path(user_input)
 
     if not output_dir.exists():
         output_dir.mkdir(parents=True)
     return output_dir
 
 
+def parse_generic_input(user_input: TaskUserInput):
+    value = user_input.value
+
+    if value is None:
+        value = user_input.headless_default
+
+    if value is None and user_input.user_input_required:
+        raise ValueError(f"Input must be provided. {user_input}")
+
+    return value
+
+
 def parse_input_config(inputs_config: dict):
+    inputs_config = {k: TaskUserInput(**v) for k, v in inputs_config.items()}
+
     list_input_keys = {}
     single_input_keys = {}
     has_input_path = False
     has_output_dir = False
 
-    for key in inputs_config:
+    for key, value in inputs_config.items():
         if key.find("input_path") != -1:
-            list_input_keys[key] = parse_input_path(inputs_config[key])
+            list_input_keys[key] = parse_input_path(value)
             has_input_path = True
 
         elif key.find("output_dir") != -1:
-            single_input_keys[key] = output_directory(inputs_config[key])
+            single_input_keys[key] = output_directory(value)
             has_output_dir = True
 
         else:
-            single_input_keys[key] = inputs_config[key]
+            single_input_keys[key] = parse_generic_input(value)
 
     if not has_input_path:
         raise ValueError("The provided workflow configuration does not contain an input path.")

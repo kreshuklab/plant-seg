@@ -2,18 +2,32 @@ from pathlib import Path
 
 from plantseg.core.image import PlantSegImage, import_image, save_image
 from plantseg.tasks import task_tracker
+from plantseg.tasks.workflow_handler import TaskUserInput
 
 
 @task_tracker(
     is_root=True,
     list_private_params=["semantic_type", "stack_layout"],
-    list_inputs=["input_path"],
+    list_inputs={
+        "input_path": TaskUserInput(
+            allowed_types=['str', 'list[str]'],
+            description="Path to a file, or a directory containing files (all files will be imported) or list of paths.",
+            headless_default=None,
+            user_input_required=True,
+        ),
+        "image_name": TaskUserInput(
+            allowed_types=['None', 'str'],
+            description="Name of the image (if None, the file name will be used)",
+            headless_default=None,
+            user_input_required=False,
+        ),
+    },
 )
 def import_image_task(
     input_path: Path,
-    image_name: str,
     semantic_type: str,
     stack_layout: str,
+    image_name: str | None = None,
     key: str | None = None,
     m_slicing: str | None = None,
 ) -> PlantSegImage:
@@ -22,12 +36,16 @@ def import_image_task(
 
     Args:
         input_path (Path): path to the image file
-        image_name (str): name of the image object
         semantic_type (str): semantic type of the image (raw, segmentation, prediction)
         stack_layout (str): stack layout of the image (3D, 2D, 2D_time)
+        image_name (str | None): name of the image (if None, the file name will be used)
         key (str | None): key for the image (used only for h5 and zarr formats)
         m_slicing (str | None): m_slicing of the image (None, time, z, y, x)
     """
+
+    if image_name is None:
+        image_name = input_path.stem
+
     return import_image(
         path=input_path,
         key=key,
@@ -38,7 +56,23 @@ def import_image_task(
     )
 
 
-@task_tracker(is_leaf=True, list_inputs=["output_directory", "output_file_name"])
+@task_tracker(
+    is_leaf=True,
+    list_inputs={
+        "output_directory": TaskUserInput(
+            allowed_types=['str'],
+            description="Output directory path where the image will be saved",
+            headless_default=None,
+            user_input_required=True,
+        ),
+        "output_file_name": TaskUserInput(
+            allowed_types=['str', 'None'],
+            description="Output file name (if None, the image name will be used)",
+            headless_default=None,
+            user_input_required=False,
+        ),
+    },
+)
 def export_image_task(
     image: PlantSegImage,
     output_directory: Path,

@@ -17,6 +17,15 @@ class NodeType(str, Enum):
     LEAF = "leaf"
 
 
+class TaskUserInput(BaseModel):
+    value: Any = None
+    allowed_types: list[str] = Field(default_factory=list)
+    description: str = "No description provided"
+    headless_default: Any = None
+    task: str = ""
+    user_input_required: bool = True
+
+
 class Task(BaseModel):
     func: str
     images_inputs: dict
@@ -194,7 +203,7 @@ class WorkflowHandler:
         )
         self._dag.list_tasks.append(task)
 
-    def add_input(self, name: str, func_name: str | None = None):
+    def add_input(self, name: str, value=TaskUserInput, func_name: str | None = None):
         def _unique_input(name, id: int = 0):
             new_name = f"{name}_{id}"
             if new_name not in self._dag.list_inputs:
@@ -207,7 +216,8 @@ class WorkflowHandler:
         else:
             unique_name = _unique_input(name)
 
-        self._dag.inputs[unique_name] = f"FILL THIS WITH THE ARGUMENT '{name}' IN '{func_name}' TASK"
+        value.task = func_name
+        self._dag.inputs[unique_name] = value
         return unique_name
 
     def clean_dag(self):
@@ -246,7 +256,7 @@ def task_tracker(
     func: Callable | None = None,
     is_root=False,
     is_leaf=False,
-    list_inputs: list[str] | None = None,
+    list_inputs: dict[str, TaskUserInput] | None = None,
     list_private_params: list[str] | None = None,
 ):
     """
@@ -256,8 +266,7 @@ def task_tracker(
         func (Callable): The function that will be registered as a task.
         is_root (bool): If True, the function is a root node in the workflow (usually a import task).
         is_leaf (bool): If True, the function is a leaf node in the workflow (usually a writer task).
-        list_inputs (list[str]): A list of parameters that are runtime inputs. For example, the path to an image, or
-            the name of the output file.
+        list_inputs (dict[str, TaskUserInput]): A dictionary of the inputs of the function. The key is the name of the parameter
         list_private_params (list[str]): A list of the names of the private parameters. If a gui will
             be used to run the workflow, these parameters should not be exposed to the user.
     """
@@ -272,7 +281,7 @@ def task_tracker(
     else:
         node_type = NodeType.NODE
 
-    list_inputs = list_inputs or []
+    list_inputs = list_inputs or {}
     list_private_params = list_private_params or []
 
     def _inner_decorator(func):
@@ -288,8 +297,9 @@ def task_tracker(
                 if isinstance(arg, PlantSegImage):
                     images_inputs[name] = arg.unique_name
 
-                elif name in list_inputs:
-                    input_name = workflow_handler.add_input(name, func_name=func.__name__)
+                elif name in list_inputs.keys():
+                    value = list_inputs[name]
+                    input_name = workflow_handler.add_input(name, value=value, func_name=func.__name__)
                     images_inputs[name] = input_name
 
                 else:
