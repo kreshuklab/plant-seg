@@ -62,6 +62,53 @@ class DAG(BaseModel):
         return list(self.inputs.keys())
 
 
+def prune_dag(dag: DAG) -> DAG:
+    """
+    Remove all the tasks that are not connected to the leaf nodes.
+    """
+
+    # Initialize the reachable set with the leaf nodes
+    reachable = set()
+    reachable_inputs = set()
+    for task in dag.list_tasks:
+        if task.node_type == NodeType.LEAF:
+            for inp_key in task.images_inputs.values():
+                reachable.add(task.id)
+                reachable_inputs.add(inp_key)
+
+    safety_counter = 0
+    size_reachable = len(reachable)
+    while True:
+        # For each task check if the outputs is connected to the reachable set
+        # if so, add the task to the reachable set
+        for task in dag.list_tasks:
+            for out_key in task.outputs:
+                if out_key in reachable_inputs:
+                    reachable.add(task.id)
+                    for inp_key in task.images_inputs.values():
+                        reachable_inputs.add(inp_key)
+
+        safety_counter += 1
+        if safety_counter > 1_000_000:
+            raise ValueError("Infinite loop in the pruning of the DAG")
+
+        # If the size of the reachable set did not change, we are done pruning
+        if size_reachable == len(reachable):
+            break
+        size_reachable = len(reachable)
+
+    new_dag = DAG()
+    for task in dag.list_tasks:
+        if task.id in reachable:
+            new_dag.list_tasks.append(task)
+
+    for input_key, text in dag.inputs.items():
+        if input_key in reachable_inputs:
+            new_dag.inputs[input_key] = text
+
+    return new_dag
+
+
 class SingletonMeta(type):
     _instances = {}
 
@@ -170,39 +217,7 @@ class WorkflowHandler:
         """
         Remove all the tasks that are not connected to the leaf nodes.
         """
-        dag_copy = self._dag.model_copy(deep=True)
-
-        # Initialize the reachable set with the leaf nodes
-        reachable = set()
-        reachable_inputs = set()
-        for task in dag_copy.list_tasks:
-            if task.node_type == NodeType.LEAF:
-                for inp_key in task.images_inputs.values():
-                    reachable.add(task.id)
-                    reachable_inputs.add(inp_key)
-
-        safety_counter = 0
-        size_reachable = len(reachable)
-        while True:
-            # For each task check if the outputs is connected to the reachable set
-            # if so, add the task to the reachable set
-            for task in dag_copy.list_tasks:
-                for out_key in task.outputs:
-                    if out_key in reachable_inputs:
-                        reachable.add(task.id)
-                        for inp_key in task.images_inputs.values():
-                            reachable_inputs.add(inp_key)
-
-            safety_counter += 1
-            if safety_counter > 1_000_000:
-                raise ValueError("Infinite loop in the pruning of the DAG")
-
-            # If the size of the reachable set did not change, we are done pruning
-            if size_reachable == len(reachable):
-                break
-            size_reachable = len(reachable)
-
-        return dag_copy
+        return prune_dag(self._dag)
 
     def save_to_yaml(self, path: Path | str):
         clean_dag = self.prune_dag()
