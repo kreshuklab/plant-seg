@@ -73,7 +73,7 @@ def parse_input_config(inputs_config: dict):
 
     all_length = [len(v) for v in list_input_keys.values()]
     # check if all input paths have the same length
-    if not all([l == all_length[0] for l in all_length]):
+    if not all([_l == all_length[0] for _l in all_length]):
         raise ValueError("All input paths must have the same length.")
 
     num_inputs = all_length[0]
