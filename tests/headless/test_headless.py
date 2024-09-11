@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import numpy as np
-import pytest
 import yaml
 
 from plantseg.core.voxelsize import VoxelSize
