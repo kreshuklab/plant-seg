@@ -99,7 +99,7 @@ class RescaleModes(Enum):
 
 
 @magicgui(
-    call_button=f"Run Rescaling",
+    call_button="Run Rescaling",
     image={
         "label": "Image or Label",
         "tooltip": "Layer to apply the rescaling.",
