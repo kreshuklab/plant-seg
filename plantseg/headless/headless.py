@@ -92,13 +92,12 @@ def parse_input_config(inputs_config: dict):
     return jobs_inputs
 
 
-def run_headless_workflow(path: str | Path, runner: str = "serial"):
+def run_headless_workflow(path: str | Path):
     """
     Run a workflow in headless mode using the provided configuration file.
 
     Args:
         path (str | Path): Path to the workflow configuration file.
-        runner (str): Runner to use for the workflow. Defaults to "serial".
     """
     path = Path(path)
 
@@ -110,6 +109,7 @@ def run_headless_workflow(path: str | Path, runner: str = "serial"):
 
     job_inputs = parse_input_config(config["inputs"])
 
+    runner = config.get("runner", "serial")
     if runner not in _implemented_runners:
         raise ValueError(f"Runner {runner} is not implemented.")
 

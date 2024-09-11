@@ -39,7 +39,9 @@ def launch_napari():
 
 def launch_workflow_headless(path: Path):
     """Run a workflow in headless mode."""
-    raise NotImplementedError("Headless mode is not implemented yet.")
+    from plantseg.headless.headless import run_headless_workflow
+
+    run_headless_workflow(path)
 
 
 def launch_training(path: Path):
