@@ -1,7 +1,7 @@
 import json
 from enum import Enum
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 from uuid import UUID, uuid4
 
 import yaml
@@ -44,7 +44,7 @@ class Task(BaseModel):
 
 class DAG(BaseModel):
     plantseg_version: str = Field(default=__version__)
-    inputs: list[dict[str, str]] | dict[str, str] = Field(default_factory=dict)
+    inputs: dict[str, Any] = Field(default_factory=dict)
     list_tasks: list[Task] = Field(default_factory=list)
 
     """
