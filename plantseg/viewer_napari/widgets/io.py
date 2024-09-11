@@ -46,7 +46,7 @@ class PathMode(Enum):
         "orientation": "horizontal",
     },
     path={
-        "label": "Pick a file (tiff, h5, zarr, png, jpg)",
+        "label": "Pick a file\n(tiff, h5, zarr, png, jpg)",
         "mode": "r",
         "tooltip": "Select a file to be imported, the file can be a tiff, h5, png, jpg.",
     },
@@ -71,6 +71,8 @@ class PathMode(Enum):
         "label": "Stack Layout",
         "choices": ImageLayout.to_choices(),
         "tooltip": "Stack layout",
+        "widget_type": "RadioButtons",
+        "orientation": "horizontal",
     },
 )
 def widget_open_file(
@@ -141,10 +143,10 @@ def _on_path_mode_changed(path_mode: str):
     path_mode = _return_value_if_widget(path_mode)
     if path_mode == PathMode.FILE.value:  # file
         widget_open_file.path.mode = "r"
-        widget_open_file.path.label = "Pick a file (.tiff, .h5, .png, .jpg)"
+        widget_open_file.path.label = "Pick a file\n(.tiff, .h5, .png, .jpg)"
     elif path_mode == PathMode.DIR.value:  # directory case
         widget_open_file.path.mode = "d"
-        widget_open_file.path.label = "Pick a folder (.zarr)"
+        widget_open_file.path.label = "Pick a folder\n(.zarr)"
 
 
 @widget_open_file.path.changed.connect

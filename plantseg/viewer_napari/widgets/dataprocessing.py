@@ -137,6 +137,8 @@ class RescaleModes(Enum):
         "widget_type": "ComboBox",
         "choices": RescaleType.to_choices(),
         "tooltip": "0 for nearest neighbours (default for labels), 1 for linear, 2 for bilinear.",
+        "widget_type": "RadioButtons",
+        "orientation": "horizontal",
     },
     update_other_widgets={
         "visible": False,

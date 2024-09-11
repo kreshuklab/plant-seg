@@ -9,6 +9,7 @@ import napari
 import torch.cuda
 from magicgui import magicgui
 from magicgui.types import Separator
+from magicgui.widgets import Container, create_widget
 from napari.layers import Image
 from napari.types import LayerDataTuple
 
@@ -19,7 +20,6 @@ from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws, widget_lifted_multicut
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
-ALL = 'All'
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
 MPS = ['mps'] if torch.backends.mps.is_available() else []
 ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ['cpu']
@@ -27,6 +27,12 @@ ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ['cpu']
 BIOIMAGEIO_FILTER = [("PlantSeg Only", True), ("All", False)]
 SINGLE_PATCH_MODE = [("Auto", False), ("One (lower VRAM usage)", True)]
 ADVANCED_SETTINGS = [("Enable", True), ("Disable", False)]
+
+# Using Enum causes more complexity, stay constant
+ALL_DIM = 'All dimensions'
+ALL_MOD = 'All modalities'
+ALL_TYP = 'All types'
+CUSTOM = 'Custom'
 
 
 ########################################################################################################################
@@ -45,6 +51,36 @@ class UNetPredictionsMode(Enum):
         return [(mode.value, mode) for mode in cls]
 
 
+model_filters = Container(
+    widgets=[
+        create_widget(
+            annotation=str,
+            name="dimensionality",
+            label='Dimensionality',
+            widget_type='ComboBox',
+            options={'choices': [ALL_DIM] + model_zoo.get_unique_dimensionalities()},
+        ),
+        create_widget(
+            annotation=str,
+            name="modality",
+            label='Microscopy modality',
+            widget_type='ComboBox',
+            options={'choices': [ALL_MOD] + model_zoo.get_unique_modalities()},
+        ),
+        create_widget(
+            annotation=str,
+            name="output_type",
+            label='Prediction type',
+            widget_type='ComboBox',
+            options={'choices': [ALL_TYP] + model_zoo.get_unique_output_types()},
+        ),
+    ],
+    label='Model filters',
+    layout="horizontal",
+    labels=False,
+)
+
+
 @magicgui(
     call_button='Run Predictions',
     mode={
@@ -55,25 +91,6 @@ class UNetPredictionsMode(Enum):
         'choices': UNetPredictionsMode.to_choices(),
     },
     image={'label': 'Image', 'tooltip': 'Raw image to be processed with a neural network.'},
-    dimensionality={
-        'label': 'Dimensionality',
-        'tooltip': 'Dimensionality of the model (2D or 3D). '
-        'Any 2D model can be used for 3D data. If unsure, select "All".',
-        'widget_type': 'ComboBox',
-        'choices': [ALL] + model_zoo.get_unique_dimensionalities(),
-    },
-    modality={
-        'label': 'Microscopy modality',
-        'tooltip': 'Modality of the model (e.g. confocal, light-sheet ...). If unsure, select "All".',
-        'widget_type': 'ComboBox',
-        'choices': [ALL] + model_zoo.get_unique_modalities(),
-    },
-    output_type={
-        'label': 'Prediction type',
-        'widget_type': 'ComboBox',
-        'tooltip': 'Type of prediction (e.g. cell boundaries predictions or nuclei...).' ' If unsure, select "All".',
-        'choices': [ALL] + model_zoo.get_unique_output_types(),
-    },
     model_name={
         'label': 'PlantSeg model',
         'tooltip': f'Select a pretrained PlantSeg model. '
@@ -118,9 +135,6 @@ def widget_unet_predictions(
     plantseg_filter: bool = True,
     model_name: Optional[str] = None,
     model_id: Optional[str] = None,
-    dimensionality: str = ALL,
-    modality: str = ALL,
-    output_type: str = ALL,
     device: str = ALL_DEVICES[0],
     advanced: bool = False,
     patch_size: tuple[int, int, int] = (128, 128, 128),
@@ -156,6 +170,8 @@ def widget_unet_predictions(
         ],
     )
 
+
+widget_unet_predictions.insert(5, model_filters)
 
 advanced_unet_predictions_widgets = [
     widget_unet_predictions.patch_size,
@@ -211,13 +227,11 @@ def _on_widget_unet_predictions_advanced_changed(advanced):
 
 @widget_unet_predictions.mode.changed.connect
 def _on_widget_unet_predictions_mode_change(mode: UNetPredictionsMode):
-    widgets_p = [
+    widgets_p = [  # PlantSeg
         widget_unet_predictions.model_name,
-        widget_unet_predictions.dimensionality,
-        widget_unet_predictions.modality,
-        widget_unet_predictions.output_type,
+        model_filters,
     ]
-    widgets_b = [
+    widgets_b = [  # BioImage.IO
         widget_unet_predictions.model_id,
         widget_unet_predictions.plantseg_filter,
     ]
@@ -256,32 +270,20 @@ def _on_widget_unet_predictions_plantseg_filter_change(plantseg_filter: bool):
 #     _on_prediction_input_image_change(widget_unet_predictions, image)
 
 
-def _on_any_metadata_changed(modality, output_type, dimensionality):
-    modality = [modality] if modality != ALL else None
-    output_type = [output_type] if output_type != ALL else None
-    dimensionality = [dimensionality] if dimensionality != ALL else None
+@model_filters.changed.connect
+def _on_any_metadata_changed(widget):
+    modality = widget.modality.value
+    output_type = widget.output_type.value
+    dimensionality = widget.dimensionality.value
+
+    modality = [modality] if modality != ALL_MOD else None
+    output_type = [output_type] if output_type != ALL_TYP else None
+    dimensionality = [dimensionality] if dimensionality != ALL_DIM else None
     widget_unet_predictions.model_name.choices = model_zoo.list_models(
         modality_filter=modality,
         output_type_filter=output_type,
         dimensionality_filter=dimensionality,
     )
-
-
-widget_unet_predictions.modality.changed.connect(
-    lambda value: _on_any_metadata_changed(
-        value, widget_unet_predictions.output_type.value, widget_unet_predictions.dimensionality.value
-    )
-)
-widget_unet_predictions.output_type.changed.connect(
-    lambda value: _on_any_metadata_changed(
-        widget_unet_predictions.modality.value, value, widget_unet_predictions.dimensionality.value
-    )
-)
-widget_unet_predictions.dimensionality.changed.connect(
-    lambda value: _on_any_metadata_changed(
-        widget_unet_predictions.modality.value, widget_unet_predictions.output_type.value, value
-    )
-)
 
 
 @widget_unet_predictions.model_name.changed.connect
@@ -323,14 +325,16 @@ def _on_model_id_changed(model_id: str):
         'label': 'Microscopy modality',
         'tooltip': 'Modality of the model (e.g. confocal, light-sheet ...).',
         'widget_type': 'ComboBox',
-        'choices': model_zoo.get_unique_modalities(),
+        'choices': model_zoo.get_unique_modalities() + [CUSTOM],
     },
+    custom_modality={'label': 'Custom modality'},
     output_type={
         'label': 'Prediction type',
         'widget_type': 'ComboBox',
         'tooltip': 'Type of prediction (e.g. cell boundaries predictions or nuclei...).',
-        'choices': model_zoo.get_unique_output_types(),
+        'choices': model_zoo.get_unique_output_types() + [CUSTOM],
     },
+    custom_output_type={'label': 'Custom type'},
 )
 def widget_add_custom_model(
     new_model_name: str = 'custom_model',
@@ -339,8 +343,15 @@ def widget_add_custom_model(
     description: str = 'A model trained by the user.',
     dimensionality: str = model_zoo.get_unique_dimensionalities()[0],
     modality: str = model_zoo.get_unique_modalities()[0],
+    custom_modality: str = '',
     output_type: str = model_zoo.get_unique_output_types()[0],
+    custom_output_type: str = '',
 ) -> None:
+    if modality == CUSTOM:
+        modality = custom_modality
+    if output_type == CUSTOM:
+        output_type = custom_output_type
+
     finished, error_msg = model_zoo.add_custom_model(
         new_model_name=new_model_name,
         location=model_location,
@@ -364,3 +375,23 @@ def widget_add_custom_model(
             level='error',
             thread='Add Custom Model',
         )
+
+
+widget_add_custom_model.custom_modality.hide()
+widget_add_custom_model.custom_output_type.hide()
+
+
+@widget_add_custom_model.modality.changed.connect
+def _on_custom_modality_change(modality: str):
+    if modality == CUSTOM:
+        widget_add_custom_model.custom_modality.show()
+    else:
+        widget_add_custom_model.custom_modality.hide()
+
+
+@widget_add_custom_model.output_type.changed.connect
+def _on_custom_output_type_change(output_type: str):
+    if output_type == CUSTOM:
+        widget_add_custom_model.custom_output_type.show()
+    else:
+        widget_add_custom_model.custom_output_type.hide()
