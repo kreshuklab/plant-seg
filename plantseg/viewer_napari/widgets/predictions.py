@@ -32,6 +32,7 @@ ADVANCED_SETTINGS = [("Enable", True), ("Disable", False)]
 ALL_DIM = 'All dimensions'
 ALL_MOD = 'All modalities'
 ALL_TYP = 'All types'
+CUSTOM = 'Custom'
 
 
 ########################################################################################################################
@@ -324,14 +325,16 @@ def _on_model_id_changed(model_id: str):
         'label': 'Microscopy modality',
         'tooltip': 'Modality of the model (e.g. confocal, light-sheet ...).',
         'widget_type': 'ComboBox',
-        'choices': model_zoo.get_unique_modalities(),
+        'choices': model_zoo.get_unique_modalities() + [CUSTOM],
     },
+    custom_modality={'label': 'Custom modality'},
     output_type={
         'label': 'Prediction type',
         'widget_type': 'ComboBox',
         'tooltip': 'Type of prediction (e.g. cell boundaries predictions or nuclei...).',
-        'choices': model_zoo.get_unique_output_types(),
+        'choices': model_zoo.get_unique_output_types() + [CUSTOM],
     },
+    custom_output_type={'label': 'Custom type'},
 )
 def widget_add_custom_model(
     new_model_name: str = 'custom_model',
@@ -340,8 +343,15 @@ def widget_add_custom_model(
     description: str = 'A model trained by the user.',
     dimensionality: str = model_zoo.get_unique_dimensionalities()[0],
     modality: str = model_zoo.get_unique_modalities()[0],
+    custom_modality: str = '',
     output_type: str = model_zoo.get_unique_output_types()[0],
+    custom_output_type: str = '',
 ) -> None:
+    if modality == CUSTOM:
+        modality = custom_modality
+    if output_type == CUSTOM:
+        output_type = custom_output_type
+
     finished, error_msg = model_zoo.add_custom_model(
         new_model_name=new_model_name,
         location=model_location,
@@ -365,3 +375,23 @@ def widget_add_custom_model(
             level='error',
             thread='Add Custom Model',
         )
+
+
+widget_add_custom_model.custom_modality.hide()
+widget_add_custom_model.custom_output_type.hide()
+
+
+@widget_add_custom_model.modality.changed.connect
+def _on_custom_modality_change(modality: str):
+    if modality == CUSTOM:
+        widget_add_custom_model.custom_modality.show()
+    else:
+        widget_add_custom_model.custom_modality.hide()
+
+
+@widget_add_custom_model.output_type.changed.connect
+def _on_custom_output_type_change(output_type: str):
+    if output_type == CUSTOM:
+        widget_add_custom_model.custom_output_type.show()
+    else:
+        widget_add_custom_model.custom_output_type.hide()
