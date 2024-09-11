@@ -494,5 +494,16 @@ class ModelZoo:
         model, _, _ = self.get_model_by_id(model_id)
         return self.compute_3D_halo_for_pytorch3dunet(model)
 
+    def is_2D(self, module: AbstractUNet) -> bool:
+        return isinstance(module, UNet2D)
+
+    def is_2D_zoo_model(self, model_name: str) -> bool:
+        model, _, _ = self.get_model_by_name(model_name)
+        return self.is_2D(model)
+
+    def is_2D_bioimageio_model(self, model_id: str) -> bool:
+        model, _, _ = self.get_model_by_id(model_id)
+        return self.is_2D(model)
+
 
 model_zoo = ModelZoo(PATH_MODEL_ZOO, PATH_MODEL_ZOO_CUSTOM)

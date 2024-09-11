@@ -65,46 +65,72 @@ def find_patch_and_halo_shapes(
     return tuple(adjusted_patch_shape - halo_shape * 2), tuple(halo_shape)
 
 
-def find_patch_shape(
+def find_a_max_patch_shape(
     model: nn.Module,
     in_channels: int,
     device: str,
+    # ) -> tuple[int, int, int] | tuple[int, int]:
 ) -> tuple[int, int, int]:
-    """Determine the maximum feasible patch shape for a given model based on available GPU memory using binary search."""
+    """Determine the maximum feasible patch shape for a given model based on available GPU memory using binary search.
+
+    1. This is merely a good quick guess. However, an exact maximum size causes problems.
+    2. If isotropic shape, then the `best_n` is 128 for 2080 Ti, 186 for 3090,
+       but for the sake of speed, cap it at 50 and let batch size handle the rest.
+    """
+
+    nn_dim = 2 if _is_2d_model(model) else 3
 
     if device == "cpu":
-        return (256, 256, 256)
-
-    N_MIN, N_MAX = 2, 50
+        return (1, 1024, 1024) if nn_dim == 2 else (256, 256, 256)
 
     model = model.to(device)
     model.eval()
 
-    low, high = N_MIN, N_MAX
-    best_n = low
+    if nn_dim == 3:  # use binary search for 3D
+        low, high = (2, 50)
+        best_n = low
 
-    with torch.no_grad():
-        while low <= high:
-            mid = (low + high) // 2
-            patch_shape = (16 * mid,) * 3
-            try:
-                x = torch.randn((1, in_channels) + patch_shape).to(device)
-                _ = model(x)
-                best_n = mid  # Update best_n if successful
-                low = mid + 1  # Try larger patches
-            except RuntimeError as e:
-                if "out of memory" in str(e):
-                    high = mid - 1  # Try smaller patches
-                else:
-                    raise
-            finally:
-                del x
-                torch.cuda.empty_cache()
+        with torch.no_grad():
+            while low <= high:
+                mid = (low + high) // 2
+                patch_shape = (16 * mid,) * nn_dim
+                try:
+                    x = torch.randn((1, in_channels) + patch_shape).to(device)
+                    _ = model(x)
+                    best_n = mid  # Update best_n if successful
+                    low = mid + 1  # Try larger patches
+                except RuntimeError as e:
+                    if "out of memory" in str(e):
+                        high = mid - 1  # Try smaller patches
+                    else:
+                        raise
+                finally:
+                    del x
+                    torch.cuda.empty_cache()
+
+    else:  # use linear search for 2D
+        best_n = 200
+
+        with torch.no_grad():
+            while best_n > 16:
+                patch_shape = (16 * best_n,) * nn_dim
+                try:
+                    x = torch.randn((1, in_channels) + patch_shape).to(device)
+                    _ = model(x)
+                    break
+                except RuntimeError as e:
+                    if "out of memory" in str(e):
+                        best_n -= 20
+                    else:
+                        raise
+                finally:
+                    del x
+                    torch.cuda.empty_cache()
 
     del model
     torch.cuda.empty_cache()
 
-    return (16 * best_n, 16 * best_n, 16 * best_n)
+    return (1, 16 * best_n, 16 * best_n) if nn_dim == 2 else (16 * best_n, 16 * best_n, 16 * best_n)
 
 
 def find_batch_size(

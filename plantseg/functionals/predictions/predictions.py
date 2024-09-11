@@ -8,7 +8,7 @@ from plantseg.core.zoo import model_zoo
 from plantseg.functionals.dataprocessing.dataprocessing import ImageLayout, fix_layout_to_CZYX, fix_layout_to_ZYX
 from plantseg.functionals.predictions.utils.array_dataset import ArrayDataset
 from plantseg.functionals.predictions.utils.array_predictor import ArrayPredictor
-from plantseg.functionals.predictions.utils.size_finder import find_patch_and_halo_shapes, find_patch_shape
+from plantseg.functionals.predictions.utils.size_finder import find_a_max_patch_shape, find_patch_and_halo_shapes
 from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
 from plantseg.functionals.predictions.utils.utils import get_stride_shape
 from plantseg.training.augs import get_test_augmentations
@@ -84,8 +84,10 @@ def unet_predictions(
             patch_halo = (0, 0, 0)
 
     if patch is None:
-        maximum_patch_shape = find_patch_shape(model, model_config["in_channels"], device)
-        patch, patch_halo = find_patch_and_halo_shapes(raw.shape, maximum_patch_shape, patch_halo, both_sides=False)
+        maximum_patch_shape = find_a_max_patch_shape(model, model_config["in_channels"], device)
+        raw_shape = raw.shape if input_layout == 'ZYX' else (1,) + raw.shape
+        assert len(raw_shape) == 3
+        patch, patch_halo = find_patch_and_halo_shapes(raw_shape, maximum_patch_shape, patch_halo, both_sides=False)
 
     print(f"For raw in shape {raw.shape}, Patch shape: {patch}", f"Patch halo shape: {patch_halo}")
 
