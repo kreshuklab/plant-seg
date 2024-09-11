@@ -123,7 +123,7 @@ def widget_unet_predictions(
     output_type: str = ALL,
     device: str = ALL_DEVICES[0],
     advanced: bool = False,
-    patch_size: tuple[int, int, int] = (80, 170, 170),
+    patch_size: tuple[int, int, int] = (128, 128, 128),
     patch_halo: tuple[int, int, int] = (0, 0, 0),
     single_patch: bool = False,
 ) -> Future[list[LayerDataTuple]]:
@@ -176,10 +176,26 @@ def update_halo():
             widget_unet_predictions.patch_halo.value = model_zoo.compute_3D_halo_for_zoo_models(
                 widget_unet_predictions.model_name.value
             )
+            if model_zoo.is_2D_zoo_model(widget_unet_predictions.model_name.value):
+                widget_unet_predictions.patch_size[0].value = 0
+                widget_unet_predictions.patch_size[0].enabled = False
+                widget_unet_predictions.patch_halo[0].enabled = False
+            else:
+                widget_unet_predictions.patch_size[0].value = widget_unet_predictions.patch_size[1].value
+                widget_unet_predictions.patch_size[0].enabled = True
+                widget_unet_predictions.patch_halo[0].enabled = True
         elif widget_unet_predictions.mode.value is UNetPredictionsMode.BIOIMAGEIO:
             widget_unet_predictions.patch_halo.value = model_zoo.compute_3D_halo_for_bioimageio_models(
                 widget_unet_predictions.model_id.value
             )
+            if model_zoo.is_2D_bioimageio_model(widget_unet_predictions.model_id.value):
+                widget_unet_predictions.patch_size[0].value = 0
+                widget_unet_predictions.patch_size[0].enabled = False
+                widget_unet_predictions.patch_halo[0].enabled = False
+            else:
+                widget_unet_predictions.patch_size[0].value = widget_unet_predictions.patch_size[1].value
+                widget_unet_predictions.patch_size[0].enabled = True
+                widget_unet_predictions.patch_halo[0].enabled = True
         else:
             raise NotImplementedError(f'Automatic halo not implemented for {widget_unet_predictions.mode.value} mode.')
 
