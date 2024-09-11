@@ -7,6 +7,10 @@ logger = logging.getLogger(__name__)
 
 
 class SerialRunner:
+    """
+    SerialRunner is a class that runs a workflow in a single thread.
+    """
+
     def __init__(self, dag_path: str | Path):
         if isinstance(dag_path, str):
             dag_path = Path(dag_path)
@@ -20,6 +24,7 @@ class SerialRunner:
         logger.info(self.func_registry.list_funcs())
 
     def find_next_task(self, dag: DAG, var_set: set[str]):
+        """Return the next task to run based on the current var_set"""
         for task in dag.list_tasks:
             required_inputs = set(task.images_inputs.values())
             if required_inputs.issubset(var_set):
@@ -28,6 +33,7 @@ class SerialRunner:
         return None
 
     def run_task(self, task: Task, var_space: dict):
+        """Run a task and update the var_space"""
         # Get inputs from var_space
         inputs = {}
         for name, image_name in task.images_inputs.items():
@@ -67,7 +73,15 @@ class SerialRunner:
 
         return inputs
 
-    def run(self, inputs: dict[str, str]):
+    def submit_job(self, inputs: dict[str, str]):
+        """Submit a job to the runner
+
+        Args:
+            inputs (dict): A dictionary containing the input variables for the workflow
+
+        Returns:
+            bool: True if the job has been submitted successfully
+        """
         dag = WorkflowHandler().from_yaml(self.dag_path)._dag
 
         var_space = {}
