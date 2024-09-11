@@ -218,7 +218,7 @@ def widget_export_stacks(
             image=ps_image,
             output_directory=directory,
             output_file_name=image_custom_name,
-            custom_key=image.name,
+            custom_key_suffix=image.name,
             scale_to_origin=rescale_to_original_resolution,
             file_format=export_format,
             dtype=data_type,
