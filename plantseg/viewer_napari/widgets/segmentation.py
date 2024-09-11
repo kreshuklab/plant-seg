@@ -32,6 +32,8 @@ STACKED = [('2D', True), ('3D', False)]
         'label': 'Aggl. Mode',
         'choices': ['GASP', 'MutexWS', 'MultiCut'],
         'tooltip': 'Select which agglomeration algorithm to use.',
+        "widget_type": "RadioButtons",
+        "orientation": "horizontal",
     },
     beta={
         'label': 'Under/Over segmentation factor',
