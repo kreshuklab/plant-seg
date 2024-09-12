@@ -7,6 +7,7 @@ from magicgui import magicgui
 from napari.layers import Image, Labels
 from napari.qt.threading import thread_worker
 from napari.types import LayerDataTuple
+from napari.utils import CyclicLabelColormap
 
 from plantseg.core.image import ImageProperties, PlantSegImage, SemanticType
 from plantseg.functionals.proofreading.split_merge_tools import split_merge_from_seeds
@@ -14,7 +15,7 @@ from plantseg.functionals.proofreading.utils import get_bboxes
 from plantseg.viewer_napari import log
 
 DEFAULT_KEY_BINDING_PROOFREAD = 'n'
-DEFAULT_KEY_BINDING_CLEAN = 'b'
+DEFAULT_KEY_BINDING_CLEAN = 'j'
 SCRIBBLES_LAYER_NAME = 'Scribbles'
 CORRECTED_CELLS_LAYER_NAME = 'Correct Labels'
 
@@ -33,7 +34,10 @@ class ProofreadingHandler:
     scale: Union[tuple, None] = None
     scribbles_layer_name = SCRIBBLES_LAYER_NAME
     corrected_cells_layer_name = CORRECTED_CELLS_LAYER_NAME
-    correct_cells_cmap = {0: None, 1: (0.76388469, 0.02003777, 0.61156412, 1.0)}
+    correct_cells_cmap = CyclicLabelColormap(
+        colors=[(0.76388469, 0.02003777, 0.61156412, 1.0), (0.76388469, 0.02003777, 0.61156412, 1.0)],
+        name='Corrected Cells',
+    )
 
     def __init__(self):
         self._status = False
@@ -163,7 +167,7 @@ class ProofreadingHandler:
             self.corrected_cells_mask,
             self.corrected_cells_layer_name,
             scale=self.scale,
-            color=self.correct_cells_cmap,
+            colormap=self.correct_cells_cmap,
             opacity=1,
         )
         self.preserve_labels(viewer, self.corrected_cells_layer_name)
