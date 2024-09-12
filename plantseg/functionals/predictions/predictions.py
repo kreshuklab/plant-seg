@@ -69,7 +69,7 @@ def unet_predictions(
         model, model_config, model_path = model_zoo.get_model_by_name(model_name, model_update=model_update)
     else:
         raise ValueError("Either `model_name` or `model_id` or `model_path` must be provided.")
-    state = torch.load(model_path, map_location="cpu")
+    state = torch.load(model_path, map_location="cpu", weights_only=True)
 
     if "model_state_dict" in state:  # Model weights format may vary between versions
         state = state["model_state_dict"]
