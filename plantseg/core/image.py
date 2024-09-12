@@ -198,11 +198,14 @@ class PlantSegImage:
     _properties: ImageProperties
 
     def __init__(self, data: np.ndarray, properties: ImageProperties):
+        self._properties = properties
+        data, properties = self._check_shape(data, properties)
+        data = self._check_ndim(data)
+
         self._data = data
         self._properties = properties
-        self._check_shape(data)
-        self._check_ndim(data)
-        self._check_labels_have_no_channels(data)
+
+        self._check_labels_have_no_channels()
         self._id = uuid4()
 
     def derive_new(self, data: np.ndarray, name: str, **kwargs) -> "PlantSegImage":
@@ -343,32 +346,37 @@ class PlantSegImage:
         else:
             raise ValueError(f"Image layout {self.image_layout} not recognized")
 
-    def _check_shape(self, data: np.ndarray) -> None:
+        return data
+
+    def _check_shape(self, data: np.ndarray, properties: ImageProperties) -> None:
         if self.image_layout == ImageLayout.ZYX:
             if data.shape[0] == 1:
                 logger.warning("Image layout is ZYX but data has only one z slice, casting to YX")
-                self._properties.image_layout = ImageLayout.YX
-                self._data = data[0]
+                properties.image_layout = ImageLayout.YX
+                return data[0], properties
+
         elif self.image_layout == ImageLayout.CZYX:
             if data.shape[0] == 1 and data.shape[1] == 1:
                 logger.warning("Image layout is CZYX but data has only one z slice and one channel, casting to YX")
-                self._properties.image_layout = ImageLayout.YX
-                self._data = data[0, 0]
+                properties.image_layout = ImageLayout.YX
+                return data[0, 0], properties
 
             elif data.shape[0] == 1 and data.shape[1] > 1:
                 logger.warning("Image layout is CZYX but data has only one channel, casting to ZYX")
-                self._properties.image_layout = ImageLayout.ZYX
-                self._data = data[0]
+                properties.image_layout = ImageLayout.ZYX
+                return data[0], properties
 
             elif data.shape[0] > 1 and data.shape[1] == 1:
                 logger.warning("Image layout is CZYX but data has only one z slice, casting to CYX")
-                self._properties.image_layout = ImageLayout.CYX
-                self._data = data[:, 0]
+                properties.image_layout = ImageLayout.CYX
+                return data[:, 0], properties.image_layout
 
         elif self.image_layout == ImageLayout.ZCYX:
             raise ValueError(f"Image layout {self.image_layout} not supported, should have been converted to CZYX")
 
-    def _check_labels_have_no_channels(self, data: np.ndarray) -> None:
+        return data, properties
+
+    def _check_labels_have_no_channels(self) -> None:
         if self.image_type == ImageType.LABEL:
             if self.channel_axis is not None:
                 raise ValueError(f"Label images should not have channel axis, but found layout {self.image_layout}")
