@@ -34,21 +34,48 @@ def dt_watershed(
 ) -> np.ndarray:
     """Performs watershed segmentation using distance transforms on boundary probability maps.
 
+    This function applies the distance transform watershed algorithm to the input boundary
+    probability maps, either slice-by-slice or in original shape depending on the 'stacked' parameter.
+    The watershed method is applied to the boundary probability maps with optional pre-processing
+    like thresholding, smoothing, and masking.
+
     Args:
-        boundary_pmaps (np.ndarray): Input height maps, typically boundary probability maps from a CNN.
-        threshold (float): Threshold applied to boundary maps before distance transform.
-        sigma_seeds (float): Smoothing factor for the watershed seed map..
-        stacked (bool): If True, performs watershed slice-by-slice (2D), otherwise in 3D.
-        sigma_weights (float): Smoothing factor for the watershed weight map.
-        min_size (int): Minimal size of watershed segments.
-        alpha (float): Alpha blending factor used to combine the input and distance transform into the watershed weight map.
-        pixel_pitch (Optional[tuple[int, ...]]): Pixel pitch to use for anisotropic distance calculation.
-        apply_nonmax_suppression (bool): If True, applies non-maximum suppression to filter out seeds. Needs nifty.
-        n_threads (Optional[int]): Number of threads for parallel processing, applicable in 2D mode.
-        mask (Optional[np.ndarray]): Mask array to exclude certain regions from segmentation.
+        boundary_pmaps (np.ndarray): Input array of boundary probability maps, often obtained
+            from deep learning models. Each pixel/voxel value represents the probability of
+            being part of a boundary.
+        threshold (float, optional): Threshold value applied to the boundary probability map
+            before computing the distance transform. Values below this threshold are considered
+            background. Defaults to 0.5.
+        sigma_seeds (float, optional): Standard deviation for Gaussian smoothing applied to
+            the seed map (used for initializing the watershed regions). Higher values result
+            in more smoothed seeds. Defaults to 1.0.
+        stacked (bool, optional): If True, performs watershed segmentation on each 2D slice of
+            a 3D volume independently (slice-by-slice). If False, performs watershed segmentation
+            in 3D for volumetric data or 2D for 2D input. Defaults to False.
+        sigma_weights (float, optional): Standard deviation for Gaussian smoothing applied
+            to the weight map. The weight map combines the distance transform and input map
+            to guide the watershed. Larger values result in smoother weight maps. Defaults to 2.0.
+        min_size (int, optional): Minimum size of the segmented regions to retain. Regions
+            smaller than this size are removed. Defaults to 100.
+        alpha (float, optional): Blending factor to combine the input boundary probability maps
+            and the distance transform when constructing the weight map. A higher alpha
+            prioritizes the input maps. Defaults to 1.0.
+        pixel_pitch (Optional[tuple[int, ...]], optional): Voxel anisotropy factors (e.g., spacing
+            along different axes) to use during the distance transform. If None, the distances are
+            computed isotropically. For anisotropic volumes, this should match the voxel spacing.
+            Defaults to None.
+        apply_nonmax_suppression (bool, optional): If True, applies non-maximum suppression to
+            the detected seeds, reducing seed redundancy. This requires the Nifty library.
+            Defaults to False.
+        n_threads (Optional[int], optional): Number of threads to use for parallel processing in
+            2D mode (stacked mode). If None, the default number of threads will be used.
+            Defaults to None.
+        mask (Optional[np.ndarray], optional): A binary mask that excludes certain regions from
+            segmentation. Only regions within the mask will be considered. If None, all regions
+            are included. Must have the same shape as 'boundary_pmaps'. Defaults to None.
 
     Returns:
-        np.ndarray: The labeled segmentation map from the watershed algorithm.
+        np.ndarray: A labeled segmentation map where each region is assigned a unique label.
 
     """
     # Prepare the keyword arguments for the watershed function
@@ -64,12 +91,12 @@ def dt_watershed(
         "mask": mask,
     }
     if stacked:
-        # Apply watershed in 2D, slice by slice
+        # Apply watershed slice by slice (for 3D data)
         segmentation, _ = stacked_watershed(
             boundary_pmaps, ws_function=distance_transform_watershed, n_threads=n_threads, **ws_kwargs
         )
     else:
-        # Apply watershed in 3D
+        # Apply watershed in 3D for 3D data or in 2D for 2D data
         segmentation, _ = distance_transform_watershed(boundary_pmaps, **ws_kwargs)
 
     return segmentation
