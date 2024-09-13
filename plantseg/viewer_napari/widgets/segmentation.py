@@ -211,30 +211,25 @@ def widget_dt_ws(
     )
 
 
-widget_dt_ws.sigma_seeds.hide()
-widget_dt_ws.sigma_weights.hide()
-widget_dt_ws.alpha.hide()
-widget_dt_ws.use_pixel_pitch.hide()
-widget_dt_ws.pixel_pitch.hide()
-widget_dt_ws.apply_nonmax_suppression.hide()
-widget_dt_ws.is_nuclei_image.hide()
+advanced_dt_ws = [
+    widget_dt_ws.sigma_seeds,
+    widget_dt_ws.sigma_weights,
+    widget_dt_ws.alpha,
+    widget_dt_ws.use_pixel_pitch,
+    widget_dt_ws.pixel_pitch,
+    widget_dt_ws.apply_nonmax_suppression,
+    widget_dt_ws.is_nuclei_image,
+]
+
+for widget in advanced_dt_ws:
+    widget.hide()
 
 
 @widget_dt_ws.show_advanced.changed.connect
 def _on_show_advanced_changed(state: bool):
     if state:
-        widget_dt_ws.sigma_seeds.show()
-        widget_dt_ws.sigma_weights.show()
-        widget_dt_ws.alpha.show()
-        widget_dt_ws.use_pixel_pitch.show()
-        widget_dt_ws.pixel_pitch.show()
-        widget_dt_ws.apply_nonmax_suppression.show()
-        widget_dt_ws.is_nuclei_image.show()
+        for widget in advanced_dt_ws:
+            widget.show()
     else:
-        widget_dt_ws.sigma_seeds.hide()
-        widget_dt_ws.sigma_weights.hide()
-        widget_dt_ws.alpha.hide()
-        widget_dt_ws.use_pixel_pitch.hide()
-        widget_dt_ws.pixel_pitch.hide()
-        widget_dt_ws.apply_nonmax_suppression.hide()
-        widget_dt_ws.is_nuclei_image.hide()
+        for widget in advanced_dt_ws:
+            widget.hide()

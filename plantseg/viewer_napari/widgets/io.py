@@ -231,28 +231,26 @@ def widget_export_stacks(
     log(f"export_image_task completed in {time.time() - timer:.2f}s", thread="Export stacks", level="info")
 
 
-widget_export_stacks.directory.hide()
-widget_export_stacks.export_format.hide()
-widget_export_stacks.rescale_to_original_resolution.hide()
-widget_export_stacks.data_type.hide()
-widget_export_stacks.workflow_name.hide()
+export_details = [
+    widget_export_stacks.directory,
+    widget_export_stacks.export_format,
+    widget_export_stacks.rescale_to_original_resolution,
+    widget_export_stacks.data_type,
+    widget_export_stacks.workflow_name,
+]
+for widget in export_details:
+    widget.hide()
 
 
 @widget_export_stacks.images.changed.connect
 def _on_images_changed(images_list: list[tuple[Layer, str]]):
     images_list = _return_value_if_widget(images_list)
     if len(images_list) > 0:
-        widget_export_stacks.directory.show()
-        widget_export_stacks.export_format.show()
-        widget_export_stacks.rescale_to_original_resolution.show()
-        widget_export_stacks.data_type.show()
-        widget_export_stacks.workflow_name.show()
+        for widget in export_details:
+            widget.show()
     else:
-        widget_export_stacks.directory.hide()
-        widget_export_stacks.export_format.hide()
-        widget_export_stacks.rescale_to_original_resolution.hide()
-        widget_export_stacks.data_type.hide()
-        widget_export_stacks.workflow_name.hide()
+        for widget in export_details:
+            widget.hide()
 
 
 ########################################################################################################################

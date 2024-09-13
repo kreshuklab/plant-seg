@@ -220,9 +220,11 @@ def update_halo():
 def _on_widget_unet_predictions_advanced_changed(advanced):
     if advanced:
         update_halo()
-        [widget.show() for widget in advanced_unet_predictions_widgets]
+        for widget in advanced_unet_predictions_widgets:
+            widget.show()
     else:
-        [widget.hide() for widget in advanced_unet_predictions_widgets]
+        for widget in advanced_unet_predictions_widgets:
+            widget.hide()
 
 
 @widget_unet_predictions.mode.changed.connect

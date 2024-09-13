@@ -230,10 +230,17 @@ def widget_rescaling(
     )
 
 
-widget_rescaling.out_voxel_size.hide()
-widget_rescaling.reference_layer.hide()
-widget_rescaling.reference_model.hide()
-widget_rescaling.reference_shape.hide()
+list_widget_rescaling_all = [
+    widget_rescaling.out_voxel_size,
+    widget_rescaling.reference_layer,
+    widget_rescaling.reference_model,
+    widget_rescaling.rescaling_factor,
+    widget_rescaling.reference_shape,
+]
+
+for widget in list_widget_rescaling_all:
+    widget.hide()
+widget_rescaling.rescaling_factor.show()
 widget_rescaling.reference_shape[0].max = 20000
 widget_rescaling.reference_shape[1].max = 20000
 widget_rescaling.reference_shape[2].max = 20000
@@ -241,15 +248,7 @@ widget_rescaling.reference_shape[2].max = 20000
 
 @widget_rescaling.mode.changed.connect
 def _rescale_update_visibility(mode: RescaleModes):
-    all_widgets = [
-        widget_rescaling.out_voxel_size,
-        widget_rescaling.reference_layer,
-        widget_rescaling.reference_model,
-        widget_rescaling.rescaling_factor,
-        widget_rescaling.reference_shape,
-    ]
-
-    for widget in all_widgets:
+    for widget in list_widget_rescaling_all:
         widget.hide()
 
     match mode:
@@ -278,19 +277,24 @@ def _rescale_update_visibility(mode: RescaleModes):
             raise ValueError(f"{mode} is not implemented yet.")
 
 
+list_widget_rescaling_3d = [
+    widget_rescaling.rescaling_factor[0],
+    widget_rescaling.reference_shape[0],
+    widget_rescaling.out_voxel_size[0],
+]
+
+
 @widget_rescaling.image.changed.connect
 def _on_rescaling_image_changed(image: Layer):
     if not (isinstance(image, Image) or isinstance(image, Labels)):
         raise ValueError("Image must be an Image or Label layer.")
 
     if image.data.ndim == 2 or (image.data.ndim == 3 and image.data.shape[0] == 1):
-        widget_rescaling.rescaling_factor[0].hide()
-        widget_rescaling.reference_shape[0].hide()
-        widget_rescaling.out_voxel_size[0].hide()
+        for widget in list_widget_rescaling_3d:
+            widget.hide()
     else:
-        widget_rescaling.rescaling_factor[0].show()
-        widget_rescaling.reference_shape[0].show()
-        widget_rescaling.out_voxel_size[0].show()
+        for widget in list_widget_rescaling_3d:
+            widget.show()
 
     offset = 1 if image.data.ndim == 2 else 0
     for i, (shape, scale) in enumerate(zip(image.data.shape, image.scale)):
