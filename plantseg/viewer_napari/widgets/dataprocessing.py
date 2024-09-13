@@ -321,6 +321,13 @@ def _on_rescale_order_changed(order):
         widget_rescaling.order.value = RescaleType.NEAREST.int_val
 
 
+########################################################################################################################
+#                                                                                                                      #
+# Remove False Positives Widget                                                                                        #
+#                                                                                                                      #
+########################################################################################################################
+
+
 @magicgui(
     call_button="Remove False Positives",
     segmentation={
