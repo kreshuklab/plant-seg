@@ -69,6 +69,10 @@ def dt_watershed_task(
             "The input image is not a boundary probability map. The task will still attempt to run, but the results may not be as expected."
         )
 
+    if image.image_layout == "YX" and stacked:
+        logger.warning("Stack, or 'per slice' is only for 3D images (ZYX). The stack option will be disabled.")
+        stacked = False
+
     if is_nuclei_image:
         boundary_pmaps = normalize_01(image.get_data())
         boundary_pmaps = 1.0 - boundary_pmaps

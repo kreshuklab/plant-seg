@@ -4,8 +4,9 @@ from magicgui import magicgui
 from napari.layers import Image, Labels
 from napari.types import LayerDataTuple
 
-from plantseg.core.image import PlantSegImage
+from plantseg.core.image import ImageLayout, PlantSegImage
 from plantseg.tasks.segmentation_tasks import clustering_segmentation_task, dt_watershed_task, lmc_segmentation_task
+from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.dataprocessing import widget_remove_false_positives_by_foreground
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
@@ -233,3 +234,16 @@ def _on_show_advanced_changed(state: bool):
     else:
         for widget in advanced_dt_ws:
             widget.hide()
+
+
+@widget_dt_ws.image.changed.connect
+def _on_image_changed(image: Image):
+    ps_image = PlantSegImage.from_napari_layer(image)
+
+    if ps_image.image_layout == ImageLayout.ZYX:
+        widget_dt_ws.stacked.show()
+    else:
+        widget_dt_ws.stacked.hide()
+        widget_dt_ws.stacked.value = False
+        if ps_image.image_layout != ImageLayout.YX:
+            log(f"Unsupported image layout: {ps_image.image_layout}", thread="DT Watershed", level="error")
