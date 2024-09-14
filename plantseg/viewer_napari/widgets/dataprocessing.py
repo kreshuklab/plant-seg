@@ -395,8 +395,8 @@ def widget_remove_false_positives_by_foreground(
     },
 )
 def widget_fix_over_under_segmentation_from_nuclei(
-    cell_segmentation: Labels,
-    nuclei_segmentation: Labels,
+    segmentation_cells: Labels,
+    segmentation_nuclei: Labels,
     boundary_pmaps: Image | None = None,
     threshold=(33, 66),
     quantile=(0.3, 99.9),
@@ -420,8 +420,8 @@ def widget_fix_over_under_segmentation_from_nuclei(
     Returns:
         Future[LayerDataTuple]: A future object that contains the corrected segmentation layer once the task completes.
     """
-    ps_seg_cel = PlantSegImage.from_napari_layer(cell_segmentation)
-    ps_seg_nuc = PlantSegImage.from_napari_layer(nuclei_segmentation)
+    ps_seg_cel = PlantSegImage.from_napari_layer(segmentation_cells)
+    ps_seg_nuc = PlantSegImage.from_napari_layer(segmentation_nuclei)
     if boundary_pmaps:
         ps_pmap_cell_boundary = PlantSegImage.from_napari_layer(boundary_pmaps)
     else:
