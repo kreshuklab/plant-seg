@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
+from plantseg.functionals.prediction.utils.slice_builder import SliceBuilder
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,4 @@
-"""UNet Predictions Widget"""
+"""UNet Prediction Widget"""
 
 from concurrent.futures import Future
 from enum import Enum
@@ -37,12 +37,12 @@ CUSTOM = 'Custom'
 
 ########################################################################################################################
 #                                                                                                                      #
-# UNet Predictions Widget                                                                                              #
+# UNet Prediction Widget                                                                                               #
 #                                                                                                                      #
 ########################################################################################################################
 
 
-class UNetPredictionsMode(Enum):
+class UNetPredictionMode(Enum):
     PLANTSEG = 'PlantSeg Zoo'
     BIOIMAGEIO = 'BioImage.IO Zoo'
 
@@ -82,13 +82,13 @@ model_filters = Container(
 
 
 @magicgui(
-    call_button='Run Predictions',
+    call_button='Run Prediction',
     mode={
         'label': 'Mode',
-        'tooltip': 'Select the mode to run the predictions.',
+        'tooltip': 'Select the mode to run the prediction.',
         'widget_type': 'RadioButtons',
         'orientation': 'horizontal',
-        'choices': UNetPredictionsMode.to_choices(),
+        'choices': UNetPredictionMode.to_choices(),
     },
     image={'label': 'Image', 'tooltip': 'Raw image to be processed with a neural network.'},
     model_name={
@@ -131,7 +131,7 @@ model_filters = Container(
 def widget_unet_prediction(
     viewer: napari.Viewer,
     image: Image,
-    mode: UNetPredictionsMode = UNetPredictionsMode.PLANTSEG,
+    mode: UNetPredictionMode = UNetPredictionMode.PLANTSEG,
     plantseg_filter: bool = True,
     model_name: Optional[str] = None,
     model_id: Optional[str] = None,
@@ -141,10 +141,10 @@ def widget_unet_prediction(
     patch_halo: tuple[int, int, int] = (0, 0, 0),
     single_patch: bool = False,
 ) -> Future[list[LayerDataTuple]]:
-    if mode is UNetPredictionsMode.PLANTSEG:
+    if mode is UNetPredictionMode.PLANTSEG:
         suffix = model_name
         model_id = None
-    elif mode is UNetPredictionsMode.BIOIMAGEIO:
+    elif mode is UNetPredictionMode.BIOIMAGEIO:
         suffix = model_id
         model_name = None
     else:
@@ -185,10 +185,10 @@ def update_halo():
     if widget_unet_prediction.advanced.value:
         log(
             'Refreshing halo for the selected model; this might take a while...',
-            thread='UNet predictions',
+            thread='UNet prediction',
             level='info',
         )
-        if widget_unet_prediction.mode.value is UNetPredictionsMode.PLANTSEG:
+        if widget_unet_prediction.mode.value is UNetPredictionMode.PLANTSEG:
             widget_unet_prediction.patch_halo.value = model_zoo.compute_3D_halo_for_zoo_models(
                 widget_unet_prediction.model_name.value
             )
@@ -200,7 +200,7 @@ def update_halo():
                 widget_unet_prediction.patch_size[0].value = widget_unet_prediction.patch_size[1].value
                 widget_unet_prediction.patch_size[0].enabled = True
                 widget_unet_prediction.patch_halo[0].enabled = True
-        elif widget_unet_prediction.mode.value is UNetPredictionsMode.BIOIMAGEIO:
+        elif widget_unet_prediction.mode.value is UNetPredictionMode.BIOIMAGEIO:
             widget_unet_prediction.patch_halo.value = model_zoo.compute_3D_halo_for_bioimageio_models(
                 widget_unet_prediction.model_id.value
             )
@@ -228,7 +228,7 @@ def _on_widget_unet_prediction_advanced_changed(advanced):
 
 
 @widget_unet_prediction.mode.changed.connect
-def _on_widget_unet_prediction_mode_change(mode: UNetPredictionsMode):
+def _on_widget_unet_prediction_mode_change(mode: UNetPredictionMode):
     widgets_p = [  # PlantSeg
         widget_unet_prediction.model_name,
         model_filters,
@@ -237,12 +237,12 @@ def _on_widget_unet_prediction_mode_change(mode: UNetPredictionsMode):
         widget_unet_prediction.model_id,
         widget_unet_prediction.plantseg_filter,
     ]
-    if mode is UNetPredictionsMode.PLANTSEG:
+    if mode is UNetPredictionMode.PLANTSEG:
         for widget in widgets_p:
             widget.show()
         for widget in widgets_b:
             widget.hide()
-    elif mode is UNetPredictionsMode.BIOIMAGEIO:
+    elif mode is UNetPredictionMode.BIOIMAGEIO:
         for widget in widgets_p:
             widget.hide()
         for widget in widgets_b:
@@ -333,7 +333,7 @@ def _on_model_id_changed(model_id: str):
     output_type={
         'label': 'Prediction type',
         'widget_type': 'ComboBox',
-        'tooltip': 'Type of prediction (e.g. cell boundaries predictions or nuclei...).',
+        'tooltip': 'Type of prediction (e.g. cell boundaries prediction or nuclei...).',
         'choices': model_zoo.get_unique_output_types() + [CUSTOM],
     },
     custom_output_type={'label': 'Custom type'},

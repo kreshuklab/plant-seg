@@ -6,11 +6,11 @@ import torch
 
 from plantseg.core.zoo import model_zoo
 from plantseg.functionals.dataprocessing.dataprocessing import ImageLayout, fix_layout_to_CZYX, fix_layout_to_ZYX
-from plantseg.functionals.predictions.utils.array_dataset import ArrayDataset
-from plantseg.functionals.predictions.utils.array_predictor import ArrayPredictor
-from plantseg.functionals.predictions.utils.size_finder import find_a_max_patch_shape, find_patch_and_halo_shapes
-from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
-from plantseg.functionals.predictions.utils.utils import get_stride_shape
+from plantseg.functionals.prediction.utils.array_dataset import ArrayDataset
+from plantseg.functionals.prediction.utils.array_predictor import ArrayPredictor
+from plantseg.functionals.prediction.utils.size_finder import find_a_max_patch_shape, find_patch_and_halo_shapes
+from plantseg.functionals.prediction.utils.slice_builder import SliceBuilder
+from plantseg.functionals.prediction.utils.utils import get_stride_shape
 from plantseg.training.augs import get_test_augmentations
 
 logger = logging.getLogger(__name__)

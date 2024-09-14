@@ -2,7 +2,7 @@ from pathlib import Path
 
 from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.functionals.dataprocessing import fix_layout
-from plantseg.functionals.predictions import unet_prediction
+from plantseg.functionals.prediction import unet_prediction
 from plantseg.tasks import task_tracker
 
 
@@ -11,7 +11,7 @@ def unet_prediction_task(
     image: PlantSegImage,
     model_name: str | None,
     model_id: str | None,
-    suffix: str = "_predictions",
+    suffix: str = "_prediction",
     patch: tuple[int, int, int] | None = None,
     patch_halo: tuple[int, int, int] | None = None,
     single_batch_mode: bool = True,

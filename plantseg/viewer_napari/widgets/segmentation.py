@@ -86,7 +86,7 @@ def widget_agglomeration(
     },
     nuclei={
         'label': 'Nuclei',
-        'tooltip': 'Nuclei binary predictions or Nuclei segmentation.',
+        'tooltip': 'Nuclei binary prediction or Nuclei segmentation.',
     },
     superpixels={
         'label': 'Over-segmentation',

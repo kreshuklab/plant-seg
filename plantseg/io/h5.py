@@ -9,7 +9,7 @@ from plantseg.core.voxelsize import VoxelSize
 
 # allowed h5 keys
 H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]
-H5_KEYS = ["raw", "predictions", "segmentation"]
+H5_KEYS = ["raw", "prediction", "segmentation"]
 
 
 def _validate_h5_file(path: Path) -> None:

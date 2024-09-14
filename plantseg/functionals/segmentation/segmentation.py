@@ -114,7 +114,7 @@ def gasp(
     Perform segmentation using the GASP algorithm with affinity maps.
 
     Args:
-        boundary_pmaps (np.ndarray): Cell boundary predictions.
+        boundary_pmaps (np.ndarray): Cell boundary prediction.
         superpixels (Optional[np.ndarray]): Superpixel segmentation. If None, GASP will be run from the pixels. Default is None.
         gasp_linkage_criteria (str): Linkage criteria for GASP. Default is 'average'.
         beta (float): Beta parameter for GASP. Small values steer towards under-segmentation, while high values bias towards over-segmentation. Default is 0.5.
@@ -181,7 +181,7 @@ def mutex_ws(
     Wrapper around gasp with mutex_watershed as linkage criteria.
 
     Args:magicgui
-        boundary_pmaps (np.ndarray): cell boundary predictions. 3D array of shape (Z, Y, X) with values between 0 and 1.
+        boundary_pmaps (np.ndarray): cell boundary prediction. 3D array of shape (Z, Y, X) with values between 0 and 1.
         superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
             If None, GASP will be run from the pixels. (default: None)
         beta (float): beta parameter for GASP. A small value will steer the segmentation towards under-segmentation.
@@ -210,10 +210,10 @@ def multicut(
     post_minsize: int = 50,
 ) -> np.ndarray:
     """
-    Multicut segmentation from boundary predictions.
+    Multicut segmentation from boundary prediction.
 
     Args:
-        boundary_pmaps (np.ndarray): cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.
+        boundary_pmaps (np.ndarray): cell boundary prediction, 3D array of shape (Z, Y, X) with values between 0 and 1.
         superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
         beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards
             under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
@@ -251,11 +251,11 @@ def lifted_multicut_from_nuclei_pmaps(
     post_minsize: int = 50,
 ) -> np.ndarray:
     """
-    Lifted Multicut segmentation from boundary predictions and nuclei predictions.
+    Lifted Multicut segmentation from boundary prediction and nuclei prediction.
 
     Args:
-        boundary_pmaps (np.ndarray): cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.
-        nuclei_pmaps (np.ndarray): nuclei predictions. Must have the same shape as boundary_pmaps and
+        boundary_pmaps (np.ndarray): cell boundary prediction, 3D array of shape (Z, Y, X) with values between 0 and 1.
+        nuclei_pmaps (np.ndarray): nuclei predictionMust have the same shape as boundary_pmaps and
             with values between 0 and 1.
         superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
         beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards
@@ -301,10 +301,10 @@ def lifted_multicut_from_nuclei_segmentation(
     post_minsize: int = 50,
 ) -> np.ndarray:
     """
-    Lifted Multicut segmentation from boundary predictions and nuclei segmentation.
+    Lifted Multicut segmentation from boundary prediction and nuclei segmentation.
 
     Args:
-        boundary_pmaps (np.ndarray): cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.
+        boundary_pmaps (np.ndarray): cell boundary prediction, 3D array of shape (Z, Y, X) with values between 0 and 1.
         nuclei_seg (np.ndarray): Nuclei segmentation. Must have the same shape as boundary_pmaps.
         superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
         beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards
@@ -353,7 +353,7 @@ def simple_itk_watershed(
     Simple itk watershed segmentation.
 
     Args:
-        boundary_pmaps (np.ndarray): cell boundary predictions. 3D array of shape (Z, Y, X) with values between 0 and 1.
+        boundary_pmaps (np.ndarray): cell boundary prediction. 3D array of shape (Z, Y, X) with values between 0 and 1.
         threshold (float): threshold for the watershed segmentation. (default: 0.5)
         sigma (float): sigma for the gaussian smoothing. (default: 1.0)
         minsize (int): minimal size of the segments after segmentation. (default: 100)
