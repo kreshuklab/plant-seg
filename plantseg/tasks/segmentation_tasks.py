@@ -1,6 +1,6 @@
 import logging
 
-from plantseg.core.image import PlantSegImage, SemanticType
+from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.functionals.dataprocessing.dataprocessing import normalize_01
 from plantseg.functionals.segmentation import (
     dt_watershed,
@@ -31,18 +31,35 @@ def dt_watershed_task(
 ) -> PlantSegImage:
     """Distance transform watershed segmentation task.
 
+    This function applies the distance transform watershed algorithm to segment the input image.
+    It handles both standard boundary probability maps and nuclei images, with options for
+    various preprocessing and segmentation parameters.
+
     Args:
-        image (PlantSegImage): input image object
-        threshold (float): threshold for the boundary probability maps
-        sigma_seeds (float): sigma for the seeds
-        stacked (bool): whether the boundary probability maps are stacked
-        sigma_weights (float): sigma for the weights
-        min_size (int): minimum size for the segments
-        alpha (float): alpha parameter for the watershed
-        pixel_pitch (tuple[int, ...]): pixel pitch
-        apply_nonmax_suppression (bool): whether to apply non-maximum suppression
-        n_threads (int): number of threads
-        mask (np.ndarray): mask
+        image (PlantSegImage): The input image to segment.
+        threshold (float, optional): Threshold value for the boundary probability maps.
+            Defaults to 0.5.
+        sigma_seeds (float, optional): Standard deviation for Gaussian smoothing applied to
+            the seed map. Defaults to 1.0.
+        stacked (bool, optional): If True and the image is 3D, processes the image
+            slice-by-slice (2D). Defaults to False.
+        sigma_weights (float, optional): Standard deviation for Gaussian smoothing applied to
+            the weight map. Defaults to 2.0.
+        min_size (int, optional): Minimum size of the segments to keep. Smaller segments
+            will be removed. Defaults to 100.
+        alpha (float, optional): Blending factor between the input image and the distance
+            transform when computing the weight map. Defaults to 1.0.
+        pixel_pitch (tuple[int, ...] | None, optional): Anisotropy factors for the distance
+            transform. If None, isotropic distances are assumed. Defaults to None.
+        apply_nonmax_suppression (bool, optional): Whether to apply non-maximum suppression
+            to the seeds. Requires the Nifty library. Defaults to False.
+        n_threads (int | None, optional): Number of threads to use for parallel processing
+            in 2D mode. Defaults to None.
+        is_nuclei_image (bool, optional): If True, indicates that the input image is a nuclei
+            image, and preprocessing is applied accordingly. Defaults to False.
+
+    Returns:
+        PlantSegImage: The segmented image as a new `PlantSegImage` object.
     """
     if image.is_multichannel:
         raise ValueError("Multichannel images are not supported for this task.")
@@ -51,6 +68,10 @@ def dt_watershed_task(
         logger.warning(
             "The input image is not a boundary probability map. The task will still attempt to run, but the results may not be as expected."
         )
+
+    if image.image_layout == ImageLayout.YX and stacked:
+        logger.warning("Stack, or 'per slice' is only for 3D images (ZYX). The stack option will be disabled.")
+        stacked = False
 
     if is_nuclei_image:
         boundary_pmaps = normalize_01(image.get_data())

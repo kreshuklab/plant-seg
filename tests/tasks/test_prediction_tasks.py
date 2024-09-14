@@ -3,7 +3,7 @@ import pytest
 
 from plantseg.core import ImageProperties, PlantSegImage, VoxelSize
 from plantseg.core.image import ImageLayout, SemanticType
-from plantseg.tasks.predictions_tasks import unet_predictions_task
+from plantseg.tasks.prediction_tasks import unet_prediction_task
 
 
 @pytest.mark.parametrize(
@@ -13,7 +13,7 @@ from plantseg.tasks.predictions_tasks import unet_predictions_task
         ((64, 64), ImageLayout.YX, 'confocal_2D_unet_ovules_ds2x'),
     ],
 )
-def test_unet_predictions(shape, layout, model_name):
+def test_unet_prediction(shape, layout, model_name):
     mock_data = np.random.rand(*shape).astype('float32')
 
     property = ImageProperties(
@@ -25,7 +25,7 @@ def test_unet_predictions(shape, layout, model_name):
     )
     image = PlantSegImage(data=mock_data, properties=property)
 
-    result = unet_predictions_task(image=image, model_name=model_name, model_id=None, device='cpu')
+    result = unet_prediction_task(image=image, model_name=model_name, model_id=None, device='cpu')
 
     assert len(result) == 1
     result = result[0]

@@ -2,16 +2,16 @@ from pathlib import Path
 
 from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.functionals.dataprocessing import fix_layout
-from plantseg.functionals.predictions import unet_predictions
+from plantseg.functionals.prediction import unet_prediction
 from plantseg.tasks import task_tracker
 
 
 @task_tracker
-def unet_predictions_task(
+def unet_prediction_task(
     image: PlantSegImage,
     model_name: str | None,
     model_id: str | None,
-    suffix: str = "_predictions",
+    suffix: str = "_prediction",
     patch: tuple[int, int, int] | None = None,
     patch_halo: tuple[int, int, int] | None = None,
     single_batch_mode: bool = True,
@@ -37,7 +37,7 @@ def unet_predictions_task(
     data = image.get_data()
     input_layout = image.image_layout
 
-    pmaps = unet_predictions(
+    pmaps = unet_prediction(
         raw=data,
         input_layout=input_layout.value,
         model_name=model_name,
@@ -48,7 +48,6 @@ def unet_predictions_task(
         device=device,
         model_update=model_update,
         disable_tqdm=disable_tqdm,
-        handle_multichannel=True,  # always receive a (C, Z, Y, X) prediction
         config_path=config_path,
         model_weights_path=model_weights_path,
     )

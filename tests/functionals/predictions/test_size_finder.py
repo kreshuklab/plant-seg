@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from plantseg.core.zoo import model_zoo
-from plantseg.functionals.predictions.utils.size_finder import find_a_max_patch_shape, find_patch_and_halo_shapes
+from plantseg.functionals.prediction.utils.size_finder import find_a_max_patch_shape, find_patch_and_halo_shapes
 
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 MAX_PATCH_SHAPES = {

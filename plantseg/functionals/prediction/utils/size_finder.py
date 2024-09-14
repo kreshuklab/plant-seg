@@ -143,7 +143,7 @@ def find_batch_size(
     """Determine the maximum feasible batch size for a given model based on available GPU memory.
 
     Args:
-        model (nn.Module): The model to be used for predictions.
+        model (nn.Module): The model to be used for prediction.
         in_channels (int): Number of input channels to the model.
         patch_shape (tuple[int, int, int]): Dimensions of the input patches.
         patch_halo (tuple[int, int, int]): Halo size used for patch augmentation.
@@ -196,7 +196,7 @@ def will_CUDA_OOM(
     """Determine if a given batch size will cause an out-of-memory (OOM) error on the specified device.
 
     Args:
-        model (nn.Module): The model to be used for predictions.
+        model (nn.Module): The model to be used for prediction.
         in_channels (int): Number of input channels to the model.
         patch_shape (tuple[int, int, int]): Dimensions of the input patches.
         patch_halo (tuple[int, int, int]): Halo size used for patch augmentation.

@@ -6,12 +6,12 @@ import tqdm
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
-from plantseg.functionals.predictions.utils.array_dataset import (
+from plantseg.functionals.prediction.utils.array_dataset import (
     ArrayDataset,
     default_prediction_collate,
     remove_padding,
 )
-from plantseg.functionals.predictions.utils.size_finder import _is_2d_model, find_batch_size, will_CUDA_OOM
+from plantseg.functionals.prediction.utils.size_finder import _is_2d_model, find_batch_size, will_CUDA_OOM
 from plantseg.training.embeddings import embeddings_to_affinities
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class ArrayPredictor:
     """Predictor class for applying a model to a dataset and returning the results as numpy arrays.
 
     This predictor applies a given model on a dataset and accumulates the results into numpy arrays.
-    The predictions are computed in batches and memory utilization is carefully managed to fit
+    The probability maps are computed in batches and memory utilization is carefully managed to fit
     within available system RAM. For large datasets that do not fit in memory, consider using
     `LazyPredictor` instead.
 
@@ -112,7 +112,7 @@ class ArrayPredictor:
         if self.verbose_logging:
             logger.info(f"Running prediction on {len(test_loader)} batches")
 
-        # dimensionality of the output predictions
+        # dimensionality of the output prediction
         volume_shape = self.volume_shape(test_dataset)
         is_2d_model = _is_2d_model(self.model)
         if self.is_embedding:
@@ -142,7 +142,7 @@ class ArrayPredictor:
         # Sets the module in evaluation mode explicitly
         # It is necessary for batchnorm/dropout layers if present as well as final Sigmoid/Softmax to be applied
         self.model.eval()
-        # Run predictions on the entire input dataset
+        # Run prediction on the entire input dataset
 
         with torch.no_grad():
             for input_, indices in tqdm.tqdm(test_loader, disable=self.disable_tqdm):

@@ -61,16 +61,16 @@ def preprocess_config(path_file_hdf5):
 
 @pytest.fixture
 def prediction_config(tmpdir):
-    """Create pipeline config with Unet predictions enabled.
+    """Create pipeline config with Unet prediction enabled.
 
-    Predictions will be executed on the `tests/resources/sample_ovules.h5`.
+    Prediction will be executed on the `tests/resources/sample_ovules.h5`.
     The `sample_ovules.h5` file is copied to the temporary directory to avoid
     creating unnecessary files in `tests/resources`.
     """
     # Load the test configuration
     config_path = TEST_FILES / "test_config.yaml"
     config = yaml.full_load(config_path.read_text())
-    # Enable Unet predictions
+    # Enable UNet prediction
     config["cnn_prediction"]["state"] = True
     # Copy `sample_ovule.h5` to the temporary directory
     sample_ovule_path = TEST_FILES / "sample_ovule.h5"

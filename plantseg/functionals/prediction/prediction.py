@@ -6,17 +6,17 @@ import torch
 
 from plantseg.core.zoo import model_zoo
 from plantseg.functionals.dataprocessing.dataprocessing import ImageLayout, fix_layout_to_CZYX, fix_layout_to_ZYX
-from plantseg.functionals.predictions.utils.array_dataset import ArrayDataset
-from plantseg.functionals.predictions.utils.array_predictor import ArrayPredictor
-from plantseg.functionals.predictions.utils.size_finder import find_a_max_patch_shape, find_patch_and_halo_shapes
-from plantseg.functionals.predictions.utils.slice_builder import SliceBuilder
-from plantseg.functionals.predictions.utils.utils import get_stride_shape
+from plantseg.functionals.prediction.utils.array_dataset import ArrayDataset
+from plantseg.functionals.prediction.utils.array_predictor import ArrayPredictor
+from plantseg.functionals.prediction.utils.size_finder import find_a_max_patch_shape, find_patch_and_halo_shapes
+from plantseg.functionals.prediction.utils.slice_builder import SliceBuilder
+from plantseg.functionals.prediction.utils.utils import get_stride_shape
 from plantseg.training.augs import get_test_augmentations
 
 logger = logging.getLogger(__name__)
 
 
-def unet_predictions(
+def unet_prediction(
     raw: np.ndarray,
     input_layout: ImageLayout,
     model_name: str | None,
@@ -27,11 +27,10 @@ def unet_predictions(
     device: str = "cuda",
     model_update: bool = False,
     disable_tqdm: bool = False,
-    handle_multichannel: bool = False,
     config_path: Path | None = None,
     model_weights_path: Path | None = None,
 ) -> np.ndarray:
-    """Generate predictions from raw data using a specified 3D U-Net model.
+    """Generate prediction from raw data using a specified 3D U-Net model.
 
     This function handles both single and multi-channel outputs from the model,
     returning appropriately shaped arrays based on the output channel configuration.
@@ -47,7 +46,6 @@ def unet_predictions(
         device (str, optional): The computation device ('cpu', 'cuda', etc.). Defaults to 'cuda'.
         model_update (bool, optional): Whether to update the model to the latest version. Defaults to False.
         disable_tqdm (bool, optional): If True, disables the tqdm progress bar. Defaults to False.
-        handle_multichannel (bool, optional): If True, handles multi-channel output properly. Defaults to False.
         config_path (Path | None, optional): Path to the model configuration file. Defaults to None.
         model_weights_path (Path | None, optional): Path to the model weights file. Defaults to None.
 

@@ -289,12 +289,13 @@ def _on_rescaling_image_changed(image: Layer):
     if not (isinstance(image, Image) or isinstance(image, Labels)):
         raise ValueError("Image must be an Image or Label layer.")
 
+    # TODO: Write tests for 2D images and labels, then change `.enabled` to `.hide()`
     if image.data.ndim == 2 or (image.data.ndim == 3 and image.data.shape[0] == 1):
         for widget in list_widget_rescaling_3d:
-            widget.hide()
+            widget.enabled = False
     else:
         for widget in list_widget_rescaling_3d:
-            widget.show()
+            widget.enabled = True
 
     offset = 1 if image.data.ndim == 2 else 0
     for i, (shape, scale) in enumerate(zip(image.data.shape, image.scale)):
