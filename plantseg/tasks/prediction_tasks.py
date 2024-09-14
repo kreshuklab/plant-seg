@@ -48,7 +48,6 @@ def unet_prediction_task(
         device=device,
         model_update=model_update,
         disable_tqdm=disable_tqdm,
-        handle_multichannel=True,  # always receive a (C, Z, Y, X) prediction
         config_path=config_path,
         model_weights_path=model_weights_path,
     )

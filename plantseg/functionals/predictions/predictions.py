@@ -27,7 +27,6 @@ def unet_prediction(
     device: str = "cuda",
     model_update: bool = False,
     disable_tqdm: bool = False,
-    handle_multichannel: bool = False,
     config_path: Path | None = None,
     model_weights_path: Path | None = None,
 ) -> np.ndarray:
@@ -47,7 +46,6 @@ def unet_prediction(
         device (str, optional): The computation device ('cpu', 'cuda', etc.). Defaults to 'cuda'.
         model_update (bool, optional): Whether to update the model to the latest version. Defaults to False.
         disable_tqdm (bool, optional): If True, disables the tqdm progress bar. Defaults to False.
-        handle_multichannel (bool, optional): If True, handles multi-channel output properly. Defaults to False.
         config_path (Path | None, optional): Path to the model configuration file. Defaults to None.
         model_weights_path (Path | None, optional): Path to the model weights file. Defaults to None.
 
