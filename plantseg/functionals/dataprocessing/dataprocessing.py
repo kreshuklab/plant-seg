@@ -2,7 +2,7 @@ from typing import Literal
 
 import numpy as np
 from scipy.ndimage import zoom
-from skimage.filters import median
+from skimage.filters import median  # pylint: disable=no-name-in-module
 from skimage.morphology import ball, disk
 from vigra import gaussianSmoothing
 
@@ -272,6 +272,8 @@ def fix_layout_to_CYX(data: np.ndarray, input_layout: ImageLayout) -> np.ndarray
 
     if _data.ndim != 3:
         raise ValueError(f"Expected 3D image, but got {_data.ndim}D image")
+
+    return _data
 
 
 def fix_layout(data: np.ndarray, input_layout: ImageLayout, output_layout: ImageLayout) -> np.ndarray:
