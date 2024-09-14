@@ -28,4 +28,3 @@ The input image can be a raw stack "tiff"/"h5" or the output of the PreProcessin
 
 * The **Device type** menu can be used to enable or not GPU acceleration. CUDA greatly accelerates the network
 prediction on Nvidia GPUs. At the moment, we don't support other GPUs manufacturers.
-

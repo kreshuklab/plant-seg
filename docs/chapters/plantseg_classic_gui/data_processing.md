@@ -15,6 +15,7 @@ Input formats allowed are tiff and h5, while output is always h5.
 This operation can be done automatically by clicking on the GUI on **Guided**.
 Be careful to use this function only in case of data considerably different from
 the reference resolution.
+
 ```
 As an example:
   - if your data has the voxel size of 0.3 x 0.1 x 0.1 (ZYX).
@@ -37,9 +38,10 @@ The higher, the wider is filtering kernel.
 
 A post-processing step can be performed after the **CNN-Prediction** and the **Segmentation**.
 The post-processing options are:
- * Converting the output to the tiff file format (default is h5).
 
- * Casting the **CNN-Prediction** output to *data_uint8* drastically reduces the memory footprint of the output
+* Converting the output to the tiff file format (default is h5).
+
+* Casting the **CNN-Prediction** output to *data_uint8* drastically reduces the memory footprint of the output
  file.
 
 Additionally, the post-processing will scale back your outputs to the original voxels resolutions.
