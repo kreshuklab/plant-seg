@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+      - plantsegv2
+      - qy/plantsegv2
 
 permissions:
   contents: write

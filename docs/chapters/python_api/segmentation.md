@@ -1,22 +1,28 @@
 # PlantSeg Segmentation
+
 The PlantSeg segmentation module implements all segmentation routine in plantseg.
 
-* ***DT Watershed***
-::: plantseg.segmentation.functional.segmentation.dt_watershed
+## DT Watershed
 
-* ***GASP***
-::: plantseg.segmentation.functional.segmentation.gasp
+::: plantseg.functionals.segmentation.dt_watershed
 
-* ***Multicut***
-::: plantseg.segmentation.functional.segmentation.multicut
+## GASP
 
-* ***Mutex Watershed***
-::: plantseg.segmentation.functional.segmentation.mutex_ws
+::: plantseg.functionals.segmentation.gasp
 
-* ***Lifted Multicut***
-::: plantseg.segmentation.functional.segmentation.lifted_multicut_from_nuclei_pmaps
-::: plantseg.segmentation.functional.segmentation.lifted_multicut_from_nuclei_segmentation
+## Multicut
 
-* ***Simple ITK Watershed***
-::: plantseg.segmentation.functional.segmentation.simple_itk_watershed
+::: plantseg.functionals.segmentation.multicut
 
+## Mutex Watershed
+
+::: plantseg.functionals.segmentation.mutex_ws
+
+## Lifted Multicut
+
+::: plantseg.functionals.segmentation.segmentation.lifted_multicut_from_nuclei_pmaps
+::: plantseg.functionals.segmentation.lifted_multicut_from_nuclei_segmentation
+
+## Simple ITK Watershed
+
+::: plantseg.functionals.segmentation.simple_itk_watershed

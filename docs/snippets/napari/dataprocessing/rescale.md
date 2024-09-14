@@ -6,8 +6,10 @@
     import sys
 
     sys.path.append("docs/snippets")
+
+
     from napari_widgets_render import render_widget
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
+    from plantseg.viewer_napari.widgets.dataprocessing import widget_rescaling, RescaleModes
 
     widget_rescaling.mode.value = RescaleModes.FROM_FACTOR
 
@@ -23,8 +25,10 @@
     import sys
 
     sys.path.append("docs/snippets")
+
+
     from napari_widgets_render import render_widget
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
+    from plantseg.viewer_napari.widgets.dataprocessing import widget_rescaling, RescaleModes
 
     widget_rescaling.mode.value = RescaleModes.TO_LAYER_VOXEL_SIZE
 
@@ -39,9 +43,10 @@
     import sys
 
     sys.path.append("docs/snippets")
-    from napari_widgets_render import render_widget
 
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
+
+    from napari_widgets_render import render_widget
+    from plantseg.viewer_napari.widgets.dataprocessing import widget_rescaling, RescaleModes
 
     widget_rescaling.mode.value = RescaleModes.TO_LAYER_SHAPE
 
@@ -57,8 +62,10 @@
     import sys
 
     sys.path.append("docs/snippets")
+
+
     from napari_widgets_render import render_widget
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
+    from plantseg.viewer_napari.widgets.dataprocessing import widget_rescaling, RescaleModes
 
     widget_rescaling.mode.value = RescaleModes.TO_MODEL_VOXEL_SIZE
 
@@ -73,8 +80,10 @@
     import sys
 
     sys.path.append("docs/snippets")
+
+
     from napari_widgets_render import render_widget
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
+    from plantseg.viewer_napari.widgets.dataprocessing import widget_rescaling, RescaleModes
 
     widget_rescaling.mode.value = RescaleModes.TO_VOXEL_SIZE
 
@@ -89,8 +98,10 @@
     import sys
 
     sys.path.append("docs/snippets")
+
+
     from napari_widgets_render import render_widget
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
+    from plantseg.viewer_napari.widgets.dataprocessing import widget_rescaling, RescaleModes
 
     widget_rescaling.mode.value = RescaleModes.TO_SHAPE
 
@@ -105,8 +116,10 @@
     import sys
 
     sys.path.append("docs/snippets")
+
+
     from napari_widgets_render import render_widget
-    from plantseg.viewer.widget.dataprocessing import widget_rescaling, RescaleModes
+    from plantseg.viewer_napari.widgets.dataprocessing import widget_rescaling, RescaleModes
 
     widget_rescaling.mode.value = RescaleModes.SET_VOXEL_SIZE
 
