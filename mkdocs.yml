@@ -103,7 +103,7 @@ nav:
   - Napari GUI:
       - chapters/plantseg_interactive_napari/index.md
       - Import/Export: chapters/plantseg_interactive_napari/import_export.md
-      - Data Processing: chapters/plantseg_interactive_napari/data_processing.md
+      - Data Processing: chapters/plantseg_interactive_napari/preprocessing.md
       - Main Workflow: chapters/plantseg_interactive_napari/unet_gasp_workflow.md
       - Extra Workflows: chapters/plantseg_interactive_napari/extra.md
       - Proofreading: chapters/plantseg_interactive_napari/proofreading.md
