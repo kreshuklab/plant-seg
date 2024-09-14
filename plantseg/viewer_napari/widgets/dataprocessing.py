@@ -401,6 +401,25 @@ def widget_fix_over_under_segmentation_from_nuclei(
     threshold=(33, 66),
     quantile=(0.3, 99.9),
 ) -> Future[LayerDataTuple]:
+    """
+    Widget interface for correcting over- and under-segmentation of cells based on nuclei segmentation.
+
+    This GUI interface allows the user to specify the input cell and nuclear segmentations, along with optional boundary
+    probability maps. The user can control the merging and splitting thresholds, and define quantiles to filter out
+    irregular nuclei. The widget schedules the correction task in the background and updates the displayed results accordingly.
+
+    Args:
+        cell_segmentation (Labels): Input label layer for cell segmentation.
+        nuclei_segmentation (Labels): Input label layer for nuclei segmentation.
+        boundary_pmaps (Image | None, optional): Optional boundary probability map or image to assist in segmentation refinement.
+        threshold (tuple[float, float], optional): Threshold range for merging (first value) and splitting (second value) cells.
+            The values should be between 0 and 100, corresponding to 0%-100% overlap. Default is (33, 66).
+        quantile (tuple[float, float], optional): Quantile range to filter nuclei size, ignoring outliers.
+            Values should be between 0 and 100. Default is (0.3, 99.9).
+
+    Returns:
+        Future[LayerDataTuple]: A future object that contains the corrected segmentation layer once the task completes.
+    """
     ps_seg_cel = PlantSegImage.from_napari_layer(cell_segmentation)
     ps_seg_nuc = PlantSegImage.from_napari_layer(nuclei_segmentation)
     if boundary_pmaps:

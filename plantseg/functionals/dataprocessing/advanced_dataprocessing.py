@@ -259,18 +259,27 @@ def fix_over_under_segmentation_from_nuclei(
     boundary: np.ndarray | None = None,
 ) -> np.ndarray:
     """
-    Attempts to fix both over-segmentation and under-segmentation of cells using a trusted nuclei segmentation.
+    Corrects over-segmentation and under-segmentation of cells based on a trusted nuclei segmentation.
+
+    This function uses information from nuclei segmentation to refine cell segmentation by first identifying
+    over-segmented cells (cells mistakenly split into multiple segments) and merging them. It then corrects
+    under-segmented cells (multiple nuclei within a single cell) by splitting them based on nuclei position
+    and optional boundary information.
 
     Args:
-        cell_seg (np.ndarray): Cell segmentation array.
-        nuclei_seg (np.ndarray): Nuclei segmentation array.
-        threshold_merge (float): Overlap threshold for merging cells. Default is 0.33.
-        threshold_split (float): Overlap threshold for splitting cells. Default is 0.66.
-        quantiles_nuclei (tuple[float, float]): Quantiles to filter nuclei by size. Default is (0.3, 0.99).
-        boundary (np.ndarray | None): Boundary probability map. If None, uses a constant array.
+        cell_seg (np.ndarray): A 2D or 3D array representing segmented cell instances.
+        nuclei_seg (np.ndarray): A 2D or 3D array representing segmented nuclei instances, with the same shape as `cell_seg`.
+        threshold_merge (float, optional): Threshold for identifying over-segmentation, based on the ratio of nuclei overlap.
+            Cells with overlap below this threshold will be merged. Default is 0.33.
+        threshold_split (float, optional): Threshold for identifying under-segmentation, based on the ratio of nuclei overlap.
+            Cells with overlap above this threshold will be split. Default is 0.66.
+        quantiles_nuclei (tuple[float, float], optional): Quantile range for filtering nuclei based on size, helping to ignore
+            outliers such as very small or very large nuclei. Default is (0.3, 0.99).
+        boundary (np.ndarray | None, optional): An optional boundary probability map for the cells. If None, a constant map
+            is used to treat all regions equally. This can help refine under-segmentation correction.
 
     Returns:
-        np.ndarray: Corrected cell segmentation array.
+        np.ndarray: The corrected cell segmentation array, of the same shape as the input `cell_seg`.
     """
     cell_counts, nuclei_counts, cell_nuclei_counts = numba_find_overlaps(cell_seg, nuclei_seg)
     nuclei_assignments = find_potential_over_seg(nuclei_counts, cell_nuclei_counts, threshold=threshold_merge)

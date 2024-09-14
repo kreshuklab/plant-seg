@@ -154,16 +154,23 @@ def fix_over_under_segmentation_from_nuclei_task(
     quantiles_nuclei: tuple[float, float] = (0.3, 0.99),
     boundary: PlantSegImage | None = None,
 ) -> PlantSegImage:
-    """Fix over- and under-segmentation based on a nuclear segmentation.
+    """
+    Task function to fix over- and under-segmentation in cell segmentation based on nuclear segmentation.
+
+    This function is used to run the over- and under-segmentation correction within a task management system.
+    It uses the segmentation arrays and nuclear information to merge and split cell regions. This task ensures
+    that the provided `cell_seg` and `nuclei_seg` have matching shapes and processes the data accordingly.
 
     Args:
-        cell_seg (PlantSegImage): input cell segmentation
-        nuclei_seg (PlantSegImage): input nuclear segmentation
-        threshold_merge (float): threshold for merging segments
-        threshold_split (float): threshold for splitting segments
-        quantiles_nuclei (tuple[float, float]): quantiles for the nuclear segmentation
-        boundary (PlantSegImage): optional boundary image
+        cell_seg (PlantSegImage): Input cell segmentation as a `PlantSegImage` object.
+        nuclei_seg (PlantSegImage): Input nuclear segmentation as a `PlantSegImage` object.
+        threshold_merge (float, optional): Threshold for merging cells based on the overlap with nuclei. Default is 0.33.
+        threshold_split (float, optional): Threshold for splitting cells based on the overlap with nuclei. Default is 0.66.
+        quantiles_nuclei (tuple[float, float], optional): Quantiles used to filter nuclei by size. Default is (0.3, 0.99).
+        boundary (PlantSegImage | None, optional): Optional boundary probability map. If not provided, a constant map is used.
 
+    Returns:
+        PlantSegImage: A new `PlantSegImage` object containing the corrected cell segmentation.
     """
     if cell_seg.shape != nuclei_seg.shape:
         raise ValueError("Cell and nuclei segmentation must have the same shape.")
