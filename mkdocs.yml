@@ -76,6 +76,7 @@ plugins:
             - https://docs.python.org/3/objects.inv
             - https://numpy.org/doc/stable/objects.inv
           options:
+            heading_level: 3
             docstring_style: google
             show_source: true
             show_signature_annotations: true
@@ -106,7 +107,6 @@ nav:
       - Main Workflow: chapters/plantseg_interactive_napari/unet_gasp_workflow.md
       - Extra Workflows: chapters/plantseg_interactive_napari/extra.md
       - Proofreading: chapters/plantseg_interactive_napari/proofreading.md
-      - Batch Processing: chapters/plantseg_interactive_napari/headless_batch_processing.md
       - Training: chapters/plantseg_interactive_napari/unet_training.md
 
   - Dataset and Training:
@@ -117,7 +117,7 @@ nav:
   - Classic GUI:
       - chapters/plantseg_classic_gui/index.md
       - Data Processing: chapters/plantseg_classic_gui/data_processing.md
-      - Prediction: chapters/plantseg_classic_gui/cnn_predictions.md
+      - Prediction: chapters/plantseg_classic_gui/cnn_prediction.md
       - Segmentation: chapters/plantseg_classic_gui/segmentation.md
 
   - Classic CLI:
@@ -127,5 +127,5 @@ nav:
       - chapters/python_api/index.md
       - plantseg.io: chapters/python_api/io.md
       - plantseg.dataprocessing: chapters/python_api/data_processing.md
-      - plantseg.predictions: chapters/python_api/cnn_predictions.md
+      - plantseg.prediction: chapters/python_api/cnn_prediction.md
       - plantseg.segmentation: chapters/python_api/segmentation.md

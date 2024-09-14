@@ -6,9 +6,9 @@ but they are tuned towards cell segmentation in plant tissue. The tool is fundam
 
 ![Main Figure](https://github.com/kreshuklab/plant-seg/raw/assets/images/main_figure_nologo.png)
 
-* ***Cell boundary predictions***: A convolutional neural network (CNN) is utilized to perform voxel-wise boundary classification. This network is adept at filtering out diverse types and intensities of noise, homogenizing signal strength, and correcting imaging defects such as blurred or missing cell boundaries. This step ensures a high-quality boundary prediction which is crucial for accurate segmentation.
+* ***Cell boundary prediction***: A convolutional neural network (CNN) is utilized to perform voxel-wise boundary classification. This network is adept at filtering out diverse types and intensities of noise, homogenizing signal strength, and correcting imaging defects such as blurred or missing cell boundaries. This step ensures a high-quality boundary prediction which is crucial for accurate segmentation.
 
-* ***Cell Segmentation as graph partitioning***: The boundary predictions from the first step serve as the basis for automated segmentation. PlantSeg implements four distinct algorithms for this task, each with unique features tailored to different segmentation needs. This graph partitioning approach is particularly effective for segmenting densely packed cells.
+* ***Cell Segmentation as graph partitioning***: The boundary prediction from the first step serve as the basis for automated segmentation. PlantSeg implements four distinct algorithms for this task, each with unique features tailored to different segmentation needs. This graph partitioning approach is particularly effective for segmenting densely packed cells.
 
 For a detailed description of the methods employed in PlantSeg, please refer to our [manuscript](https://elifesciences.org/articles/57613)..
 

@@ -17,7 +17,7 @@ The central panel of PlantSeg (C) is the core of the pipeline configuration.
 It can be used for customizing and tuning the pipeline accordingly to the data at hand.
 Detailed information for each stage can be found at:
 * [Data-Processing](data_processing.md)
-* [CNN-Predictions](cnn_predictions.md)
+* [CNN-Prediction](cnn_prediction.md)
 * [Segmentation](segmentation.md)
 
 Any of the above widgets can be run singularly or in sequence (left to right). The order of execution can not be
@@ -44,10 +44,10 @@ outputs:
 ------------>/file2.h5
 ------------>/file2.yaml
 ------------>/generic_confocal_3d_unet/
-------------------------------------->/file1_predictions.h5
-------------------------------------->/file1_predictions.yaml
-------------------------------------->/file2_predictions.h5
-------------------------------------->/file2_predictions.yaml
+------------------------------------->/file1_prediction.h5
+------------------------------------->/file1_prediction.yaml
+------------------------------------->/file2_prediction.h5
+------------------------------------->/file2_prediction.yaml
 ------------------------------------->/GASP/
 ------------------------------------------>/file_1_predions_gasp_average.h5
 ------------------------------------------>/file_1_predions_gasp_average.yaml

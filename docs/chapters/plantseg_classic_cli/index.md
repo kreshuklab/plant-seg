@@ -14,7 +14,7 @@ This step can be skipped if data is ready for neural network processing.
 Detailed instructions can be found at [Classic GUI (Data Processing)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/data_processing/).
 * `cnn_prediction` attribute: contains all parameters relevant for predicting with a neural network.
 Description of all pre-trained models provided with the package is described below.
-Detailed instructions can be found at [Classic GUI (Predictions)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_predictions/).
+Detailed instructions can be found at [Classic GUI (Prediction)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_prediction/).
 * `segmentation` attribute: contains all parameters needed to run the partitioning algorithm (i.e., final Segmentation).
 Detailed instructions can be found at [Classic GUI (Segmentation)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/segmentation/).
 
@@ -22,7 +22,7 @@ Detailed instructions can be found at [Classic GUI (Segmentation)](https://kresh
 
 The PlantSeg-related files (models, configs) will be placed inside your home directory under `~/.plantseg_models`.
 
-Our pipeline uses the PyTorch library for CNN predictions. PlantSeg can be run on systems without GPU, however
+Our pipeline uses the PyTorch library for CNN prediction. PlantSeg can be run on systems without GPU, however
 for maximum performance, we recommend that the application is run on a machine with a high-performance GPU for deep learning.
 If the `CUDA_VISIBLE_DEVICES` environment variable is not specified, the prediction task will be distributed on all available GPUs.
 E.g. run: `CUDA_VISIBLE_DEVICES=0 plantseg --config CONFIG_PATH` to restrict prediction to a given GPU.
@@ -163,10 +163,10 @@ outputs:
 ------------>/file2.h5
 ------------>/file2.yaml
 ------------>/generic_confocal_3d_unet/
-------------------------------------->/file1_predictions.h5
-------------------------------------->/file1_predictions.yaml
-------------------------------------->/file2_predictions.h5
-------------------------------------->/file2_predictions.yaml
+------------------------------------->/file1_prediction.h5
+------------------------------------->/file1_prediction.yaml
+------------------------------------->/file2_prediction.h5
+------------------------------------->/file2_prediction.yaml
 ------------------------------------->/GASP/
 ------------------------------------------>/file_1_predions_gasp_average.h5
 ------------------------------------------>/file_1_predions_gasp_average.yaml

@@ -35,11 +35,11 @@ The higher, the wider is filtering kernel.
 
 ## Post-Processing
 
-A post-processing step can be performed after the **CNN-Predictions** and the **Segmentation**.
+A post-processing step can be performed after the **CNN-Prediction** and the **Segmentation**.
 The post-processing options are:
  * Converting the output to the tiff file format (default is h5).
 
- * Casting the **CNN-Predictions** output to *data_uint8* drastically reduces the memory footprint of the output
+ * Casting the **CNN-Prediction** output to *data_uint8* drastically reduces the memory footprint of the output
  file.
 
 Additionally, the post-processing will scale back your outputs to the original voxels resolutions.
