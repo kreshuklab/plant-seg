@@ -1,6 +1,6 @@
 import logging
 
-from plantseg.core.image import PlantSegImage, SemanticType
+from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.functionals.dataprocessing.dataprocessing import normalize_01
 from plantseg.functionals.segmentation import (
     dt_watershed,
@@ -69,7 +69,7 @@ def dt_watershed_task(
             "The input image is not a boundary probability map. The task will still attempt to run, but the results may not be as expected."
         )
 
-    if image.image_layout == "YX" and stacked:
+    if image.image_layout == ImageLayout.YX and stacked:
         logger.warning("Stack, or 'per slice' is only for 3D images (ZYX). The stack option will be disabled.")
         stacked = False
 
