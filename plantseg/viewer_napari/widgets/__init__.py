@@ -1,4 +1,5 @@
 from plantseg.viewer_napari.widgets.dataprocessing import (
+    widget_fix_over_under_segmentation_from_nuclei,
     widget_gaussian_smoothing,
     widget_remove_false_positives_by_foreground,
     widget_rescaling,
@@ -36,4 +37,5 @@ __all__ = [
     "widget_filter_segmentation",
     "widget_add_label_to_corrected",  # XXX: Not used in container
     "widget_remove_false_positives_by_foreground",
+    "widget_fix_over_under_segmentation_from_nuclei",
 ]

@@ -9,6 +9,7 @@ from plantseg.core.image import PlantSegImage
 from plantseg.core.voxelsize import VoxelSize
 from plantseg.core.zoo import model_zoo
 from plantseg.tasks.dataprocessing_tasks import (
+    fix_over_under_segmentation_from_nuclei_task,
     gaussian_smoothing_task,
     image_rescale_to_shape_task,
     image_rescale_to_voxel_size_task,
@@ -134,7 +135,6 @@ class RescaleModes(Enum):
     },
     order={
         "label": "Interpolation order",
-        "widget_type": "ComboBox",
         "choices": RescaleType.to_choices(),
         "tooltip": "0 for nearest neighbours (default for labels), 1 for linear, 2 for bilinear.",
         "widget_type": "RadioButtons",
@@ -362,6 +362,62 @@ def widget_remove_false_positives_by_foreground(
             "segmentation": ps_segmentation,
             "foreground": ps_foreground,
             "threshold": threshold,
+        },
+        widgets_to_update=[],
+    )
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Fix Over-/Under-Segmentation Widget                                                                                  #
+#                                                                                                                      #
+########################################################################################################################
+
+
+@magicgui(
+    call_button='Fix Segmentation by Nuclei',
+    segmentation_cells={'label': 'Cell instances'},
+    segmentation_nuclei={'label': 'Nuclear instances'},
+    boundary_pmaps={'label': 'Boundary Pmap/Image'},
+    threshold={
+        'label': 'Threshold',
+        'widget_type': 'FloatRangeSlider',
+        'max': 100,
+        'min': 0,
+        'step': 0.1,
+    },
+    quantile={
+        'label': 'Nuclei Quantile',
+        'widget_type': 'FloatRangeSlider',
+        'max': 100,
+        'min': 0,
+        'step': 0.1,
+    },
+)
+def widget_fix_over_under_segmentation_from_nuclei(
+    cell_segmentation: Labels,
+    nuclei_segmentation: Labels,
+    boundary_pmaps: Image | None = None,
+    threshold=(33, 66),
+    quantile=(0.3, 99.9),
+) -> Future[LayerDataTuple]:
+    ps_seg_cel = PlantSegImage.from_napari_layer(cell_segmentation)
+    ps_seg_nuc = PlantSegImage.from_napari_layer(nuclei_segmentation)
+    if boundary_pmaps:
+        ps_pmap_cell_boundary = PlantSegImage.from_napari_layer(boundary_pmaps)
+    else:
+        ps_pmap_cell_boundary = None
+    threshold_merge, threshold_split = threshold[0] / 100, threshold[1] / 100
+
+    return schedule_task(
+        fix_over_under_segmentation_from_nuclei_task,
+        task_kwargs={
+            'cell_seg': ps_seg_cel,
+            'nuclei_seg': ps_seg_nuc,
+            'threshold_merge': threshold_merge,
+            'threshold_split': threshold_split,
+            'quantiles_nuclei': quantile,
+            'boundary': ps_pmap_cell_boundary,
         },
         widgets_to_update=[],
     )
