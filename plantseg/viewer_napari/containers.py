@@ -10,6 +10,7 @@ from plantseg.viewer_napari.widgets import (
     widget_dt_ws,
     widget_export_stacks,
     widget_filter_segmentation,
+    widget_fix_over_under_segmentation_from_nuclei,
     widget_gaussian_smoothing,
     widget_infos,
     widget_lifted_multicut,
@@ -107,6 +108,7 @@ def get_proofreading_tab():
             widget_clean_scribble,
             widget_filter_segmentation,
             widget_remove_false_positives_by_foreground,
+            widget_fix_over_under_segmentation_from_nuclei,
         ],
         labels=False,
     )

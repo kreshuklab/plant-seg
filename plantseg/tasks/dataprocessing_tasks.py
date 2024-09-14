@@ -1,6 +1,7 @@
 from plantseg.core.image import ImageLayout, PlantSegImage
 from plantseg.core.voxelsize import VoxelSize
 from plantseg.functionals.dataprocessing import (
+    fix_over_under_segmentation_from_nuclei,
     image_gaussian_smoothing,
     image_rescale,
     remove_false_positives_by_foreground_probability,
@@ -141,4 +142,46 @@ def remove_false_positives_by_foreground_probability_task(
         segmentation.get_data(), foreground.get_data(), threshold
     )
     new_image = segmentation.derive_new(out_data, name=f"{segmentation.name}_fg_filtered")
+    return new_image
+
+
+@task_tracker
+def fix_over_under_segmentation_from_nuclei_task(
+    cell_seg: PlantSegImage,
+    nuclei_seg: PlantSegImage,
+    threshold_merge: float = 0.33,
+    threshold_split: float = 0.66,
+    quantiles_nuclei: tuple[float, float] = (0.3, 0.99),
+    boundary: PlantSegImage | None = None,
+) -> PlantSegImage:
+    """
+    Task function to fix over- and under-segmentation in cell segmentation based on nuclear segmentation.
+
+    This function is used to run the over- and under-segmentation correction within a task management system.
+    It uses the segmentation arrays and nuclear information to merge and split cell regions. This task ensures
+    that the provided `cell_seg` and `nuclei_seg` have matching shapes and processes the data accordingly.
+
+    Args:
+        cell_seg (PlantSegImage): Input cell segmentation as a `PlantSegImage` object.
+        nuclei_seg (PlantSegImage): Input nuclear segmentation as a `PlantSegImage` object.
+        threshold_merge (float, optional): Threshold for merging cells based on the overlap with nuclei. Default is 0.33.
+        threshold_split (float, optional): Threshold for splitting cells based on the overlap with nuclei. Default is 0.66.
+        quantiles_nuclei (tuple[float, float], optional): Quantiles used to filter nuclei by size. Default is (0.3, 0.99).
+        boundary (PlantSegImage | None, optional): Optional boundary probability map. If not provided, a constant map is used.
+
+    Returns:
+        PlantSegImage: A new `PlantSegImage` object containing the corrected cell segmentation.
+    """
+    if cell_seg.shape != nuclei_seg.shape:
+        raise ValueError("Cell and nuclei segmentation must have the same shape.")
+
+    out_data = fix_over_under_segmentation_from_nuclei(
+        cell_seg.get_data(),
+        nuclei_seg.get_data(),
+        threshold_merge=threshold_merge,
+        threshold_split=threshold_split,
+        quantiles_nuclei=quantiles_nuclei,
+        boundary=boundary.get_data() if boundary else None,
+    )
+    new_image = cell_seg.derive_new(out_data, name=f"{cell_seg.name}_nuc_fixed")
     return new_image
