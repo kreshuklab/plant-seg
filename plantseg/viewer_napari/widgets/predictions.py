@@ -15,7 +15,7 @@ from napari.types import LayerDataTuple
 
 from plantseg.core.image import PlantSegImage
 from plantseg.core.zoo import model_zoo
-from plantseg.tasks.predictions_tasks import unet_predictions_task
+from plantseg.tasks.prediction_tasks import unet_prediction_task
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws, widget_lifted_multicut
 from plantseg.viewer_napari.widgets.utils import schedule_task
@@ -128,7 +128,7 @@ model_filters = Container(
     },
     device={'label': 'Device', 'choices': ALL_DEVICES},
 )
-def widget_unet_predictions(
+def widget_unet_prediction(
     viewer: napari.Viewer,
     image: Image,
     mode: UNetPredictionsMode = UNetPredictionsMode.PLANTSEG,
@@ -152,7 +152,7 @@ def widget_unet_predictions(
 
     ps_image = PlantSegImage.from_napari_layer(image)
     return schedule_task(
-        unet_predictions_task,
+        unet_prediction_task,
         task_kwargs={
             "image": ps_image,
             "model_name": model_name,
@@ -171,71 +171,71 @@ def widget_unet_predictions(
     )
 
 
-widget_unet_predictions.insert(5, model_filters)
+widget_unet_prediction.insert(5, model_filters)
 
-advanced_unet_predictions_widgets = [
-    widget_unet_predictions.patch_size,
-    widget_unet_predictions.patch_halo,
-    widget_unet_predictions.single_patch,
+advanced_unet_prediction_widgets = [
+    widget_unet_prediction.patch_size,
+    widget_unet_prediction.patch_halo,
+    widget_unet_prediction.single_patch,
 ]
-[widget.hide() for widget in advanced_unet_predictions_widgets]
+[widget.hide() for widget in advanced_unet_prediction_widgets]
 
 
 def update_halo():
-    if widget_unet_predictions.advanced.value:
+    if widget_unet_prediction.advanced.value:
         log(
             'Refreshing halo for the selected model; this might take a while...',
             thread='UNet predictions',
             level='info',
         )
-        if widget_unet_predictions.mode.value is UNetPredictionsMode.PLANTSEG:
-            widget_unet_predictions.patch_halo.value = model_zoo.compute_3D_halo_for_zoo_models(
-                widget_unet_predictions.model_name.value
+        if widget_unet_prediction.mode.value is UNetPredictionsMode.PLANTSEG:
+            widget_unet_prediction.patch_halo.value = model_zoo.compute_3D_halo_for_zoo_models(
+                widget_unet_prediction.model_name.value
             )
-            if model_zoo.is_2D_zoo_model(widget_unet_predictions.model_name.value):
-                widget_unet_predictions.patch_size[0].value = 0
-                widget_unet_predictions.patch_size[0].enabled = False
-                widget_unet_predictions.patch_halo[0].enabled = False
+            if model_zoo.is_2D_zoo_model(widget_unet_prediction.model_name.value):
+                widget_unet_prediction.patch_size[0].value = 0
+                widget_unet_prediction.patch_size[0].enabled = False
+                widget_unet_prediction.patch_halo[0].enabled = False
             else:
-                widget_unet_predictions.patch_size[0].value = widget_unet_predictions.patch_size[1].value
-                widget_unet_predictions.patch_size[0].enabled = True
-                widget_unet_predictions.patch_halo[0].enabled = True
-        elif widget_unet_predictions.mode.value is UNetPredictionsMode.BIOIMAGEIO:
-            widget_unet_predictions.patch_halo.value = model_zoo.compute_3D_halo_for_bioimageio_models(
-                widget_unet_predictions.model_id.value
+                widget_unet_prediction.patch_size[0].value = widget_unet_prediction.patch_size[1].value
+                widget_unet_prediction.patch_size[0].enabled = True
+                widget_unet_prediction.patch_halo[0].enabled = True
+        elif widget_unet_prediction.mode.value is UNetPredictionsMode.BIOIMAGEIO:
+            widget_unet_prediction.patch_halo.value = model_zoo.compute_3D_halo_for_bioimageio_models(
+                widget_unet_prediction.model_id.value
             )
-            if model_zoo.is_2D_bioimageio_model(widget_unet_predictions.model_id.value):
-                widget_unet_predictions.patch_size[0].value = 0
-                widget_unet_predictions.patch_size[0].enabled = False
-                widget_unet_predictions.patch_halo[0].enabled = False
+            if model_zoo.is_2D_bioimageio_model(widget_unet_prediction.model_id.value):
+                widget_unet_prediction.patch_size[0].value = 0
+                widget_unet_prediction.patch_size[0].enabled = False
+                widget_unet_prediction.patch_halo[0].enabled = False
             else:
-                widget_unet_predictions.patch_size[0].value = widget_unet_predictions.patch_size[1].value
-                widget_unet_predictions.patch_size[0].enabled = True
-                widget_unet_predictions.patch_halo[0].enabled = True
+                widget_unet_prediction.patch_size[0].value = widget_unet_prediction.patch_size[1].value
+                widget_unet_prediction.patch_size[0].enabled = True
+                widget_unet_prediction.patch_halo[0].enabled = True
         else:
-            raise NotImplementedError(f'Automatic halo not implemented for {widget_unet_predictions.mode.value} mode.')
+            raise NotImplementedError(f'Automatic halo not implemented for {widget_unet_prediction.mode.value} mode.')
 
 
-@widget_unet_predictions.advanced.changed.connect
-def _on_widget_unet_predictions_advanced_changed(advanced):
+@widget_unet_prediction.advanced.changed.connect
+def _on_widget_unet_prediction_advanced_changed(advanced):
     if advanced:
         update_halo()
-        for widget in advanced_unet_predictions_widgets:
+        for widget in advanced_unet_prediction_widgets:
             widget.show()
     else:
-        for widget in advanced_unet_predictions_widgets:
+        for widget in advanced_unet_prediction_widgets:
             widget.hide()
 
 
-@widget_unet_predictions.mode.changed.connect
-def _on_widget_unet_predictions_mode_change(mode: UNetPredictionsMode):
+@widget_unet_prediction.mode.changed.connect
+def _on_widget_unet_prediction_mode_change(mode: UNetPredictionsMode):
     widgets_p = [  # PlantSeg
-        widget_unet_predictions.model_name,
+        widget_unet_prediction.model_name,
         model_filters,
     ]
     widgets_b = [  # BioImage.IO
-        widget_unet_predictions.model_id,
-        widget_unet_predictions.plantseg_filter,
+        widget_unet_prediction.model_id,
+        widget_unet_prediction.plantseg_filter,
     ]
     if mode is UNetPredictionsMode.PLANTSEG:
         for widget in widgets_p:
@@ -250,16 +250,16 @@ def _on_widget_unet_predictions_mode_change(mode: UNetPredictionsMode):
     else:
         raise NotImplementedError(f'Mode {mode} not implemented yet.')
 
-    if widget_unet_predictions.advanced.value:
+    if widget_unet_prediction.advanced.value:
         update_halo()
 
 
-@widget_unet_predictions.plantseg_filter.changed.connect
-def _on_widget_unet_predictions_plantseg_filter_change(plantseg_filter: bool):
+@widget_unet_prediction.plantseg_filter.changed.connect
+def _on_widget_unet_prediction_plantseg_filter_change(plantseg_filter: bool):
     if plantseg_filter:
-        widget_unet_predictions.model_id.choices = model_zoo.get_bioimageio_zoo_plantseg_model_names()
+        widget_unet_prediction.model_id.choices = model_zoo.get_bioimageio_zoo_plantseg_model_names()
     else:
-        widget_unet_predictions.model_id.choices = (
+        widget_unet_prediction.model_id.choices = (
             model_zoo.get_bioimageio_zoo_plantseg_model_names()
             + [Separator]
             + model_zoo.get_bioimageio_zoo_other_model_names()
@@ -267,9 +267,9 @@ def _on_widget_unet_predictions_plantseg_filter_change(plantseg_filter: bool):
 
 
 # TODO reinsert this code when _on_prediction_input_image_change is implemented
-# @widget_unet_predictions.image.changed.connect
-# def _on_widget_unet_predictions_image_change(image: Image):
-#     _on_prediction_input_image_change(widget_unet_predictions, image)
+# @widget_unet_prediction.image.changed.connect
+# def _on_widget_unet_prediction_image_change(image: Image):
+#     _on_prediction_input_image_change(widget_unet_prediction, image)
 
 
 @model_filters.changed.connect
@@ -281,26 +281,26 @@ def _on_any_metadata_changed(widget):
     modality = [modality] if modality != ALL_MOD else None
     output_type = [output_type] if output_type != ALL_TYP else None
     dimensionality = [dimensionality] if dimensionality != ALL_DIM else None
-    widget_unet_predictions.model_name.choices = model_zoo.list_models(
+    widget_unet_prediction.model_name.choices = model_zoo.list_models(
         modality_filter=modality,
         output_type_filter=output_type,
         dimensionality_filter=dimensionality,
     )
 
 
-@widget_unet_predictions.model_name.changed.connect
+@widget_unet_prediction.model_name.changed.connect
 def _on_model_name_changed(model_name: str):
     description = model_zoo.get_model_description(model_name)
     if description is None:
         description = 'No description available for this model.'
-    widget_unet_predictions.model_name.tooltip = f'Select a pretrained model. Current model description: {description}'
-    if widget_unet_predictions.advanced.value:
+    widget_unet_prediction.model_name.tooltip = f'Select a pretrained model. Current model description: {description}'
+    if widget_unet_prediction.advanced.value:
         update_halo()
 
 
-@widget_unet_predictions.model_id.changed.connect
+@widget_unet_prediction.model_id.changed.connect
 def _on_model_id_changed(model_id: str):
-    if widget_unet_predictions.advanced.value:
+    if widget_unet_prediction.advanced.value:
         update_halo()
 
 
@@ -370,7 +370,7 @@ def widget_add_custom_model(
             level='info',
             thread='Add Custom Model',
         )
-        widget_unet_predictions.model_name.choices = model_zoo.list_models()
+        widget_unet_prediction.model_name.choices = model_zoo.list_models()
     else:
         log(
             f'Error adding new model {new_model_name} to the list of available models: ' f'{error_msg}',

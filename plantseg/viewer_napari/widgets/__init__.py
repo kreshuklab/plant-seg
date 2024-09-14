@@ -4,7 +4,7 @@ from plantseg.viewer_napari.widgets.dataprocessing import (
     widget_rescaling,
 )
 from plantseg.viewer_napari.widgets.io import widget_export_stacks, widget_infos, widget_open_file, widget_show_info
-from plantseg.viewer_napari.widgets.predictions import widget_add_custom_model, widget_unet_predictions
+from plantseg.viewer_napari.widgets.predictions import widget_add_custom_model, widget_unet_prediction
 from plantseg.viewer_napari.widgets.proofreading import (
     widget_add_label_to_corrected,
     widget_clean_scribble,
@@ -23,7 +23,7 @@ __all__ = [
     "widget_show_info",
     "widget_infos",
     # Main - Prediction
-    "widget_unet_predictions",
+    "widget_unet_prediction",
     # Main - Segmentation
     "widget_dt_ws",
     "widget_agglomeration",

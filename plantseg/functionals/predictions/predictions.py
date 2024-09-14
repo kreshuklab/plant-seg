@@ -16,7 +16,7 @@ from plantseg.training.augs import get_test_augmentations
 logger = logging.getLogger(__name__)
 
 
-def unet_predictions(
+def unet_prediction(
     raw: np.ndarray,
     input_layout: ImageLayout,
     model_name: str | None,
@@ -31,7 +31,7 @@ def unet_predictions(
     config_path: Path | None = None,
     model_weights_path: Path | None = None,
 ) -> np.ndarray:
-    """Generate predictions from raw data using a specified 3D U-Net model.
+    """Generate prediction from raw data using a specified 3D U-Net model.
 
     This function handles both single and multi-channel outputs from the model,
     returning appropriately shaped arrays based on the output channel configuration.
