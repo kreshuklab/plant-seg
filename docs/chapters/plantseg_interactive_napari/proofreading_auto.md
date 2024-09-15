@@ -1,7 +1,4 @@
-# Proofreading
-
-!!! warning "Documentation in Progress"
-    This page is under development.
+# Post-processing (Automatic Proofreading)
 
 ## Widget: Use Foreground to Remove False Positives
 
