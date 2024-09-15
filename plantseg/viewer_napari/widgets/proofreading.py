@@ -20,11 +20,16 @@ SCRIBBLES_LAYER_NAME = 'Scribbles'
 CORRECTED_CELLS_LAYER_NAME = 'Correct Labels'
 
 
+def copy_if_not_none(obj):
+    """Returns a copy of the object if it's not None."""
+    return None if obj is None else obj.copy()
+
+
 class ProofreadingHandler:
     """Handler for managing segmentation proofreading and corrections.
 
     This class handles the state of the segmentation, corrected cells, scribbles,
-    and bounding boxes.
+    and bounding boxes, while allowing for interactions such as undoing changes.
     """
 
     _status: bool
@@ -44,6 +49,8 @@ class ProofreadingHandler:
         colors=[(0.76388469, 0.02003777, 0.61156412, 1.0), (0.76388469, 0.02003777, 0.61156412, 1.0)],
         name='Corrected Cells',
     )
+
+    _history = []  # Stack for saving snapshot history
 
     def __init__(self):
         """Initializes the ProofreadingHandler with an inactive state."""
@@ -105,6 +112,40 @@ class ProofreadingHandler:
     def is_locked(self):
         """Checks if the proofreading handler is locked."""
         return self._lock
+
+    def save_to_history(self):
+        """Saves the current state to the history stack."""
+        self._history.append(
+            {
+                'segmentation': copy_if_not_none(self._segmentation),
+                'corrected_cells': copy_if_not_none(self._corrected_cells),
+                'scribbles': copy_if_not_none(self._scribbles),
+                'corrected_cells_mask': copy_if_not_none(self._corrected_cells_mask),
+                'bboxes': copy_if_not_none(self._bboxes),
+            }
+        )
+
+    def undo(self, viewer: napari.Viewer):
+        """Restores the previous state from the history stack.
+
+        Args:
+            viewer (napari.Viewer): The current Napari viewer instance.
+        """
+        if not self._history:
+            log("No more actions to undo.", thread='Undo')
+            return
+
+        last_state = self._history.pop()
+
+        self._segmentation = last_state['segmentation']
+        self._corrected_cells = last_state['corrected_cells']
+        self._scribbles = last_state['scribbles']
+        self._corrected_cells_mask = last_state['corrected_cells_mask']
+        self._bboxes = last_state['bboxes']
+
+        self._update_to_viewer(viewer, self._segmentation, self.seg_layer_name)
+        self.update_scribble_to_viewer(viewer)
+        log('Undo completed', thread='Undo')
 
     def setup(self, segmentation: PlantSegImage):
         """Initializes the proofreading handler with a new segmentation.
@@ -389,6 +430,7 @@ def widget_split_and_merge_from_scribbles(
         log('Proofreading initialized', thread='Proofreading tool')
         widget_clean_scribble.show()
         widget_filter_segmentation.show()
+        widget_undo.show()
         widget_split_and_merge_from_scribbles.call_button.text = f'Split / Merge - < {DEFAULT_KEY_BINDING_PROOFREAD} >'
         return None
 
@@ -404,6 +446,8 @@ def widget_split_and_merge_from_scribbles(
             return None
 
         segmentation_handler.lock()
+        segmentation_handler.save_to_history()
+
         new_seg, region_slice, bboxes = split_merge_from_seeds(
             segmentation_handler.scribbles,
             segmentation_handler.segmentation,
@@ -471,6 +515,22 @@ def widget_filter_segmentation() -> Future[LayerDataTuple]:
 
 
 widget_filter_segmentation.hide()
+
+
+@magicgui(call_button='Undo Last Action')
+def widget_undo(viewer: napari.Viewer):
+    """Undo the last proofreading action.
+
+    Args:
+        viewer (napari.Viewer): The current Napari viewer instance.
+    """
+    if not segmentation_handler.status:
+        log('Proofreading widget not initialized. Nothing to undo.', thread='Undo')
+        return
+    segmentation_handler.undo(viewer)
+
+
+widget_undo.hide()
 
 
 def setup_proofreading_keybindings(viewer):
