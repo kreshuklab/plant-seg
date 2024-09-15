@@ -64,7 +64,7 @@ def get_preprocessing_tab():
     )
     container = setup_menu(
         container,
-        path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/data_processing/',
+        path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/preprocessing/',
     )
     return container
 

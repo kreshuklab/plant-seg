@@ -1,5 +1,8 @@
 # CNN Prediction
 
+!!! failure "Deprecated"
+    This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or install PlantSeg v1.
+
 ![alt text](https://github.com/kreshuklab/plant-seg/raw/assets/images/cnn-predictions.png)
 
 The CNN prediction widget process the stacks at hand with a Convolutional Neural Network. The output is

@@ -1,5 +1,8 @@
 # PlantSeg Classic CLI
 
+!!! failure "Deprecated"
+    This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or install PlantSeg v1.
+
 ## Guide to Custom Configuration File
 
 The configuration file defines all the operations in our pipeline together with the data to be processed.

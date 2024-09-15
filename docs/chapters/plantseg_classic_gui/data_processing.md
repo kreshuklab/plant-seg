@@ -1,5 +1,8 @@
 # Classic Data Processing
 
+!!! failure "Deprecated"
+    This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or install PlantSeg v1.
+
 ![alt text](https://github.com/kreshuklab/plant-seg/raw/assets/images/preprocessing.png)
 **PlantSeg** includes essential utilities for data pre-processing and post-processing.
 

@@ -15,13 +15,21 @@ def create_parser():
         type=Path,
         help="Launch CLI from CONFIG (path to the YAML config file)",
     )
-    arg_parser.add_argument("--napari", action="store_true", help="Launch Napari GUI")
+    arg_parser.add_argument(
+        "--napari",
+        action="store_true",
+        help="Launch Napari GUI",
+    )
     arg_parser.add_argument(
         "--train",
         type=Path,
         help="Launch training from CONFIG (path to the YAML config file)",
     )
-    arg_parser.add_argument("--version", action="store_true", help="Print PlantSeg version")
+    arg_parser.add_argument(
+        "--version",
+        action="store_true",
+        help="Print PlantSeg version",
+    )
     arg_parser.add_argument(
         "--clean",
         action="store_true",

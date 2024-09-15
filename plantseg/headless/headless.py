@@ -140,4 +140,4 @@ def run_headless_workflow(path: str | Path):
         runner.submit_job(job_input)
 
     logger.info("All jobs have been submitted. Running the workflow...")
-    # When parallel runners are implemented, hew we need to add something to wait for all jobs to finish
+    # TODO: When parallel runners are implemented, hew we need to add something to wait for all jobs to finish

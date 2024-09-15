@@ -103,10 +103,11 @@ nav:
   - Napari GUI:
       - chapters/plantseg_interactive_napari/index.md
       - Import/Export: chapters/plantseg_interactive_napari/import_export.md
-      - Data Processing: chapters/plantseg_interactive_napari/data_processing.md
+      - Pre-Processing: chapters/plantseg_interactive_napari/preprocessing.md
       - Main Workflow: chapters/plantseg_interactive_napari/unet_gasp_workflow.md
+      - Post-processing: chapters/plantseg_interactive_napari/proofreading_auto.md
+      - Proofreading: chapters/plantseg_interactive_napari/proofreading_manual.md
       - Extra Workflows: chapters/plantseg_interactive_napari/extra.md
-      - Proofreading: chapters/plantseg_interactive_napari/proofreading.md
       - Training: chapters/plantseg_interactive_napari/unet_training.md
 
   - Dataset and Training:
@@ -124,7 +125,7 @@ nav:
       - chapters/plantseg_classic_cli/index.md
 
   - API:
-      - chapters/python_api/index.md
+      # - chapters/python_api/index.md
       - plantseg.io: chapters/python_api/io.md
       - plantseg.dataprocessing: chapters/python_api/data_processing.md
       - plantseg.prediction: chapters/python_api/cnn_prediction.md

@@ -21,6 +21,12 @@ CORRECTED_CELLS_LAYER_NAME = 'Correct Labels'
 
 
 class ProofreadingHandler:
+    """Handler for managing segmentation proofreading and corrections.
+
+    This class handles the state of the segmentation, corrected cells, scribbles,
+    and bounding boxes.
+    """
+
     _status: bool
     _current_seg_layer_name: Union[str, None]
     _corrected_cells: set
@@ -40,55 +46,72 @@ class ProofreadingHandler:
     )
 
     def __init__(self):
+        """Initializes the ProofreadingHandler with an inactive state."""
         self._status = False
 
     @property
     def status(self):
+        """Returns the proofreading status."""
         return self._status
 
     @property
     def seg_layer_name(self):
+        """Returns the current segmentation layer name."""
         return self._current_seg_layer_name
 
     @property
     def seg_properties(self) -> ImageProperties:
+        """Returns the properties of the current segmentation."""
         return self._current_seg_properties
 
     @property
     def segmentation(self):
+        """Returns the current segmentation data."""
         return self._segmentation
 
     @property
     def scribbles(self):
+        """Returns the current scribbles."""
         return self._scribbles
 
     @property
     def corrected_cells_mask(self):
+        """Returns the mask for corrected cells."""
         return self._corrected_cells_mask
 
     @property
     def bboxes(self):
+        """Returns the bounding boxes (bboxes) for the segmentation."""
         return self._bboxes
 
     @property
     def max_label(self):
+        """Returns the maximum label value in the segmentation."""
         return self.segmentation.max()
 
     @property
     def corrected_cells(self):
+        """Returns the set of corrected cells."""
         return self._corrected_cells
 
     def lock(self):
+        """Locks the proofreading handler to prevent further changes."""
         self._lock = True
 
     def unlock(self):
+        """Unlocks the proofreading handler to allow changes."""
         self._lock = False
 
     def is_locked(self):
+        """Checks if the proofreading handler is locked."""
         return self._lock
 
     def setup(self, segmentation: PlantSegImage):
-        # make sure all fields are reset
+        """Initializes the proofreading handler with a new segmentation.
+
+        Args:
+            segmentation (PlantSegImage): The segmentation image to set up.
+        """
         self.reset()
 
         self._status = True
@@ -105,6 +128,7 @@ class ProofreadingHandler:
         self._bboxes = get_bboxes(segmentation_data)
 
     def reset(self):
+        """Resets the proofreading handler to its initial state."""
         self._status = False
         self._current_seg_layer_name = None
         self._corrected_cells = set()
@@ -116,16 +140,31 @@ class ProofreadingHandler:
         self.scale = None
 
     def toggle_corrected_cell(self, cell_id: int):
+        """Toggles a cell as corrected or not.
+
+        Args:
+            cell_id (int): The ID of the cell to toggle.
+        """
         self._toggle_corrected_cell(cell_id)
         self._update_masks(cell_id)
 
     def _toggle_corrected_cell(self, cell_id: int):
+        """Adds or removes the cell from the corrected set.
+
+        Args:
+            cell_id (int): The ID of the cell to toggle.
+        """
         if cell_id in self._corrected_cells:
             self._corrected_cells.remove(cell_id)
         else:
             self._corrected_cells.add(cell_id)
 
     def _update_masks(self, cell_id: int):
+        """Updates the corrected cells mask with the toggled cell.
+
+        Args:
+            cell_id (int): The ID of the cell to update.
+        """
         mask = self._segmentation == cell_id
 
         self._corrected_cells_mask[mask] += 1
@@ -133,6 +172,13 @@ class ProofreadingHandler:
 
     @staticmethod
     def _update_to_viewer(viewer: napari.Viewer, data: np.ndarray, layer_name: str, **kwargs):
+        """Updates a layer in the viewer with new data.
+
+        Args:
+            viewer (napari.Viewer): The current Napari viewer instance.
+            data (np.ndarray): The new data to update the layer with.
+            layer_name (str): The name of the layer to update.
+        """
         if layer_name in viewer.layers:
             viewer.layers[layer_name].data = data
             viewer.layers[layer_name].refresh()
@@ -142,6 +188,14 @@ class ProofreadingHandler:
 
     @staticmethod
     def _update_slice_to_viewer(viewer: napari.Viewer, data: np.ndarray, layer_name: str, region_slice):
+        """Updates a slice of a layer in the viewer.
+
+        Args:
+            viewer (napari.Viewer): The current Napari viewer instance.
+            data (np.ndarray): The new slice data to update.
+            layer_name (str): The name of the layer to update.
+            region_slice (tuple): The region slice to update in the layer.
+        """
         if layer_name in viewer.layers:
             viewer.layers[layer_name].data[region_slice] = data
             viewer.layers[layer_name].refresh()
@@ -149,19 +203,41 @@ class ProofreadingHandler:
             raise ValueError(f'Layer {layer_name} not found in viewer')
 
     def update_scribble_to_viewer(self, viewer: napari.Viewer):
+        """Updates the scribble layer in the viewer.
+
+        Args:
+            viewer (napari.Viewer): The current Napari viewer instance.
+        """
         self._update_to_viewer(viewer, self._scribbles, self.scribbles_layer_name, scale=self.scale)
 
     def update_scribbles_from_viewer(self, viewer: napari.Viewer):
+        """Fetches scribbles data from the viewer and updates the handler.
+
+        Args:
+            viewer (napari.Viewer): The current Napari viewer instance.
+        """
         self._scribbles = viewer.layers[self.scribbles_layer_name].data
 
     def reset_scribbles(self):
+        """Resets the scribble data to an empty state."""
         self._scribbles = np.zeros_like(self._segmentation).astype(np.uint16)
 
     def preserve_labels(self, viewer: napari.Viewer, layer_name: str):
+        """Preserves labels on a layer in the viewer.
+
+        Args:
+            viewer (napari.Viewer): The current Napari viewer instance.
+            layer_name (str): The name of the layer to preserve.
+        """
         viewer.layers[layer_name].preserve_labels = True
         viewer.layers[layer_name].refresh()
 
     def update_corrected_cells_mask_to_viewer(self, viewer: napari.Viewer):
+        """Updates the corrected cells mask in the viewer.
+
+        Args:
+            viewer (napari.Viewer): The current Napari viewer instance.
+        """
         self._update_to_viewer(
             viewer,
             self.corrected_cells_mask,
@@ -175,16 +251,32 @@ class ProofreadingHandler:
     def update_corrected_cells_mask_slice_to_viewer(
         self, viewer: napari.Viewer, slice_data: np.ndarray, region_slice: tuple[slice, ...]
     ):
+        """Updates a slice of the corrected cells mask in the viewer.
+
+        Args:
+            viewer (napari.Viewer): The current Napari viewer instance.
+            slice_data (np.ndarray): The data to update the slice with.
+            region_slice (tuple[slice, ...]): The region slice to update.
+        """
         self._update_slice_to_viewer(viewer, slice_data, self.corrected_cells_layer_name, region_slice)
         self.preserve_labels(viewer, self.corrected_cells_layer_name)
 
     def update_after_proofreading(
         self, viewer: napari.Viewer, seg_slice: np.ndarray, region_slice: tuple[slice, ...], bbox: np.ndarray
     ):
+        """Updates the viewer after proofreading is completed.
+
+        Args:
+            viewer (napari.Viewer): The current Napari viewer instance.
+            seg_slice (np.ndarray): The segmentation slice to update.
+            region_slice (tuple[slice, ...]): The region slice to update in the viewer.
+            bbox (np.ndarray): The bounding box to update.
+        """
         self._bboxes = bbox
         self._update_slice_to_viewer(viewer, seg_slice, self.seg_layer_name, region_slice)
 
     def reset_corrected_cells_mask(self):
+        """Resets the corrected cells mask to an empty state."""
         self._corrected_cells_mask = np.zeros_like(self._segmentation).astype(np.uint16)
 
 
@@ -193,6 +285,11 @@ segmentation_handler = ProofreadingHandler()
 
 @magicgui(call_button=f'Clean scribbles - < {DEFAULT_KEY_BINDING_CLEAN} >')
 def widget_clean_scribble(viewer: napari.Viewer):
+    """Cleans the scribbles layer in the Napari viewer.
+
+    Args:
+        viewer (napari.Viewer): The current Napari viewer instance.
+    """
     if not segmentation_handler.status:
         log('Proofreading widget not initialized. Run the proofreading widget tool once first', thread='Clean scribble')
 
@@ -208,6 +305,12 @@ widget_clean_scribble.hide()
 
 
 def widget_add_label_to_corrected(viewer: napari.Viewer, position: tuple[int, ...]):
+    """Adds or removes a label at a given position to/from the corrected cells.
+
+    Args:
+        viewer (napari.Viewer): The current Napari viewer instance.
+        position (tuple[int, ...]): The position of the cell in the viewer.
+    """
     if segmentation_handler.corrected_cells_layer_name not in viewer.layers:
         return None
 
@@ -218,6 +321,15 @@ def widget_add_label_to_corrected(viewer: napari.Viewer, position: tuple[int, ..
 
 
 def initialize_proofreading(viewer: napari.Viewer, segmentation: PlantSegImage) -> bool:
+    """Initializes the proofreading tool with the given segmentation.
+
+    Args:
+        viewer (napari.Viewer): The current Napari viewer instance.
+        segmentation (PlantSegImage): The segmentation image to use.
+
+    Returns:
+        bool: True if initialization was successful, False otherwise.
+    """
     if segmentation_handler.scribbles_layer_name not in viewer.layers:
         segmentation_handler.reset()
 
@@ -246,6 +358,13 @@ def widget_split_and_merge_from_scribbles(
     segmentation: Labels,
     image: Image,
 ) -> None:
+    """Splits or merges segments using scribbles as seeds for corrections.
+
+    Args:
+        viewer (napari.Viewer): The current Napari viewer instance.
+        segmentation (Labels): The segmentation layer.
+        image (Image): The probability map or raw image layer.
+    """
     ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
     ps_image = PlantSegImage.from_napari_layer(image)
 
@@ -303,6 +422,11 @@ def widget_split_and_merge_from_scribbles(
 
 @magicgui(call_button='Extract correct labels')
 def widget_filter_segmentation() -> Future[LayerDataTuple]:
+    """Extracts corrected labels from the segmentation.
+
+    Returns:
+        Future[LayerDataTuple]: A future that will return the extracted segmentation layer.
+    """
     if not segmentation_handler.status:
         log(
             'Proofreading widget not initialized. Run the proofreading widget tool once first',
@@ -350,6 +474,12 @@ widget_filter_segmentation.hide()
 
 
 def setup_proofreading_keybindings(viewer):
+    """Sets up keybindings for the proofreading tool in Napari.
+
+    Args:
+        viewer (napari.Viewer): The current Napari viewer instance.
+    """
+
     @viewer.bind_key(DEFAULT_KEY_BINDING_PROOFREAD)
     def _widget_split_and_merge_from_scribbles(_viewer: napari.Viewer):
         widget_split_and_merge_from_scribbles(viewer=_viewer)
