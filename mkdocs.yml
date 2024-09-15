@@ -125,7 +125,7 @@ nav:
       - chapters/plantseg_classic_cli/index.md
 
   - API:
-      - chapters/python_api/index.md
+      # - chapters/python_api/index.md
       - plantseg.io: chapters/python_api/io.md
       - plantseg.dataprocessing: chapters/python_api/data_processing.md
       - plantseg.prediction: chapters/python_api/cnn_prediction.md

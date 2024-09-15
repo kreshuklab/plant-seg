@@ -1,4 +1,4 @@
 # PlantSeg Python API
 
-!!! warning "Documentation in Progress"
+!!! info "Documentation in Progress"
     This page is under development.

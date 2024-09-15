@@ -1,5 +1,8 @@
 # Segmentation
 
+!!! failure "Deprecated"
+    This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or install PlantSeg v1.
+
 The segmentation widget allows using very powerful graph partitioning techniques to obtain a segmentation from the
 input stacks.
 The input of this widget should be the output of the [CNN-prediction widget](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_prediction/).

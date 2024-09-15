@@ -1,5 +1,8 @@
 # PlantSeg from GUI
 
+!!! failure "Deprecated"
+    This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or install PlantSeg v1.
+
 The graphical user interface is the easiest way to configure and run PlantSeg.
 Currently the GUI does not allow to visualize or interact with the data.
 We recommend using [MorphographX](https://www.mpipz.mpg.de/MorphoGraphX) or

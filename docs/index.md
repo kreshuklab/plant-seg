@@ -1,5 +1,8 @@
 # PlantSeg introduction
 
+!!! tip "PlantSeg v2 is out!"
+    We are working on updating the documentation for the new version of PlantSeg. Stay tuned for more updates and new manuscripts!
+
 PlantSeg is a tool for 3D and 2D segmentation.
 The methods used are very generic and can be used for any instance segmentation workflow,
 but they are tuned towards cell segmentation in plant tissue. The tool is fundamentally composed of two main steps.
@@ -19,9 +22,6 @@ but they are tuned towards cell segmentation in plant tissue. The tool is fundam
 </figure>
 
 For a detailed description of the methods employed in PlantSeg, please refer to our [manuscript](https://elifesciences.org/articles/57613). If you find PlantSeg useful in your research, please consider citing our work:
-
-!!! note "PlantSeg v2 is out!"
-    We are working on updating the documentation for the new version of PlantSeg. Stay tuned for more updates and new manuscripts!
 
 ```bibtex
 @article{wolny2020accurate,
