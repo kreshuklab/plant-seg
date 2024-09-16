@@ -1,3 +1,5 @@
+import os
+from collections import deque
 from concurrent.futures import Future
 from typing import Union
 
@@ -18,6 +20,11 @@ DEFAULT_KEY_BINDING_PROOFREAD = 'n'
 DEFAULT_KEY_BINDING_CLEAN = 'j'
 SCRIBBLES_LAYER_NAME = 'Scribbles'
 CORRECTED_CELLS_LAYER_NAME = 'Correct Labels'
+MAX_UNDO_ACTIONS = 10
+try:
+    MAX_UNDO_ACTIONS = int(os.getenv('PLANTSEG_MAX_UNDO_ACTIONS', str(MAX_UNDO_ACTIONS)))
+except ValueError:
+    log('Invalid value for PLANTSEG_MAX_UNDO_ACTIONS, using default: 10', thread='Proofreading', level='warning')
 
 
 def copy_if_not_none(obj):
@@ -50,7 +57,7 @@ class ProofreadingHandler:
         name='Corrected Cells',
     )
 
-    _history = []  # Stack for saving snapshot history
+    _history: deque = deque(maxlen=MAX_UNDO_ACTIONS)  # Stack for saving snapshot history
 
     def __init__(self):
         """Initializes the ProofreadingHandler with an inactive state."""
