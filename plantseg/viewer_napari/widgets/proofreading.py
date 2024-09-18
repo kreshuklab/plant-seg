@@ -57,7 +57,9 @@ class ProofreadingHandler:
         name='Corrected Cells',
     )
 
-    _history: deque = deque(maxlen=MAX_UNDO_ACTIONS)  # Stack for saving snapshot history
+    # Stacks for saving snapshots
+    _history_undo: deque = deque(maxlen=MAX_UNDO_ACTIONS)
+    _history_redo: deque = deque(maxlen=MAX_UNDO_ACTIONS)
 
     def __init__(self):
         """Initializes the ProofreadingHandler with an inactive state."""
@@ -76,7 +78,7 @@ class ProofreadingHandler:
     @property
     def seg_properties(self) -> ImageProperties:
         """Returns the properties of the current segmentation."""
-        return self._current_seg_properties
+        return self._current_seg_properties  # TODO: fix type hint
 
     @property
     def segmentation(self):
@@ -121,8 +123,8 @@ class ProofreadingHandler:
         return self._lock
 
     def save_to_history(self):
-        """Saves the current state to the history stack."""
-        self._history.append(
+        """Saves the current state to the undo history and clears the redo history."""
+        self._history_undo.append(
             {
                 'segmentation': copy_if_not_none(self._segmentation),
                 'corrected_cells': copy_if_not_none(self._corrected_cells),
@@ -131,18 +133,26 @@ class ProofreadingHandler:
                 'bboxes': copy_if_not_none(self._bboxes),
             }
         )
+        self._history_redo.clear()  # Clear the redo stack when new actions are made
 
     def undo(self, viewer: napari.Viewer):
-        """Restores the previous state from the history stack.
-
-        Args:
-            viewer (napari.Viewer): The current Napari viewer instance.
-        """
-        if not self._history:
+        """Restores the previous state from the history stack."""
+        if not self._history_undo:
             log("No more actions to undo.", thread='Undo')
             return
 
-        last_state = self._history.pop()
+        last_state = self._history_undo.pop()
+
+        # Save current state to redo stack before restoring the previous state
+        self._history_redo.append(
+            {
+                'segmentation': copy_if_not_none(self._segmentation),
+                'corrected_cells': copy_if_not_none(self._corrected_cells),
+                'scribbles': copy_if_not_none(self._scribbles),
+                'corrected_cells_mask': copy_if_not_none(self._corrected_cells_mask),
+                'bboxes': copy_if_not_none(self._bboxes),
+            }
+        )
 
         self._segmentation = last_state['segmentation']
         self._corrected_cells = last_state['corrected_cells']
@@ -153,6 +163,35 @@ class ProofreadingHandler:
         self._update_to_viewer(viewer, self._segmentation, self.seg_layer_name)
         self.update_scribble_to_viewer(viewer)
         log('Undo completed', thread='Undo')
+
+    def redo(self, viewer: napari.Viewer):
+        """Restores the next state from the redo history."""
+        if not self._history_redo:
+            log("No more actions to redo.", thread='Redo')
+            return
+
+        next_state = self._history_redo.pop()
+
+        # Save current state to undo stack before restoring the next state
+        self._history_undo.append(
+            {
+                'segmentation': copy_if_not_none(self._segmentation),
+                'corrected_cells': copy_if_not_none(self._corrected_cells),
+                'scribbles': copy_if_not_none(self._scribbles),
+                'corrected_cells_mask': copy_if_not_none(self._corrected_cells_mask),
+                'bboxes': copy_if_not_none(self._bboxes),
+            }
+        )
+
+        self._segmentation = next_state['segmentation']
+        self._corrected_cells = next_state['corrected_cells']
+        self._scribbles = next_state['scribbles']
+        self._corrected_cells_mask = next_state['corrected_cells_mask']
+        self._bboxes = next_state['bboxes']
+
+        self._update_to_viewer(viewer, self._segmentation, self.seg_layer_name)
+        self.update_scribble_to_viewer(viewer)
+        log('Redo completed', thread='Redo')
 
     def setup(self, segmentation: PlantSegImage):
         """Initializes the proofreading handler with a new segmentation.
@@ -438,6 +477,7 @@ def widget_split_and_merge_from_scribbles(
         widget_clean_scribble.show()
         widget_filter_segmentation.show()
         widget_undo.show()
+        widget_redo.show()
         widget_split_and_merge_from_scribbles.call_button.text = f'Split / Merge - < {DEFAULT_KEY_BINDING_PROOFREAD} >'
         return None
 
@@ -537,7 +577,17 @@ def widget_undo(viewer: napari.Viewer):
     segmentation_handler.undo(viewer)
 
 
+@magicgui(call_button='Redo Last Action')
+def widget_redo(viewer: napari.Viewer):
+    """Redo the last undone action."""
+    if not segmentation_handler.status:
+        log('Proofreading widget not initialized. Nothing to redo.', thread='Redo')
+        return
+    segmentation_handler.redo(viewer)
+
+
 widget_undo.hide()
+widget_redo.hide()
 
 
 def setup_proofreading_keybindings(viewer):

@@ -10,6 +10,7 @@ from plantseg.viewer_napari.widgets.proofreading import (
     widget_add_label_to_corrected,
     widget_clean_scribble,
     widget_filter_segmentation,
+    widget_redo,
     widget_split_and_merge_from_scribbles,
     widget_undo,
 )
@@ -37,6 +38,7 @@ __all__ = [
     "widget_clean_scribble",
     "widget_filter_segmentation",
     "widget_undo",
+    "widget_redo",
     "widget_add_label_to_corrected",  # XXX: Not used in container
     "widget_remove_false_positives_by_foreground",
     "widget_fix_over_under_segmentation_from_nuclei",
