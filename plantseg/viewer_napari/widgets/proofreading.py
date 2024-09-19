@@ -435,18 +435,32 @@ def initialize_proofreading(viewer: napari.Viewer, segmentation: PlantSegImage) 
     segmentation_handler.setup(segmentation)
     segmentation_handler.update_scribble_to_viewer(viewer)
     segmentation_handler.update_corrected_cells_mask_to_viewer(viewer)
+    widget_split_and_merge_from_scribbles.call_button.text = f'Split / Merge - < {DEFAULT_KEY_BINDING_PROOFREAD} >'
+    setup_proofreading_widget()
     return True
 
 
 @magicgui(
     call_button='Initialize Proofreading',
-    segmentation={'label': 'Segmentation'},
-    image={'label': 'Pmap/Image'},
+    segmentation={
+        'label': 'Segmentation',
+        'tooltip': 'The segmentation layer to proofread',
+    },
+    image={
+        'label': 'Boundary image',
+        'tooltip': 'Probability map (prediction) or raw image of boundaries',
+    },
+    state={
+        'label': 'Resume from file',
+        'mode': 'r',
+        'tooltip': 'Load a previous proofreading state from a pickle (*.pkl) file',
+    },
 )
 def widget_split_and_merge_from_scribbles(
     viewer: napari.Viewer,
     segmentation: Labels,
     image: Image,
+    state: Path | None = None,
 ) -> None:
     """Splits or merges segments using scribbles as seeds for corrections.
 
@@ -475,10 +489,11 @@ def widget_split_and_merge_from_scribbles(
             level='error',
         )
 
-    if initialize_proofreading(viewer, ps_segmentation):
+    if initialize_proofreading(viewer, ps_segmentation):  # If not initialized until now
         log('Proofreading initialized', thread='Proofreading tool')
-        widget_split_and_merge_from_scribbles.call_button.text = f'Split / Merge - < {DEFAULT_KEY_BINDING_PROOFREAD} >'
-        setup_proofreading_widget()
+        if state:
+            segmentation_handler.load_state_from_disk(state, viewer)
+            log('State loaded successfully', thread='Proofreading tool')
         return None
 
     segmentation_handler.update_scribbles_from_viewer(viewer)
@@ -606,22 +621,6 @@ def widget_save_state(filepath: Path, images_saved: bool = False):
         log('Please save the pmap and segmentation images before saving the state', thread='Save State', level='error')
 
 
-@magicgui(
-    call_button='Load State',
-    filepath={
-        'label': 'Filepath',
-        'mode': 'r',
-    },
-)
-def widget_load_state(viewer: napari.Viewer, filepath: Path):
-    """Loads a proofreading state from disk.
-
-    Args:
-        filepath (str): The filepath to load the state from.
-    """
-    segmentation_handler.load_state_from_disk(filepath, viewer=viewer)
-
-
 def setup_proofreading_keybindings(viewer):
     """Sets up keybindings for the proofreading tool in Napari.
 
@@ -651,7 +650,6 @@ activation_list_proofreading = [
     widget_undo,
     widget_redo,
     widget_save_state,
-    widget_load_state,
 ]
 
 for widget in activation_list_proofreading:
