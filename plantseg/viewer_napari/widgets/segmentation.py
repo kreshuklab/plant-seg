@@ -8,6 +8,7 @@ from plantseg.core.image import ImageLayout, PlantSegImage
 from plantseg.tasks.segmentation_tasks import clustering_segmentation_task, dt_watershed_task, lmc_segmentation_task
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.dataprocessing import widget_remove_false_positives_by_foreground
+from plantseg.viewer_napari.widgets.proofreading import widget_proofreading_initialisation
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 ########################################################################################################################
@@ -60,6 +61,8 @@ def widget_agglomeration(
     ps_image = PlantSegImage.from_napari_layer(image)
     ps_labels = PlantSegImage.from_napari_layer(superpixels)
 
+    widgets_to_update = [widget_proofreading_initialisation.segmentation]
+
     return schedule_task(
         clustering_segmentation_task,
         task_kwargs={
@@ -69,6 +72,7 @@ def widget_agglomeration(
             "beta": beta,
             "post_min_size": minsize,
         },
+        widgets_to_update=widgets_to_update,
     )
 
 
@@ -117,6 +121,8 @@ def widget_lifted_multicut(
     ps_labels = PlantSegImage.from_napari_layer(superpixels)
     ps_nuclei = PlantSegImage.from_napari_layer(nuclei)
 
+    widgets_to_update = [widget_proofreading_initialisation.segmentation]
+
     return schedule_task(
         lmc_segmentation_task,
         task_kwargs={
@@ -126,6 +132,7 @@ def widget_lifted_multicut(
             "beta": beta,
             "post_min_size": minsize,
         },
+        widgets_to_update=widgets_to_update,
     )
 
 
