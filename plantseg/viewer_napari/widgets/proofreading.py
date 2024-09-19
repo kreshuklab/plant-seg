@@ -465,7 +465,7 @@ def widget_proofreading_initialisation(
             level='warning',
         )
         widget_proofreading_initialisation.are_you_sure.show()
-        widget_proofreading_initialisation.call_button.text = '🚨 Please Re-initialse 🚨'
+        widget_proofreading_initialisation.call_button.text = '🚨 Please Re-initialise 🚨'
         return
 
     ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
