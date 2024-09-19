@@ -457,6 +457,14 @@ def widget_proofreading_initialisation(
         segmentation (Labels): The segmentation layer.
         state (Path | None): Path to a previous state file (optional).
     """
+    if segmentation.name in [SCRIBBLES_LAYER_NAME, CORRECTED_CELLS_LAYER_NAME]:
+        log(
+            'Scribble or corrected cells layer is not intended to be proofread, choose a segmentation',
+            thread='Proofreading tool',
+            level='error',
+        )
+        return
+
     if segmentation_handler.status and not are_you_sure:
         log(
             'Proofreading is already initialized. Are you sure you want to reset everything?',
