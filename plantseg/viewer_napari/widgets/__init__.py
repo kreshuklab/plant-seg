@@ -10,6 +10,7 @@ from plantseg.viewer_napari.widgets.proofreading import (
     widget_add_label_to_corrected,
     widget_clean_scribble,
     widget_filter_segmentation,
+    widget_proofreading_initialisation,
     widget_redo,
     widget_save_state,
     widget_split_and_merge_from_scribbles,
@@ -35,6 +36,7 @@ __all__ = [
     "widget_lifted_multicut",
     "widget_add_custom_model",
     # Proofreading
+    "widget_proofreading_initialisation",
     "widget_split_and_merge_from_scribbles",
     "widget_clean_scribble",
     "widget_filter_segmentation",

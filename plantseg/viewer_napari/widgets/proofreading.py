@@ -410,7 +410,7 @@ def widget_add_label_to_corrected(viewer: napari.Viewer, position: tuple[int, ..
     segmentation_handler.update_corrected_cells_mask_to_viewer(viewer)
 
 
-def initialize_proofreading(viewer: napari.Viewer, segmentation: PlantSegImage) -> bool:
+def initialize_proofreading(viewer: napari.Viewer, segmentation: PlantSegImage, state: Path | None = None) -> None:
     """Initializes the proofreading tool with the given segmentation.
 
     Args:
@@ -420,24 +420,16 @@ def initialize_proofreading(viewer: napari.Viewer, segmentation: PlantSegImage) 
     Returns:
         bool: True if initialization was successful, False otherwise.
     """
-    if segmentation_handler.scribbles_layer_name not in viewer.layers:
-        segmentation_handler.reset()
-
-    if segmentation_handler.corrected_cells_layer_name not in viewer.layers:
-        segmentation_handler.reset()
-
-    if segmentation_handler.seg_layer_name != segmentation.name:
-        segmentation_handler.reset()
-
-    if segmentation_handler.status:
-        return False
-
+    segmentation_handler.reset()
     segmentation_handler.setup(segmentation)
     segmentation_handler.update_scribble_to_viewer(viewer)
     segmentation_handler.update_corrected_cells_mask_to_viewer(viewer)
-    widget_split_and_merge_from_scribbles.call_button.text = f'Split / Merge - < {DEFAULT_KEY_BINDING_PROOFREAD} >'
+    widget_proofreading_initialisation.call_button.text = 'Re-initialize Proofreading'
     setup_proofreading_widget()
-    return True
+    log('Proofreading initialized', thread='Proofreading tool')
+    if state:
+        segmentation_handler.load_state_from_disk(state, viewer)
+        log('State loaded successfully', thread='Proofreading tool')
 
 
 @magicgui(
@@ -446,30 +438,64 @@ def initialize_proofreading(viewer: napari.Viewer, segmentation: PlantSegImage) 
         'label': 'Segmentation',
         'tooltip': 'The segmentation layer to proofread',
     },
-    image={
-        'label': 'Boundary image',
-        'tooltip': 'Probability map (prediction) or raw image of boundaries',
-    },
     state={
         'label': 'Resume from file',
         'mode': 'r',
         'tooltip': 'Load a previous proofreading state from a pickle (*.pkl) file',
     },
+    are_you_sure={'label': 'I understand this resets everything', 'visible': False},
 )
-def widget_split_and_merge_from_scribbles(
+def widget_proofreading_initialisation(
     viewer: napari.Viewer,
     segmentation: Labels,
-    image: Image,
     state: Path | None = None,
+    are_you_sure: bool = False,
 ) -> None:
-    """Splits or merges segments using scribbles as seeds for corrections.
+    """Initializes the proofreading widget.
 
     Args:
         viewer (napari.Viewer): The current Napari viewer instance.
         segmentation (Labels): The segmentation layer.
+        state (Path | None): Path to a previous state file (optional).
+    """
+    if segmentation_handler.status and not are_you_sure:
+        log(
+            'Proofreading is already initialized. Are you sure you want to reset everything?',
+            thread='Proofreading tool',
+            level='warning',
+        )
+        widget_proofreading_initialisation.are_you_sure.show()
+        widget_proofreading_initialisation.call_button.text = '🚨 Please Re-initialse 🚨'
+        return
+
+    ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
+    initialize_proofreading(viewer, ps_segmentation, state)
+    widget_proofreading_initialisation.are_you_sure.value = False
+    widget_proofreading_initialisation.are_you_sure.hide()
+    widget_proofreading_initialisation.call_button.text = 'Re-initialize Proofreading'
+
+
+@magicgui(
+    call_button=f'Split / Merge - < {DEFAULT_KEY_BINDING_PROOFREAD} >',
+    image={
+        'label': 'Boundary image',
+        'tooltip': 'Probability map (prediction) or raw image of boundaries',
+    },
+)
+def widget_split_and_merge_from_scribbles(
+    viewer: napari.Viewer,
+    image: Image,
+):
+    """Splits or merges segments using scribbles as seeds for corrections.
+
+    Args:
+        viewer (napari.Viewer): The current Napari viewer instance.
         image (Image): The probability map or raw image layer.
     """
-    ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
+    if not segmentation_handler.status:
+        log('Proofreading is not initialized. Run the initialization widget first.', thread='Proofreading tool')
+        return
+
     ps_image = PlantSegImage.from_napari_layer(image)
 
     if ps_image.semantic_type == SemanticType.RAW:
@@ -488,13 +514,6 @@ def widget_split_and_merge_from_scribbles(
             thread='Proofreading tool',
             level='error',
         )
-
-    if initialize_proofreading(viewer, ps_segmentation):  # If not initialized until now
-        log('Proofreading initialized', thread='Proofreading tool')
-        if state:
-            segmentation_handler.load_state_from_disk(state, viewer)
-            log('State loaded successfully', thread='Proofreading tool')
-        return None
 
     segmentation_handler.update_scribbles_from_viewer(viewer)
 
@@ -645,6 +664,7 @@ def setup_proofreading_keybindings(viewer):
 
 
 activation_list_proofreading = [
+    widget_split_and_merge_from_scribbles,
     widget_clean_scribble,
     widget_filter_segmentation,
     widget_undo,

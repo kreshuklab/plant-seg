@@ -15,6 +15,7 @@ from plantseg.viewer_napari.widgets import (
     widget_infos,
     widget_lifted_multicut,
     widget_open_file,
+    widget_proofreading_initialisation,
     widget_redo,
     widget_remove_false_positives_by_foreground,
     widget_rescaling,
@@ -107,6 +108,7 @@ def get_extras_tab():
 def get_proofreading_tab():
     container = MainWindow(
         widgets=[
+            widget_proofreading_initialisation,
             widget_split_and_merge_from_scribbles,
             widget_clean_scribble,
             widget_filter_segmentation,
