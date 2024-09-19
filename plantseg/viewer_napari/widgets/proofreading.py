@@ -4,7 +4,6 @@ from collections import deque
 from concurrent.futures import Future
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Union
 
 import napari
 import numpy as np
@@ -43,16 +42,16 @@ class ProofreadingHandler:
     """
 
     _status: bool
-    _current_seg_layer_name: Union[str, None]
+    _current_seg_layer_name: str | None
     _corrected_cells: set
-    _segmentation: Union[np.ndarray, None]
-    _current_seg_properties: Union[dict, None]
-    _corrected_cells_mask: Union[np.ndarray, None]
-    _scribbles: Union[np.ndarray, None]
-    _bboxes: Union[np.ndarray, None]
+    _segmentation: np.ndarray | None
+    _current_seg_properties: dict | None
+    _corrected_cells_mask: np.ndarray | None
+    _scribbles: np.ndarray | None
+    _bboxes: np.ndarray | None
 
     _lock: bool = False
-    scale: Union[tuple, None] = None
+    scale: tuple | None = None
     scribbles_layer_name = SCRIBBLES_LAYER_NAME
     corrected_cells_layer_name = CORRECTED_CELLS_LAYER_NAME
     correct_cells_cmap = CyclicLabelColormap(
@@ -465,7 +464,7 @@ def widget_proofreading_initialisation(
             level='warning',
         )
         widget_proofreading_initialisation.are_you_sure.show()
-        widget_proofreading_initialisation.call_button.text = '🚨 Please Re-initialise 🚨'
+        widget_proofreading_initialisation.call_button.text = 'I understand, please re-initialise!!'
         return
 
     ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
@@ -479,7 +478,7 @@ def widget_proofreading_initialisation(
     call_button=f'Split / Merge - < {DEFAULT_KEY_BINDING_PROOFREAD} >',
     image={
         'label': 'Boundary image',
-        'tooltip': 'Probability map (prediction) or raw image of boundaries',
+        'tooltip': 'Probability map (prediction) or raw image of boundaries as reference',
     },
 )
 def widget_split_and_merge_from_scribbles(
@@ -620,14 +619,14 @@ def widget_redo(viewer: napari.Viewer):
 
 
 @magicgui(
-    call_button='Save State',
+    call_button='Save current proofreading snapshot',
     filepath={
-        'label': 'Filepath',
+        'label': 'File path',
         'mode': 'w',
     },
-    images_saved={'label': 'I saved Pmap and Segmentation'},
+    images_saved={'label': 'I saved boundary references and original segmentations'},
 )
-def widget_save_state(filepath: Path, images_saved: bool = False):
+def widget_save_state(filepath: Path = Path.home(), images_saved: bool = False):
     """Saves the current proofreading state to disk.
 
     Args:
