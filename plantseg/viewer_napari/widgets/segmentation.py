@@ -17,6 +17,7 @@ from plantseg.viewer_napari.widgets.utils import schedule_task
 ########################################################################################################################
 
 STACKED = [('2D Watershed', True), ('3D Watershed', False)]
+AGGLOMERATION_MODES = [('GASP', 'gasp'), ('MutexWS', 'mutex_ws'), ('MultiCut', 'multicut')]
 
 
 @magicgui(
@@ -31,7 +32,7 @@ STACKED = [('2D Watershed', True), ('3D Watershed', False)]
     },
     mode={
         'label': 'Agglomeration mode',
-        'choices': ['GASP', 'MutexWS', 'MultiCut'],
+        'choices': AGGLOMERATION_MODES,
         'tooltip': 'Select which agglomeration algorithm to use.',
         "widget_type": "RadioButtons",
         "orientation": "horizontal",
@@ -52,7 +53,7 @@ STACKED = [('2D Watershed', True), ('3D Watershed', False)]
 def widget_agglomeration(
     image: Image,
     superpixels: Labels,
-    mode: str = "GASP",
+    mode: str = AGGLOMERATION_MODES[0][1],
     beta: float = 0.6,
     minsize: int = 100,
 ) -> Future[LayerDataTuple]:
