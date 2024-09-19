@@ -543,7 +543,7 @@ def widget_split_and_merge_from_scribbles(
     worker.start()
 
 
-@magicgui(call_button='Extract correct labels')
+@magicgui(call_button='Freeze correct labels')
 def widget_filter_segmentation() -> Future[LayerDataTuple]:
     """Extracts corrected labels from the segmentation.
 

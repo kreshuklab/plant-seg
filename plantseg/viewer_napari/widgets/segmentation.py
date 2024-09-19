@@ -16,21 +16,21 @@ from plantseg.viewer_napari.widgets.utils import schedule_task
 #                                                                                                                      #
 ########################################################################################################################
 
-STACKED = [('2D', True), ('3D', False)]
+STACKED = [('2D Watershed', True), ('3D Watershed', False)]
 
 
 @magicgui(
-    call_button='Run Clustering',
+    call_button='Run Segmentation',
     image={
-        'label': 'Pmap/Image',
-        'tooltip': 'Raw or boundary image to use as input for clustering.',
+        'label': 'Boundary image',
+        'tooltip': 'Raw boundary image or boundary prediction to use as input for clustering.',
     },
     superpixels={
         'label': 'Over-segmentation',
         'tooltip': 'Over-segmentation labels layer to use as input for clustering.',
     },
     mode={
-        'label': 'Aggl. Mode',
+        'label': 'Agglomeration mode',
         'choices': ['GASP', 'MutexWS', 'MultiCut'],
         'tooltip': 'Select which agglomeration algorithm to use.',
         "widget_type": "RadioButtons",
@@ -45,7 +45,7 @@ STACKED = [('2D', True), ('3D', False)]
         'min': 0.0,
     },
     minsize={
-        'label': 'Min-size',
+        'label': 'Minimum segment size',
         'tooltip': 'Minimum segment size allowed in voxels.',
     },
 )
@@ -81,8 +81,8 @@ def widget_agglomeration(
 @magicgui(
     call_button='Run Lifted MultiCut',
     image={
-        'label': 'Pmap/Image',
-        'tooltip': 'Raw or boundary image to use as input for clustering.',
+        'label': 'Boundary image',
+        'tooltip': 'Raw boundary image or boundary prediction to use as input for Lifted Multicut.',
     },
     nuclei={
         'label': 'Nuclei',
@@ -101,7 +101,7 @@ def widget_agglomeration(
         'min': 0.0,
     },
     minsize={
-        'label': 'Min-size',
+        'label': 'Minimum segment size',
         'tooltip': 'Minimum segment size allowed in voxels.',
     },
 )
@@ -136,13 +136,13 @@ def widget_lifted_multicut(
 
 
 @magicgui(
-    call_button='Run Watershed',
+    call_button='Find Superpixels',
     image={
-        'label': 'Image or Probability Map',
-        'tooltip': 'Raw or boundary image to use as input for Watershed.',
+        'label': 'Boundary image',
+        'tooltip': 'Raw boundary image or boundary prediction to use as input for Watershed.',
     },
     stacked={
-        'label': 'Stacked',
+        'label': 'Mode',
         'tooltip': 'Define if the Watershed will run slice by slice (faster) ' 'or on the full volume (slower).',
         'widget_type': 'RadioButtons',
         'orientation': 'horizontal',
