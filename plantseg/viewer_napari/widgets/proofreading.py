@@ -457,7 +457,10 @@ def widget_proofreading_initialisation(
         segmentation (Labels): The segmentation layer.
         state (Path | None): Path to a previous state file (optional).
     """
-    if segmentation.name in [SCRIBBLES_LAYER_NAME, CORRECTED_CELLS_LAYER_NAME]:
+    if segmentation.name in [
+        SCRIBBLES_LAYER_NAME,
+        CORRECTED_CELLS_LAYER_NAME,
+    ]:  # Avoid re-initializing with proofreading helper layers
         log(
             'Scribble or corrected cells layer is not intended to be proofread, choose a segmentation',
             thread='Proofreading tool',
@@ -480,6 +483,9 @@ def widget_proofreading_initialisation(
     widget_proofreading_initialisation.are_you_sure.value = False
     widget_proofreading_initialisation.are_you_sure.hide()
     widget_proofreading_initialisation.call_button.text = 'Re-initialize Proofreading'
+    widget_proofreading_initialisation.segmentation.choices = [  # Avoid re-initializing with proofreading helper layers
+        layer for layer in viewer.layers if layer.name not in [SCRIBBLES_LAYER_NAME, CORRECTED_CELLS_LAYER_NAME]
+    ]
 
 
 @magicgui(
