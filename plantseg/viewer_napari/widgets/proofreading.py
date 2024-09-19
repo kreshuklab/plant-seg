@@ -1,6 +1,7 @@
 import os
 from collections import deque
 from concurrent.futures import Future
+from contextlib import contextmanager
 from typing import Union
 
 import napari
@@ -65,6 +66,19 @@ class ProofreadingHandler:
         """Initializes the ProofreadingHandler with an inactive state."""
         self._status = False
 
+    @contextmanager
+    def lock_manager(self):
+        """Context manager for locking and unlocking proofreading handler."""
+        self._lock = True
+        try:
+            yield
+        finally:
+            self._lock = False
+
+    def is_locked(self):
+        """Checks if the proofreading handler is locked."""
+        return self._lock
+
     @property
     def status(self):
         """Returns the proofreading status."""
@@ -109,18 +123,6 @@ class ProofreadingHandler:
     def corrected_cells(self):
         """Returns the set of corrected cells."""
         return self._corrected_cells
-
-    def lock(self):
-        """Locks the proofreading handler to prevent further changes."""
-        self._lock = True
-
-    def unlock(self):
-        """Unlocks the proofreading handler to allow changes."""
-        self._lock = False
-
-    def is_locked(self):
-        """Checks if the proofreading handler is locked."""
-        return self._lock
 
     def save_to_history(self):
         """Saves the current state to the undo history and clears the redo history."""
@@ -468,20 +470,19 @@ def widget_split_and_merge_from_scribbles(
             log('No scribbles found', thread='Proofreading tool')
             return None
 
-        segmentation_handler.lock()
-        segmentation_handler.save_to_history()
+        with segmentation_handler.lock_manager():
+            segmentation_handler.save_to_history()
 
-        new_seg, region_slice, bboxes = split_merge_from_seeds(
-            segmentation_handler.scribbles,
-            segmentation_handler.segmentation,
-            image=ps_image.get_data(),
-            bboxes=segmentation_handler.bboxes,
-            max_label=segmentation_handler.max_label,
-            correct_labels=segmentation_handler.corrected_cells,
-        )
+            new_seg, region_slice, bboxes = split_merge_from_seeds(
+                segmentation_handler.scribbles,
+                segmentation_handler.segmentation,
+                image=ps_image.get_data(),
+                bboxes=segmentation_handler.bboxes,
+                max_label=segmentation_handler.max_label,
+                correct_labels=segmentation_handler.corrected_cells,
+            )
 
-        segmentation_handler.update_after_proofreading(viewer, new_seg, region_slice, bboxes)
-        segmentation_handler.unlock()
+            segmentation_handler.update_after_proofreading(viewer, new_seg, region_slice, bboxes)
 
     worker = func()
     worker.start()
@@ -509,23 +510,22 @@ def widget_filter_segmentation() -> Future[LayerDataTuple]:
         if segmentation_handler.is_locked():
             raise ValueError('Segmentation is locked.')
 
-        segmentation_handler.lock()
-        filtered_seg = segmentation_handler.segmentation.copy()
-        filtered_seg[segmentation_handler.corrected_cells_mask == 0] = 0
+        with segmentation_handler.lock_manager():
+            filtered_seg = segmentation_handler.segmentation.copy()
+            filtered_seg[segmentation_handler.corrected_cells_mask == 0] = 0
 
-        properties = segmentation_handler.seg_properties
+            properties = segmentation_handler.seg_properties
 
-        new_seg_properties = ImageProperties(
-            name=f'{properties.name}_corrected',
-            semantic_type=SemanticType.LABEL,
-            voxel_size=properties.voxel_size,
-            image_layout=properties.image_layout,
-            original_voxel_size=properties.original_voxel_size,
-        )
-        new_ps_seg = PlantSegImage(filtered_seg, new_seg_properties)
-        new_seg_layer_tuple = new_ps_seg.to_napari_layer_tuple()
+            new_seg_properties = ImageProperties(
+                name=f'{properties.name}_corrected',
+                semantic_type=SemanticType.LABEL,
+                voxel_size=properties.voxel_size,
+                image_layout=properties.image_layout,
+                original_voxel_size=properties.original_voxel_size,
+            )
+            new_ps_seg = PlantSegImage(filtered_seg, new_seg_properties)
+            new_seg_layer_tuple = new_ps_seg.to_napari_layer_tuple()
 
-        segmentation_handler.unlock()
         return new_seg_layer_tuple
 
     def on_done(result):
