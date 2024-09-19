@@ -1,7 +1,9 @@
 import os
+import pickle
 from collections import deque
 from concurrent.futures import Future
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Union
 
 import napari
@@ -344,6 +346,32 @@ class ProofreadingHandler:
         """Resets the corrected cells mask to an empty state."""
         self._corrected_cells_mask = np.zeros_like(self._segmentation).astype(np.uint16)
 
+    def save_state_to_disk(self, filepath: Path):
+        """Saves the current state to disk."""
+        try:
+            filepath.parent.mkdir(parents=True, exist_ok=True)  # Create directories if they don't exist
+            with filepath.open('wb') as f:
+                pickle.dump(self._capture_state(), f)
+            log(f'State saved successfully to {filepath}', thread='Proofreading tool')
+        except Exception as e:
+            log(f'Error saving state to {filepath}: {e}', thread='Proofreading tool', level='error')
+
+    def load_state_from_disk(self, filepath: Path, viewer: napari.Viewer):
+        """Loads a saved state from disk."""
+        if not filepath.exists():
+            log(f'Error: State file not found at {filepath}', thread='Proofreading tool', level='error')
+            return
+
+        try:
+            with filepath.open('rb') as f:
+                state = pickle.load(f)
+            self._restore_state(state)
+            self._update_to_viewer(viewer, self._segmentation, self.seg_layer_name)
+            self.update_scribble_to_viewer(viewer)
+            log(f'State loaded successfully from {filepath}', thread='Proofreading tool')
+        except Exception as e:
+            log(f'Error loading state from {filepath}: {e}', thread='Proofreading tool', level='error')
+
 
 segmentation_handler = ProofreadingHandler()
 
@@ -364,9 +392,6 @@ def widget_clean_scribble(viewer: napari.Viewer):
 
     segmentation_handler.reset_scribbles()
     segmentation_handler.update_scribble_to_viewer(viewer)
-
-
-widget_clean_scribble.hide()
 
 
 def widget_add_label_to_corrected(viewer: napari.Viewer, position: tuple[int, ...]):
@@ -452,11 +477,8 @@ def widget_split_and_merge_from_scribbles(
 
     if initialize_proofreading(viewer, ps_segmentation):
         log('Proofreading initialized', thread='Proofreading tool')
-        widget_clean_scribble.show()
-        widget_filter_segmentation.show()
-        widget_undo.show()
-        widget_redo.show()
         widget_split_and_merge_from_scribbles.call_button.text = f'Split / Merge - < {DEFAULT_KEY_BINDING_PROOFREAD} >'
+        setup_proofreading_widget()
         return None
 
     segmentation_handler.update_scribbles_from_viewer(viewer)
@@ -537,9 +559,6 @@ def widget_filter_segmentation() -> Future[LayerDataTuple]:
     return future
 
 
-widget_filter_segmentation.hide()
-
-
 @magicgui(call_button='Undo Last Action')
 def widget_undo(viewer: napari.Viewer):
     """Undo the last proofreading action.
@@ -566,8 +585,41 @@ def widget_redo(viewer: napari.Viewer):
     segmentation_handler.redo(viewer)
 
 
-widget_undo.hide()
-widget_redo.hide()
+@magicgui(
+    call_button='Save State',
+    filepath={
+        'label': 'Filepath',
+        'mode': 'w',
+    },
+    images_saved={'label': 'I saved Pmap and Segmentation'},
+)
+def widget_save_state(filepath: Path, images_saved: bool = False):
+    """Saves the current proofreading state to disk.
+
+    Args:
+        filepath (str): The filepath to save the state to.
+
+    """
+    if images_saved:
+        segmentation_handler.save_state_to_disk(filepath)
+    else:
+        log('Please save the pmap and segmentation images before saving the state', thread='Save State', level='error')
+
+
+@magicgui(
+    call_button='Load State',
+    filepath={
+        'label': 'Filepath',
+        'mode': 'r',
+    },
+)
+def widget_load_state(viewer: napari.Viewer, filepath: Path):
+    """Loads a proofreading state from disk.
+
+    Args:
+        filepath (str): The filepath to load the state from.
+    """
+    segmentation_handler.load_state_from_disk(filepath, viewer=viewer)
 
 
 def setup_proofreading_keybindings(viewer):
@@ -591,3 +643,21 @@ def setup_proofreading_keybindings(viewer):
         # if _viewer.layers.selection.active.name == CORRECTED_CELLS_LAYER_NAME:
         if CORRECTED_CELLS_LAYER_NAME in _viewer.layers:
             widget_add_label_to_corrected(viewer=viewer, position=event.position)
+
+
+activation_list_proofreading = [
+    widget_clean_scribble,
+    widget_filter_segmentation,
+    widget_undo,
+    widget_redo,
+    widget_save_state,
+    widget_load_state,
+]
+
+for widget in activation_list_proofreading:
+    widget.hide()
+
+
+def setup_proofreading_widget():
+    for widget in activation_list_proofreading:
+        widget.show()
