@@ -61,6 +61,9 @@ def widget_agglomeration(
     ps_image = PlantSegImage.from_napari_layer(image)
     ps_labels = PlantSegImage.from_napari_layer(superpixels)
 
+    # Hide the superpixels layer to avoid overlapping with the new segmentation
+    superpixels.visible = False
+
     widgets_to_update = [widget_proofreading_initialisation.segmentation]
 
     return schedule_task(
