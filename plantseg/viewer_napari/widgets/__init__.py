@@ -13,6 +13,7 @@ from plantseg.viewer_napari.widgets.proofreading import (
     widget_split_and_merge_from_scribbles,
 )
 from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws, widget_lifted_multicut
+from plantseg.viewer_napari.widgets.training import widget_dataset_add_image, widget_dataset_create
 
 __all__ = [
     # Data processing
@@ -38,4 +39,7 @@ __all__ = [
     "widget_add_label_to_corrected",  # XXX: Not used in container
     "widget_remove_false_positives_by_foreground",
     "widget_fix_over_under_segmentation_from_nuclei",
+    # Training
+    "widget_dataset_create",
+    "widget_dataset_add_image",
 ]

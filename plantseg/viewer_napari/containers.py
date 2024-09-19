@@ -7,6 +7,8 @@ from plantseg.viewer_napari.widgets import (
     widget_add_custom_model,
     widget_agglomeration,
     widget_clean_scribble,
+    widget_dataset_add_image,
+    widget_dataset_create,
     widget_dt_ws,
     widget_export_stacks,
     widget_filter_segmentation,
@@ -109,6 +111,20 @@ def get_proofreading_tab():
             widget_filter_segmentation,
             widget_remove_false_positives_by_foreground,
             widget_fix_over_under_segmentation_from_nuclei,
+        ],
+        labels=False,
+    )
+    container = setup_menu(
+        container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/proofreading/'
+    )
+    return container
+
+
+def get_training_tab():
+    container = MainWindow(
+        widgets=[
+            widget_dataset_create,
+            widget_dataset_add_image,
         ],
         labels=False,
     )

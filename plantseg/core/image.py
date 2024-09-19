@@ -451,6 +451,14 @@ class PlantSegImage:
             raise ValueError(f"Image layout {self.image_layout} not recognized")
 
     @property
+    def spatial_shape(self) -> tuple[int, ...]:
+        """Returns the spatial shape of the image."""
+        if self.is_multichannel:
+            return self._data.shape[1:]
+
+        return self._data.shape
+
+    @property
     def shape(self) -> tuple[int, ...]:
         """Returns the shape of the image."""
         return self._data.shape
