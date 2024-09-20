@@ -42,6 +42,7 @@ class PlantSegApp:
 
         # Init main app and configure
         self.plant_segapp = tkinter.Tk()
+        self.plant_segapp.geometry('1500x1080')
         self.plant_segapp.tk.call('tk', 'scaling', 1.0)
 
         # Set icon
