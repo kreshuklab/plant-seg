@@ -4,6 +4,7 @@ from plantseg.viewer_napari.widgets.dataprocessing import (
     widget_remove_false_positives_by_foreground,
     widget_rescaling,
 )
+from plantseg.viewer_napari.widgets.docs import widget_docs
 from plantseg.viewer_napari.widgets.io import widget_export_stacks, widget_infos, widget_open_file, widget_show_info
 from plantseg.viewer_napari.widgets.prediction import widget_add_custom_model, widget_unet_prediction
 from plantseg.viewer_napari.widgets.proofreading import (
@@ -19,6 +20,8 @@ from plantseg.viewer_napari.widgets.proofreading import (
 from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws
 
 __all__ = [
+    # Home
+    "widget_docs",
     # Data processing
     "widget_gaussian_smoothing",
     "widget_rescaling",

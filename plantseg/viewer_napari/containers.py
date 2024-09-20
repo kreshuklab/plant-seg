@@ -4,6 +4,7 @@ from plantseg.viewer_napari.widgets import (
     widget_add_custom_model,
     widget_agglomeration,
     widget_clean_scribble,
+    widget_docs,
     widget_dt_ws,
     widget_export_stacks,
     widget_filter_segmentation,
@@ -28,6 +29,7 @@ STYLE_SLIDER = "font-size: 9pt;"
 def get_data_io_tab():
     container = Container(
         widgets=[
+            widget_docs,
             widget_open_file,
             widget_export_stacks,
             widget_show_info,
