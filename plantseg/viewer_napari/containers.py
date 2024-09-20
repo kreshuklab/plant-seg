@@ -13,7 +13,6 @@ from plantseg.viewer_napari.widgets import (
     widget_fix_over_under_segmentation_from_nuclei,
     widget_gaussian_smoothing,
     widget_infos,
-    widget_lifted_multicut,
     widget_open_file,
     widget_proofreading_initialisation,
     widget_redo,
@@ -95,7 +94,6 @@ def get_extras_tab():
     container = MainWindow(
         widgets=[
             widget_add_custom_model,
-            widget_lifted_multicut,
         ],
         labels=False,
     )

@@ -18,7 +18,7 @@ from plantseg.core.zoo import model_zoo
 from plantseg.tasks.prediction_tasks import unet_prediction_task
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.proofreading import widget_split_and_merge_from_scribbles
-from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws, widget_lifted_multicut
+from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
@@ -167,7 +167,6 @@ def widget_unet_prediction(
         widgets_to_update=[
             widget_dt_ws.image,
             widget_agglomeration.image,
-            widget_lifted_multicut.image,
             widget_split_and_merge_from_scribbles.image,
         ],
     )

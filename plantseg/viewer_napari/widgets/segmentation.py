@@ -1,7 +1,7 @@
 from concurrent.futures import Future
 
 from magicgui import magicgui
-from napari.layers import Image, Labels
+from napari.layers import Image, Labels, Layer
 from napari.types import LayerDataTuple
 
 from plantseg.core.image import ImageLayout, PlantSegImage
@@ -17,8 +17,16 @@ from plantseg.viewer_napari.widgets.utils import schedule_task
 #                                                                                                                      #
 ########################################################################################################################
 
-STACKED = [('2D Watershed', True), ('3D Watershed', False)]
-AGGLOMERATION_MODES = [('GASP', 'gasp'), ('MutexWS', 'mutex_ws'), ('MultiCut', 'multicut')]
+STACKED = [
+    ('2D Watershed', True),
+    ('3D Watershed', False),
+]
+AGGLOMERATION_MODES = [
+    ('GASP', 'gasp'),
+    ('MutexWS', 'mutex_ws'),
+    ('MultiCut', 'multicut'),
+    ('LiftedMultiCut', 'lmc'),
+]
 
 
 @magicgui(
@@ -27,9 +35,13 @@ AGGLOMERATION_MODES = [('GASP', 'gasp'), ('MutexWS', 'mutex_ws'), ('MultiCut', '
         'label': 'Boundary image',
         'tooltip': 'Raw boundary image or boundary prediction to use as input for clustering.',
     },
+    nuclei={
+        'label': 'Nuclei foreground',
+        'tooltip': 'Nuclei foreground prediction or segmentation.',
+    },
     superpixels={
         'label': 'Over-segmentation',
-        'tooltip': 'Over-segmentation labels layer to use as input for clustering.',
+        'tooltip': 'Over-segmentation labels layer (superpixels) to use as input for clustering.',
     },
     mode={
         'label': 'Agglomeration mode',
@@ -53,6 +65,7 @@ AGGLOMERATION_MODES = [('GASP', 'gasp'), ('MutexWS', 'mutex_ws'), ('MultiCut', '
 )
 def widget_agglomeration(
     image: Image,
+    nuclei: Layer,
     superpixels: Labels,
     mode: str = AGGLOMERATION_MODES[0][1],
     beta: float = 0.6,
@@ -65,6 +78,20 @@ def widget_agglomeration(
     superpixels.visible = False
 
     widgets_to_update = [widget_proofreading_initialisation.segmentation]
+
+    if mode == 'lmc':
+        ps_nuclei = PlantSegImage.from_napari_layer(nuclei)
+        return schedule_task(
+            lmc_segmentation_task,
+            task_kwargs={
+                "boundary_pmap": ps_image,
+                "superpixels": ps_labels,
+                "nuclei": ps_nuclei,
+                "beta": beta,
+                "post_min_size": minsize,
+            },
+            widgets_to_update=widgets_to_update,
+        )
 
     return schedule_task(
         clustering_segmentation_task,
@@ -79,64 +106,12 @@ def widget_agglomeration(
     )
 
 
-########################################################################################################################
-#                                                                                                                      #
-# Lifted Multicut Segmentation Widget                                                                                  #
-#                                                                                                                      #
-########################################################################################################################
-
-
-@magicgui(
-    call_button='Run Lifted MultiCut',
-    image={
-        'label': 'Boundary image',
-        'tooltip': 'Raw boundary image or boundary prediction to use as input for Lifted Multicut.',
-    },
-    nuclei={
-        'label': 'Nuclei',
-        'tooltip': 'Nuclei binary prediction or Nuclei segmentation.',
-    },
-    superpixels={
-        'label': 'Over-segmentation',
-        'tooltip': 'Over-segmentation labels layer to use as input for clustering.',
-    },
-    beta={
-        'label': 'Under/Over segmentation factor',
-        'tooltip': 'A low value will increase under-segmentation tendency '
-        'and a large value increase over-segmentation tendency.',
-        'widget_type': 'FloatSlider',
-        'max': 1.0,
-        'min': 0.0,
-    },
-    minsize={
-        'label': 'Minimum segment size',
-        'tooltip': 'Minimum segment size allowed in voxels.',
-    },
-)
-def widget_lifted_multicut(
-    image: Image,
-    nuclei: Image | Labels,
-    superpixels: Labels,
-    beta: float = 0.5,
-    minsize: int = 100,
-) -> Future[LayerDataTuple]:
-    ps_image = PlantSegImage.from_napari_layer(image)
-    ps_labels = PlantSegImage.from_napari_layer(superpixels)
-    ps_nuclei = PlantSegImage.from_napari_layer(nuclei)
-
-    widgets_to_update = [widget_proofreading_initialisation.segmentation]
-
-    return schedule_task(
-        lmc_segmentation_task,
-        task_kwargs={
-            "boundary_pmap": ps_image,
-            "superpixels": ps_labels,
-            "nuclei": ps_nuclei,
-            "beta": beta,
-            "post_min_size": minsize,
-        },
-        widgets_to_update=widgets_to_update,
-    )
+@widget_agglomeration.mode.changed.connect
+def _on_mode_changed(mode: str):
+    if mode == 'lmc':
+        widget_agglomeration.nuclei.show()
+    else:
+        widget_agglomeration.nuclei.hide()
 
 
 ########################################################################################################################
@@ -217,7 +192,6 @@ def widget_dt_ws(
         },
         widgets_to_update=[
             widget_agglomeration.superpixels,
-            widget_lifted_multicut.superpixels,
             widget_remove_false_positives_by_foreground.segmentation,
         ],
     )
