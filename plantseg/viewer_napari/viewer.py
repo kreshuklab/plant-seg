@@ -12,7 +12,7 @@ from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybi
 
 
 def run_viewer():
-    viewer = napari.Viewer()
+    viewer = napari.Viewer(title='PlantSeg v2')
     setup_proofreading_keybindings(viewer)
 
     # Create and add tabs
