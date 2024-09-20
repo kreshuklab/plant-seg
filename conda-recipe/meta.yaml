@@ -1,6 +1,6 @@
 package:
   name: plantseg
-  version: { { RELEASE_VERSION } }
+  version: {{ RELEASE_VERSION }}
 
 source:
   path: ..
