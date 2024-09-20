@@ -40,7 +40,7 @@ def setup_menu(container, path=None):
     return container
 
 
-def get_data_io():
+def get_data_io_tab():
     container = MainWindow(
         widgets=[
             widget_open_file,
