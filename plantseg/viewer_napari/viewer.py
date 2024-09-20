@@ -13,7 +13,9 @@ from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybi
 
 def run_viewer():
     viewer = napari.Viewer()
+    setup_proofreading_keybindings(viewer)
 
+    # Create and add tabs
     for _containers, name in [
         (get_data_io_tab(), "Data"),
         (get_preprocessing_tab(), "Preprocessing"),
@@ -23,7 +25,9 @@ def run_viewer():
     ]:
         viewer.window.add_dock_widget(_containers, name=name, tabify=True)
 
-    setup_proofreading_keybindings(viewer)
+    # Show data tab by default
+    viewer.window._dock_widgets['Data'].show()
+    viewer.window._dock_widgets['Data'].raise_()
 
     log("Plantseg is ready!", thread="Run viewer", level="info")
     napari.run()
