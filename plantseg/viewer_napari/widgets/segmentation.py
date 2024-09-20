@@ -117,66 +117,6 @@ def _on_mode_changed(mode: str):
 
 ########################################################################################################################
 #                                                                                                                      #
-# Lifted Multicut Segmentation Widget                                                                                  #
-#                                                                                                                      #
-########################################################################################################################
-
-
-@magicgui(
-    call_button='Run Lifted MultiCut',
-    image={
-        'label': 'Boundary image',
-        'tooltip': 'Raw boundary image or boundary prediction to use as input for Lifted Multicut.',
-    },
-    nuclei={
-        'label': 'Nuclei',
-        'tooltip': 'Nuclei binary prediction or Nuclei segmentation.',
-    },
-    superpixels={
-        'label': 'Over-segmentation',
-        'tooltip': 'Over-segmentation labels layer to use as input for clustering.',
-    },
-    beta={
-        'label': 'Under/Over segmentation factor',
-        'tooltip': 'A low value will increase under-segmentation tendency '
-        'and a large value increase over-segmentation tendency.',
-        'widget_type': 'FloatSlider',
-        'max': 1.0,
-        'min': 0.0,
-    },
-    minsize={
-        'label': 'Minimum segment size',
-        'tooltip': 'Minimum segment size allowed in voxels.',
-    },
-)
-def widget_lifted_multicut(
-    image: Image,
-    nuclei: Image | Labels,
-    superpixels: Labels,
-    beta: float = 0.5,
-    minsize: int = 100,
-) -> Future[LayerDataTuple]:
-    ps_image = PlantSegImage.from_napari_layer(image)
-    ps_labels = PlantSegImage.from_napari_layer(superpixels)
-    ps_nuclei = PlantSegImage.from_napari_layer(nuclei)
-
-    widgets_to_update = [widget_proofreading_initialisation.segmentation]
-
-    return schedule_task(
-        lmc_segmentation_task,
-        task_kwargs={
-            "boundary_pmap": ps_image,
-            "superpixels": ps_labels,
-            "nuclei": ps_nuclei,
-            "beta": beta,
-            "post_min_size": minsize,
-        },
-        widgets_to_update=widgets_to_update,
-    )
-
-
-########################################################################################################################
-#                                                                                                                      #
 # DT Watershed Segmentation Widget                                                                                     #
 #                                                                                                                      #
 ########################################################################################################################
@@ -253,7 +193,6 @@ def widget_dt_ws(
         },
         widgets_to_update=[
             widget_agglomeration.superpixels,
-            widget_lifted_multicut.superpixels,
             widget_remove_false_positives_by_foreground.segmentation,
         ],
     )
