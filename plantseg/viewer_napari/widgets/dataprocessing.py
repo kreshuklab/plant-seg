@@ -2,7 +2,7 @@ from concurrent.futures import Future
 from enum import Enum
 
 from magicgui import magicgui
-from napari.layers import Image, Labels, Layer
+from napari.layers import Image, Labels, Layer, Shapes
 from napari.types import LayerDataTuple
 
 from plantseg.core.image import PlantSegImage
@@ -11,6 +11,7 @@ from plantseg.core.zoo import model_zoo
 from plantseg.tasks.dataprocessing_tasks import (
     fix_over_under_segmentation_from_nuclei_task,
     gaussian_smoothing_task,
+    image_cropping_task,
     image_rescale_to_shape_task,
     image_rescale_to_voxel_size_task,
     remove_false_positives_by_foreground_probability_task,
@@ -62,6 +63,89 @@ def widget_gaussian_smoothing(
         },
         widgets_to_update=widgets_to_update if update_other_widgets else [],
     )
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Cropping Widget                                                                                                      #
+#                                                                                                                      #
+########################################################################################################################
+
+
+@magicgui(
+    call_button=f"Run Cropping",
+    image={
+        "label": "Image or Label",
+        "tooltip": "Layer to apply the rescaling.",
+    },
+    crop_roi={
+        "label": "Crop ROI",
+        "tooltip": "This must be a shape layer with a rectangle XY overlaying the area to crop.",
+    },
+    crop_z={
+        "label": "Z slices [Start, End)",
+        "tooltip": "Number of z slices to take next to the current selection.\nSTART is included, END is not.",
+        "widget_type": "RangeSlider",
+        "max": 100,
+        "min": 0,
+        "step": 1,
+    },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
+)
+def widget_cropping(
+    image: Layer,
+    crop_roi: Shapes | None = None,
+    crop_z: tuple[int, int] = (0, 100),
+    update_other_widgets: bool = True,
+) -> Future[LayerDataTuple]:
+    if crop_roi is not None:
+        assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
+        assert crop_roi.shape_type[0] == "rectangle", "Only a rectangle shape should be used for cropping"
+
+    if not isinstance(image, (Image, Labels)):
+        raise ValueError(f"{type(image)} cannot be cropped, please use Image layers or Labels layers")
+
+    if crop_roi is not None:
+        rectangle = crop_roi.data[0].astype("int64")
+    else:
+        rectangle = None
+
+    ps_image = PlantSegImage.from_napari_layer(image)
+
+    widgets_to_update = []
+
+    return schedule_task(
+        image_cropping_task,
+        task_kwargs={
+            "image": ps_image,
+            "rectangle": rectangle,
+            "crop_z": crop_z,
+        },
+        widgets_to_update=widgets_to_update if update_other_widgets else [],
+    )
+
+
+@widget_cropping.image.changed.connect
+def _on_cropping_image_changed(image: Layer):
+    if image is None:
+        widget_cropping.crop_z.hide()
+        return None
+
+    image_shape_z = int(image.data.shape[0])
+
+    if image_shape_z == 1:
+        widget_cropping.crop_z.hide()
+        return None
+
+    widget_cropping.crop_z.show()
+    widget_cropping.crop_z.step = 1
+
+    if widget_cropping.crop_z.value[1] > image_shape_z:
+        widget_cropping.crop_z.value = (0, image_shape_z)
+    widget_cropping.crop_z.max = image_shape_z
 
 
 ########################################################################################################################

@@ -4,6 +4,7 @@ from plantseg.viewer_napari.widgets import (
     widget_add_custom_model,
     widget_agglomeration,
     widget_clean_scribble,
+    widget_cropping,
     widget_docs,
     widget_dt_ws,
     widget_export_stacks,
@@ -46,6 +47,7 @@ def get_preprocessing_tab():
         widgets=[
             widget_gaussian_smoothing,
             widget_rescaling,
+            widget_cropping,
         ],
         labels=False,
     )

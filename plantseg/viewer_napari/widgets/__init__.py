@@ -1,4 +1,5 @@
 from plantseg.viewer_napari.widgets.dataprocessing import (
+    widget_cropping,
     widget_fix_over_under_segmentation_from_nuclei,
     widget_gaussian_smoothing,
     widget_remove_false_positives_by_foreground,
@@ -25,6 +26,7 @@ __all__ = [
     # Data processing
     "widget_gaussian_smoothing",
     "widget_rescaling",
+    "widget_cropping",
     # IO
     "widget_open_file",
     "widget_export_stacks",
