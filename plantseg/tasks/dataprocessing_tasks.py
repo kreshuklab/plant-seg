@@ -5,6 +5,7 @@ from plantseg.functionals.dataprocessing import (
     image_gaussian_smoothing,
     image_rescale,
     remove_false_positives_by_foreground_probability,
+    set_biggest_instance_to_zero,
 )
 from plantseg.tasks import task_tracker
 
@@ -236,4 +237,21 @@ def fix_over_under_segmentation_from_nuclei_task(
         boundary=boundary.get_data() if boundary else None,
     )
     new_image = cell_seg.derive_new(out_data, name=f"{cell_seg.name}_nuc_fixed")
+    return new_image
+
+
+@task_tracker
+def set_biggest_instance_to_zero_task(image: PlantSegImage) -> PlantSegImage:
+    """
+    Task to set the largest segment in a segmentation image to zero.
+
+    Args:
+        image (PlantSegImage): Segmentation image to process.
+
+    Returns:
+        PlantSegImage: New segmentation image with largest instance set to 0.
+    """
+    data = image.get_data()
+    new_data = set_biggest_instance_to_zero(data)
+    new_image = image.derive_new(new_data, name=f"{image.name}_bg0")
     return new_image
