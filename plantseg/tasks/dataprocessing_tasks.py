@@ -28,6 +28,58 @@ def gaussian_smoothing_task(image: PlantSegImage, sigma: float) -> PlantSegImage
     return new_image
 
 
+def _compute_slices(rectangle, crop_z: tuple[int, int], shape):
+    """
+    Compute slices for cropping based on a given rectangle and z-slices.
+    """
+    z_slice = slice(*crop_z)
+    if rectangle is None:
+        return z_slice, slice(0, shape[1]), slice(0, shape[2])
+
+    x_start = max(rectangle[0, 1], 0)
+    x_end = min(rectangle[2, 1], shape[1])
+    x_slice = slice(x_start, x_end)
+
+    y_start = max(rectangle[0, 2], 0)
+    y_end = min(rectangle[2, 2], shape[2])
+    y_slice = slice(y_start, y_end)
+    return z_slice, x_slice, y_slice
+
+
+def _cropping(data, crop_slices):
+    """
+    Apply cropping on the provided data based on the computed slices.
+    """
+    return data[crop_slices]
+
+
+@task_tracker
+def image_cropping_task(image: PlantSegImage, rectangle=None, crop_z: tuple[int, int] = (0, 100)) -> PlantSegImage:
+    """
+    Crop the image based on the given rectangle and z-slices.
+
+    Args:
+        image (PlantSegImage): The image to be cropped.
+        rectangle (Optional): Rectangle defining the region to crop.
+        crop_z (tuple[int, int]): Z-slice range for cropping.
+
+    Returns:
+        PlantSegImage: The cropped image.
+    """
+    data = image.get_data()
+
+    # Compute crop slices
+    crop_slices = _compute_slices(rectangle, crop_z, data.shape)
+
+    # Perform cropping on the data
+    cropped_data = _cropping(data, crop_slices)
+
+    # Create and return a new PlantSegImage object from the cropped data
+    cropped_image = image.derive_new(cropped_data, name=f"{image.name}_cropped")
+
+    return cropped_image
+
+
 @task_tracker
 def set_voxel_size_task(image: PlantSegImage, voxel_size: tuple[float, float, float]) -> PlantSegImage:
     """Set the voxel size of an image.
