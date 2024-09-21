@@ -4,6 +4,7 @@ from plantseg.functionals.dataprocessing import (
     fix_over_under_segmentation_from_nuclei,
     image_gaussian_smoothing,
     image_rescale,
+    relabel_segmentation,
     remove_false_positives_by_foreground_probability,
     set_biggest_instance_to_zero,
 )
@@ -254,4 +255,21 @@ def set_biggest_instance_to_zero_task(image: PlantSegImage) -> PlantSegImage:
     data = image.get_data()
     new_data = set_biggest_instance_to_zero(data)
     new_image = image.derive_new(new_data, name=f"{image.name}_bg0")
+    return new_image
+
+
+@task_tracker
+def relabel_segmentation_task(image: PlantSegImage) -> PlantSegImage:
+    """
+    Task to relabel a segmentation image contiguously, ensuring non-touching segments with the same ID are relabeled.
+
+    Args:
+        image (PlantSegImage): Segmentation image to process.
+
+    Returns:
+        PlantSegImage: New segmentation image with relabeled instances.
+    """
+    data = image.get_data()
+    new_data = relabel_segmentation(data)
+    new_image = image.derive_new(new_data, name=f"{image.name}_relabeled")
     return new_image
