@@ -16,6 +16,8 @@ from plantseg.tasks.dataprocessing_tasks import (
     image_rescale_to_voxel_size_task,
     remove_false_positives_by_foreground_probability_task,
     set_voxel_size_task,
+    relabel_segmentation_task,
+    set_biggest_instance_to_zero_task,
 )
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.utils import schedule_task
@@ -521,6 +523,66 @@ def widget_fix_over_under_segmentation_from_nuclei(
             'threshold_split': threshold_split,
             'quantiles_nuclei': quantile,
             'boundary': ps_pmap_cell_boundary,
+        },
+        widgets_to_update=[],
+    )
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Relabel Widget                                                                                                       #
+#                                                                                                                      #
+########################################################################################################################
+
+
+@magicgui(
+    call_button=f"Relabel Instances",
+    segmentation={
+        "label": "Segmentation",
+        "tooltip": "Segmentation can be any label layer.",
+    },
+)
+def widget_label_processing(
+    segmentation: Labels,
+) -> Future[LayerDataTuple]:
+    """Relabel an image layer."""
+
+    ps_image = PlantSegImage.from_napari_layer(segmentation)
+
+    return schedule_task(
+        relabel_segmentation_task,
+        task_kwargs={
+            "image": ps_image,
+        },
+        widgets_to_update=[],
+    )
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Set Biggest Instance to Zero Widget                                                                                  #
+#                                                                                                                      #
+########################################################################################################################
+
+
+@magicgui(
+    call_button=f"Set Biggest Instance to Zero",
+    segmentation={
+        "label": "Segmentation",
+        "tooltip": "Segmentation can be any label layer.",
+    },
+)
+def widget_set_biggest_instance_to_zero(
+    segmentation: Labels,
+) -> Future[LayerDataTuple]:
+    """Set the biggest instance to zero in a label layer."""
+
+    ps_image = PlantSegImage.from_napari_layer(segmentation)
+
+    return schedule_task(
+        set_biggest_instance_to_zero_task,
+        task_kwargs={
+            "image": ps_image,
         },
         widgets_to_update=[],
     )
