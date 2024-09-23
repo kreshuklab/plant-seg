@@ -4,6 +4,7 @@ from plantseg.viewer_napari.widgets import (
     widget_add_custom_model,
     widget_agglomeration,
     widget_clean_scribble,
+    widget_cropping,
     widget_docs,
     widget_dt_ws,
     widget_export_stacks,
@@ -14,9 +15,11 @@ from plantseg.viewer_napari.widgets import (
     widget_open_file,
     widget_proofreading_initialisation,
     widget_redo,
+    widget_relabel,
     widget_remove_false_positives_by_foreground,
     widget_rescaling,
     widget_save_state,
+    widget_set_biggest_instance_to_zero,
     widget_show_info,
     widget_split_and_merge_from_scribbles,
     widget_undo,
@@ -46,6 +49,7 @@ def get_preprocessing_tab():
         widgets=[
             widget_gaussian_smoothing,
             widget_rescaling,
+            widget_cropping,
         ],
         labels=False,
     )
@@ -68,6 +72,8 @@ def get_extras_tab():
     container = Container(
         widgets=[
             widget_add_custom_model,
+            widget_relabel,
+            widget_set_biggest_instance_to_zero,
         ],
         labels=False,
     )

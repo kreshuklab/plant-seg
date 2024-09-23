@@ -1,10 +1,12 @@
-from plantseg.core.image import ImageLayout, PlantSegImage
+from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.core.voxelsize import VoxelSize
 from plantseg.functionals.dataprocessing import (
     fix_over_under_segmentation_from_nuclei,
     image_gaussian_smoothing,
     image_rescale,
+    relabel_segmentation,
     remove_false_positives_by_foreground_probability,
+    set_biggest_instance_to_zero,
 )
 from plantseg.tasks import task_tracker
 
@@ -26,6 +28,58 @@ def gaussian_smoothing_task(image: PlantSegImage, sigma: float) -> PlantSegImage
     smoothed_data = image_gaussian_smoothing(data, sigma=sigma)
     new_image = image.derive_new(smoothed_data, name=f"{image.name}_smoothed")
     return new_image
+
+
+def _compute_slices(rectangle, crop_z: tuple[int, int], shape):
+    """
+    Compute slices for cropping based on a given rectangle and z-slices.
+    """
+    z_slice = slice(*crop_z)
+    if rectangle is None:
+        return z_slice, slice(0, shape[1]), slice(0, shape[2])
+
+    x_start = max(rectangle[0, 1], 0)
+    x_end = min(rectangle[2, 1], shape[1])
+    x_slice = slice(x_start, x_end)
+
+    y_start = max(rectangle[0, 2], 0)
+    y_end = min(rectangle[2, 2], shape[2])
+    y_slice = slice(y_start, y_end)
+    return z_slice, x_slice, y_slice
+
+
+def _cropping(data, crop_slices):
+    """
+    Apply cropping on the provided data based on the computed slices.
+    """
+    return data[crop_slices]
+
+
+@task_tracker
+def image_cropping_task(image: PlantSegImage, rectangle=None, crop_z: tuple[int, int] = (0, 100)) -> PlantSegImage:
+    """
+    Crop the image based on the given rectangle and z-slices.
+
+    Args:
+        image (PlantSegImage): The image to be cropped.
+        rectangle (Optional): Rectangle defining the region to crop.
+        crop_z (tuple[int, int]): Z-slice range for cropping.
+
+    Returns:
+        PlantSegImage: The cropped image.
+    """
+    data = image.get_data()
+
+    # Compute crop slices
+    crop_slices = _compute_slices(rectangle, crop_z, data.shape)
+
+    # Perform cropping on the data
+    cropped_data = _cropping(data, crop_slices)
+
+    # Create and return a new PlantSegImage object from the cropped data
+    cropped_image = image.derive_new(cropped_data, name=f"{image.name}_cropped")
+
+    return cropped_image
 
 
 @task_tracker
@@ -184,4 +238,44 @@ def fix_over_under_segmentation_from_nuclei_task(
         boundary=boundary.get_data() if boundary else None,
     )
     new_image = cell_seg.derive_new(out_data, name=f"{cell_seg.name}_nuc_fixed")
+    return new_image
+
+
+@task_tracker
+def set_biggest_instance_to_zero_task(image: PlantSegImage, instance_could_be_zero: bool = False) -> PlantSegImage:
+    """
+    Task to set the largest segment in a segmentation image to zero.
+
+    Args:
+        image (PlantSegImage): Segmentation image to process.
+        instance_could_be_zero (bool): If True, 0 might be an instance label, add 1 to all labels before processing.
+
+    Returns:
+        PlantSegImage: New segmentation image with largest instance set to 0.
+    """
+    if not (image.semantic_type == SemanticType.SEGMENTATION or image.semantic_type == SemanticType.LABEL):
+        raise ValueError("Input image must be a segmentation or mask image.")
+    data = image.get_data()
+    print(f"Processing {image.name} with shape {data.shape} and max {data.max()}, min {data.min()}.")
+    new_data = set_biggest_instance_to_zero(data, instance_could_be_zero=instance_could_be_zero)
+    new_image = image.derive_new(new_data, name=f"{image.name}_bg0")
+    return new_image
+
+
+@task_tracker
+def relabel_segmentation_task(image: PlantSegImage, background: int | None = None) -> PlantSegImage:
+    """
+    Task to relabel a segmentation image contiguously, ensuring non-touching segments with the same ID are relabeled.
+
+    Args:
+        image (PlantSegImage): Segmentation image to process.
+
+    Returns:
+        PlantSegImage: New segmentation image with relabeled instances.
+    """
+    if not (image.semantic_type == SemanticType.SEGMENTATION or image.semantic_type == SemanticType.LABEL):
+        raise ValueError("Input image must be a segmentation or mask image.")
+    data = image.get_data()
+    new_data = relabel_segmentation(data, background=background)
+    new_image = image.derive_new(new_data, name=f"{image.name}_relabeled")
     return new_image
