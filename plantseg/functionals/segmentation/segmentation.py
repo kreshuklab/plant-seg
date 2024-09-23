@@ -255,7 +255,7 @@ def lifted_multicut_from_nuclei_pmaps(
 
     Args:
         boundary_pmaps (np.ndarray): cell boundary prediction, 3D array of shape (Z, Y, X) with values between 0 and 1.
-        nuclei_pmaps (np.ndarray): nuclei predictionMust have the same shape as boundary_pmaps and
+        nuclei_pmaps (np.ndarray): nuclei prediction. Must have the same shape as boundary_pmaps and
             with values between 0 and 1.
         superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
         beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards
@@ -265,6 +265,9 @@ def lifted_multicut_from_nuclei_pmaps(
     Returns:
         segmentation (np.ndarray): Multicut output segmentation
     """
+    if nuclei_pmaps.max() > 1 or nuclei_pmaps.min() < 0:
+        raise ValueError('nuclei_pmaps should be between 0 and 1')
+
     # compute the region adjacency graph
     rag = compute_rag(superpixels)
 
@@ -279,7 +282,11 @@ def lifted_multicut_from_nuclei_pmaps(
 
     # compute lifted multicut features from boundary pmaps
     lifted_uvs, lifted_costs = lifted_problem_from_probabilities(
-        rag, superpixels, input_maps, assignment_threshold, graph_depth=4
+        rag,
+        superpixels.astype('uint32'),
+        input_maps,
+        assignment_threshold,
+        graph_depth=4,
     )
 
     # solve the full lifted problem using the kernighan lin approximation introduced in

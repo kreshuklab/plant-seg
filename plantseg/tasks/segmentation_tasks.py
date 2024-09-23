@@ -170,7 +170,7 @@ def lmc_segmentation_task(
             a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
         post_min_size (int): minimal size of the segments after Multicut. (default: 100)
     """
-    if nuclei.semantic_type is SemanticType.PREDICTION or nuclei.semantic_type is SemanticType.IMAGE:
+    if nuclei.semantic_type is SemanticType.PREDICTION or nuclei.semantic_type is SemanticType.RAW:
         lmc = lifted_multicut_from_nuclei_pmaps
         extra_key = "nuclei_pmaps"
     else:

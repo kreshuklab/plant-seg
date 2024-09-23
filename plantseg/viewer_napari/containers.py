@@ -1,25 +1,25 @@
-import webbrowser
-
-from magicgui.widgets import MainWindow
-from PyQt5.QtCore import Qt
+from magicgui.widgets import Container
 
 from plantseg.viewer_napari.widgets import (
     widget_add_custom_model,
     widget_agglomeration,
     widget_clean_scribble,
+    widget_cropping,
+    widget_docs,
     widget_dt_ws,
     widget_export_stacks,
     widget_filter_segmentation,
     widget_fix_over_under_segmentation_from_nuclei,
     widget_gaussian_smoothing,
     widget_infos,
-    widget_lifted_multicut,
     widget_open_file,
     widget_proofreading_initialisation,
     widget_redo,
+    widget_relabel,
     widget_remove_false_positives_by_foreground,
     widget_rescaling,
     widget_save_state,
+    widget_set_biggest_instance_to_zero,
     widget_show_info,
     widget_split_and_merge_from_scribbles,
     widget_undo,
@@ -29,20 +29,10 @@ from plantseg.viewer_napari.widgets import (
 STYLE_SLIDER = "font-size: 9pt;"
 
 
-def setup_menu(container, path=None):
-    def _callback():
-        if path is not None:
-            webbrowser.open(path)
-
-    container.create_menu_item(menu_name="Help", item_name="Open Documentation", callback=_callback)
-
-    container._widget._layout.setAlignment(Qt.AlignTop)
-    return container
-
-
-def get_data_io():
-    container = MainWindow(
+def get_data_io_tab():
+    container = Container(
         widgets=[
+            widget_docs,
             widget_open_file,
             widget_export_stacks,
             widget_show_info,
@@ -50,31 +40,24 @@ def get_data_io():
         ],
         labels=False,
     )
-    container = setup_menu(
-        container,
-        path="https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/import_export/",
-    )
     return container
 
 
 def get_preprocessing_tab():
     # widget_cropping.crop_z.native.setStyleSheet(STYLE_SLIDER)  # TODO: remove comment when widget_cropping is implemented
-    container = MainWindow(
+    container = Container(
         widgets=[
             widget_gaussian_smoothing,
             widget_rescaling,
+            widget_cropping,
         ],
         labels=False,
-    )
-    container = setup_menu(
-        container,
-        path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/preprocessing/',
     )
     return container
 
 
 def get_main_tab():
-    container = MainWindow(
+    container = Container(
         widgets=[
             widget_unet_prediction,
             widget_dt_ws,
@@ -82,31 +65,25 @@ def get_main_tab():
         ],
         labels=False,
     )
-    container = setup_menu(
-        container,
-        path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/unet_gasp_workflow/',
-    )
     return container
 
 
 def get_extras_tab():
-    # widget_fix_over_under_segmentation_from_nuclei.threshold.native.setStyleSheet(STYLE_SLIDER)
-    # widget_fix_over_under_segmentation_from_nuclei.quantile.native.setStyleSheet(STYLE_SLIDER)
-    container = MainWindow(
+    container = Container(
         widgets=[
             widget_add_custom_model,
-            widget_lifted_multicut,
+            widget_relabel,
+            widget_set_biggest_instance_to_zero,
         ],
         labels=False,
-    )
-    container = setup_menu(
-        container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/extra/'
     )
     return container
 
 
 def get_proofreading_tab():
-    container = MainWindow(
+    widget_fix_over_under_segmentation_from_nuclei.threshold.native.setStyleSheet(STYLE_SLIDER)
+    widget_fix_over_under_segmentation_from_nuclei.quantile.native.setStyleSheet(STYLE_SLIDER)
+    container = Container(
         widgets=[
             widget_proofreading_initialisation,
             widget_split_and_merge_from_scribbles,
@@ -119,8 +96,5 @@ def get_proofreading_tab():
             widget_fix_over_under_segmentation_from_nuclei,
         ],
         labels=False,
-    )
-    container = setup_menu(
-        container, path='https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/proofreading/'
     )
     return container

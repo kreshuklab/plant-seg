@@ -1,9 +1,13 @@
 from plantseg.viewer_napari.widgets.dataprocessing import (
+    widget_cropping,
     widget_fix_over_under_segmentation_from_nuclei,
     widget_gaussian_smoothing,
+    widget_relabel,
     widget_remove_false_positives_by_foreground,
     widget_rescaling,
+    widget_set_biggest_instance_to_zero,
 )
+from plantseg.viewer_napari.widgets.docs import widget_docs
 from plantseg.viewer_napari.widgets.io import widget_export_stacks, widget_infos, widget_open_file, widget_show_info
 from plantseg.viewer_napari.widgets.prediction import widget_add_custom_model, widget_unet_prediction
 from plantseg.viewer_napari.widgets.proofreading import (
@@ -16,12 +20,15 @@ from plantseg.viewer_napari.widgets.proofreading import (
     widget_split_and_merge_from_scribbles,
     widget_undo,
 )
-from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws, widget_lifted_multicut
+from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws
 
 __all__ = [
+    # Home
+    "widget_docs",
     # Data processing
     "widget_gaussian_smoothing",
     "widget_rescaling",
+    "widget_cropping",
     # IO
     "widget_open_file",
     "widget_export_stacks",
@@ -32,9 +39,10 @@ __all__ = [
     # Main - Segmentation
     "widget_dt_ws",
     "widget_agglomeration",
-    # Extra - Segmentation
-    "widget_lifted_multicut",
+    # Extra
     "widget_add_custom_model",
+    "widget_relabel",
+    "widget_set_biggest_instance_to_zero",
     # Proofreading
     "widget_proofreading_initialisation",
     "widget_split_and_merge_from_scribbles",

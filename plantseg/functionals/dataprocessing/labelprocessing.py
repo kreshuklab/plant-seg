@@ -1,10 +1,10 @@
 import numpy as np
-from skimage import measure
+from skimage import measure  # lazy
 
 
-def relabel_segmentation(segmentation_image: np.ndarray) -> np.ndarray:
+def relabel_segmentation(segmentation_image: np.ndarray, background: int | None = None) -> np.ndarray:
     r"""
-    Relabel contiguously a segmentation image, non-touching instances with same id will be relabeled differently.
+    Relabels contiguously a segmentation image, non-touching instances with same id will be relabeled differently.
     To be noted that measure.label is different from ndimage.label.
 
     1-connectivity     2-connectivity     diagonal connection close-up
@@ -16,80 +16,114 @@ def relabel_segmentation(segmentation_image: np.ndarray) -> np.ndarray:
          [ ]           [ ]  [ ]  [ ]
 
     Args:
-        segmentation_image (np.ndarray): segmentation image to relabel
+        segmentation_image (np.ndarray): A 2D or 3D segmentation image where connected components represent different instances.
+        background (int | None, optional): Label of the background. If None, the function will assume the background
+                                           label is 0. Default is None.
 
     Returns:
-        new_segmentation_image (np.ndarray): relabeled segmentation image
-
+        np.ndarray: A relabeled segmentation image where each connected component is assigned a unique integer label.
     """
-    return measure.label(
+    relabeled_segmentation = measure.label(
         segmentation_image,
-        background=0,
+        background=background,
         return_num=False,
-        connectivity=2,
+        connectivity=None,
     )
+    assert isinstance(relabeled_segmentation, np.ndarray)
+    return relabeled_segmentation
+
+
+def get_largest_instance_id(segmentation: np.ndarray, include_zero: bool = False) -> int:
+    """
+    Returns the label of the largest instance in the segmentation image based on pixel count.
+
+    Args:
+        segmentation (np.ndarray): A 2D or 3D segmentation image.
+        include_zero (bool, optional): Whether to include the background (label 0) in the computation.
+                                       Default is False.
+
+    Returns:
+        int: The label of the largest instance in the segmentation image.
+    """
+    instance_ids, counts = np.unique(segmentation, return_counts=True)
+
+    if not include_zero and 0 in instance_ids:
+        instance_ids = instance_ids[1:]
+        counts = counts[1:]
+
+    largest_instance_index = np.argmax(counts)
+    largest_instance_id = instance_ids[largest_instance_index]
+
+    return largest_instance_id
 
 
 def set_biggest_instance_to_value(
-    segmentation_image: np.ndarray, value: int = 0, instance_could_be_zero=False
+    segmentation_image: np.ndarray, value: int = 0, instance_could_be_zero: bool = False
 ) -> np.ndarray:
     """
-    Set the largest segment (usually this is the background but not always) to a certain value.
+    Sets the largest segment in the segmentation image to a specified value.
 
-    This could cause problem if the new value already exists in the segmentation image.
-
-    Args:
-        segmentation_image (np.ndarray): segmentation image to relabel
-        value (int): value to set the background to, default is 0
-        instance_could_be_zero (bool): if True, 0 might be an instance label, add 1 to all labels before processing
-
-    Returns:
-        new_segmentation_image (np.ndarray): segmentation image with background set to value
-    """
-    if instance_could_be_zero:
-        segmentation_image += 1
-    idx, counts = np.unique(segmentation_image, return_counts=True)
-    bg_idx = idx[np.argmax(counts)]
-    return np.where(segmentation_image == bg_idx, value, segmentation_image)
-
-
-def set_biggest_instance_to_zero(segmentation_image: np.ndarray) -> np.ndarray:
-    """
-    Set the largest segment (usually this is the background but not always) to zero.
+    This function identifies the largest connected component (by pixel count) in the segmentation image and
+    replaces its label with the specified value. Note that if the new value already exists in the image, it
+    could lead to ambiguous labels.
 
     Args:
-        segmentation_image (np.ndarray): segmentation image to relabel
+        segmentation_image (np.ndarray): A 2D or 3D numpy array representing an instance segmentation.
+        value (int, optional): The value to assign to the largest segment. Default is 0.
+        instance_could_be_zero (bool, optional): If True, treats label 0 as a valid instance label rather than background.
+                                                 In this case, 1 is added to all labels before processing. Default is False.
 
     Returns:
-        new_segmentation_image (np.ndarray): segmentation image with background set to 0
+        np.ndarray: The segmentation image with the largest instance set to `value`.
     """
-    return set_biggest_instance_to_value(segmentation_image, 0)
+    largest_label = get_largest_instance_id(segmentation_image, include_zero=instance_could_be_zero)
+    modified_segmentation_image = np.where(segmentation_image == largest_label, value, segmentation_image)
+
+    return modified_segmentation_image
+
+
+def set_biggest_instance_to_zero(segmentation_image: np.ndarray, instance_could_be_zero: bool = False) -> np.ndarray:
+    """
+    Sets the largest segment in the segmentation image to zero.
+
+    This function identifies the largest connected component (by pixel count) in the segmentation image and
+    replaces its label with zero. By default, label 0 is considered the background, but this can be altered
+    with the `instance_could_be_zero` parameter.
+
+    Args:
+        segmentation_image (np.ndarray): A 2D or 3D numpy array representing an instance segmentation.
+        instance_could_be_zero (bool, optional): If True, treats label 0 as a valid instance label. Default is False.
+
+    Returns:
+        np.ndarray: The segmentation image with the largest instance set to 0.
+    """
+    return set_biggest_instance_to_value(segmentation_image, value=0, instance_could_be_zero=instance_could_be_zero)
 
 
 def set_value_to_value(segmentation_image: np.ndarray, value: int = 0, new_value: int = 0) -> np.ndarray:
     """
-    Set the specified value to a certain value.
+    Replaces all occurrences of a specific value in the segmentation image with a new value.
 
     Args:
-        segmentation_image (np.ndarray): segmentation image to relabel
-        value (int): value to change, default is 0
-        new_value (int): value to set the specified value to, default is 0
+        segmentation_image (np.ndarray): A 2D or 3D numpy array representing an instance segmentation.
+        value (int, optional): The value to be replaced. Default is 0.
+        new_value (int, optional): The new value to assign in place of the specified value. Default is 0.
 
     Returns:
-        new_segmentation_image (np.ndarray): segmentation image with specified value set to new_value
+        np.ndarray: A segmentation image where all occurrences of `value` have been replaced with `new_value`.
     """
     return np.where(segmentation_image == value, new_value, segmentation_image)
 
 
 def set_background_to_value(segmentation_image: np.ndarray, value: int = 0) -> np.ndarray:
     """
-    Set 0s (usually this is the background but not always) to a certain value.
+    Sets all occurrences of the background (label 0) in the segmentation image to a new value.
 
     Args:
-        segmentation_image (np.ndarray): segmentation image to relabel
-        value (int): value to set the background to, default is 0
+        segmentation_image (np.ndarray): A 2D or 3D numpy array representing an instance segmentation.
+        value (int, optional): The value to assign to the background. Default is 0.
 
     Returns:
-        new_segmentation_image (np.ndarray): segmentation image with background set to value
+        np.ndarray: A segmentation image where all background pixels (originally 0) are set to `value`.
     """
     return np.where(segmentation_image == 0, value, segmentation_image)

@@ -5,16 +5,20 @@ channels:
   - conda-forge
 dependencies:
   - python
-  - pydantic>2
+  # Neural Network
+  - pytorch
+  # Bioimage and CV
+  - tifffile
   - h5py
   - zarr
+  - vigra
+  - python-elf
+  - python-graphviz
+  - scikit-image
+  - bioimageio.core>=0.6.5
+  # GUI
+  - napari
+  # Other
   - requests
   - pyyaml
-  - scikit-image
-  - tifffile
-  - vigra
-  - pytorch
-  - python-elf
-  - napari
-  - python-graphviz
-  - bioimageio.core>=0.6.5
+  - pydantic>2

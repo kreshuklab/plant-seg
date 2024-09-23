@@ -2,7 +2,7 @@ from concurrent.futures import Future
 from enum import Enum
 
 from magicgui import magicgui
-from napari.layers import Image, Labels, Layer
+from napari.layers import Image, Labels, Layer, Shapes
 from napari.types import LayerDataTuple
 
 from plantseg.core.image import PlantSegImage
@@ -11,12 +11,16 @@ from plantseg.core.zoo import model_zoo
 from plantseg.tasks.dataprocessing_tasks import (
     fix_over_under_segmentation_from_nuclei_task,
     gaussian_smoothing_task,
+    image_cropping_task,
     image_rescale_to_shape_task,
     image_rescale_to_voxel_size_task,
+    relabel_segmentation_task,
     remove_false_positives_by_foreground_probability_task,
+    set_biggest_instance_to_zero_task,
     set_voxel_size_task,
 )
 from plantseg.viewer_napari import log
+from plantseg.viewer_napari.widgets.proofreading import widget_proofreading_initialisation
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 ########################################################################################################################
@@ -66,6 +70,89 @@ def widget_gaussian_smoothing(
 
 ########################################################################################################################
 #                                                                                                                      #
+# Cropping Widget                                                                                                      #
+#                                                                                                                      #
+########################################################################################################################
+
+
+@magicgui(
+    call_button=f"Run Cropping",
+    image={
+        "label": "Image or Label",
+        "tooltip": "Layer to apply the rescaling.",
+    },
+    crop_roi={
+        "label": "Crop ROI",
+        "tooltip": "This must be a shape layer with a rectangle XY overlaying the area to crop.",
+    },
+    crop_z={
+        "label": "Z slices [Start, End)",
+        "tooltip": "Number of z slices to take next to the current selection.\nSTART is included, END is not.",
+        "widget_type": "RangeSlider",
+        "max": 100,
+        "min": 0,
+        "step": 1,
+    },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
+)
+def widget_cropping(
+    image: Layer,
+    crop_roi: Shapes | None = None,
+    crop_z: tuple[int, int] = (0, 100),
+    update_other_widgets: bool = True,
+) -> Future[LayerDataTuple]:
+    if crop_roi is not None:
+        assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
+        assert crop_roi.shape_type[0] == "rectangle", "Only a rectangle shape should be used for cropping"
+
+    if not isinstance(image, (Image, Labels)):
+        raise ValueError(f"{type(image)} cannot be cropped, please use Image layers or Labels layers")
+
+    if crop_roi is not None:
+        rectangle = crop_roi.data[0].astype("int64")
+    else:
+        rectangle = None
+
+    ps_image = PlantSegImage.from_napari_layer(image)
+
+    widgets_to_update = []
+
+    return schedule_task(
+        image_cropping_task,
+        task_kwargs={
+            "image": ps_image,
+            "rectangle": rectangle,
+            "crop_z": crop_z,
+        },
+        widgets_to_update=widgets_to_update if update_other_widgets else [],
+    )
+
+
+@widget_cropping.image.changed.connect
+def _on_cropping_image_changed(image: Layer):
+    if image is None:
+        widget_cropping.crop_z.hide()
+        return None
+
+    image_shape_z = int(image.data.shape[0])
+
+    if image_shape_z == 1:
+        widget_cropping.crop_z.hide()
+        return None
+
+    widget_cropping.crop_z.show()
+    widget_cropping.crop_z.step = 1
+
+    if widget_cropping.crop_z.value[1] > image_shape_z:
+        widget_cropping.crop_z.value = (0, image_shape_z)
+    widget_cropping.crop_z.max = image_shape_z
+
+
+########################################################################################################################
+#                                                                                                                      #
 # Rescaling Widget                                                                                                     #
 #                                                                                                                      #
 ########################################################################################################################
@@ -102,7 +189,7 @@ class RescaleModes(Enum):
 @magicgui(
     call_button="Run Rescaling",
     image={
-        "label": "Image or Label",
+        "label": "Select layer",
         "tooltip": "Layer to apply the rescaling.",
     },
     mode={
@@ -439,4 +526,103 @@ def widget_fix_over_under_segmentation_from_nuclei(
             'boundary': ps_pmap_cell_boundary,
         },
         widgets_to_update=[],
+    )
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Relabel Widget                                                                                                       #
+#                                                                                                                      #
+########################################################################################################################
+
+
+@magicgui(
+    call_button=f"Relabel Instances",
+    segmentation={
+        "label": "Segmentation",
+        "tooltip": "Segmentation can be any label layer.",
+    },
+    background={
+        "label": "Background label",
+        "tooltip": "Background label will be set to 0. Default is None.",
+        "max": 1000,
+        "min": 0,
+    },
+)
+def widget_relabel(
+    segmentation: Labels,
+    background: int | None = None,
+) -> Future[LayerDataTuple]:
+    """Relabel an image layer."""
+
+    ps_image = PlantSegImage.from_napari_layer(segmentation)
+
+    segmentation.visible = False
+    widgets_to_update = [
+        widget_relabel.segmentation,
+        widget_set_biggest_instance_to_zero.segmentation,
+        widget_remove_false_positives_by_foreground.segmentation,
+        widget_fix_over_under_segmentation_from_nuclei.segmentation_cells,
+        widget_proofreading_initialisation.segmentation,
+    ]
+    return schedule_task(
+        relabel_segmentation_task,
+        task_kwargs={
+            "image": ps_image,
+            "background": background,
+        },
+        widgets_to_update=widgets_to_update,
+    )
+
+
+@widget_relabel.segmentation.changed.connect
+def _on_relabel_segmentation_changed(segmentation: Labels):
+    if segmentation is None:
+        widget_relabel.background.hide()
+        return None
+
+    widget_relabel.background.max = int(segmentation.data.max())
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Set Biggest Instance to Zero Widget                                                                                  #
+#                                                                                                                      #
+########################################################################################################################
+
+
+@magicgui(
+    call_button="Set Biggest Instance to Zero",
+    segmentation={
+        "label": "Segmentation",
+        "tooltip": "Segmentation can be any label layer.",
+    },
+    instance_could_be_zero={
+        "label": "Treat 0 as instance",
+        "tooltip": "If ticked, a proper instance segmentation with 0 as background will not be modified.",
+    },
+)
+def widget_set_biggest_instance_to_zero(
+    segmentation: Labels,
+    instance_could_be_zero: bool = False,
+) -> Future[LayerDataTuple]:
+    """Set the biggest instance to zero in a label layer."""
+
+    ps_image = PlantSegImage.from_napari_layer(segmentation)
+
+    segmentation.visible = False
+    widgets_to_update = [
+        widget_relabel.segmentation,
+        widget_set_biggest_instance_to_zero.segmentation,
+        widget_remove_false_positives_by_foreground.segmentation,
+        widget_fix_over_under_segmentation_from_nuclei.segmentation_cells,
+        widget_proofreading_initialisation.segmentation,
+    ]
+    return schedule_task(
+        set_biggest_instance_to_zero_task,
+        task_kwargs={
+            "image": ps_image,
+            "instance_could_be_zero": instance_could_be_zero,
+        },
+        widgets_to_update=widgets_to_update,
     )

@@ -1,6 +1,6 @@
 package:
   name: plantseg
-  version: {{ RELEASE_VERSION }}
+  version: {{ RELEASE_VERSION }}  # Do not change this line, not even adding space
 
 source:
   path: ..
@@ -20,18 +20,19 @@ requirements:
 
   run:
     - python
+    - pytorch
+    - tifffile
     - h5py
     - zarr
+    - vigra
+    - python-elf
+    - python-graphviz
+    - scikit-image
+    - bioimageio.core>=0.6.5
+    - napari
     - requests
     - pyyaml
-    - scikit-image
-    - tifffile
-    - vigra
-    - pytorch
-    - python-elf
-    - napari
-    - python-graphviz
-    - bioimageio.core>=0.6.5
+    - pydantic>2
 
 test:
   imports:
@@ -41,5 +42,5 @@ test:
   run:
     - pytest
 about:
-  home: https://github.com/kreshuklab/plant-seg
+  home: https://kreshuklab.github.io/plant-seg/
   license: MIT

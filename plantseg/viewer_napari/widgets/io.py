@@ -53,16 +53,16 @@ class PathMode(Enum):
         "orientation": "horizontal",
     },
     path={
-        "label": "Pick a file\n(tiff, h5, zarr, png, jpg)",
+        "label": "File path\n(tiff, h5, zarr, png, jpg)",
         "mode": "r",
         "tooltip": "Select a file to be imported, the file can be a tiff, h5, png, jpg.",
     },
     new_layer_name={
-        "label": "Layer Name",
+        "label": "Layer name",
         "tooltip": "Define the name of the output layer, default is either image or label.",
     },
     layer_type={
-        "label": "Layer Type",
+        "label": "Layer type",
         "tooltip": "Select if the image is a normal image or a segmentation",
         "widget_type": "RadioButtons",
         "orientation": "horizontal",
@@ -75,7 +75,7 @@ class PathMode(Enum):
         "tooltip": "Key to be loaded from h5",
     },
     stack_layout={
-        "label": "Stack Layout",
+        "label": "Stack layout",
         "choices": ImageLayout.to_choices(),
         "tooltip": "Stack layout",
         "widget_type": "RadioButtons",
@@ -150,10 +150,10 @@ def _on_path_mode_changed(path_mode: str):
     path_mode = _return_value_if_widget(path_mode)
     if path_mode == PathMode.FILE.value:  # file
         widget_open_file.path.mode = "r"
-        widget_open_file.path.label = "Pick a file\n(.tiff, .h5, .png, .jpg)"
+        widget_open_file.path.label = "File path\n(.tiff, .h5, .png, .jpg)"
     elif path_mode == PathMode.DIR.value:  # directory case
         widget_open_file.path.mode = "d"
-        widget_open_file.path.label = "Pick a folder\n(.zarr)"
+        widget_open_file.path.label = "Zarr path\n(.zarr)"
 
 
 @widget_open_file.path.changed.connect
