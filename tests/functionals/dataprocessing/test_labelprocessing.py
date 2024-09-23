@@ -193,10 +193,40 @@ def test_set_biggest_instance_to_value():
 
     assert np.array_equal(new_segmentation_image, expected_image)
 
+
+def test_set_biggest_instance_to_value_instance_could_be_zero():
+    """Test `instance_could_be_zero` parameter:
+
+    array([[  1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.],
+           [  1.,   2.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.],
+           [  1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.],
+           [  1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.],
+           [  1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.,   1.],
+           [999., 999., 999., 999., 999.,   3., 999., 999., 999., 999.],
+           [999., 999., 999., 999., 999., 999., 999., 999., 999., 999.],
+           [999., 999., 999., 999., 999., 999., 999., 999., 999., 999.],
+           [999., 999., 999., 999., 999., 999., 999., 999., 999., 999.],
+           [999., 999., 999., 999., 999., 999., 999., 999., 999., 999.]])
+
+    If `instance_could_be_zero` is False, the second largest instance will be set to 0 after the second call;
+    Otherwise, the only the initial biggest instance will be set to 0 after multiple calls.
+    """
     segmentation = np.ones((10, 10))
+    segmentation[5:, :] = 999
     segmentation[1, 1] = 2
     segmentation[5, 5] = 3
+
     new_segmentation = set_biggest_instance_to_value(segmentation, 0)
+    assert np.allclose(np.unique(new_segmentation), [0, 2, 3, 999])
+    new_segmentation = set_biggest_instance_to_value(new_segmentation, 0)
     assert np.allclose(np.unique(new_segmentation), [0, 2, 3])
+
+    new_segmentation = set_biggest_instance_to_value(segmentation, 0)
+    assert np.allclose(np.unique(new_segmentation), [0, 2, 3, 999])
+    new_segmentation = set_biggest_instance_to_value(new_segmentation, instance_could_be_zero=True)
+    assert np.allclose(np.unique(new_segmentation), [0, 2, 3, 999])
+
     new_segmentation = set_biggest_instance_to_value(segmentation, 0, instance_could_be_zero=True)
-    assert np.allclose(np.unique(new_segmentation), [0, 3, 4])
+    assert np.allclose(np.unique(new_segmentation), [0, 2, 3, 999])
+    new_segmentation = set_biggest_instance_to_value(new_segmentation, instance_could_be_zero=True)
+    assert np.allclose(np.unique(new_segmentation), [0, 2, 3, 999])

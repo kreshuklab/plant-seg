@@ -76,11 +76,6 @@ def set_biggest_instance_to_value(
     Returns:
         np.ndarray: The segmentation image with the largest instance set to `value`.
     """
-    if not isinstance(segmentation_image, np.ndarray):
-        raise ValueError("Input must be a numpy array.")
-    if not np.issubdtype(segmentation_image.dtype, np.integer):
-        raise ValueError("Input segmentation_image must be an integer type array.")
-
     largest_label = get_largest_instance_id(segmentation_image, include_zero=instance_could_be_zero)
     modified_segmentation_image = np.where(segmentation_image == largest_label, value, segmentation_image)
 
