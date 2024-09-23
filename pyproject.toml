@@ -13,19 +13,19 @@ extend-select = ["I"]
 quote-style = "preserve"
 
 [tool.bumpversion]
-current_version = "2.0.0-alpha"
+current_version = "2.0.0a0"
 parse = """(?x)
-    (?P<major>[0-9]+)
-    \\.(?P<minor>[0-9]+)
-    \\.(?P<patch>[0-9]+)
+    (?P<major>[0-9]+)               # Major version
+    \\.(?P<minor>[0-9]+)            # Minor version
+    \\.(?P<patch>[0-9]+)            # Patch version
     (?:
-        -(?P<pre_label>alpha|beta|stable)
-        (?:.(?P<pre_n>[0-9]+))?
+        (?P<pre_label>a|b|rc)       # Pre-release label (alpha, beta, release candidate)
+        (?P<pre_n>[0-9]+)           # Pre-release number (0, 1, 2, etc.)
     )?
 """
 serialize = [
-    "{major}.{minor}.{patch}-{pre_label}.{pre_n}",
-    "{major}.{minor}.{patch}",
+    "{major}.{minor}.{patch}{pre_label}{pre_n}", # Pre-release format: 2.0.0a0
+    "{major}.{minor}.{patch}",                   # Stable version format: 2.0.0
 ]
 search = "{current_version}"
 replace = "{new_version}"
@@ -38,7 +38,7 @@ commit_args = "--no-verify"
 
 [tool.bumpversion.parts.pre_label]
 optional_value = "stable"
-values = ["alpha", "beta", "stable"]
+values = ["a", "b", "rc", "stable"]
 
 [[tool.bumpversion.files]]
 filename = "plantseg/__version__.py"
