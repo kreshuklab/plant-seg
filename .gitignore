@@ -10,3 +10,6 @@ settings.json
 # Docs
 .cache/
 docs/_build/
+
+# Codecov
+.coverage

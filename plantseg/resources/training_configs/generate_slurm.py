@@ -1,5 +1,6 @@
-import yaml
 import os
+
+import yaml
 
 
 def generate_script(checkpoint_dir, phase):

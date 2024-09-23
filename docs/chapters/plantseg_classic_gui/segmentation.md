@@ -1,8 +1,11 @@
 # Segmentation
 
+!!! failure "Deprecated"
+    This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or install PlantSeg v1.
+
 The segmentation widget allows using very powerful graph partitioning techniques to obtain a segmentation from the
 input stacks.
-The input of this widget should be the output of the [CNN-predictions widget](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_predictions/).
+The input of this widget should be the output of the [CNN-prediction widget](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/cnn_prediction/).
 If the boundary prediction stage fails for any reason, a raw image could be used (especially if the cell boundaries are
  very sharp, and the noise is low) but usually does not yield satisfactory results.
 
@@ -28,7 +31,7 @@ segmentation towards the over-segmentation. This parameter does not affect the d
 the superpixels in the whole 3D volume. 3D superpixels are much slower and memory intensive but can improve
  the segmentation accuracy.
 
-* The **CNN Predictions Threshold** is used for the superpixels extraction and Distance Transform Watershed. It has a
+* The **CNN Prediction Threshold** is used for the superpixels extraction and Distance Transform Watershed. It has a
 crucial role for the watershed seeds extraction and can be used similarly to the "Unde/Over segmentation factor."
 to bias the final result.
 A high value translates to less seeds being placed (more under segmentation), while with a low value, more seeds are

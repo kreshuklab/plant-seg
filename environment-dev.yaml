@@ -3,30 +3,38 @@ channels:
   - pytorch
   - nvidia
   - conda-forge
+  # `defaults` is optional, unless e.g. `conda-forge` has no cudnn 9.* when `defaults` has.
+  # `defaults` of Anaconda is not accessible for many non-profit institutes such as EMBL.
+  # - defaults
 dependencies:
   - python
-  - pydantic>2
-  - h5py
-  - zarr
-  - requests
-  - pyyaml
-  - scikit-image
-  - tifffile
-  - vigra
-  - cudnn
+  # Neural Network and GPU
+  - cudnn=9
   - pytorch
   - torchvision
   - pytorch-cuda=12.1
-  - cuda-version=12.3
+  # Bioimage and CV
+  - tifffile
+  - h5py
+  - zarr
+  - vigra
   - python-elf
-  - pytest
-  - pytest-qt
+  - python-graphviz
+  - scikit-image
+  - bioimageio.core>=0.6.5
+  # GUI
   - pyqt
   - napari
-  - python-graphviz
-  - bioimageio.core>=0.6.5
+  # Other
+  - requests
+  - pyyaml
+  - pydantic>2
+  - pytest
+  - pytest-qt
+  # CI/CD
   - pre-commit
   - bump-my-version
+  # Docs
   - mkdocs-material
   - mkdocs-autorefs
   - mkdocs-git-revision-date-localized-plugin
@@ -34,4 +42,5 @@ dependencies:
   - mkdocstrings-python
   - pip:
       - markdown-exec
-# then `pip install -e .`
+      # PlantSeg
+      - -e .

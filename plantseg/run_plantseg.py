@@ -2,79 +2,63 @@
 
 import argparse
 from pathlib import Path
+
 from plantseg.__version__ import __version__
-from plantseg.utils import check_version, load_config, clean_models
+from plantseg.utils import check_version, clean_models, load_config
 
 
 def create_parser():
     """Create and return the argument parser for the CLI."""
-    arg_parser = argparse.ArgumentParser(description='PlantSeg: Plant cell/nucler instance segmentation software')
-    arg_parser.add_argument('--config', type=Path, help='Launch CLI on CONFIG (path to the YAML config file)')
-    arg_parser.add_argument('--gui', action='store_true', help='Launch Legacy GUI')
-    arg_parser.add_argument('--napari', action='store_true', help='Launch Napari GUI')
-    arg_parser.add_argument('--headless', type=Path, help='Path to a .pkl workflow')
-    arg_parser.add_argument('--version', action='store_true', help='Print PlantSeg version')
-    arg_parser.add_argument('--clean', action='store_true', help='Remove all models from "~/.plantseg_models"')
+    arg_parser = argparse.ArgumentParser(description="PlantSeg: Plant cell/nucler instance segmentation software")
+    arg_parser.add_argument(
+        "--config",
+        type=Path,
+        help="Launch CLI from CONFIG (path to the YAML config file)",
+    )
+    arg_parser.add_argument(
+        "--napari",
+        action="store_true",
+        help="Launch Napari GUI",
+    )
+    arg_parser.add_argument(
+        "--train",
+        type=Path,
+        help="Launch training from CONFIG (path to the YAML config file)",
+    )
+    arg_parser.add_argument(
+        "--version",
+        action="store_true",
+        help="Print PlantSeg version",
+    )
+    arg_parser.add_argument(
+        "--clean",
+        action="store_true",
+        help='Remove all models from "~/.plantseg_models"',
+    )
     return arg_parser.parse_args()
-
-
-def launch_gui():
-    """Launch the GUI configurator."""
-    from plantseg.legacy_gui.plantsegapp import PlantSegApp
-    from plantseg import PATH_CONFIGS
-
-    try:
-        PlantSegApp()
-    except KeyError:
-        new_location = PATH_CONFIGS.parent / 'old_configs'
-        PATH_CONFIGS.rename(new_location)
-        docs_link = "https://kreshuklab.github.io/plant-seg/chapters/getting_started/troubleshooting/#missing-configuration-key-errors"
-        print(
-            f"{PATH_CONFIGS} is checked for your custom configurations."
-            f"Since `KeyError` happened, we moved {PATH_CONFIGS} to {new_location} "
-            f"and a new default configs will be put in {PATH_CONFIGS}. "
-            f"For more information, please visit {docs_link}"
-        )
-        PlantSegApp()
 
 
 def launch_napari():
     """Launch the Napari viewer."""
-    from plantseg.viewer.viewer import run_viewer
+    from plantseg.viewer_napari.viewer import run_viewer
 
     run_viewer()
 
 
-def run_headless_workflow(path: Path):
+def launch_workflow_headless(path: Path):
     """Run a workflow in headless mode."""
-    from plantseg.viewer.headless import run_workflow_headless
+    from plantseg.headless.headless import run_headless_workflow
 
-    run_workflow_headless(path)
+    run_headless_workflow(path)
 
 
-def process_config(path: Path):
-    """Process the YAML config file."""
+def launch_training(path: Path):
+    """Launch the training"""
     config = load_config(path)
-    if 'training' in config:
-        from plantseg.training.train import unet_training
 
-        c = config['training']
-        unet_training(
-            c['dataset_dir'],
-            c['model_name'],
-            c['in_channels'],
-            c['out_channels'],
-            c['feature_maps'],
-            c['patch_size'],
-            c['max_num_iters'],
-            c['dimensionality'],
-            c['sparse'],
-            c['device'],
-        )
-    else:
-        from plantseg.pipeline.raw2seg import raw2seg
+    from plantseg.training.train import unet_training
 
-        raw2seg(config)
+    unet_training(*config)
 
 
 def main():
@@ -86,14 +70,12 @@ def main():
         print(__version__)
     elif args.clean:
         clean_models()
-    elif args.gui:
-        launch_gui()
     elif args.napari:
         launch_napari()
-    elif args.headless:
-        run_headless_workflow(args.headless)
     elif args.config:
-        process_config(args.config)
+        launch_workflow_headless(args.config)
+    elif args.train:
+        launch_training(args.train)
     else:
         raise ValueError("Not enough arguments. Run `plantseg -h` to see the available options.")
 

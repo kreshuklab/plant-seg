@@ -1,5 +1,8 @@
 # Classic Data Processing
 
+!!! failure "Deprecated"
+    This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or install PlantSeg v1.
+
 ![alt text](https://github.com/kreshuklab/plant-seg/raw/assets/images/preprocessing.png)
 **PlantSeg** includes essential utilities for data pre-processing and post-processing.
 
@@ -15,6 +18,7 @@ Input formats allowed are tiff and h5, while output is always h5.
 This operation can be done automatically by clicking on the GUI on **Guided**.
 Be careful to use this function only in case of data considerably different from
 the reference resolution.
+
 ```
 As an example:
   - if your data has the voxel size of 0.3 x 0.1 x 0.1 (ZYX).
@@ -35,11 +39,12 @@ The higher, the wider is filtering kernel.
 
 ## Post-Processing
 
-A post-processing step can be performed after the **CNN-Predictions** and the **Segmentation**.
+A post-processing step can be performed after the **CNN-Prediction** and the **Segmentation**.
 The post-processing options are:
- * Converting the output to the tiff file format (default is h5).
 
- * Casting the **CNN-Predictions** output to *data_uint8* drastically reduces the memory footprint of the output
+* Converting the output to the tiff file format (default is h5).
+
+* Casting the **CNN-Prediction** output to *data_uint8* drastically reduces the memory footprint of the output
  file.
 
 Additionally, the post-processing will scale back your outputs to the original voxels resolutions.

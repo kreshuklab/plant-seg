@@ -4,15 +4,14 @@ import glob
 import os
 import shutil
 import tempfile
-from os.path import expanduser
-
 from concurrent import futures
-from subprocess import check_output, CalledProcessError
+from os.path import expanduser
+from subprocess import CalledProcessError, check_output
 
 import h5py
 import numpy as np
-from PIL import Image
 import wget
+from PIL import Image
 
 
 def relabel(tracks):

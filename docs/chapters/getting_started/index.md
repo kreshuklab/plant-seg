@@ -2,7 +2,7 @@
 
 PlantSeg can be used in three different ways: interactively (using the Napari viewer), as a command line, or with a GUI. The following sections will guide you through the installation and usage of PlantSeg in each of these modes.
 
-## Interactive PlantSeg (Napari viewer)
+## Interactive PlantSeg with Napari Viewer
 
 PlantSeg app can be started from the terminal.
 First, activate the newly created conda environment with:
@@ -19,7 +19,7 @@ plantseg --napari
 
 A more in depth guide can be found in our [documentation (GUI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/).
 
-## Pipeline Usage (command line)
+## Command Line PlantSeg
 
 PlantSeg can be configured using `YAML` config files.
 
@@ -39,7 +39,10 @@ where `CONFIG_PATH` is the path to the `YAML` configuration file. See [config.ya
 file and our [documentation (CLI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_cli/) for a
 detailed description of the parameters.
 
-## PlantSeg (GUI)
+## PlantSeg with Legacy GUI
+
+!!! failure "Deprecated"
+    This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or install PlantSeg v1.
 
 PlantSeg app can also be started in a GUI mode, where basic user interface allows to configure and run the pipeline.
 First, activate the newly created conda environment with:
@@ -55,9 +58,3 @@ plantseg --gui
 ```
 
 A more in depth guide can be found in our [documentation (Classic GUI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/).
-
-## Using LiftedMulticut segmentation
-
-As reported in our [paper](https://elifesciences.org/articles/57613), if one has a nuclei signal imaged together with
-the boundary signal, we could leverage the fact that one cell contains only one nucleus and use the `LiftedMultict`
-segmentation strategy and obtain improved segmentation. This workflow is now available in all PlantSeg interfaces.

@@ -19,10 +19,10 @@ Pre-trained models are provided.
 
 ## Table of Contents  <!-- omit in toc -->
 
-- [Getting Started](#getting-started)
-- [Installation](#installation)
-- [Repository Index](#repository-index)
-- [Citation](#citation)
+* [Getting Started](#getting-started)
+* [Installation](#installation)
+* [Repository Index](#repository-index)
+* [Citation](#citation)
 
 ## Getting Started
 
@@ -81,4 +81,3 @@ The PlantSeg repository is organised as follows:
   publisher={eLife Sciences Publications Limited}
 }
 ```
-
