@@ -2,7 +2,7 @@ from plantseg.viewer_napari.widgets.dataprocessing import (
     widget_cropping,
     widget_fix_over_under_segmentation_from_nuclei,
     widget_gaussian_smoothing,
-    widget_label_processing,
+    widget_relabel,
     widget_remove_false_positives_by_foreground,
     widget_rescaling,
     widget_set_biggest_instance_to_zero,
@@ -41,7 +41,7 @@ __all__ = [
     "widget_agglomeration",
     # Extra
     "widget_add_custom_model",
-    "widget_label_processing",
+    "widget_relabel",
     "widget_set_biggest_instance_to_zero",
     # Proofreading
     "widget_proofreading_initialisation",

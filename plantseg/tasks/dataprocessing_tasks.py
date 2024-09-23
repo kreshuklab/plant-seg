@@ -1,4 +1,4 @@
-from plantseg.core.image import ImageLayout, PlantSegImage
+from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.core.voxelsize import VoxelSize
 from plantseg.functionals.dataprocessing import (
     fix_over_under_segmentation_from_nuclei,
@@ -242,24 +242,28 @@ def fix_over_under_segmentation_from_nuclei_task(
 
 
 @task_tracker
-def set_biggest_instance_to_zero_task(image: PlantSegImage) -> PlantSegImage:
+def set_biggest_instance_to_zero_task(image: PlantSegImage, instance_could_be_zero: bool = False) -> PlantSegImage:
     """
     Task to set the largest segment in a segmentation image to zero.
 
     Args:
         image (PlantSegImage): Segmentation image to process.
+        instance_could_be_zero (bool): If True, 0 might be an instance label, add 1 to all labels before processing.
 
     Returns:
         PlantSegImage: New segmentation image with largest instance set to 0.
     """
+    if not (image.semantic_type == SemanticType.SEGMENTATION or image.semantic_type == SemanticType.LABEL):
+        raise ValueError("Input image must be a segmentation or mask image.")
     data = image.get_data()
-    new_data = set_biggest_instance_to_zero(data)
+    print(f"Processing {image.name} with shape {data.shape} and max {data.max()}, min {data.min()}.")
+    new_data = set_biggest_instance_to_zero(data, instance_could_be_zero=instance_could_be_zero)
     new_image = image.derive_new(new_data, name=f"{image.name}_bg0")
     return new_image
 
 
 @task_tracker
-def relabel_segmentation_task(image: PlantSegImage) -> PlantSegImage:
+def relabel_segmentation_task(image: PlantSegImage, background: int | None = None) -> PlantSegImage:
     """
     Task to relabel a segmentation image contiguously, ensuring non-touching segments with the same ID are relabeled.
 
@@ -269,7 +273,9 @@ def relabel_segmentation_task(image: PlantSegImage) -> PlantSegImage:
     Returns:
         PlantSegImage: New segmentation image with relabeled instances.
     """
+    if not (image.semantic_type == SemanticType.SEGMENTATION or image.semantic_type == SemanticType.LABEL):
+        raise ValueError("Input image must be a segmentation or mask image.")
     data = image.get_data()
-    new_data = relabel_segmentation(data)
+    new_data = relabel_segmentation(data, background=background)
     new_image = image.derive_new(new_data, name=f"{image.name}_relabeled")
     return new_image

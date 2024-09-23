@@ -12,10 +12,10 @@ from plantseg.viewer_napari.widgets import (
     widget_fix_over_under_segmentation_from_nuclei,
     widget_gaussian_smoothing,
     widget_infos,
-    widget_label_processing,
     widget_open_file,
     widget_proofreading_initialisation,
     widget_redo,
+    widget_relabel,
     widget_remove_false_positives_by_foreground,
     widget_rescaling,
     widget_save_state,
@@ -72,7 +72,7 @@ def get_extras_tab():
     container = Container(
         widgets=[
             widget_add_custom_model,
-            widget_label_processing,
+            widget_relabel,
             widget_set_biggest_instance_to_zero,
         ],
         labels=False,

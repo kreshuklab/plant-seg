@@ -14,12 +14,13 @@ from plantseg.tasks.dataprocessing_tasks import (
     image_cropping_task,
     image_rescale_to_shape_task,
     image_rescale_to_voxel_size_task,
-    remove_false_positives_by_foreground_probability_task,
-    set_voxel_size_task,
     relabel_segmentation_task,
+    remove_false_positives_by_foreground_probability_task,
     set_biggest_instance_to_zero_task,
+    set_voxel_size_task,
 )
 from plantseg.viewer_napari import log
+from plantseg.viewer_napari.widgets.proofreading import widget_proofreading_initialisation
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 ########################################################################################################################
@@ -541,21 +542,46 @@ def widget_fix_over_under_segmentation_from_nuclei(
         "label": "Segmentation",
         "tooltip": "Segmentation can be any label layer.",
     },
+    background={
+        "label": "Background label",
+        "tooltip": "Background label will be set to 0. Default is None.",
+        "max": 1000,
+        "min": 0,
+    },
 )
-def widget_label_processing(
+def widget_relabel(
     segmentation: Labels,
+    background: int | None = None,
 ) -> Future[LayerDataTuple]:
     """Relabel an image layer."""
 
     ps_image = PlantSegImage.from_napari_layer(segmentation)
 
+    segmentation.visible = False
+    widgets_to_update = [
+        widget_relabel.segmentation,
+        widget_set_biggest_instance_to_zero.segmentation,
+        widget_remove_false_positives_by_foreground.segmentation,
+        widget_fix_over_under_segmentation_from_nuclei.segmentation_cells,
+        widget_proofreading_initialisation.segmentation,
+    ]
     return schedule_task(
         relabel_segmentation_task,
         task_kwargs={
             "image": ps_image,
+            "background": background,
         },
-        widgets_to_update=[],
+        widgets_to_update=widgets_to_update,
     )
+
+
+@widget_relabel.segmentation.changed.connect
+def _on_relabel_segmentation_changed(segmentation: Labels):
+    if segmentation is None:
+        widget_relabel.background.hide()
+        return None
+
+    widget_relabel.background.max = int(segmentation.data.max())
 
 
 ########################################################################################################################
@@ -566,23 +592,37 @@ def widget_label_processing(
 
 
 @magicgui(
-    call_button=f"Set Biggest Instance to Zero",
+    call_button="Set Biggest Instance to Zero",
     segmentation={
         "label": "Segmentation",
         "tooltip": "Segmentation can be any label layer.",
     },
+    instance_could_be_zero={
+        "label": "Treat 0 as instance",
+        "tooltip": "If ticked, a proper instance segmentation with 0 as background will not be modified.",
+    },
 )
 def widget_set_biggest_instance_to_zero(
     segmentation: Labels,
+    instance_could_be_zero: bool = False,
 ) -> Future[LayerDataTuple]:
     """Set the biggest instance to zero in a label layer."""
 
     ps_image = PlantSegImage.from_napari_layer(segmentation)
 
+    segmentation.visible = False
+    widgets_to_update = [
+        widget_relabel.segmentation,
+        widget_set_biggest_instance_to_zero.segmentation,
+        widget_remove_false_positives_by_foreground.segmentation,
+        widget_fix_over_under_segmentation_from_nuclei.segmentation_cells,
+        widget_proofreading_initialisation.segmentation,
+    ]
     return schedule_task(
         set_biggest_instance_to_zero_task,
         task_kwargs={
             "image": ps_image,
+            "instance_could_be_zero": instance_could_be_zero,
         },
-        widgets_to_update=[],
+        widgets_to_update=widgets_to_update,
     )
