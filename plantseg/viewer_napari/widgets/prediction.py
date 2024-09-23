@@ -83,7 +83,7 @@ model_filters = Container(
 
 
 @magicgui(
-    call_button='Run Prediction',
+    call_button='Image to Prediction',
     mode={
         'label': 'Mode',
         'tooltip': 'Select the mode to run the prediction.',
@@ -130,7 +130,6 @@ model_filters = Container(
     device={'label': 'Device', 'choices': ALL_DEVICES},
 )
 def widget_unet_prediction(
-    viewer: napari.Viewer,
     image: Image,
     mode: UNetPredictionMode = UNetPredictionMode.PLANTSEG,
     plantseg_filter: bool = True,

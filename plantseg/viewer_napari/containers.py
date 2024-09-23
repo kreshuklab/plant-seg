@@ -56,7 +56,7 @@ def get_preprocessing_tab():
     return container
 
 
-def get_main_tab():
+def get_segmentation_tab():
     container = Container(
         widgets=[
             widget_unet_prediction,
@@ -68,12 +68,23 @@ def get_main_tab():
     return container
 
 
+def get_postprocessing_tab():
+    container = Container(
+        widgets=[
+            widget_relabel,
+            widget_set_biggest_instance_to_zero,
+            widget_remove_false_positives_by_foreground,
+            widget_fix_over_under_segmentation_from_nuclei,
+        ],
+        labels=False,
+    )
+    return container
+
+
 def get_extras_tab():
     container = Container(
         widgets=[
             widget_add_custom_model,
-            widget_relabel,
-            widget_set_biggest_instance_to_zero,
         ],
         labels=False,
     )
@@ -92,8 +103,6 @@ def get_proofreading_tab():
             widget_undo,
             widget_redo,
             widget_save_state,
-            widget_remove_false_positives_by_foreground,
-            widget_fix_over_under_segmentation_from_nuclei,
         ],
         labels=False,
     )

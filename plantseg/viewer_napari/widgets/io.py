@@ -45,7 +45,7 @@ class PathMode(Enum):
 
 
 @magicgui(
-    call_button="Open file",
+    call_button="Open File",
     path_mode={
         "label": "File type",
         "choices": PathMode.to_choices(),
@@ -181,7 +181,7 @@ def _on_done(*args):  # Required by magicgui. pylint: disable=unused-argument
 
 
 @magicgui(
-    call_button="Export stack",
+    call_button="Export Layers",
     images={
         "label": "Layers to export",
         "layout": "vertical",
