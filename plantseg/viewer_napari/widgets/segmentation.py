@@ -30,7 +30,7 @@ AGGLOMERATION_MODES = [
 
 
 @magicgui(
-    call_button='Run Segmentation',
+    call_button='Superpixels to Instance Segmentation',
     image={
         'label': 'Boundary image',
         'tooltip': 'Raw boundary image or boundary prediction to use as input for clustering.',
@@ -122,7 +122,7 @@ def _on_mode_changed(mode: str):
 
 
 @magicgui(
-    call_button='Find Superpixels',
+    call_button='Boundary to Superpixels',
     image={
         'label': 'Boundary image',
         'tooltip': 'Raw boundary image or boundary prediction to use as input for Watershed.',

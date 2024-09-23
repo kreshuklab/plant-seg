@@ -76,7 +76,7 @@ def widget_gaussian_smoothing(
 
 
 @magicgui(
-    call_button=f"Run Cropping",
+    call_button="Crop Image",
     image={
         "label": "Image or Label",
         "tooltip": "Layer to apply the rescaling.",
@@ -187,7 +187,7 @@ class RescaleModes(Enum):
 
 
 @magicgui(
-    call_button="Run Rescaling",
+    call_button="Rescale Image",
     image={
         "label": "Select layer",
         "tooltip": "Layer to apply the rescaling.",
@@ -417,7 +417,7 @@ def _on_rescale_order_changed(order):
 
 
 @magicgui(
-    call_button="Remove False Positives",
+    call_button="Remove False Instances by Foreground",
     segmentation={
         "label": "Segmentation",
         "tooltip": "Segmentation layer to remove false positives.",
@@ -462,7 +462,7 @@ def widget_remove_false_positives_by_foreground(
 
 
 @magicgui(
-    call_button='Fix Segmentation by Nuclei',
+    call_button='Split/Merge Instances by Nuclei',
     segmentation_cells={'label': 'Cell instances'},
     segmentation_nuclei={'label': 'Nuclear instances'},
     boundary_pmaps={'label': 'Boundary Pmap/Image'},
