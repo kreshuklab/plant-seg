@@ -3,10 +3,10 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from shutil import rmtree
-from warnings import warn
 
 import requests
 import yaml
+from packaging.version import Version
 
 from plantseg import PATH_PLANTSEG_MODELS
 
@@ -36,7 +36,7 @@ def download_file(url: str, filename: Path) -> None:
             for chunk in response.iter_content(chunk_size=8192):  # Adjust chunk size as needed
                 f.write(chunk)
     except requests.RequestException as e:
-        warn(f"Failed to download {url}. Error: {e}")
+        logger.warning(f"Failed to download {url}. Error: {e}")
 
 
 def download_files(urls: dict, out_dir: Path) -> None:
@@ -104,14 +104,17 @@ def check_version(
         response.raise_for_status()  # Raises an HTTPError if the response status code was unsuccessful
         latest_version = response.json()["tag_name"]
 
-        current_version_tuple = tuple(map(int, current_version.strip("v").split(".")))
-        latest_version_tuple = tuple(map(int, latest_version.strip("v").split(".")))
-        if latest_version_tuple > current_version_tuple:
+        current_version_obj = Version(current_version)
+        latest_version_obj = Version(latest_version)
+
+        if latest_version_obj > current_version_obj:
             logger.warning(f"New version of PlantSeg available: {latest_version}. Please update to the latest version.")
         else:
             logger.info(f"You are using the latest version of PlantSeg: {current_version}.")
     except requests.RequestException as e:
-        warn(f"Could not check for new version. Error: {e}")
+        logger.warning(f"Could not check for new version. Error: {e}")
+    except ValueError as e:
+        logger.warning(f"Could not parse version information. Error: {e}")
 
 
 def get_class(class_name, modules):
