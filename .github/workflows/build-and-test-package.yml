@@ -1,4 +1,4 @@
-name: Conda Build
+name: Conda Build and Test
 
 on: [push]
 
@@ -70,13 +70,3 @@ jobs:
         uses: codecov/codecov-action@v4.2.0
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-      # Deploy the package to Anaconda (only on tag push)
-      - name: Deploy to conda-forge
-        if: ${{ startsWith(github.ref, 'refs/tags/') && success() }}
-        env:
-          ANACONDA_SECRET: ${{ secrets.ANACONDA_TOKEN }}
-        shell: bash -l {0}
-        run: |
-          conda install -q anaconda-client
-          anaconda -t $ANACONDA_SECRET upload $CONDA/conda-bld/**/plantseg-*.tar.bz2
