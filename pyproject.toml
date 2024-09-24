@@ -30,11 +30,12 @@ serialize = [
 search = "{current_version}"
 replace = "{new_version}"
 tag = true
-commit = true
+tag_name = "{new_version}"
 tag_message = "Bump version: {current_version} → {new_version}"
+commit = true
 allow_dirty = false
-message = "Bump version: {current_version} → {new_version}"
 commit_args = "--no-verify"
+message = "ci(bump-my-version): {current_version} → {new_version}"
 
 [tool.bumpversion.parts.pre_label]
 optional_value = "stable"
