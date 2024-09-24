@@ -29,8 +29,11 @@ dependencies:
   - requests
   - pyyaml
   - pydantic>2
+  # Test
   - pytest
   - pytest-qt
+  - pytest-mock
+  - requests-mock
   # CI/CD
   - pre-commit
   - bump-my-version
