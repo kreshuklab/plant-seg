@@ -6,7 +6,7 @@ from magicgui.widgets import Container, create_widget
 
 from plantseg.viewer_napari import log
 
-LOGO_PATH = Path(__file__).resolve().parent.parent.parent.parent / "docs/logos/logo_white.png"
+LOGO_PATH = Path(__file__).resolve().parent.parent.parent / "resources/logo_white.png"
 DOCS_URL = "https://kreshuklab.github.io/plant-seg/"
 
 
