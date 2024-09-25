@@ -648,7 +648,7 @@ def save_image(
         file_path_name = directory / f"{file_name}.zarr"
         create_zarr(
             path=file_path_name,
-            data=data,
+            stack=data,
             voxel_size=voxel_size,
             key=custom_key,
         )
