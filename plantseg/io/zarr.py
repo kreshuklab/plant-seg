@@ -149,6 +149,13 @@ def create_zarr(
         mode (str): The mode to open the Zarr file ['w', 'a'].
 
     """
+
+    if key is None:
+        raise ValueError("Key cannot be None.")
+
+    if key == "":
+        raise ValueError("Key cannot be empty.")
+
     zarr_file = zarr.open_group(path, mode)
     zarr_file.create_dataset(key, data=stack, compression="gzip", overwrite=True)
     zarr_file[key].attrs["element_size_um"] = voxel_size.voxels_size

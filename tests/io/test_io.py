@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from plantseg.core.voxelsize import VoxelSize
 from plantseg.io import smart_load
@@ -10,7 +11,7 @@ class TestIO:
     def _check_voxel_size(self, voxel_size):
         assert isinstance(voxel_size, VoxelSize)
         np.testing.assert_allclose(
-            voxel_size.voxels_size,
+            voxel_size,
             self.voxel_size,
             rtol=1e-5,
             err_msg="Voxel size read from file is not equal to the original voxel size",
@@ -22,6 +23,12 @@ class TestIO:
         # Create an HDF5 file
         data = np.random.rand(10, 10, 10)
         create_h5(path_h5, data, "raw", voxel_size=self.voxel_size)
+
+        # Create an HDF5 file with empty name causes an error
+        with pytest.raises(ValueError):
+            create_h5(path_h5, data, "", voxel_size=self.voxel_size)
+        with pytest.raises(ValueError):
+            create_h5(path_h5, data, None, voxel_size=self.voxel_size)
 
         # Read the HDF5 file
         data_read = load_h5(path_h5, "raw")
@@ -45,6 +52,12 @@ class TestIO:
         data = np.random.rand(10, 10, 10)
         create_zarr(path_zarr, data, "raw", voxel_size=self.voxel_size)
 
+        # Create a Zarr file with empty name causes an error
+        with pytest.raises(ValueError):
+            create_zarr(path_zarr, data, "", voxel_size=self.voxel_size)
+        with pytest.raises(ValueError):
+            create_zarr(path_zarr, data, None, voxel_size=self.voxel_size)
+
         # Read the Zarr file
         data_read = load_zarr(path_zarr, "raw")
         assert np.array_equal(data, data_read), "Data read from Zarr file is not equal to the original data"
@@ -56,7 +69,7 @@ class TestIO:
         # Read the voxel size of the Zarr file
         voxel_size = read_zarr_voxel_size(path_zarr, "raw")
         assert np.allclose(
-            voxel_size.voxels_size, self.voxel_size
+            voxel_size, self.voxel_size
         ), "Voxel size read from Zarr file is not equal to the original voxel size"
 
         data_read2 = smart_load(path_zarr, "raw")

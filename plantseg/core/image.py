@@ -642,20 +642,20 @@ def save_image(
 
     if file_format == "tiff":
         file_path_name = directory / f"{file_name}_{custom_key}.tiff"
-        create_tiff(file_path_name, data, voxel_size, layout=image.image_layout.value)
+        create_tiff(path=file_path_name, stack=data, voxel_size=voxel_size, layout=image.image_layout.value)
 
     elif file_format == "zarr":
         file_path_name = directory / f"{file_name}.zarr"
         create_zarr(
             path=file_path_name,
-            data=data,
+            stack=data,
             voxel_size=voxel_size,
             key=custom_key,
         )
 
     elif file_format == "h5":
         file_path_name = directory / f"{file_name}.h5"
-        create_h5(file_path_name, data, voxel_size, key=custom_key)
+        create_h5(path=file_path_name, stack=data, voxel_size=voxel_size, key=custom_key)
 
     else:
         raise ValueError(f"File format {file_format} not recognized, should be tiff, h5 or zarr")
