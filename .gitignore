@@ -3,6 +3,7 @@ __pycache__/
 # Conda build
 plantseg.egg-info/
 dist/
+build/
 
 # Dev
 settings.json
