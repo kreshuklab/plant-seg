@@ -146,6 +146,13 @@ def create_h5(
         mode (str): mode to open the h5 file ['w', 'a'].
 
     """
+
+    if key is None:
+        raise ValueError("Key is required to create a dataset in a h5 file.")
+
+    if key == "":
+        raise ValueError("Key cannot be empty to create a dataset in a h5 file.")
+
     with h5py.File(path, mode) as f:
         if key in f:
             del f[key]
