@@ -1,5 +1,4 @@
 import time
-from concurrent.futures import Future
 from enum import Enum
 from pathlib import Path
 
@@ -89,7 +88,7 @@ def widget_open_file(
     new_layer_name: str = "",
     dataset_key: str | None = None,
     stack_layout: str = ImageLayout.ZYX.value,
-) -> Future[LayerDataTuple]:
+) -> None:
     """Open a file and return a napari layer."""
 
     if layer_type == ImageType.IMAGE.value:
