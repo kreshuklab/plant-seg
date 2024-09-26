@@ -1,4 +1,5 @@
 from magicgui.widgets import Container
+from qtpy.QtGui import QFont
 
 from plantseg.viewer_napari.widgets import (
     widget_add_custom_model,
@@ -27,6 +28,7 @@ from plantseg.viewer_napari.widgets import (
 )
 
 STYLE_SLIDER = "font-size: 9pt;"
+MONOSPACE_FONT = QFont("Courier New", 9)  # "Courier New" is a common monospaced font
 
 
 def get_data_io_tab():
@@ -57,6 +59,7 @@ def get_preprocessing_tab():
 
 
 def get_segmentation_tab():
+    widget_unet_prediction.model_id.native.setFont(MONOSPACE_FONT)
     container = Container(
         widgets=[
             widget_unet_prediction,
