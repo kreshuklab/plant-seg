@@ -1,5 +1,7 @@
 """Model Zoo Singleton"""
 
+# pylint: disable=C0116,C0103
+
 import json
 import logging
 from enum import Enum
@@ -392,15 +394,24 @@ class ModelZoo:
         collection_path = Path(pooch.retrieve(BIOIMAGE_IO_COLLECTION_URL, known_hash=None))
         with collection_path.open(encoding='utf-8') as f:
             collection = json.load(f)
+
+        max_nickname_length = max(  # Find the longest nickname for formatting
+            len(entry["nickname"]) for entry in collection["collection"] if entry["type"] == "model"
+        )
+
+        def truncate_name(name, length=50):
+            return (name[:length] + '...') if len(name) > length else name
+
+        def build_model_url_dict(filter_func):
+            return {
+                f"{entry['nickname']:<{max_nickname_length}}: {truncate_name(entry['name'])}": entry["rdf_source"]
+                for entry in collection["collection"]
+                if entry["type"] == "model" and filter_func(entry)
+            }
+
         self._bioimageio_zoo_collection = collection
-        self._bioimageio_zoo_all_model_url_dict = {
-            entry["nickname"]: entry["rdf_source"] for entry in collection["collection"] if entry["type"] == "model"
-        }
-        self._bioimageio_zoo_plantseg_model_url_dict = {
-            entry["nickname"]: entry["rdf_source"]
-            for entry in collection["collection"]
-            if entry["type"] == "model" and self._is_plantseg_model(entry)
-        }
+        self._bioimageio_zoo_all_model_url_dict = build_model_url_dict(lambda entry: True)
+        self._bioimageio_zoo_plantseg_model_url_dict = build_model_url_dict(self._is_plantseg_model)
 
     def _is_plantseg_model(self, collection_entry: dict) -> bool:
         """Determines if the 'tags' field in a collection entry contains the keyword 'plantseg'."""
