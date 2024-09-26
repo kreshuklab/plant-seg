@@ -5,7 +5,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-import napari
 import torch.cuda
 from magicgui import magicgui
 from magicgui.types import Separator

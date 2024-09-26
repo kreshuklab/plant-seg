@@ -398,7 +398,7 @@ class ModelZoo:
         models = [entry for entry in collection["collection"] if entry["type"] == "model"]
         max_nickname_length = max(len(entry["nickname"]) for entry in models)
 
-        def truncate_name(name, length=40):
+        def truncate_name(name, length=100):
             return name[:length] + '...' if len(name) > length else name
 
         def build_model_url_dict(filter_func=None):
