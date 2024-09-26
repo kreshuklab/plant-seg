@@ -395,22 +395,21 @@ class ModelZoo:
         with collection_path.open(encoding='utf-8') as f:
             collection = json.load(f)
 
-        max_nickname_length = max(  # Find the longest nickname for formatting
-            len(entry["nickname"]) for entry in collection["collection"] if entry["type"] == "model"
-        )
+        models = [entry for entry in collection["collection"] if entry["type"] == "model"]
+        max_nickname_length = max(len(entry["nickname"]) for entry in models)
 
-        def truncate_name(name, length=50):
-            return (name[:length] + '...') if len(name) > length else name
+        def truncate_name(name, length=40):
+            return name[:length] + '...' if len(name) > length else name
 
-        def build_model_url_dict(filter_func):
+        def build_model_url_dict(filter_func=None):
+            filtered_models = filter(filter_func, models) if filter_func else models
             return {
                 f"{entry['nickname']:<{max_nickname_length}}: {truncate_name(entry['name'])}": entry["rdf_source"]
-                for entry in collection["collection"]
-                if entry["type"] == "model" and filter_func(entry)
+                for entry in filtered_models
             }
 
         self._bioimageio_zoo_collection = collection
-        self._bioimageio_zoo_all_model_url_dict = build_model_url_dict(lambda entry: True)
+        self._bioimageio_zoo_all_model_url_dict = build_model_url_dict()
         self._bioimageio_zoo_plantseg_model_url_dict = build_model_url_dict(self._is_plantseg_model)
 
     def _is_plantseg_model(self, collection_entry: dict) -> bool:
