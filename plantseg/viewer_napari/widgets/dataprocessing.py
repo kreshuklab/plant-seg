@@ -2,7 +2,6 @@ from enum import Enum
 
 from magicgui import magicgui
 from napari.layers import Image, Labels, Layer, Shapes
-from napari.types import LayerDataTuple
 
 from plantseg.core.image import PlantSegImage
 from plantseg.core.voxelsize import VoxelSize
@@ -534,7 +533,7 @@ def widget_fix_over_under_segmentation_from_nuclei(
 
 
 @magicgui(
-    call_button=f"Relabel Instances",
+    call_button="Relabel Instances",
     segmentation={
         "label": "Segmentation",
         "tooltip": "Segmentation can be any label layer.",

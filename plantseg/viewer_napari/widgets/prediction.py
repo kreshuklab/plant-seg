@@ -9,7 +9,6 @@ from magicgui import magicgui
 from magicgui.types import Separator
 from magicgui.widgets import Container, create_widget
 from napari.layers import Image
-from napari.types import LayerDataTuple
 
 from plantseg.core.image import PlantSegImage
 from plantseg.core.zoo import model_zoo

@@ -9,7 +9,6 @@ import numpy as np
 from magicgui import magicgui
 from napari.layers import Image, Labels
 from napari.qt.threading import thread_worker
-from napari.types import LayerDataTuple
 from napari.utils import CyclicLabelColormap
 
 from plantseg.core.image import ImageProperties, PlantSegImage, SemanticType

@@ -5,7 +5,6 @@ from pathlib import Path
 from magicgui import magicgui
 from magicgui.widgets import Label
 from napari.layers import Image, Labels, Layer
-from napari.types import LayerDataTuple
 
 from plantseg.core.image import ImageLayout, ImageType, PlantSegImage, SemanticType
 from plantseg.io import H5_EXTENSIONS, ZARR_EXTENSIONS
