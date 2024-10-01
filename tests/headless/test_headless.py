@@ -33,8 +33,7 @@ def test_create_workflow(tmp_path):
     export_image_task(
         image=ps_2,
         export_directory=path_tiff.parent,
-        output_file_name=None,
-        custom_key_suffix='_smoothed',
+        name_pattern="{image_name}_export",
         scale_to_origin=True,
     )
 
@@ -53,7 +52,8 @@ def test_create_workflow(tmp_path):
         config = yaml.safe_load(file)
 
     config['inputs']['input_path']['value'] = [str(path_tiff_1), str(path_tiff_2)]
-    config['inputs']['output_directory']['value'] = str(tmp_path / 'output')
+    config['inputs']['export_directory']['value'] = str(tmp_path / 'output')
+    config['inputs']['name_pattern']['value'] = '{original_name}_export'
 
     with open(tmp_path / 'workflow.yaml', 'w') as file:
         yaml.dump(config, file)

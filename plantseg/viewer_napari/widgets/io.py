@@ -192,7 +192,8 @@ def _on_done(*args):  # Required by magicgui. pylint: disable=unused-argument
     },
     name_pattern={
         "label": "Export name pattern",
-        "tooltip": "Pattern for the exported file name. Use {image_name} to include the layer name.",
+        "tooltip": "Pattern for the exported file name. Use {image_name} to include the layer name, "
+        "or {original_name} to include the original file name.",
     },
     export_format={
         "label": "Export format",

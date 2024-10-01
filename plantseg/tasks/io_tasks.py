@@ -59,24 +59,21 @@ def import_image_task(
 @task_tracker(
     is_leaf=True,
     list_inputs={
-        "output_directory": TaskUserInput(
+        "export_directory": TaskUserInput(
             allowed_types=['str'],
             description="Output directory path where the image will be saved",
             headless_default=None,
             user_input_required=True,
         ),
-        "output_file_name": TaskUserInput(
-            allowed_types=['str', 'None'],
-            description="Output file name (if None, the image name will be used)",
-            headless_default=None,
-            user_input_required=False,
+        "name_pattern": TaskUserInput(
+            allowed_types=['str'], description="Output file name", headless_default=None, user_input_required=False
         ),
     },
 )
 def export_image_task(
     image: PlantSegImage,
     export_directory: Path,
-    name_pattern: str,
+    name_pattern: str = "{original_name}_export",
     key: str | None = None,
     scale_to_origin: bool = True,
     export_format: str = "tiff",
