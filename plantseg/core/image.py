@@ -11,19 +11,10 @@ from pydantic import BaseModel
 import plantseg.functionals.dataprocessing as dp
 from plantseg.core.voxelsize import VoxelSize
 from plantseg.io import (
-    H5_EXTENSIONS,
-    PIL_EXTENSIONS,
-    TIFF_EXTENSIONS,
     create_h5,
     create_tiff,
     create_zarr,
-    load_h5,
-    load_pil,
-    load_tiff,
-    load_zarr,
-    read_h5_voxel_size,
-    read_tiff_voxel_size,
-    read_zarr_voxel_size,
+    smart_load_with_vs,
 )
 
 logger = logging.getLogger(__name__)
@@ -521,23 +512,10 @@ class PlantSegImage:
 
 def _load_data(path: Path, key: str | None) -> tuple[np.ndarray, VoxelSize]:
     """Load data and voxel size from a file."""
-    ext = path.suffix
-    if key == "":
-        key = None
-
-    if ext in H5_EXTENSIONS:
-        return load_h5(path, key), read_h5_voxel_size(path, key)
-
-    if ext in TIFF_EXTENSIONS:
-        return load_tiff(path), read_tiff_voxel_size(path)
-
-    if ext in PIL_EXTENSIONS:
-        return load_pil(path), VoxelSize()
-
-    if ".zarr" in path.suffixes:
-        return load_zarr(path, key), read_zarr_voxel_size(path, key)
-
-    raise NotImplementedError(f"File extension '{ext}' is not supported for path: {path}")
+    data, voxel_size = smart_load_with_vs(path, key)
+    if voxel_size is None:
+        voxel_size = VoxelSize()
+    return data, voxel_size
 
 
 def import_image(
