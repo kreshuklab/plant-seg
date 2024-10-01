@@ -9,13 +9,11 @@ from napari.types import LayerDataTuple
 from pydantic import BaseModel
 
 import plantseg.functionals.dataprocessing as dp
-from plantseg.core.voxelsize import VoxelSize
-from plantseg.io import (
-    create_h5,
-    create_tiff,
-    create_zarr,
-    smart_load_with_vs,
-)
+from plantseg.io.h5 import create_h5
+from plantseg.io.io import smart_load_with_vs
+from plantseg.io.tiff import create_tiff
+from plantseg.io.voxelsize import VoxelSize
+from plantseg.io.zarr import create_zarr
 
 logger = logging.getLogger(__name__)
 

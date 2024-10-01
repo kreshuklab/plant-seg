@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from plantseg.core.voxelsize import VoxelSize
+from plantseg.io.voxelsize import VoxelSize
 
 
 def test_voxel_size_initialization():

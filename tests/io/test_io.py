@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from plantseg.core.voxelsize import VoxelSize
-from plantseg.io import smart_load
+from plantseg.io.io import smart_load
+from plantseg.io.voxelsize import VoxelSize
 
 
 class TestIO:

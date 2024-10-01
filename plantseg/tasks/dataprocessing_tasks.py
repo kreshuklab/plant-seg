@@ -1,5 +1,4 @@
 from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
-from plantseg.core.voxelsize import VoxelSize
 from plantseg.functionals.dataprocessing import (
     fix_over_under_segmentation_from_nuclei,
     image_gaussian_smoothing,
@@ -8,6 +7,7 @@ from plantseg.functionals.dataprocessing import (
     remove_false_positives_by_foreground_probability,
     set_biggest_instance_to_zero,
 )
+from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks import task_tracker
 
 

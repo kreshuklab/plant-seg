@@ -6,8 +6,8 @@ from napari.layers import Image, Labels, Layer, Shapes
 from napari.types import LayerDataTuple
 
 from plantseg.core.image import PlantSegImage
-from plantseg.core.voxelsize import VoxelSize
 from plantseg.core.zoo import model_zoo
+from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks.dataprocessing_tasks import (
     fix_over_under_segmentation_from_nuclei_task,
     gaussian_smoothing_task,
