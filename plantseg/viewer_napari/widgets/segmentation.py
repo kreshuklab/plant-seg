@@ -1,5 +1,3 @@
-from concurrent.futures import Future
-
 from magicgui import magicgui
 from napari.layers import Image, Labels, Layer
 from napari.types import LayerDataTuple
@@ -70,7 +68,7 @@ def widget_agglomeration(
     mode: str = AGGLOMERATION_MODES[0][1],
     beta: float = 0.6,
     minsize: int = 100,
-) -> Future[LayerDataTuple]:
+) -> None:
     ps_image = PlantSegImage.from_napari_layer(image)
     ps_labels = PlantSegImage.from_napari_layer(superpixels)
 
@@ -173,7 +171,7 @@ def widget_dt_ws(
     pixel_pitch: tuple[int, int, int] = (1, 1, 1),
     apply_nonmax_suppression: bool = False,
     is_nuclei_image: bool = False,
-) -> Future[LayerDataTuple]:
+) -> None:
     ps_image = PlantSegImage.from_napari_layer(image)
 
     return schedule_task(

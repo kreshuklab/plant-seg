@@ -26,20 +26,21 @@ def test_image_io_round_trip(tmp_path, shape, layout, export_format):
         semantic_type=SemanticType.RAW,
         image_layout=layout,
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit='um'),
+        original_name='test',
     )
     image = PlantSegImage(data=mock_data, properties=property)
 
     export_image_task(
         image=image,
-        output_directory=tmp_path,
-        output_file_name='test',
-        custom_key_suffix="raw",
-        file_format=export_format,
-        dtype='float32',
+        export_directory=tmp_path,
+        name_pattern='test',
+        key='raw',
+        export_format=export_format,
+        data_type='float32',
     )
 
     if export_format == 'tiff':
-        file_path = tmp_path / 'test_raw.tiff'
+        file_path = tmp_path / 'test.tiff'
         key = None
     elif export_format == 'h5':
         file_path = tmp_path / 'test.h5'
@@ -94,15 +95,15 @@ def test_label_io_round_trip(tmp_path, shape, layout, export_format):
 
     export_image_task(
         image=image,
-        output_directory=tmp_path,
-        output_file_name='test',
-        custom_key_suffix="raw",
-        file_format=export_format,
-        dtype='uint16',
+        export_directory=tmp_path,
+        name_pattern='test',
+        key="raw",
+        export_format=export_format,
+        data_type='uint16',
     )
 
     if export_format == 'tiff':
-        file_path = tmp_path / 'test_raw.tiff'
+        file_path = tmp_path / 'test.tiff'
         key = None
     elif export_format == 'h5':
         file_path = tmp_path / 'test.h5'
@@ -149,11 +150,11 @@ def test_io_slicing_trip(tmp_path):
 
     export_image_task(
         image=image,
-        output_directory=tmp_path,
-        output_file_name='test',
-        custom_key_suffix="raw",
-        file_format=export_format,
-        dtype='uint16',
+        export_directory=tmp_path,
+        name_pattern='test_raw',
+        key="raw",
+        export_format=export_format,
+        data_type='uint16',
     )
 
     file_path = tmp_path / 'test_raw.tiff'

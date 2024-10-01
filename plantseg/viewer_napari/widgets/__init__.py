@@ -8,7 +8,13 @@ from plantseg.viewer_napari.widgets.dataprocessing import (
     widget_set_biggest_instance_to_zero,
 )
 from plantseg.viewer_napari.widgets.docs import widget_docs
-from plantseg.viewer_napari.widgets.io import widget_export_stacks, widget_infos, widget_open_file, widget_show_info
+from plantseg.viewer_napari.widgets.io import (
+    widget_export_headless_workflow,
+    widget_export_image,
+    widget_infos,
+    widget_open_file,
+    widget_show_info,
+)
 from plantseg.viewer_napari.widgets.prediction import widget_add_custom_model, widget_unet_prediction
 from plantseg.viewer_napari.widgets.proofreading import (
     widget_add_label_to_corrected,
@@ -31,7 +37,8 @@ __all__ = [
     "widget_cropping",
     # IO
     "widget_open_file",
-    "widget_export_stacks",
+    "widget_export_image",
+    "widget_export_headless_workflow",
     "widget_show_info",
     "widget_infos",
     # Main - Prediction

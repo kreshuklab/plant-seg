@@ -78,7 +78,7 @@ def parse_input_config(inputs_config: dict):
             list_input_keys[key] = parse_input_path(value)
             has_input_path = True
 
-        elif key.find("output_dir") != -1:
+        elif key.find("export_directory") != -1:
             single_input_keys[key] = output_directory(value)
             has_output_dir = True
 

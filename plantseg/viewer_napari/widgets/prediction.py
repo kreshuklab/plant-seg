@@ -1,17 +1,14 @@
 """UNet Prediction Widget"""
 
-from concurrent.futures import Future
 from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-import napari
 import torch.cuda
 from magicgui import magicgui
 from magicgui.types import Separator
 from magicgui.widgets import Container, create_widget
 from napari.layers import Image
-from napari.types import LayerDataTuple
 
 from plantseg.core.image import PlantSegImage
 from plantseg.core.zoo import model_zoo
@@ -140,7 +137,7 @@ def widget_unet_prediction(
     patch_size: tuple[int, int, int] = (128, 128, 128),
     patch_halo: tuple[int, int, int] = (0, 0, 0),
     single_patch: bool = False,
-) -> Future[list[LayerDataTuple]]:
+) -> None:
     if mode is UNetPredictionMode.PLANTSEG:
         suffix = model_name
         model_id = None
