@@ -508,14 +508,6 @@ class PlantSegImage:
         return self.original_voxel_size.voxels_size is not None
 
 
-def _load_data(path: Path, key: str | None) -> tuple[np.ndarray, VoxelSize]:
-    """Load data and voxel size from a file."""
-    data, voxel_size = smart_load_with_vs(path, key)
-    if voxel_size is None:
-        voxel_size = VoxelSize()
-    return data, voxel_size
-
-
 def import_image(
     path: Path,
     key: str | None = None,
@@ -535,7 +527,9 @@ def import_image(
         stack_layout (str): Layout of the image, should be YX, CYX, ZYX, CZYX or ZCYX
         m_slicing (str): Slicing to apply to the image, should be a string with the format [start:stop, ...] for each dimension.
     """
-    data, voxel_size = _load_data(path, key)
+    data, voxel_size = smart_load_with_vs(path, key)
+    if voxel_size is None:
+        voxel_size = VoxelSize()
 
     image_layout = ImageLayout(stack_layout)
     if image_layout is ImageLayout.ZCYX:  # then make it CZYX

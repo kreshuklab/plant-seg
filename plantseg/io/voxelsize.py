@@ -3,10 +3,14 @@
 This module handles voxel size operations to avoid circular imports with plantseg.core.image.
 """
 
+import logging
+
 import numpy as np
 from pydantic import BaseModel, Field, field_validator
 
 from plantseg.functionals.dataprocessing import compute_scaling_factor, compute_scaling_voxelsize
+
+logger = logging.getLogger(__name__)
 
 
 class VoxelSize(BaseModel):
@@ -31,7 +35,20 @@ class VoxelSize(BaseModel):
     @field_validator("unit")
     @classmethod
     def _check_unit(cls, value: str) -> str:
-        if value.startswith(("u", "µ", "micro")):
+        print(f"Checking unit: {value}")
+        if value.lower().startswith(
+            (
+                'u',
+                '\u03bc',  # Unicode characters for "mu", i.e. 'μ'.
+                '\\u03bc',  # `tifffile` uses raw string.
+                '\u00b5',  # Unicode characters for "micro", i.e. 'µ', to which "mu" is converted in Fiji by default.
+                '\\u00b5',  # `tifffile` uses raw string.
+                'micro',
+            )
+        ):
+            return "um"
+        elif value.lower() in ['-', '']:
+            logger.warning("Unit is not defined, assuming micrometers (um)")
             return "um"
         raise ValueError("Only micrometers (um) are supported")
 
