@@ -75,44 +75,33 @@ def import_image_task(
 )
 def export_image_task(
     image: PlantSegImage,
-    output_directory: Path,
-    output_file_name: str | None = None,
-    custom_key_suffix: str | None = None,
+    export_directory: Path,
+    name_pattern: str,
+    key: str | None = None,
     scale_to_origin: bool = True,
-    file_format: str = "tiff",
-    dtype: str = "uint16",
+    export_format: str = "tiff",
+    data_type: str = "uint16",
 ) -> None:
     """
     Task wrapper for saving an PlantSegImage object to disk.
 
     Args:
         image (PlantSegImage): input image to be saved to disk
-        output_directory (Path): output directory path where the image will be saved
-        output_file_name (str | None): output file name (if None, the image name will be used)
-        custom_key_suffix (str | None): custom key for the image. If format is .h5 or .zarr this key will be used
-            to create the dataset. If None, the semantic type will be used (raw, segmentation, predictio).
-            If the image is tiff, the custom key will be added to the file name as a suffix.
-            If None, the custom key will not be added.
-        scale_to_origin (bool): scale to origin
-        file_format (str): file format
-        dtype (str): data type
+        export_directory (Path): output directory path where the image will be saved
+        name_pattern (str): output file name pattern, can contain the {image_name} or {original_name} tokens
+            to be replaced in the final file name.
+        key (str | None): key for the image (used only for h5 and zarr formats).
+        scale_to_origin (bool): scale the voxel size to the original one
+        export_format (str): file format (tiff, h5, zarr)
+        data_type (str): data type to save the image.
     """
-    if output_file_name is None:
-        output_file_name = image.name
-
-    if custom_key_suffix is None:
-        if file_format == "tiff":
-            custom_key_suffix = ""
-        else:
-            custom_key_suffix = image.semantic_type.value
-
     save_image(
         image=image,
-        directory=output_directory,
-        file_name=output_file_name,
-        custom_key=custom_key_suffix,
+        export_directory=export_directory,
+        name_pattern=name_pattern,
+        key=key,
         scale_to_origin=scale_to_origin,
-        file_format=file_format,
-        dtype=dtype,
+        export_format=export_format,
+        data_type=data_type,
     )
     return None

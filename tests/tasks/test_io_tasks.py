@@ -31,11 +31,11 @@ def test_image_io_round_trip(tmp_path, shape, layout, export_format):
 
     export_image_task(
         image=image,
-        output_directory=tmp_path,
+        export_directory=tmp_path,
         output_file_name='test',
         custom_key_suffix="raw",
-        file_format=export_format,
-        dtype='float32',
+        export_format=export_format,
+        data_type='float32',
     )
 
     if export_format == 'tiff':
@@ -94,11 +94,11 @@ def test_label_io_round_trip(tmp_path, shape, layout, export_format):
 
     export_image_task(
         image=image,
-        output_directory=tmp_path,
+        export_directory=tmp_path,
         output_file_name='test',
         custom_key_suffix="raw",
-        file_format=export_format,
-        dtype='uint16',
+        export_format=export_format,
+        data_type='uint16',
     )
 
     if export_format == 'tiff':
@@ -149,11 +149,11 @@ def test_io_slicing_trip(tmp_path):
 
     export_image_task(
         image=image,
-        output_directory=tmp_path,
+        export_directory=tmp_path,
         output_file_name='test',
         custom_key_suffix="raw",
-        file_format=export_format,
-        dtype='uint16',
+        export_format=export_format,
+        data_type='uint16',
     )
 
     file_path = tmp_path / 'test_raw.tiff'

@@ -32,7 +32,7 @@ def test_create_workflow(tmp_path):
     ps_2 = gaussian_smoothing_task(image=ps_1, sigma=1.0)
     export_image_task(
         image=ps_2,
-        output_directory=path_tiff.parent,
+        export_directory=path_tiff.parent,
         output_file_name=None,
         custom_key_suffix='_smoothed',
         scale_to_origin=True,
