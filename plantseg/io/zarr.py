@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 import zarr
 
-from plantseg.core.voxelsize import VoxelSize
+from plantseg.io.voxelsize import VoxelSize
 
 ZARR_EXTENSIONS = [".zarr"]
 ZARR_KEYS = ["raw", "prediction", "segmentation"]

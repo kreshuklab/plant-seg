@@ -5,7 +5,7 @@ from typing import Optional
 import h5py
 import numpy as np
 
-from plantseg.core.voxelsize import VoxelSize
+from plantseg.io.voxelsize import VoxelSize
 
 # allowed h5 keys
 H5_EXTENSIONS = [".hdf", ".h5", ".hd5", "hdf5"]

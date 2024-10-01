@@ -3,9 +3,9 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-from plantseg.core.voxelsize import VoxelSize
 from plantseg.headless.headless import run_headless_workflow
-from plantseg.io import create_tiff
+from plantseg.io.tiff import create_tiff
+from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks.dataprocessing_tasks import gaussian_smoothing_task
 from plantseg.tasks.io_tasks import export_image_task, import_image_task
 from plantseg.tasks.workflow_handler import workflow_handler

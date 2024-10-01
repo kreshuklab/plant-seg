@@ -42,7 +42,6 @@ def test_relabel_segmentation():
     )
 
     relabeled_image = relabel_segmentation(segmentation_image)
-    print(relabeled_image)
 
     # Expected relabeling: the two 2-connectivity-connected regions should not be relabeled differently
     assert relabeled_image[0, 0] == 1

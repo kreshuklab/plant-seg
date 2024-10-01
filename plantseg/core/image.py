@@ -9,22 +9,11 @@ from napari.types import LayerDataTuple
 from pydantic import BaseModel
 
 import plantseg.functionals.dataprocessing as dp
-from plantseg.core.voxelsize import VoxelSize
-from plantseg.io import (
-    H5_EXTENSIONS,
-    PIL_EXTENSIONS,
-    TIFF_EXTENSIONS,
-    create_h5,
-    create_tiff,
-    create_zarr,
-    load_h5,
-    load_pil,
-    load_tiff,
-    load_zarr,
-    read_h5_voxel_size,
-    read_tiff_voxel_size,
-    read_zarr_voxel_size,
-)
+from plantseg.io.h5 import create_h5
+from plantseg.io.io import smart_load_with_vs
+from plantseg.io.tiff import create_tiff
+from plantseg.io.voxelsize import VoxelSize
+from plantseg.io.zarr import create_zarr
 
 logger = logging.getLogger(__name__)
 
@@ -527,27 +516,6 @@ class PlantSegImage:
         return self.original_voxel_size.voxels_size is not None
 
 
-def _load_data(path: Path, key: str | None) -> tuple[np.ndarray, VoxelSize]:
-    """Load data and voxel size from a file."""
-    ext = path.suffix
-    if key == "":
-        key = None
-
-    if ext in H5_EXTENSIONS:
-        return load_h5(path, key), read_h5_voxel_size(path, key)
-
-    if ext in TIFF_EXTENSIONS:
-        return load_tiff(path), read_tiff_voxel_size(path)
-
-    if ext in PIL_EXTENSIONS:
-        return load_pil(path), VoxelSize()
-
-    if ".zarr" in path.suffixes:
-        return load_zarr(path, key), read_zarr_voxel_size(path, key)
-
-    raise NotImplementedError(f"File extension '{ext}' is not supported for path: {path}")
-
-
 def import_image(
     path: Path,
     key: str | None = None,
@@ -567,7 +535,9 @@ def import_image(
         stack_layout (str): Layout of the image, should be YX, CYX, ZYX, CZYX or ZCYX
         m_slicing (str): Slicing to apply to the image, should be a string with the format [start:stop, ...] for each dimension.
     """
-    data, voxel_size = _load_data(path, key)
+    data, voxel_size = smart_load_with_vs(path, key)
+    if voxel_size is None:
+        voxel_size = VoxelSize()
 
     image_layout = ImageLayout(stack_layout)
     if image_layout is ImageLayout.ZCYX:  # then make it CZYX

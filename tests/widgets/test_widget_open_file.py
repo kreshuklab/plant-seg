@@ -1,8 +1,8 @@
 import napari
 import numpy as np
 
-from plantseg.core.voxelsize import VoxelSize
 from plantseg.io.h5 import create_h5
+from plantseg.io.voxelsize import VoxelSize
 from plantseg.viewer_napari.widgets.io import PathMode, widget_open_file
 
 

@@ -1,4 +1,5 @@
 import copy
+import logging
 
 import numba
 import numpy as np
@@ -6,6 +7,8 @@ import tqdm
 from skimage.filters import gaussian
 from skimage.measure import regionprops
 from skimage.segmentation import relabel_sequential, watershed
+
+logger = logging.getLogger(__name__)
 
 
 def get_bbox(mask: np.ndarray, pixel_tolerance: int = 0) -> tuple[tuple[slice, slice, slice], int, int, int]:
@@ -209,7 +212,7 @@ def fix_under_segmentation(
         np.ndarray: Segmentation array after fixing under-segmentation.
     """
     segmentation_copy = copy.deepcopy(segmentation)
-    print("Fixing under-segmentation...")
+    logger.info("Fixing under-segmentation...")
 
     for c_idx, assignment in tqdm.tqdm(cell_assignments.items()):
         if cell_idx is None or c_idx in cell_idx:
@@ -239,7 +242,7 @@ def fix_over_segmentation(
         np.ndarray: Segmentation array after fixing over-segmentation.
     """
     segmentation_copy = copy.deepcopy(segmentation)
-    print("Fixing over-segmentation...")
+    logger.info("Fixing over-segmentation...")
 
     for n_idx, assignment in tqdm.tqdm(nuclei_assignments.items()):
         if nuclei_idx is None or n_idx in nuclei_idx:
