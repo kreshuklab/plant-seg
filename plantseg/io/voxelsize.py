@@ -35,7 +35,6 @@ class VoxelSize(BaseModel):
     @field_validator("unit")
     @classmethod
     def _check_unit(cls, value: str) -> str:
-        print(f"Checking unit: {value}")
         if value.lower().startswith(
             (
                 'u',

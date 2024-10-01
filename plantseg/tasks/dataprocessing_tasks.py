@@ -1,3 +1,5 @@
+import logging
+
 from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.functionals.dataprocessing import (
     fix_over_under_segmentation_from_nuclei,
@@ -9,6 +11,8 @@ from plantseg.functionals.dataprocessing import (
 )
 from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks import task_tracker
+
+logger = logging.getLogger(__name__)
 
 
 @task_tracker
@@ -256,7 +260,7 @@ def set_biggest_instance_to_zero_task(image: PlantSegImage, instance_could_be_ze
     if not (image.semantic_type == SemanticType.SEGMENTATION or image.semantic_type == SemanticType.LABEL):
         raise ValueError("Input image must be a segmentation or mask image.")
     data = image.get_data()
-    print(f"Processing {image.name} with shape {data.shape} and max {data.max()}, min {data.min()}.")
+    logger.info(f"Processing {image.name} with shape {data.shape} and max {data.max()}, min {data.min()}.")
     new_data = set_biggest_instance_to_zero(data, instance_could_be_zero=instance_could_be_zero)
     new_image = image.derive_new(new_data, name=f"{image.name}_bg0")
     return new_image

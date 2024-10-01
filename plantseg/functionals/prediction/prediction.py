@@ -87,7 +87,7 @@ def unet_prediction(
         assert len(raw_shape) == 3
         patch, patch_halo = find_patch_and_halo_shapes(raw_shape, maximum_patch_shape, patch_halo, both_sides=False)
 
-    print(f"For raw in shape {raw.shape}, Patch shape: {patch}", f"Patch halo shape: {patch_halo}")
+    logger.info(f"For raw in shape {raw.shape}, Patch shape: {patch}", f"Patch halo shape: {patch_halo}")
 
     predictor = ArrayPredictor(
         model=model,
