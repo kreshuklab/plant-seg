@@ -2,8 +2,8 @@
 
 ![alt text](docs/logos/logo.png)
 
-[![doc build status](https://github.com/kreshuklab/plant-seg/actions/workflows/build-deploy-book.yml/badge.svg)](https://github.com/kreshuklab/plant-seg/actions/workflows/build-deploy-book.yml)
-[![package build status](https://github.com/kreshuklab/plant-seg/actions/workflows/build-deploy-on-conda.yml/badge.svg)](https://github.com/kreshuklab/plant-seg/actions/workflows/build-deploy-on-conda.yml)
+[![Conda Build and Test](https://github.com/kreshuklab/plant-seg/actions/workflows/build-and-test-package.yml/badge.svg)](https://github.com/kreshuklab/plant-seg/actions/workflows/build-and-test-package.yml)
+[![Docs Build and Publish](https://github.com/kreshuklab/plant-seg/actions/workflows/build-and-publish-docs.yml/badge.svg)](https://github.com/kreshuklab/plant-seg/actions/workflows/build-and-publish-docs.yml)
 
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/version.svg)](https://anaconda.org/conda-forge/plant-seg)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/plant-seg)
@@ -28,30 +28,20 @@ Pre-trained models are provided.
 
 For detailed usage checkout our [**documentation** 📖](https://kreshuklab.github.io/plant-seg/).
 
-| Documentation                                                                                                        | Napari GUI                                                                                                                                               | Legacy GUI                                                                                                                                           | Command Line                                                                                                                                      |
-| -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [![doc build status](https://img.shields.io/badge/Documentation-Home-blue)](https://kreshuklab.github.io/plant-seg/) | [![doc build status](https://img.shields.io/badge/Documentation-GUI-blue)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/) | [![doc build status](https://img.shields.io/badge/Documentation-Lecagy-blue)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/) | [![doc build status](https://img.shields.io/badge/Documentation-CLI-blue)](https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_cli/) |
-
 ## Installation
 
 Please go to the [documentation](https://kreshuklab.github.io/plant-seg/chapters/getting_started/installation/) for more detailed instructions. In short, we recommend using `mamba` to install PlantSeg, which is currently supported on Linux and Windows.
 
-* GPU version, CUDA=12.x
+* GPU version, CUDA=12.x (replace `12.1` with `11.8` for CUDA=11.x)
 
     ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 pyqt plant-seg --no-channel-priority
-    ```
-
-* GPU version, CUDA=11.x
-
-    ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 pyqt plant-seg --no-channel-priority
+    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 plant-seg --no-channel-priority
     ```
 
 * CPU version
 
     ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly pyqt plant-seg --no-channel-priority
+    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly plant-seg --no-channel-priority
     ```
 
 The above command will create new conda environment `plant-seg` together with all required dependencies.
