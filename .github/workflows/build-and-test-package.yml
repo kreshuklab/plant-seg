@@ -55,7 +55,7 @@ jobs:
       # Create a Conda environment for testing
       - name: Create PlantSeg Test Environment
         run: |
-          conda create -n plant-seg -c local -c conda-forge pyqt plantseg pytest pytest-qt pytest-cov pytest-mock requests-mock
+          conda create -n plant-seg -c local -c conda-forge plantseg pytest pytest-qt pytest-cov pytest-mock requests-mock
 
       # Run tests using pytest
       - name: Run Tests with Pytest
