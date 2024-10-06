@@ -36,24 +36,45 @@ The easiest way to install PlantSeg is by using the [conda (Anaconda)](https://w
 
 PlantSeg can be installed directly by executing in the terminal (or PowerShell on Windows). For `conda` users, the command is identical, just replace `mamba` with `conda`.
 
-=== "Linux/Windows"
+=== "Linux"
 
     * NVIDIA GPU version, CUDA=12.x
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 pyqt plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 plant-seg --no-channel-priority
         ```
 
     * NVIDIA GPU version, CUDA=11.x
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 pyqt plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 plant-seg --no-channel-priority
         ```
 
     * CPU version
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly pyqt plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly plant-seg --no-channel-priority
+        ```
+
+
+=== "Windows"
+
+    * NVIDIA GPU version, CUDA=12.x
+
+        ```bash
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 nifty=1.2.1=*_4 plant-seg --no-channel-priority
+        ```
+
+    * NVIDIA GPU version, CUDA=11.x
+
+        ```bash
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 nifty=1.2.1=*_4 plant-seg --no-channel-priority
+        ```
+
+    * CPU version
+
+        ```bash
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly nifty=1.2.1=*_4 plant-seg --no-channel-priority
         ```
 
 === "macOS"
