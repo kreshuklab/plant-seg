@@ -1,4 +1,4 @@
-name: plant_seg
+name: plant-seg-elife
 channels:
   - pytorch
   - cpape
@@ -136,4 +136,3 @@ dependencies:
     - werkzeug==0.16.0
     - wrapt==1.11.2
 prefix: /home/lcerrone_local/miniconda3/envs/plant_seg
-
