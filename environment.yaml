@@ -17,6 +17,7 @@ dependencies:
   - scikit-image
   - bioimageio.core>=0.6.5
   # GUI
+  - pyqt
   - napari
   # Other
   - requests
