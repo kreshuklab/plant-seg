@@ -9,22 +9,11 @@ from napari.types import LayerDataTuple
 from pydantic import BaseModel
 
 import plantseg.functionals.dataprocessing as dp
-from plantseg.core.voxelsize import VoxelSize
-from plantseg.io import (
-    H5_EXTENSIONS,
-    PIL_EXTENSIONS,
-    TIFF_EXTENSIONS,
-    create_h5,
-    create_tiff,
-    create_zarr,
-    load_h5,
-    load_pil,
-    load_tiff,
-    load_zarr,
-    read_h5_voxel_size,
-    read_tiff_voxel_size,
-    read_zarr_voxel_size,
-)
+from plantseg.io.h5 import create_h5
+from plantseg.io.io import smart_load_with_vs
+from plantseg.io.tiff import create_tiff
+from plantseg.io.voxelsize import VoxelSize
+from plantseg.io.zarr import create_zarr
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +110,7 @@ class ImageProperties(BaseModel):
     voxel_size: VoxelSize
     image_layout: ImageLayout
     original_voxel_size: VoxelSize
+    original_name: str | None = None
 
     @property
     def dimensionality(self) -> ImageDimensionality:
@@ -274,6 +264,8 @@ class PlantSegImage:
             raise ValueError("Voxel size not found in metadata")
         new_voxel_size = VoxelSize(**metadata["voxel_size"])
 
+        original_name = metadata.get("original_name", None)
+
         # Loading from napari layer, the id needs to be present in the metadata
         # If not present, the layer is corrupted
         if "id" in metadata:
@@ -287,6 +279,7 @@ class PlantSegImage:
             voxel_size=new_voxel_size,
             image_layout=image_layout,
             original_voxel_size=original_voxel_size,
+            original_name=original_name,
         )
 
         if image_type != properties.image_type:
@@ -470,6 +463,10 @@ class PlantSegImage:
         return self._properties.original_voxel_size
 
     @property
+    def original_name(self) -> str | None:
+        return self._properties.original_name
+
+    @property
     def name(self) -> str:
         return self._properties.name
 
@@ -519,27 +516,6 @@ class PlantSegImage:
         return self.original_voxel_size.voxels_size is not None
 
 
-def _load_data(path: Path, key: str | None) -> tuple[np.ndarray, VoxelSize]:
-    """Load data and voxel size from a file."""
-    ext = path.suffix
-    if key == "":
-        key = None
-
-    if ext in H5_EXTENSIONS:
-        return load_h5(path, key), read_h5_voxel_size(path, key)
-
-    if ext in TIFF_EXTENSIONS:
-        return load_tiff(path), read_tiff_voxel_size(path)
-
-    if ext in PIL_EXTENSIONS:
-        return load_pil(path), VoxelSize()
-
-    if ".zarr" in path.suffixes:
-        return load_zarr(path, key), read_zarr_voxel_size(path, key)
-
-    raise NotImplementedError(f"File extension '{ext}' is not supported for path: {path}")
-
-
 def import_image(
     path: Path,
     key: str | None = None,
@@ -559,7 +535,9 @@ def import_image(
         stack_layout (str): Layout of the image, should be YX, CYX, ZYX, CZYX or ZCYX
         m_slicing (str): Slicing to apply to the image, should be a string with the format [start:stop, ...] for each dimension.
     """
-    data, voxel_size = _load_data(path, key)
+    data, voxel_size = smart_load_with_vs(path, key)
+    if voxel_size is None:
+        voxel_size = VoxelSize()
 
     image_layout = ImageLayout(stack_layout)
     if image_layout is ImageLayout.ZCYX:  # then make it CZYX
@@ -575,6 +553,7 @@ def import_image(
         voxel_size=voxel_size,
         image_layout=image_layout,
         original_voxel_size=voxel_size,
+        original_name=image_name,
     )
 
     return PlantSegImage(data=data, properties=image_properties)
@@ -616,46 +595,59 @@ def _image_postprocessing(
 
 def save_image(
     image: PlantSegImage,
-    directory: Path,
-    file_name: str,
-    custom_key: str,
-    scale_to_origin: bool,
-    file_format: str = "tiff",
-    dtype: str = "uint16",
+    export_directory: Path,
+    name_pattern: str,
+    key: str | None = None,
+    scale_to_origin: bool = True,
+    export_format: str = "tiff",
+    data_type: str = "uint16",
 ) -> None:
     """
     Write a PlantSegImage object to disk.
 
     Args:
-        image (PlantSegImage): Image to save
-        directory (Path): Directory to save the image
-        file_name (str): Name of the file
-        custom_key (str): Custom key to save the image (it will be used as suffix in tiff files or as key in h5 or zarr files)
-        scale_to_origin (bool): Scale the image to the original voxel size (if different from the current voxel size)
-        file_format (str): File format to save the image, should be tiff, h5 or zarr
-        dtype (str): Data type to save the image, should be uint8, uint16, float32 or float64
+        image (PlantSegImage): input image to be saved to disk
+        export_directory (Path): output directory path where the image will be saved
+        name_pattern (str): output file name pattern, can contain the {image_name} or {original_name} tokens
+            to be replaced in the final file name.
+        key (str | None): key for the image (used only for h5 and zarr formats).
+        scale_to_origin (bool): scale the voxel size to the original one
+        export_format (str): file format (tiff, h5, zarr)
+        data_type (str): data type to save the image.
     """
-    data, voxel_size = _image_postprocessing(image, scale_to_origin, dtype)
 
-    directory = Path(directory)
+    data, voxel_size = _image_postprocessing(image, scale_to_origin=scale_to_origin, export_dtype=data_type)
+
+    directory = Path(export_directory)
     directory.mkdir(parents=True, exist_ok=True)
 
-    if file_format == "tiff":
-        file_path_name = directory / f"{file_name}_{custom_key}.tiff"
+    name_pattern = name_pattern.replace("{image_name}", image.name)
+
+    if image.original_name is not None:
+        name_pattern = name_pattern.replace("{original_name}", image.original_name)
+
+    if export_format == "tiff":
+        file_path_name = directory / f"{name_pattern}.tiff"
         create_tiff(path=file_path_name, stack=data, voxel_size=voxel_size, layout=image.image_layout.value)
 
-    elif file_format == "zarr":
-        file_path_name = directory / f"{file_name}.zarr"
+    elif export_format == "zarr":
+        if key is None or key == "":
+            raise ValueError("Key is required for zarr format")
+
+        file_path_name = directory / f"{name_pattern}.zarr"
         create_zarr(
             path=file_path_name,
             stack=data,
             voxel_size=voxel_size,
-            key=custom_key,
+            key=key,
         )
 
-    elif file_format == "h5":
-        file_path_name = directory / f"{file_name}.h5"
-        create_h5(path=file_path_name, stack=data, voxel_size=voxel_size, key=custom_key)
+    elif export_format == "h5":
+        if key is None or key == "":
+            raise ValueError("Key is required for h5 format")
+
+        file_path_name = directory / f"{name_pattern}.h5"
+        create_h5(path=file_path_name, stack=data, voxel_size=voxel_size, key=key)
 
     else:
-        raise ValueError(f"File format {file_format} not recognized, should be tiff, h5 or zarr")
+        raise ValueError(f"Export format {export_format} not recognized, should be tiff, h5 or zarr")

@@ -17,7 +17,12 @@ MAX_PATCH_SHAPES = {
         "NVIDIA GeForce RTX 3090": (1, 2880, 2880),  # (1, 2960, 2960) if search step is 1.
     },
 }
-GPU_DEVICE_NAME = torch.cuda.get_device_name(0) if not IN_GITHUB_ACTIONS else ""
+
+try:
+    # This will raise an AssertionError if Pytorch is not installed with CUDA support
+    GPU_DEVICE_NAME = torch.cuda.get_device_name(0) if not IN_GITHUB_ACTIONS else ""
+except AssertionError:  # catch Pytorch not installed with CUDA support
+    GPU_DEVICE_NAME = ""
 
 
 @pytest.mark.parametrize(

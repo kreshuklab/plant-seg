@@ -5,7 +5,7 @@ from magicgui import magicgui
 from napari.types import LayerDataTuple
 
 from plantseg.core.image import ImageLayout, ImageProperties, PlantSegImage, SemanticType
-from plantseg.core.voxelsize import VoxelSize
+from plantseg.io.voxelsize import VoxelSize
 from plantseg.viewer_napari.widgets.dataprocessing import RescaleModes, widget_rescaling
 
 

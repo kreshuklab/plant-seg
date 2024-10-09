@@ -1,12 +1,10 @@
 import time
-from concurrent.futures import Future
 from enum import Enum
 from pathlib import Path
 
 from magicgui import magicgui
 from magicgui.widgets import Label
 from napari.layers import Image, Labels, Layer
-from napari.types import LayerDataTuple
 
 from plantseg.core.image import ImageLayout, ImageType, PlantSegImage, SemanticType
 from plantseg.io import H5_EXTENSIONS, ZARR_EXTENSIONS
@@ -89,7 +87,7 @@ def widget_open_file(
     new_layer_name: str = "",
     dataset_key: str | None = None,
     stack_layout: str = ImageLayout.ZYX.value,
-) -> Future[LayerDataTuple]:
+) -> None:
     """Open a file and return a napari layer."""
 
     if layer_type == ImageType.IMAGE.value:
@@ -181,90 +179,181 @@ def _on_done(*args):  # Required by magicgui. pylint: disable=unused-argument
 
 
 @magicgui(
-    call_button="Export Layers",
-    images={
-        "label": "Layers to export",
-        "layout": "vertical",
+    call_button="Export Layer",
+    image={
+        "label": "Layer to export",
         "tooltip": "Select all layer to be exported, and (optional) set a custom file name suffix that will be "
         "appended at end of the layer name.",
+    },
+    directory={
+        "label": "Export directory",
+        "mode": "d",
+        "tooltip": "Select the directory where the files will be exported",
+    },
+    name_pattern={
+        "label": "Export name pattern",
+        "tooltip": "Pattern for the exported file name. Use {image_name} to include the layer name, "
+        "or {original_name} to include the original file name.",
+    },
+    export_format={
+        "label": "Export format",
+        "widget_type": "RadioButtons",
+        "orientation": "horizontal",
+        "choices": ["tiff", "h5", "zarr"],
+        "tooltip": "Export format, if tiff is selected, each layer will be exported as a separate file. "
+        "If h5 is selected, all layers will be exported in a single file.",
+    },
+    key={
+        "label": "Key",
+        "tooltip": "Key to be used in the h5 or zarr file.",
+    },
+    scale_to_origin={
+        "label": "Rescale to original resolution",
+        "tooltip": "Rescale the image to the original voxel size.",
     },
     data_type={
         "label": "Data Type",
         "choices": ["float32", "uint8", "uint16"],
         "tooltip": "Export datatype (uint16 for segmentation) and all others for images.",
     },
-    export_format={
-        "label": "Export format",
-        "choices": ["tiff", "h5", "zarr"],
-        "tooltip": "Export format, if tiff is selected, each layer will be exported as a separate file. "
-        "If h5 is selected, all layers will be exported in a single file.",
-    },
-    directory={
-        "label": "Directory to export files",
-        "mode": "d",
-        "tooltip": "Select the directory where the files will be exported",
-    },
-    workflow_name={
-        "label": "Workflow name",
-        "tooltip": "Name of the workflow object.",
-    },
 )
-def widget_export_stacks(
-    images: list[tuple[Layer, str]],
+def widget_export_image(
+    image: Layer | None = None,
     directory: Path = Path.home(),
+    name_pattern: str = "{image_name}_export",
     export_format: str = "tiff",
-    rescale_to_original_resolution: bool = True,
+    key: str = "raw",
+    scale_to_origin: bool = True,
     data_type: str = "float32",
-    workflow_name: str = "workflow",
 ) -> None:
     timer = time.time()
     log("export_image_task started", thread="Export stacks", level="info")
 
-    for i, (image, image_custom_name) in enumerate(images):
-        # parse and check input to the function
+    if not isinstance(image, (Image, Labels)):
+        raise ValueError("Only Image and Labels layers are supported for PlantSeg export.")
+    ps_image = PlantSegImage.from_napari_layer(image)
 
-        image_custom_name = f"exported_image_{i}" if image_custom_name == "" else image_custom_name
-        if not isinstance(image, (Image, Labels)):
-            raise ValueError("Only Image and Labels layers are supported for PlantSeg export.")
-        ps_image = PlantSegImage.from_napari_layer(image)
-
-        export_image_task(
-            image=ps_image,
-            output_directory=directory,
-            output_file_name=image_custom_name,
-            custom_key_suffix=image.name,
-            scale_to_origin=rescale_to_original_resolution,
-            file_format=export_format,
-            dtype=data_type,
-        )
-
-    # Save the workflow as a yaml file
-    workflow_path = Path(directory) / f"{workflow_name}.yaml"
-    workflow_handler.save_to_yaml(path=workflow_path)
-
-    log(f"export_image_task completed in {time.time() - timer:.2f}s", thread="Export stacks", level="info")
+    export_image_task(
+        image=ps_image,
+        export_directory=directory,
+        name_pattern=name_pattern,
+        key=key,
+        scale_to_origin=scale_to_origin,
+        export_format=export_format,
+        data_type=data_type,
+    )
+    timer = time.time() - timer
+    log(f"export_image_task finished in {timer:.2f} seconds", thread="Export stacks", level="info")
 
 
 export_details = [
-    widget_export_stacks.directory,
-    widget_export_stacks.export_format,
-    widget_export_stacks.rescale_to_original_resolution,
-    widget_export_stacks.data_type,
-    widget_export_stacks.workflow_name,
+    widget_export_image.directory,
+    widget_export_image.name_pattern,
+    widget_export_image.export_format,
+    widget_export_image.data_type,
+    widget_export_image.scale_to_origin,
+    widget_export_image.key,
 ]
-for widget in export_details:
-    widget.hide()
 
 
-@widget_export_stacks.images.changed.connect
-def _on_images_changed(images_list: list[tuple[Layer, str]]):
-    images_list = _return_value_if_widget(images_list)
-    if len(images_list) > 0:
-        for widget in export_details:
+def _toggle_export_details_widgets(show: bool):
+    for widget in export_details:
+        if show:
             widget.show()
-    else:
-        for widget in export_details:
+        else:
             widget.hide()
+
+
+def _toggle_key(show: bool):
+    if not show or widget_export_image.export_format.value == "tiff":
+        widget_export_image.key.hide()
+        return None
+    widget_export_image.key.show()
+
+
+_toggle_export_details_widgets(False)
+_toggle_key(False)
+
+
+@widget_export_image.image.changed.connect
+def _on_images_changed(image: Image | Labels):
+    if image is None:
+        _toggle_export_details_widgets(False)
+        _toggle_key(False)
+        return None
+
+    if isinstance(image, Labels) or isinstance(image, Image):
+        _toggle_export_details_widgets(True)
+        _toggle_key(True)
+        widget_export_image.key.value = "raw" if isinstance(image, Image) else "segmentation"
+
+        if isinstance(image, Labels) and widget_export_image.data_type.value == "float32":
+            log(
+                "Data type float32 is not supported for Labels layers, changing to uint16",
+                thread="Export stacks",
+                level="warning",
+            )
+            widget_export_image.data_type.value = "uint16"
+        return None
+
+    raise ValueError("Only Image and Labels layers are supported for PlantSeg export.")
+
+
+@widget_export_image.export_format.changed.connect
+def _on_export_format_changed(export_format: str):
+    _toggle_key(export_format != "tiff")
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Export Headless Workflow                                                                                             #
+#                                                                                                                      #
+########################################################################################################################
+@magicgui(
+    call_button="Export Workflow",
+    directory={
+        "label": "Export directory",
+        "mode": "d",
+        "tooltip": "Select the directory where the workflow will be exported",
+    },
+    workflow_name={
+        "label": "Workflow name",
+        "tooltip": "Name of the exported workflow file.",
+    },
+)
+def widget_export_headless_workflow(
+    directory: Path = Path.home(),
+    workflow_name: str = "headless_workflow.yaml",
+) -> None:
+    # Save the workflow as a yaml file
+
+    if not workflow_name.endswith(".yaml"):
+        workflow_name = f"{workflow_name}.yaml"
+
+    workflow_path = directory / workflow_name
+    workflow_handler.save_to_yaml(path=workflow_path)
+
+    log(f"Workflow saved to {workflow_path}", thread="Export stacks", level="info")
+
+
+widget_export_headless_workflow.hide()
+
+
+########################################################################################################################
+#                                                                                                                      #
+# This callback requires both export_image and export_workflow widget                                                  #
+#                                                                                                                      #
+########################################################################################################################
+@widget_export_image.called.connect
+def _on_done_export_image(*args):
+    _toggle_export_details_widgets(False)
+    _toggle_key(False)
+    widget_export_headless_workflow.show()
+
+
+@widget_export_headless_workflow.called.connect
+def _on_done_export_workflow(*args):
+    widget_export_headless_workflow.hide()
 
 
 ########################################################################################################################

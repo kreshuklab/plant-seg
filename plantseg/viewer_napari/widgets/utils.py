@@ -1,5 +1,4 @@
 import timeit
-from concurrent.futures import Future
 from typing import Callable
 
 import napari
@@ -39,7 +38,27 @@ def setup_layers_suggestions(out_name: str, widgets: list[Widget] | None):
         widget.value = out_layer
 
 
-def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Widget] | None = None) -> Future:
+def add_ps_image_to_viewer(layer: PlantSegImage, replace: bool = False) -> None:
+    """Add a PlantSegImage to the viewer.
+
+    Args:
+        layer (PlantSegImage): PlantSegImage to be added to the viewer.
+        replace (bool): If True, the layer with the same name will be replaced. Defaults to False.
+    """
+    viewer = napari.current_viewer()
+    data, meta, layer_type = layer.to_napari_layer_tuple()
+
+    name = meta.get("name", None)
+    if replace and name in viewer.layers:
+        viewer.layers.remove(name)
+
+    if layer_type == "image":
+        viewer.add_image(data, **meta)
+    elif layer_type == "labels":
+        viewer.add_labels(data, **meta)
+
+
+def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Widget] | None = None) -> None:
     """Schedule a task to be executed in a separate thread and update the widgets with the result.
 
     Args:
@@ -57,7 +76,6 @@ def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Wid
     else:
         raise ValueError(f"Function {task.__name__} is not a PlantSeg task.")
 
-    future = Future()
     timer_start = timeit.default_timer()
 
     def on_done(task_result: PlantSegImage | list[PlantSegImage] | None):
@@ -65,7 +83,7 @@ def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Wid
         log(f"{task_name} complete in {timer:.2f}s", thread='Task')
 
         if isinstance(task_result, PlantSegImage):
-            future.set_result(task_result.to_napari_layer_tuple())
+            add_ps_image_to_viewer(task_result)
             setup_layers_suggestions(out_name=task_result.name, widgets=widgets_to_update)
 
         elif isinstance(task_result, (tuple, list)):
@@ -73,11 +91,12 @@ def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Wid
                 if not isinstance(ps_im, PlantSegImage):
                     raise ValueError(f"Task {task_name} returned an unexpected value {task_result}")
 
-            future.set_result([ps_im.to_napari_layer_tuple() for ps_im in task_result])
+            for ps_im in task_result:
+                add_ps_image_to_viewer(ps_im)
             setup_layers_suggestions(out_name=task_result[-1].name, widgets=widgets_to_update)
 
         elif task_result is None:
-            future.set_result(None)
+            return None
 
         else:
             raise ValueError(f"Task {task_name} returned an unexpected value {task_result}")
@@ -86,4 +105,4 @@ def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Wid
     worker.returned.connect(on_done)
     worker.start()
     log(f"{task_name} started", thread='Task')
-    return future
+    return None

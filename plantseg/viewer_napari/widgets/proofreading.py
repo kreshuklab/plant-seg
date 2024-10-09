@@ -1,7 +1,6 @@
 import os
 import pickle
 from collections import deque
-from concurrent.futures import Future
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -10,7 +9,6 @@ import numpy as np
 from magicgui import magicgui
 from napari.layers import Image, Labels
 from napari.qt.threading import thread_worker
-from napari.types import LayerDataTuple
 from napari.utils import CyclicLabelColormap
 
 from plantseg.core.image import ImageProperties, PlantSegImage, SemanticType
@@ -558,7 +556,7 @@ def widget_split_and_merge_from_scribbles(
 
 
 @magicgui(call_button='Freeze correct labels')
-def widget_filter_segmentation() -> Future[LayerDataTuple]:
+def widget_filter_segmentation() -> None:
     """Extracts corrected labels from the segmentation.
 
     Returns:
@@ -571,8 +569,6 @@ def widget_filter_segmentation() -> Future[LayerDataTuple]:
             level='error',
         )
         raise ValueError('Proofreading widget not initialized. Run the proofreading widget tool once first')
-
-    future = Future()
 
     @thread_worker
     def func():
@@ -598,12 +594,14 @@ def widget_filter_segmentation() -> Future[LayerDataTuple]:
         return new_seg_layer_tuple
 
     def on_done(result):
-        future.set_result(result)
+        viewer = napari.current_viewer()
+        if result is not None and viewer is not None:
+            viewer._add_layer_from_data(*result)
 
     worker = func()
     worker.returned.connect(on_done)
     worker.start()
-    return future
+    return None
 
 
 @magicgui(call_button='Undo Last Action')

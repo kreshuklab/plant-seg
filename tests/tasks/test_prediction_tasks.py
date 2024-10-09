@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from plantseg.core import ImageProperties, PlantSegImage, VoxelSize
-from plantseg.core.image import ImageLayout, SemanticType
+from plantseg.core.image import ImageLayout, ImageProperties, PlantSegImage, SemanticType
+from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks.prediction_tasks import unet_prediction_task
 
 

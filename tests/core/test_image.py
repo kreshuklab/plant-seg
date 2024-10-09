@@ -11,7 +11,7 @@ from plantseg.core.image import (
     PlantSegImage,
     SemanticType,
 )
-from plantseg.core.voxelsize import VoxelSize
+from plantseg.io.voxelsize import VoxelSize
 
 
 # Tests for Enum classes

@@ -36,24 +36,44 @@ The easiest way to install PlantSeg is by using the [conda (Anaconda)](https://w
 
 PlantSeg can be installed directly by executing in the terminal (or PowerShell on Windows). For `conda` users, the command is identical, just replace `mamba` with `conda`.
 
-=== "Linux/Windows"
+=== "Linux"
 
     * NVIDIA GPU version, CUDA=12.x
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 pyqt plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 plant-seg --no-channel-priority
         ```
 
     * NVIDIA GPU version, CUDA=11.x
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 pyqt plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 plant-seg --no-channel-priority
         ```
 
     * CPU version
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly pyqt plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly plant-seg --no-channel-priority
+        ```
+
+=== "Windows"
+
+    * NVIDIA GPU version, CUDA=12.x
+
+        ```bash
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 nifty=1.2.1=*_4 plant-seg --no-channel-priority
+        ```
+
+    * NVIDIA GPU version, CUDA=11.x
+
+        ```bash
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 nifty=1.2.1=*_4 plant-seg --no-channel-priority
+        ```
+
+    * CPU version
+
+        ```bash
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly nifty=1.2.1=*_4 plant-seg --no-channel-priority
         ```
 
 === "macOS"
@@ -61,7 +81,7 @@ PlantSeg can be installed directly by executing in the terminal (or PowerShell o
     * Apple silicon version
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c conda-forge python=3.11 pytorch::pytorch pyqt plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c conda-forge python=3.11 pytorch::pytorch plant-seg --no-channel-priority
         ```
 
 If you used older versions of PlantSeg, please delete the old config files in `~/.plantseg_models/configs/` after installing new PlantSeg.
@@ -72,24 +92,14 @@ Please refer to the [PyTorch](https://pytorch.org/get-started/locally/) website 
 
 ## Optional dependencies
 
-If you want to use the headless mode of PlantSeg, you need to install `dask[distributed]`:
-
-```bash
-conda activate plant-seg
-mamba install dask distributed
-```
-
-Some types of compressed tiff files require an additional package to be load correctly (e.g.: Zlib, ZSTD, LZMA, ...).
-To run PlantSeg on those stacks, you need to install `imagecodecs`.
-In the terminal:
+Certain compressed TIFF files (e.g., Zlib, ZSTD, LZMA formats) require additional codecs to be processed correctly by PlantSeg. To handle such files, install the `imagecodecs` package:
 
 ```bash
 conda activate plant-seg
 pip install imagecodecs
 ```
 
-Experimental support for SimpleITK watershed segmentation has been added to PlantSeg version 1.1.8.
-These features can be used only after installing the SimpleITK package:
+If you plan to use SimpleITK-based watershed segmentation, you will need to install `SimpleITK` as an additional dependency:
 
 ```bash
 conda activate plant-seg

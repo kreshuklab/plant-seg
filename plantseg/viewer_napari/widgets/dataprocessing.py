@@ -1,13 +1,11 @@
-from concurrent.futures import Future
 from enum import Enum
 
 from magicgui import magicgui
 from napari.layers import Image, Labels, Layer, Shapes
-from napari.types import LayerDataTuple
 
 from plantseg.core.image import PlantSegImage
-from plantseg.core.voxelsize import VoxelSize
 from plantseg.core.zoo import model_zoo
+from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks.dataprocessing_tasks import (
     fix_over_under_segmentation_from_nuclei_task,
     gaussian_smoothing_task,
@@ -49,9 +47,7 @@ from plantseg.viewer_napari.widgets.utils import schedule_task
         "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
     },
 )
-def widget_gaussian_smoothing(
-    image: Image, sigma: float = 1.0, update_other_widgets: bool = True
-) -> Future[LayerDataTuple]:
+def widget_gaussian_smoothing(image: Image, sigma: float = 1.0, update_other_widgets: bool = True) -> None:
     """Apply Gaussian smoothing to an image layer."""
 
     ps_image = PlantSegImage.from_napari_layer(image)
@@ -103,7 +99,7 @@ def widget_cropping(
     crop_roi: Shapes | None = None,
     crop_z: tuple[int, int] = (0, 100),
     update_other_widgets: bool = True,
-) -> Future[LayerDataTuple]:
+) -> None:
     if crop_roi is not None:
         assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
         assert crop_roi.shape_type[0] == "rectangle", "Only a rectangle shape should be used for cropping"
@@ -242,7 +238,7 @@ def widget_rescaling(
     reference_shape: tuple[int, int, int] = (1, 1, 1),
     order: int = 0,
     update_other_widgets: bool = True,
-) -> Future[LayerDataTuple]:
+) -> None:
     """Rescale an image or label layer."""
 
     if isinstance(image, Image) or isinstance(image, Labels):
@@ -437,7 +433,7 @@ def _on_rescale_order_changed(order):
 )
 def widget_remove_false_positives_by_foreground(
     segmentation: Labels, foreground: Image, threshold: float = 0.5
-) -> Future[LayerDataTuple]:
+) -> None:
     """Remove false positives from a segmentation layer using a foreground probability layer."""
 
     ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
@@ -487,7 +483,7 @@ def widget_fix_over_under_segmentation_from_nuclei(
     boundary_pmaps: Image | None = None,
     threshold=(33, 66),
     quantile=(0.3, 99.9),
-) -> Future[LayerDataTuple]:
+) -> None:
     """
     Widget interface for correcting over- and under-segmentation of cells based on nuclei segmentation.
 
@@ -537,7 +533,7 @@ def widget_fix_over_under_segmentation_from_nuclei(
 
 
 @magicgui(
-    call_button=f"Relabel Instances",
+    call_button="Relabel Instances",
     segmentation={
         "label": "Segmentation",
         "tooltip": "Segmentation can be any label layer.",
@@ -552,7 +548,7 @@ def widget_fix_over_under_segmentation_from_nuclei(
 def widget_relabel(
     segmentation: Labels,
     background: int | None = None,
-) -> Future[LayerDataTuple]:
+) -> None:
     """Relabel an image layer."""
 
     ps_image = PlantSegImage.from_napari_layer(segmentation)
@@ -605,7 +601,7 @@ def _on_relabel_segmentation_changed(segmentation: Labels):
 def widget_set_biggest_instance_to_zero(
     segmentation: Labels,
     instance_could_be_zero: bool = False,
-) -> Future[LayerDataTuple]:
+) -> None:
     """Set the biggest instance to zero in a label layer."""
 
     ps_image = PlantSegImage.from_napari_layer(segmentation)
