@@ -11,7 +11,7 @@ from plantseg.tasks.workflow_handler import RunTimeInputSchema
         "input_path": RunTimeInputSchema(
             description="Path to a file, or a directory containing files (all files will be imported) or list of paths.",
             required=True,
-            is_input=True,
+            is_input_file=True,
         ),
         "image_name": RunTimeInputSchema(
             description="Name of the image (if None, the file name will be used)",

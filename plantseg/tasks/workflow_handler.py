@@ -78,7 +78,7 @@ class Task(BaseModel):
 
 class DAG(BaseModel):
     infos: Infos = Field(default_factory=Infos)
-    inputs: dict[str, Any] = Field(default_factory=dict)
+    inputs: dict[str, Any] | list[dict[str, Any]] = Field(default_factory=dict)
     list_tasks: list[Task] = Field(default_factory=list)
 
     """
@@ -93,7 +93,7 @@ class DAG(BaseModel):
 
     @property
     def list_inputs(self):
-        return list(self.inputs.keys())
+        return list(self.infos.inputs_schema.keys())
 
 
 def prune_dag(dag: DAG) -> DAG:
