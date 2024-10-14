@@ -2,24 +2,20 @@ from pathlib import Path
 
 from plantseg.core.image import PlantSegImage, import_image, save_image
 from plantseg.tasks import task_tracker
-from plantseg.tasks.workflow_handler import TaskUserInput
+from plantseg.tasks.workflow_handler import RunTimeInputSchema
 
 
 @task_tracker(
     is_root=True,
-    list_private_params=["semantic_type", "stack_layout"],
     list_inputs={
-        "input_path": TaskUserInput(
-            allowed_types=['str', 'list[str]'],
+        "input_path": RunTimeInputSchema(
             description="Path to a file, or a directory containing files (all files will be imported) or list of paths.",
-            headless_default=None,
-            user_input_required=True,
+            required=True,
+            is_input=True,
         ),
-        "image_name": TaskUserInput(
-            allowed_types=['None', 'str'],
+        "image_name": RunTimeInputSchema(
             description="Name of the image (if None, the file name will be used)",
-            headless_default=None,
-            user_input_required=False,
+            required=False,
         ),
     },
 )
@@ -38,8 +34,18 @@ def import_image_task(
         input_path (Path): path to the image file
         semantic_type (str): semantic type of the image (raw, segmentation, prediction)
         stack_layout (str): stack layout of the image (3D, 2D, 2D_time)
-        image_name (str | None): name of the image (if None, the file name will be used)
-        key (str | None): key for the image (used only for h5 and zarr formats)
+        image_name (str | Noinput_path = inputs[input_schema["name"]]
+    input_paths = parse_import_image_task(input_path)
+    list_inputs.extend(input_paths)ne): name of the image (if None, the file name will be used)
+        key (str | None):"export_directory": RunTimeInput(
+            allowed_types=['str'],
+            description="Output directory path where the image will be saved",
+            headless_default=None,
+            user_input_required=True,
+        ),
+        "name_pattern": RunTimeInput(
+            allowed_types=['str'], description="Output file name", headless_default=None, user_input_required=False
+        ), key for the image (used only for h5 and zarr formats)
         m_slicing (str | None): m_slicing of the image (None, time, z, y, x)
     """
 
@@ -59,15 +65,10 @@ def import_image_task(
 @task_tracker(
     is_leaf=True,
     list_inputs={
-        "export_directory": TaskUserInput(
-            allowed_types=['str'],
-            description="Output directory path where the image will be saved",
-            headless_default=None,
-            user_input_required=True,
+        "export_directory": RunTimeInputSchema(
+            description="Output directory path where the image will be saved", required=True
         ),
-        "name_pattern": TaskUserInput(
-            allowed_types=['str'], description="Output file name", headless_default=None, user_input_required=False
-        ),
+        "name_pattern": RunTimeInputSchema(description="Output file name", required=False),
     },
 )
 def export_image_task(
