@@ -338,8 +338,13 @@ def remove_false_positives_by_foreground_probability(
 
     for region in tqdm.tqdm(regions):
         bbox = region.bbox
-        region_mask = instances[bbox[0] : bbox[3], bbox[1] : bbox[4], bbox[2] : bbox[5]] == region.label
-        prob = foreground[bbox[0] : bbox[3], bbox[1] : bbox[4], bbox[2] : bbox[5]]
+        if instances.ndim == 3:
+            slices = (slice(bbox[0], bbox[3]), slice(bbox[1], bbox[4]), slice(bbox[2], bbox[5]))
+        else:
+            slices = (slice(bbox[0], bbox[2]), slice(bbox[1], bbox[3]))
+
+        region_mask = instances[slices] == region.label
+        prob = foreground[slices]
 
         pixel_count[region.label] = region.area
         pixel_value[region.label] = (region_mask * prob).sum()
