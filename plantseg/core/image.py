@@ -1,15 +1,17 @@
 import logging
 from enum import Enum
 from pathlib import Path
+from typing import Literal
 from uuid import UUID, uuid4
 
+import h5py
 import numpy as np
 from napari.layers import Image, Labels
 from napari.types import LayerDataTuple
 from pydantic import BaseModel
 
 import plantseg.functionals.dataprocessing as dp
-from plantseg.io.h5 import create_h5
+from plantseg.io.h5 import H5_EXTENSIONS, create_h5
 from plantseg.io.io import smart_load_with_vs
 from plantseg.io.tiff import create_tiff
 from plantseg.io.voxelsize import VoxelSize
@@ -285,7 +287,7 @@ class PlantSegImage:
         if image_type != properties.image_type:
             raise ValueError(f"Image type {image_type} does not match semantic type {properties.semantic_type}")
 
-        ps_image = cls(layer.data, properties)
+        ps_image = cls(layer.data, properties)  # type: ignore
         ps_image._id = id
         return ps_image
 
@@ -317,7 +319,57 @@ class PlantSegImage:
 
         return LayerDataTuple(layer_data_tuple)
 
-    def _check_ndim(self, data: np.ndarray) -> None:
+    def to_h5(self, path: Path | str, key: str | None, mode: Literal["a", "w", "w-"] = "a") -> None:
+        """Save the image with all metadata to an h5 file.
+
+        Args:
+            path (Path): Path to the h5 file
+            key (str): Key to save the data in the h5 file
+            mode (str): Mode to open the h5 file ['a', 'w', 'w-']
+        """
+
+        if isinstance(path, str):
+            path = Path(path)
+
+        if path.suffix not in H5_EXTENSIONS:
+            raise ValueError(f"File format {path.suffix} not supported, should be one of {H5_EXTENSIONS}")
+
+        key = key if key is not None else self.name
+
+        data = self._data
+        voxel_size = self.voxel_size
+        metadata = self.properties.model_dump_json()
+
+        with h5py.File(path, mode=mode) as f:
+            f.create_dataset(key, data=data)
+            if voxel_size.voxels_size is not None:
+                f[key].attrs["element_size_um"] = voxel_size.voxels_size
+            f[key].attrs["plantseg_image_metadata_json"] = metadata
+
+    @classmethod
+    def from_h5(cls, path: Path | str, key: str) -> "PlantSegImage":
+        """Build an instance of PlantSegImage from an h5 file."""
+
+        if isinstance(path, str):
+            path = Path(path)
+
+        if not path.exists():
+            raise ValueError(f"File {path} not found")
+
+        with h5py.File(path, "r") as f:
+            if key not in f:
+                raise ValueError(f"Key {key} not found in the h5 file")
+
+            data: np.ndarray = f[key][...]  # type: ignore
+            metadata = f[key].attrs.get("plantseg_image_metadata_json", None)
+
+        if metadata is None:
+            raise ValueError("PlantSeg metadata not found in the h5 file")
+
+        properties = ImageProperties.model_validate_json(metadata)
+        return cls(data, properties)
+
+    def _check_ndim(self, data: np.ndarray) -> np.ndarray:
         if self.image_layout in (ImageLayout.CYX, ImageLayout.ZYX):
             if data.ndim != 3:
                 raise ValueError(
@@ -341,7 +393,7 @@ class PlantSegImage:
 
         return data
 
-    def _check_shape(self, data: np.ndarray, properties: ImageProperties) -> None:
+    def _check_shape(self, data: np.ndarray, properties: ImageProperties) -> tuple[np.ndarray, ImageProperties]:
         if self.image_layout == ImageLayout.ZYX:
             if data.shape[0] == 1:
                 logger.warning("Image layout is ZYX but data has only one z slice, casting to YX")
@@ -362,7 +414,7 @@ class PlantSegImage:
             elif data.shape[0] > 1 and data.shape[1] == 1:
                 logger.warning("Image layout is CZYX but data has only one z slice, casting to CYX")
                 properties.image_layout = ImageLayout.CYX
-                return data[:, 0], properties.image_layout
+                return data[:, 0], properties
 
         elif self.image_layout == ImageLayout.ZCYX:
             raise ValueError(f"Image layout {self.image_layout} not supported, should have been converted to CZYX")
@@ -386,12 +438,14 @@ class PlantSegImage:
         if channel is None:
             data = self._data
             if normalize_01:
+                assert self.channel_axis is not None
                 data = dp.normalize_01_channel_wise(data, self.channel_axis)
             return data
 
         if channel < 0:
             raise ValueError(f"Channel should be a positive integer, but got {channel}")
 
+        assert self.channel_axis is not None
         if channel > self._data.shape[self.channel_axis]:
             raise ValueError(
                 f"Channel {channel} is out of bounds, the image has {self._data.shape[self.channel_axis]} channels"
@@ -565,8 +619,8 @@ def _image_postprocessing(
     if scale_to_origin and image.requires_scaling:
         data = dp.scale_image_to_voxelsize(
             image.get_data(),
-            input_voxel_size=image.voxel_size,
-            output_voxel_size=image.original_voxel_size,
+            input_voxel_size=image.voxel_size.as_tuple(),
+            output_voxel_size=image.original_voxel_size.as_tuple(),
             order=image.interpolation_order(),
         )
         new_voxel_size = image.original_voxel_size
