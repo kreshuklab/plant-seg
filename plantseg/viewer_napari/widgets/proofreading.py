@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
+import h5py
 import napari
 import numpy as np
 from magicgui import magicgui
@@ -15,6 +16,7 @@ from pydantic import BaseModel, Field
 from plantseg.core.image import ImageProperties, PlantSegImage, SemanticType
 from plantseg.functionals.proofreading.split_merge_tools import split_merge_from_seeds
 from plantseg.functionals.proofreading.utils import get_bboxes
+from plantseg.io import H5_EXTENSIONS
 from plantseg.viewer_napari import log
 
 DEFAULT_KEY_BINDING_PROOFREAD = 'n'
@@ -365,13 +367,68 @@ class ProofreadingHandler:
             history_pop=self._state.history_redo, history_append=self._state.history_undo, action_name='redo'
         )
 
-    def save_state_to_disk(self, filepath: Path):
+    def save_state_to_disk(self, filepath: Path, raw: Image | None, pmap: Image | None = None):
         """Saves the current state to disk as an HDF5 file."""
-        raise NotImplementedError
+
+        if filepath.suffix not in H5_EXTENSIONS:
+            log(
+                f'Invalid file extension: {filepath.suffix}. Please use a valid HDF5 file extensions: {H5_EXTENSIONS}',
+                thread='Save State',
+            )
+            return None
+
+        viewer = get_current_viewer_wrapper()
+
+        segmentation_layer = viewer.layers[self.seg_layer_name]
+        assert isinstance(segmentation_layer, Labels)
+        ps_segmentation = PlantSegImage.from_napari_layer(segmentation_layer)
+        ps_segmentation.to_h5(filepath, key='label', mode='w')
+
+        mask_layer = self.corrected_cells_mask
+
+        import h5py
+
+        with h5py.File(filepath, 'a') as f:
+            f.create_dataset(name='mask', data=mask_layer)
+            f['mask'].attrs['corrected_cells'] = list(self.corrected_cells)
+
+        for name, image in [('raw', raw), ('pmap', pmap)]:
+            if image is not None:
+                ps_image = PlantSegImage.from_napari_layer(image)
+                ps_image.to_h5(filepath, key=name)
+
+        log(f'State saved to {filepath}', thread='Save State')
 
     def load_state_from_disk(self, filepath: Path):
         """Loads a saved state from disk."""
-        raise NotImplementedError
+
+        if not filepath.exists():
+            log(f'File not found: {filepath}', thread='Load State')
+            return None
+
+        viewer = get_current_viewer_wrapper()
+
+        ps_segmentation = PlantSegImage.from_h5(filepath, key='label')
+        self.setup(ps_segmentation)
+
+        with h5py.File(filepath, 'r') as f:
+            if 'mask' not in f:
+                log('Corrected cells mask not found in file', thread='Load State')
+                self.reset_corrected()
+            else:
+                corrected_cells = set(f['mask'].attrs['corrected_cells'])  # type: ignore
+                mask: np.ndarray = f['mask'][...]  # type: ignore
+                update_layer(mask, CORRECTED_CELLS_LAYER_NAME, scale=self.scale, colormap=correct_cells_cmap, opacity=1)
+                self._state.corrected_cells = corrected_cells
+
+            for name in ['raw', 'pmap']:
+                if name in f:
+                    ps_image = PlantSegImage.from_h5(filepath, key=name)
+                    if ps_image.name not in viewer.layers:
+                        ps_image_layer_tuple = ps_image.to_napari_layer_tuple()
+                        viewer._add_layer_from_data(*ps_image_layer_tuple)
+                    else:
+                        log(f'Layer {ps_image.name} already exists in viewer', thread='Load State')
 
     # Corrected cells Operations
     def _toggle_corrected_cell(self, cell_id: int):
@@ -461,7 +518,7 @@ def widget_add_label_to_corrected(viewer: napari.Viewer, position: tuple[int, ..
     segmentation_handler.toggle_corrected_cell(cell_id)
 
 
-def initialize_proofreading(segmentation: PlantSegImage, state: Path | None = None) -> None:
+def initialize_proofreading(segmentation: PlantSegImage) -> None:
     """Initializes the proofreading tool with the given segmentation.
 
     Args:
@@ -476,35 +533,9 @@ def initialize_proofreading(segmentation: PlantSegImage, state: Path | None = No
     widget_proofreading_initialisation.call_button.text = 'Re-initialize Proofreading'  # type: ignore
     setup_proofreading_widget()
     log('Proofreading initialized', thread='Proofreading tool')
-    if state:
-        segmentation_handler.load_state_from_disk(state)
-        log('State loaded successfully', thread='Proofreading tool')
 
 
-@magicgui(
-    call_button='Initialize Proofreading',
-    segmentation={
-        'label': 'Segmentation',
-        'tooltip': 'The segmentation layer to proofread',
-    },
-    state={
-        'label': 'Resume from file',
-        'mode': 'r',
-        'tooltip': 'Load a previous proofreading state from a pickle (*.pkl) file',
-    },
-    are_you_sure={'label': 'I understand this resets everything', 'visible': False},
-)
-def widget_proofreading_initialisation(
-    segmentation: Labels,
-    state: Path | None = None,
-    are_you_sure: bool = False,
-) -> None:
-    """Initializes the proofreading widget.
-
-    Args:
-        segmentation (Labels): The segmentation layer.
-        state (Path | None): Path to a previous state file (optional).
-    """
+def initialize_from_layer(segmentation: Labels, are_you_sure: bool = False) -> None:
     if segmentation.name in [
         SCRIBBLES_LAYER_NAME,
         CORRECTED_CELLS_LAYER_NAME,
@@ -527,7 +558,7 @@ def widget_proofreading_initialisation(
         return
 
     ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
-    initialize_proofreading(ps_segmentation, state)
+    initialize_proofreading(ps_segmentation)
     widget_proofreading_initialisation.are_you_sure.value = False
     widget_proofreading_initialisation.are_you_sure.hide()
     widget_proofreading_initialisation.call_button.text = 'Re-initialize Proofreading'  # type: ignore
@@ -536,6 +567,77 @@ def widget_proofreading_initialisation(
     widget_proofreading_initialisation.segmentation.choices = [  # Avoid re-initializing with proofreading helper layers
         layer for layer in viewer.layers if layer.name not in [SCRIBBLES_LAYER_NAME, CORRECTED_CELLS_LAYER_NAME]
     ]
+
+
+def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
+    if segmentation_handler.active and not are_you_sure:
+        log(
+            'Proofreading is already initialized. Are you sure you want to reset everything?',
+            thread='Proofreading tool',
+            level='warning',
+        )
+        widget_proofreading_initialisation.are_you_sure.show()
+        widget_proofreading_initialisation.call_button.text = 'I understand, please re-initialise!!'  # type: ignore
+
+    segmentation_handler.load_state_from_disk(state)
+    widget_proofreading_initialisation.call_button.text = 'Re-initialize Proofreading'  # type: ignore
+    setup_proofreading_widget()
+    log('Proofreading initialized', thread='Proofreading tool')
+
+
+@magicgui(
+    call_button='Initialize Proofreading',
+    mode={
+        'label': 'Mode',
+        "choices": ["Layer", "File"],
+    },
+    segmentation={
+        'label': 'Segmentation',
+        'tooltip': 'The segmentation layer to proofread',
+    },
+    state={
+        'label': 'Resume from file',
+        'mode': 'r',
+        'tooltip': 'Load a previous proofreading state from a pickle (*.pkl) file',
+    },
+    are_you_sure={'label': 'I understand this resets everything', 'visible': False},
+)
+def widget_proofreading_initialisation(
+    mode: str = 'Layer',
+    segmentation: Labels | None = None,
+    state: Path | None = None,
+    are_you_sure: bool = False,
+) -> None:
+    """Initializes the proofreading widget.
+
+    Args:
+        segmentation (Labels): The segmentation layer.
+        state (Path | None): Path to a previous state file (optional).
+    """
+    if mode == 'Layer':
+        if segmentation is None:
+            log('No segmentation layer selected', thread='Proofreading tool', level='error')
+            return
+        initialize_from_layer(segmentation, are_you_sure=are_you_sure)
+    elif mode == 'File':
+        if state is None:
+            log('No state file selected', thread='Proofreading tool', level='error')
+            return
+        initialize_from_file(state, are_you_sure=are_you_sure)
+
+
+widget_proofreading_initialisation.are_you_sure.hide()
+widget_proofreading_initialisation.state.hide()
+
+
+@widget_proofreading_initialisation.mode.changed.connect
+def _on_mode_changed(mode: str):
+    if mode == 'Layer':
+        widget_proofreading_initialisation.segmentation.show()
+        widget_proofreading_initialisation.state.hide()
+    elif mode == 'File':
+        widget_proofreading_initialisation.segmentation.hide()
+        widget_proofreading_initialisation.state.show()
 
 
 @magicgui(
@@ -677,19 +779,23 @@ def widget_redo():
         'label': 'File path',
         'mode': 'w',
     },
-    images_saved={'label': 'I saved boundary references and original segmentations'},
+    raw={
+        'label': 'Raw image',
+        'tooltip': 'Optional raw image for reference',
+    },
+    pmap={
+        'label': 'Probability map',
+        'tooltip': 'Optional probability map for reference',
+    },
 )
-def widget_save_state(filepath: Path = Path.home(), images_saved: bool = False):
+def widget_save_state(filepath: Path = Path.home(), raw: Image | None = None, pmap: Image | None = None):
     """Saves the current proofreading state to disk.
 
     Args:
         filepath (str): The filepath to save the state to.
 
     """
-    if images_saved:
-        segmentation_handler.save_state_to_disk(filepath)
-    else:
-        log('Please save the pmap and segmentation images before saving the state', thread='Save State', level='error')
+    segmentation_handler.save_state_to_disk(filepath, raw=raw, pmap=pmap)
 
 
 def setup_proofreading_keybindings(viewer: napari.Viewer):
