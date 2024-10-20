@@ -112,7 +112,7 @@ class ImageProperties(BaseModel):
     voxel_size: VoxelSize
     image_layout: ImageLayout
     original_voxel_size: VoxelSize
-    original_name: str | None = None
+    source_file_name: str | None = None
 
     @property
     def dimensionality(self) -> ImageDimensionality:
@@ -266,7 +266,7 @@ class PlantSegImage:
             raise ValueError("Voxel size not found in metadata")
         new_voxel_size = VoxelSize(**metadata["voxel_size"])
 
-        original_name = metadata.get("original_name", None)
+        source_file_name = metadata.get("source_file_name", None)
 
         # Loading from napari layer, the id needs to be present in the metadata
         # If not present, the layer is corrupted
@@ -281,7 +281,7 @@ class PlantSegImage:
             voxel_size=new_voxel_size,
             image_layout=image_layout,
             original_voxel_size=original_voxel_size,
-            original_name=original_name,
+            source_file_name=source_file_name,
         )
 
         if image_type != properties.image_type:
@@ -517,8 +517,8 @@ class PlantSegImage:
         return self._properties.original_voxel_size
 
     @property
-    def original_name(self) -> str | None:
-        return self._properties.original_name
+    def source_file_name(self) -> str | None:
+        return self._properties.source_file_name
 
     @property
     def name(self) -> str:
@@ -607,7 +607,7 @@ def import_image(
         voxel_size=voxel_size,
         image_layout=image_layout,
         original_voxel_size=voxel_size,
-        original_name=image_name,
+        source_file_name=path.stem,
     )
 
     return PlantSegImage(data=data, properties=image_properties)
@@ -662,7 +662,7 @@ def save_image(
     Args:
         image (PlantSegImage): input image to be saved to disk
         export_directory (Path): output directory path where the image will be saved
-        name_pattern (str): output file name pattern, can contain the {image_name} or {original_name} tokens
+        name_pattern (str): output file name pattern, can contain the {image_name} or {file_name} tokens
             to be replaced in the final file name.
         key (str | None): key for the image (used only for h5 and zarr formats).
         scale_to_origin (bool): scale the voxel size to the original one
@@ -677,8 +677,8 @@ def save_image(
 
     name_pattern = name_pattern.replace("{image_name}", image.name)
 
-    if image.original_name is not None:
-        name_pattern = name_pattern.replace("{original_name}", image.original_name)
+    if image.source_file_name is not None:
+        name_pattern = name_pattern.replace("{file_name}", image.source_file_name)
 
     if export_format == "tiff":
         file_path_name = directory / f"{name_pattern}.tiff"
