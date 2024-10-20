@@ -1,6 +1,6 @@
 import logging
 
-from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
+from plantseg.core.image import ImageDimensionality, ImageLayout, PlantSegImage, SemanticType
 from plantseg.functionals.dataprocessing import (
     fix_over_under_segmentation_from_nuclei,
     image_gaussian_smoothing,
@@ -34,13 +34,16 @@ def gaussian_smoothing_task(image: PlantSegImage, sigma: float) -> PlantSegImage
     return new_image
 
 
-def _compute_slices(rectangle, crop_z: tuple[int, int], shape):
+def _compute_slices_3d(rectangle, crop_z: tuple[int, int], shape):
     """
     Compute slices for cropping based on a given rectangle and z-slices.
     """
     z_slice = slice(*crop_z)
     if rectangle is None:
         return z_slice, slice(0, shape[1]), slice(0, shape[2])
+
+    if (rectangle[2, 0] - rectangle[0, 0]) > 0:
+        raise ValueError("Invalid crop, the rextangle must be drawn in the XY plane.")
 
     x_start = max(rectangle[0, 1], 0)
     x_end = min(rectangle[2, 1], shape[1])
@@ -50,6 +53,23 @@ def _compute_slices(rectangle, crop_z: tuple[int, int], shape):
     y_end = min(rectangle[2, 2], shape[2])
     y_slice = slice(y_start, y_end)
     return z_slice, x_slice, y_slice
+
+
+def _compute_slices_2d(rectangle, shape):
+    """
+    Compute slices for cropping based on a given rectangle.
+    """
+    if rectangle is None:
+        return slice(0, shape[0]), slice(0, shape[1])
+
+    x_start = max(rectangle[0, 0], 0)
+    x_end = min(rectangle[2, 0], shape[0])
+    x_slice = slice(x_start, x_end)
+
+    y_start = max(rectangle[0, 1], 0)
+    y_end = min(rectangle[2, 1], shape[1])
+    y_slice = slice(y_start, y_end)
+    return x_slice, y_slice
 
 
 def _cropping(data, crop_slices):
@@ -75,7 +95,10 @@ def image_cropping_task(image: PlantSegImage, rectangle=None, crop_z: tuple[int,
     data = image.get_data()
 
     # Compute crop slices
-    crop_slices = _compute_slices(rectangle, crop_z, data.shape)
+    if image.dimensionality == ImageDimensionality.TWO:
+        crop_slices = _compute_slices_2d(rectangle, data.shape)
+    else:
+        crop_slices = _compute_slices_3d(rectangle, crop_z, data.shape)
 
     # Perform cropping on the data
     cropped_data = _cropping(data, crop_slices)
