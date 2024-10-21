@@ -30,18 +30,8 @@ def import_image_task(
         input_path (Path): path to the image file
         semantic_type (str): semantic type of the image (raw, segmentation, prediction)
         stack_layout (str): stack layout of the image (3D, 2D, 2D_time)
-        image_name (str | Noinput_path = inputs[input_schema["name"]]
-    input_paths = parse_import_image_task(input_path)
-    list_inputs.extend(input_paths)ne): name of the image (if None, the file name will be used)
-        key (str | None):"export_directory": RunTimeInput(
-            allowed_types=['str'],
-            description="Output directory path where the image will be saved",
-            headless_default=None,
-            user_input_required=True,
-        ),
-        "name_pattern": RunTimeInput(
-            allowed_types=['str'], description="Output file name", headless_default=None, user_input_required=False
-        ), key for the image (used only for h5 and zarr formats)
+        image_name (str): name of the image, if None the name will be the same as the file name
+        key (str | None): key for the image (used only for h5 and zarr formats)
         m_slicing (str | None): m_slicing of the image (None, time, z, y, x)
     """
 
