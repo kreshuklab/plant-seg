@@ -41,19 +41,19 @@ PlantSeg can be installed directly by executing in the terminal (or PowerShell o
     * NVIDIA GPU version, CUDA=12.x
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 plant-seg=1.8.1 --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 plant-seg=1.8.1 biomagecore.io --no-channel-priority
         ```
 
     * NVIDIA GPU version, CUDA=11.x
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 plant-seg=1.8.1 --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 plant-seg=1.8.1 biomagecore.io --no-channel-priority
         ```
 
     * CPU version
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly plant-seg=1.8.1 --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly plant-seg=1.8.1 biomagecore.io --no-channel-priority
         ```
 
 === "Windows"
@@ -61,19 +61,19 @@ PlantSeg can be installed directly by executing in the terminal (or PowerShell o
     * NVIDIA GPU version, CUDA=12.x
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 nifty=1.2.1=*_4 plant-seg=1.8.1 --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 nifty=1.2.1=*_4 plant-seg=1.8.1 biomagecore.io --no-channel-priority
         ```
 
     * NVIDIA GPU version, CUDA=11.x
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 nifty=1.2.1=*_4 plant-seg=1.8.1 --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 nifty=1.2.1=*_4 plant-seg=1.8.1 biomagecore.io --no-channel-priority
         ```
 
     * CPU version
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly nifty=1.2.1=*_4 plant-seg=1.8.1 --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly nifty=1.2.1=*_4 plant-seg=1.8.1 biomagecore.io --no-channel-priority
         ```
 
 === "macOS"
@@ -81,7 +81,7 @@ PlantSeg can be installed directly by executing in the terminal (or PowerShell o
     * Apple silicon version
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c conda-forge python=3.11 pytorch::pytorch plant-seg=1.8.1 --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c conda-forge python=3.11 pytorch::pytorch plant-seg=1.8.1 biomagecore.io --no-channel-priority
         ```
 
 If you used older versions of PlantSeg, please delete the old config files in `~/.plantseg_models/configs/` after installing new PlantSeg.
