@@ -53,7 +53,7 @@ def test_create_workflow(tmp_path):
 
     config['inputs']['input_path']['value'] = [str(path_tiff_1), str(path_tiff_2)]
     config['inputs']['export_directory']['value'] = str(tmp_path / 'output')
-    config['inputs']['name_pattern']['value'] = '{original_name}_export'
+    config['inputs']['name_pattern']['value'] = '{file_name}_export'
 
     with open(tmp_path / 'workflow.yaml', 'w') as file:
         yaml.dump(config, file)

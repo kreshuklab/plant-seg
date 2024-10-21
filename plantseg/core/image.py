@@ -1,15 +1,17 @@
 import logging
 from enum import Enum
 from pathlib import Path
+from typing import Literal
 from uuid import UUID, uuid4
 
+import h5py
 import numpy as np
 from napari.layers import Image, Labels
 from napari.types import LayerDataTuple
 from pydantic import BaseModel
 
 import plantseg.functionals.dataprocessing as dp
-from plantseg.io.h5 import create_h5
+from plantseg.io.h5 import H5_EXTENSIONS, create_h5
 from plantseg.io.io import smart_load_with_vs
 from plantseg.io.tiff import create_tiff
 from plantseg.io.voxelsize import VoxelSize
@@ -110,7 +112,7 @@ class ImageProperties(BaseModel):
     voxel_size: VoxelSize
     image_layout: ImageLayout
     original_voxel_size: VoxelSize
-    original_name: str | None = None
+    source_file_name: str | None = None
 
     @property
     def dimensionality(self) -> ImageDimensionality:
@@ -264,7 +266,7 @@ class PlantSegImage:
             raise ValueError("Voxel size not found in metadata")
         new_voxel_size = VoxelSize(**metadata["voxel_size"])
 
-        original_name = metadata.get("original_name", None)
+        source_file_name = metadata.get("source_file_name", None)
 
         # Loading from napari layer, the id needs to be present in the metadata
         # If not present, the layer is corrupted
@@ -279,13 +281,13 @@ class PlantSegImage:
             voxel_size=new_voxel_size,
             image_layout=image_layout,
             original_voxel_size=original_voxel_size,
-            original_name=original_name,
+            source_file_name=source_file_name,
         )
 
         if image_type != properties.image_type:
             raise ValueError(f"Image type {image_type} does not match semantic type {properties.semantic_type}")
 
-        ps_image = cls(layer.data, properties)
+        ps_image = cls(layer.data, properties)  # type: ignore
         ps_image._id = id
         return ps_image
 
@@ -317,7 +319,57 @@ class PlantSegImage:
 
         return LayerDataTuple(layer_data_tuple)
 
-    def _check_ndim(self, data: np.ndarray) -> None:
+    def to_h5(self, path: Path | str, key: str | None, mode: Literal["a", "w", "w-"] = "a") -> None:
+        """Save the image with all metadata to an h5 file.
+
+        Args:
+            path (Path): Path to the h5 file
+            key (str): Key to save the data in the h5 file
+            mode (str): Mode to open the h5 file ['a', 'w', 'w-']
+        """
+
+        if isinstance(path, str):
+            path = Path(path)
+
+        if path.suffix not in H5_EXTENSIONS:
+            raise ValueError(f"File format {path.suffix} not supported, should be one of {H5_EXTENSIONS}")
+
+        key = key if key is not None else self.name
+
+        data = self._data
+        voxel_size = self.voxel_size
+        metadata = self.properties.model_dump_json()
+
+        with h5py.File(path, mode=mode) as f:
+            f.create_dataset(key, data=data)
+            if voxel_size.voxels_size is not None:
+                f[key].attrs["element_size_um"] = voxel_size.voxels_size
+            f[key].attrs["plantseg_image_metadata_json"] = metadata
+
+    @classmethod
+    def from_h5(cls, path: Path | str, key: str) -> "PlantSegImage":
+        """Build an instance of PlantSegImage from an h5 file."""
+
+        if isinstance(path, str):
+            path = Path(path)
+
+        if not path.exists():
+            raise ValueError(f"File {path} not found")
+
+        with h5py.File(path, "r") as f:
+            if key not in f:
+                raise ValueError(f"Key {key} not found in the h5 file")
+
+            data: np.ndarray = f[key][...]  # type: ignore
+            metadata = f[key].attrs.get("plantseg_image_metadata_json", None)
+
+        if metadata is None:
+            raise ValueError("PlantSeg metadata not found in the h5 file")
+
+        properties = ImageProperties.model_validate_json(metadata)
+        return cls(data, properties)
+
+    def _check_ndim(self, data: np.ndarray) -> np.ndarray:
         if self.image_layout in (ImageLayout.CYX, ImageLayout.ZYX):
             if data.ndim != 3:
                 raise ValueError(
@@ -341,7 +393,7 @@ class PlantSegImage:
 
         return data
 
-    def _check_shape(self, data: np.ndarray, properties: ImageProperties) -> None:
+    def _check_shape(self, data: np.ndarray, properties: ImageProperties) -> tuple[np.ndarray, ImageProperties]:
         if self.image_layout == ImageLayout.ZYX:
             if data.shape[0] == 1:
                 logger.warning("Image layout is ZYX but data has only one z slice, casting to YX")
@@ -362,7 +414,7 @@ class PlantSegImage:
             elif data.shape[0] > 1 and data.shape[1] == 1:
                 logger.warning("Image layout is CZYX but data has only one z slice, casting to CYX")
                 properties.image_layout = ImageLayout.CYX
-                return data[:, 0], properties.image_layout
+                return data[:, 0], properties
 
         elif self.image_layout == ImageLayout.ZCYX:
             raise ValueError(f"Image layout {self.image_layout} not supported, should have been converted to CZYX")
@@ -386,12 +438,14 @@ class PlantSegImage:
         if channel is None:
             data = self._data
             if normalize_01:
+                assert self.channel_axis is not None
                 data = dp.normalize_01_channel_wise(data, self.channel_axis)
             return data
 
         if channel < 0:
             raise ValueError(f"Channel should be a positive integer, but got {channel}")
 
+        assert self.channel_axis is not None
         if channel > self._data.shape[self.channel_axis]:
             raise ValueError(
                 f"Channel {channel} is out of bounds, the image has {self._data.shape[self.channel_axis]} channels"
@@ -463,8 +517,8 @@ class PlantSegImage:
         return self._properties.original_voxel_size
 
     @property
-    def original_name(self) -> str | None:
-        return self._properties.original_name
+    def source_file_name(self) -> str | None:
+        return self._properties.source_file_name
 
     @property
     def name(self) -> str:
@@ -553,7 +607,7 @@ def import_image(
         voxel_size=voxel_size,
         image_layout=image_layout,
         original_voxel_size=voxel_size,
-        original_name=image_name,
+        source_file_name=path.stem,
     )
 
     return PlantSegImage(data=data, properties=image_properties)
@@ -565,8 +619,8 @@ def _image_postprocessing(
     if scale_to_origin and image.requires_scaling:
         data = dp.scale_image_to_voxelsize(
             image.get_data(),
-            input_voxel_size=image.voxel_size,
-            output_voxel_size=image.original_voxel_size,
+            input_voxel_size=image.voxel_size.as_tuple(),
+            output_voxel_size=image.original_voxel_size.as_tuple(),
             order=image.interpolation_order(),
         )
         new_voxel_size = image.original_voxel_size
@@ -608,7 +662,7 @@ def save_image(
     Args:
         image (PlantSegImage): input image to be saved to disk
         export_directory (Path): output directory path where the image will be saved
-        name_pattern (str): output file name pattern, can contain the {image_name} or {original_name} tokens
+        name_pattern (str): output file name pattern, can contain the {image_name} or {file_name} tokens
             to be replaced in the final file name.
         key (str | None): key for the image (used only for h5 and zarr formats).
         scale_to_origin (bool): scale the voxel size to the original one
@@ -623,8 +677,8 @@ def save_image(
 
     name_pattern = name_pattern.replace("{image_name}", image.name)
 
-    if image.original_name is not None:
-        name_pattern = name_pattern.replace("{original_name}", image.original_name)
+    if image.source_file_name is not None:
+        name_pattern = name_pattern.replace("{file_name}", image.source_file_name)
 
     if export_format == "tiff":
         file_path_name = directory / f"{name_pattern}.tiff"

@@ -26,7 +26,7 @@ def test_image_io_round_trip(tmp_path, shape, layout, export_format):
         semantic_type=SemanticType.RAW,
         image_layout=layout,
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit='um'),
-        original_name='test',
+        source_file_name='test',
     )
     image = PlantSegImage(data=mock_data, properties=property)
 

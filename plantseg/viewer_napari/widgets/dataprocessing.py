@@ -3,7 +3,7 @@ from enum import Enum
 from magicgui import magicgui
 from napari.layers import Image, Labels, Layer, Shapes
 
-from plantseg.core.image import PlantSegImage
+from plantseg.core.image import ImageDimensionality, PlantSegImage
 from plantseg.core.zoo import model_zoo
 from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks.dataprocessing_tasks import (
@@ -133,13 +133,21 @@ def _on_cropping_image_changed(image: Layer):
         widget_cropping.crop_z.hide()
         return None
 
-    image_shape_z = int(image.data.shape[0])
+    assert isinstance(
+        image, (Image, Labels)
+    ), f"{type(image)} cannot be cropped, please use Image layers or Labels layers"
+    ps_image = PlantSegImage.from_napari_layer(image)
 
-    if image_shape_z == 1:
+    if ps_image.dimensionality == ImageDimensionality.TWO:
         widget_cropping.crop_z.hide()
         return None
 
+    if ps_image.is_multichannel:
+        raise ValueError("Multichannel images are not supported for cropping.")
+
     widget_cropping.crop_z.show()
+    image_shape_z = ps_image.shape[0]
+
     widget_cropping.crop_z.step = 1
 
     if widget_cropping.crop_z.value[1] > image_shape_z:
