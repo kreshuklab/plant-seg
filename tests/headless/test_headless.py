@@ -55,16 +55,14 @@ def test_create_workflow(tmp_path):
         {
             "input_path": str(path_tiff_1),
             "export_directory": str(tmp_path / 'output'),
-            "name_pattern": "{original_name}_export",
+            "name_pattern": "{file_name}_export",
         },
         {
             "input_path": str(path_tiff_2),
             "export_directory": str(tmp_path / 'output'),
-            "name_pattern": "{original_name}_export",
+            "name_pattern": "{file_name}_export",
         },
     ]
-
-    config['inputs'] = job_list
 
     with open(tmp_path / 'workflow.yaml', 'w') as file:
         yaml.dump(config, file)

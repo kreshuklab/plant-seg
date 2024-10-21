@@ -89,6 +89,13 @@ model_filters = Container(
         'choices': UNetPredictionMode.to_choices(),
     },
     image={'label': 'Image', 'tooltip': 'Raw image to be processed with a neural network.'},
+    plantseg_filter={
+        'label': 'Model filter',
+        'tooltip': 'Choose to only show models tagged with `plantseg`.',
+        'widget_type': 'RadioButtons',
+        'orientation': 'horizontal',
+        'choices': BIOIMAGEIO_FILTER,
+    },
     model_name={
         'label': 'PlantSeg model',
         'tooltip': f'Select a pretrained PlantSeg model. '
@@ -100,15 +107,8 @@ model_filters = Container(
         'tooltip': 'Select a model from BioImage.IO model zoo.',
         'choices': model_zoo.get_bioimageio_zoo_plantseg_model_names(),
     },
-    plantseg_filter={
-        'label': 'Model filter',
-        'tooltip': 'Choose to only show models tagged with `plantseg`.',
-        'widget_type': 'RadioButtons',
-        'orientation': 'horizontal',
-        'choices': BIOIMAGEIO_FILTER,
-    },
     advanced={
-        'label': 'Show Advanced Parameters',
+        'label': 'Show advanced parameters',
         'tooltip': 'Change the patch shape, halo shape, and batch size.',
     },
     patch_size={'label': 'Patch size', 'tooltip': 'Patch size used to process the data.'},
@@ -128,8 +128,8 @@ model_filters = Container(
 )
 def widget_unet_prediction(
     image: Image,
-    mode: UNetPredictionMode = UNetPredictionMode.PLANTSEG,
     plantseg_filter: bool = True,
+    mode: UNetPredictionMode = UNetPredictionMode.PLANTSEG,
     model_name: Optional[str] = None,
     model_id: Optional[str] = None,
     device: str = ALL_DEVICES[0],
@@ -168,7 +168,7 @@ def widget_unet_prediction(
     )
 
 
-widget_unet_prediction.insert(5, model_filters)
+widget_unet_prediction.insert(3, model_filters)
 
 advanced_unet_prediction_widgets = [
     widget_unet_prediction.patch_size,
@@ -179,12 +179,15 @@ advanced_unet_prediction_widgets = [
 
 
 def update_halo():
+    if widget_unet_prediction.model_name.value is None and widget_unet_prediction.model_id.value is None:
+        return
     if widget_unet_prediction.advanced.value:
         log(
             'Refreshing halo for the selected model; this might take a while...',
             thread='UNet prediction',
             level='info',
         )
+
         if widget_unet_prediction.mode.value is UNetPredictionMode.PLANTSEG:
             widget_unet_prediction.patch_halo.value = model_zoo.compute_3D_halo_for_zoo_models(
                 widget_unet_prediction.model_name.value
@@ -290,9 +293,19 @@ def _on_model_name_changed(model_name: str):
     description = model_zoo.get_model_description(model_name)
     if description is None:
         description = 'No description available for this model.'
+        widget_unet_prediction.advanced.hide()
+        widget_unet_prediction.device.hide()
+    else:
+        widget_unet_prediction.advanced.show()
+        widget_unet_prediction.device.show()
     widget_unet_prediction.model_name.tooltip = f'Select a pretrained model. Current model description: {description}'
+
     if widget_unet_prediction.advanced.value:
         update_halo()
+
+
+widget_unet_prediction.advanced.hide()
+widget_unet_prediction.device.hide()
 
 
 @widget_unet_prediction.model_id.changed.connect
@@ -306,13 +319,22 @@ def _on_model_id_changed(model_id: str):
 # Add Custom Model Widget                                                                                              #
 #                                                                                                                      #
 ########################################################################################################################
+@magicgui(call_button='Add Custom Model')
+def widget_add_custom_model_toggl() -> None:
+    widget_unet_prediction.hide()
+    widget_add_custom_model_toggl.hide()
+    widget_add_custom_model.show()
 
 
 @magicgui(
     call_button='Add Custom Model',
     new_model_name={'label': 'New model name'},
     model_location={'label': 'Model location', 'mode': 'd'},
-    resolution={'label': 'Resolution', 'options': {'step': 0.00001}},
+    resolution={
+        'label': 'Voxel Size',
+        'options': {'step': 0.00001},
+        'tooltip': 'Resolution of the dataset used to model in micrometers per pixel.',
+    },
     description={'label': 'Description'},
     dimensionality={
         'label': 'Dimensionality',
@@ -374,8 +396,12 @@ def widget_add_custom_model(
             level='error',
             thread='Add Custom Model',
         )
+    widget_add_custom_model.hide()
+    widget_unet_prediction.show()
+    widget_add_custom_model_toggl.show()
 
 
+widget_add_custom_model.hide()
 widget_add_custom_model.custom_modality.hide()
 widget_add_custom_model.custom_output_type.hide()
 
