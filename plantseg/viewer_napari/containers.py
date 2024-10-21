@@ -2,6 +2,7 @@ from magicgui.widgets import Container
 
 from plantseg.viewer_napari.widgets import (
     widget_add_custom_model,
+    widget_add_custom_model_toggl,
     widget_agglomeration,
     widget_clean_scribble,
     widget_cropping,
@@ -21,6 +22,7 @@ from plantseg.viewer_napari.widgets import (
     widget_rescaling,
     widget_save_state,
     widget_set_biggest_instance_to_zero,
+    widget_set_voxel_size,
     widget_show_info,
     widget_split_and_merge_from_scribbles,
     widget_undo,
@@ -37,6 +39,7 @@ def get_data_io_tab():
             widget_open_file,
             widget_export_image,
             widget_export_headless_workflow,
+            widget_set_voxel_size,
             widget_show_info,
             widget_infos,
         ],
@@ -62,6 +65,8 @@ def get_segmentation_tab():
     container = Container(
         widgets=[
             widget_unet_prediction,
+            widget_add_custom_model,
+            widget_add_custom_model_toggl,
             widget_dt_ws,
             widget_agglomeration,
         ],
@@ -77,16 +82,6 @@ def get_postprocessing_tab():
             widget_set_biggest_instance_to_zero,
             widget_remove_false_positives_by_foreground,
             widget_fix_over_under_segmentation_from_nuclei,
-        ],
-        labels=False,
-    )
-    return container
-
-
-def get_extras_tab():
-    container = Container(
-        widgets=[
-            widget_add_custom_model,
         ],
         labels=False,
     )

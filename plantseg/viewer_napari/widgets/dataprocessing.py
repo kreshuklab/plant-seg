@@ -82,7 +82,7 @@ def widget_gaussian_smoothing(image: Image, sigma: float = 1.0, update_other_wid
         "tooltip": "This must be a shape layer with a rectangle XY overlaying the area to crop.",
     },
     crop_z={
-        "label": "Z slices [Start, End)",
+        "label": "Z slices [start, end)",
         "tooltip": "Number of z slices to take next to the current selection.\nSTART is included, END is not.",
         "widget_type": "RangeSlider",
         "max": 100,
@@ -421,7 +421,7 @@ def _on_rescale_order_changed(order):
 
 
 @magicgui(
-    call_button="Remove False Instances by Foreground",
+    call_button="Remove Objects with Low Foreground Probability",
     segmentation={
         "label": "Segmentation",
         "tooltip": "Segmentation layer to remove false positives.",
@@ -469,16 +469,18 @@ def widget_remove_false_positives_by_foreground(
     call_button='Split/Merge Instances by Nuclei',
     segmentation_cells={'label': 'Cell instances'},
     segmentation_nuclei={'label': 'Nuclear instances'},
-    boundary_pmaps={'label': 'Boundary Pmap/Image'},
+    boundary_pmaps={'label': 'Boundary image'},
     threshold={
-        'label': 'Threshold',
+        'label': 'Boundary threshold',
+        'tooltip': 'Threshold range for merging (first value) and splitting (second value) cells. ',
         'widget_type': 'FloatRangeSlider',
         'max': 100,
         'min': 0,
         'step': 0.1,
     },
     quantile={
-        'label': 'Nuclei Quantile',
+        'label': 'Nuclei size filter',
+        'tooltip': 'Quantile range to filter nuclei size, ignoring outliers.',
         'widget_type': 'FloatRangeSlider',
         'max': 100,
         'min': 0,

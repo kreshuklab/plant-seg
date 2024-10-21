@@ -13,9 +13,14 @@ from plantseg.viewer_napari.widgets.io import (
     widget_export_image,
     widget_infos,
     widget_open_file,
+    widget_set_voxel_size,
     widget_show_info,
 )
-from plantseg.viewer_napari.widgets.prediction import widget_add_custom_model, widget_unet_prediction
+from plantseg.viewer_napari.widgets.prediction import (
+    widget_add_custom_model,
+    widget_add_custom_model_toggl,
+    widget_unet_prediction,
+)
 from plantseg.viewer_napari.widgets.proofreading import (
     widget_add_label_to_corrected,
     widget_clean_scribble,
@@ -41,6 +46,7 @@ __all__ = [
     "widget_export_headless_workflow",
     "widget_show_info",
     "widget_infos",
+    "widget_set_voxel_size",
     # Main - Prediction
     "widget_unet_prediction",
     # Main - Segmentation
@@ -48,6 +54,7 @@ __all__ = [
     "widget_agglomeration",
     # Extra
     "widget_add_custom_model",
+    "widget_add_custom_model_toggl",
     "widget_relabel",
     "widget_set_biggest_instance_to_zero",
     # Proofreading

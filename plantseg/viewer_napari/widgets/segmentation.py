@@ -1,6 +1,5 @@
 from magicgui import magicgui
 from napari.layers import Image, Labels, Layer
-from napari.types import LayerDataTuple
 
 from plantseg.core.image import ImageLayout, PlantSegImage
 from plantseg.tasks.segmentation_tasks import clustering_segmentation_task, dt_watershed_task, lmc_segmentation_task
@@ -78,6 +77,7 @@ def widget_agglomeration(
     widgets_to_update = [widget_proofreading_initialisation.segmentation]
 
     if mode == 'lmc':
+        assert isinstance(nuclei, (Image, Labels)), "Nuclei must be an Image or Labels layer."
         ps_nuclei = PlantSegImage.from_napari_layer(nuclei)
         return schedule_task(
             lmc_segmentation_task,
@@ -133,7 +133,7 @@ def _on_mode_changed(mode: str):
         'choices': STACKED,
     },
     threshold={
-        'label': 'Threshold',
+        'label': 'Boundary threshold',
         'tooltip': 'A low value will increase over-segmentation tendency '
         'and a large value increase under-segmentation tendency.',
         'widget_type': 'FloatSlider',
@@ -146,7 +146,7 @@ def _on_mode_changed(mode: str):
     },
     # Advanced parameters
     show_advanced={
-        'label': 'Show Advanced Parameters',
+        'label': 'Show advanced parameters',
         'tooltip': 'Show advanced parameters for the Watershed algorithm.',
         'widget_type': 'CheckBox',
     },

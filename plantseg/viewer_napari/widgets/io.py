@@ -10,6 +10,7 @@ from plantseg.core.image import ImageLayout, ImageType, PlantSegImage, SemanticT
 from plantseg.io import H5_EXTENSIONS, ZARR_EXTENSIONS
 from plantseg.io.h5 import list_h5_keys
 from plantseg.io.zarr import list_zarr_keys
+from plantseg.tasks.dataprocessing_tasks import set_voxel_size_task
 from plantseg.tasks.io_tasks import export_image_task, import_image_task
 from plantseg.tasks.workflow_handler import workflow_handler
 from plantseg.viewer_napari import log
@@ -104,7 +105,7 @@ def widget_open_file(
             "semantic_type": semantic_type,
             "stack_layout": stack_layout,
         },
-        widgets_to_update=[],
+        widgets_to_update=[widget_set_voxel_size.layer],
     )
 
 
@@ -354,6 +355,63 @@ def _on_done_export_image(*args):
 @widget_export_headless_workflow.called.connect
 def _on_done_export_workflow(*args):
     widget_export_headless_workflow.hide()
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Set Voxel Size Widget                                                                                                #
+#                                                                                                                      #
+########################################################################################################################
+@magicgui(
+    call_button="Set Voxel Size",
+    layer={
+        "label": "Select layer",
+        "tooltip": "Select the image or label to set the voxel size.",
+    },
+    voxel_size={
+        "label": "Voxel size",
+        "tooltip": "Set the voxel size in micrometers.",
+    },
+)
+def widget_set_voxel_size(
+    layer: Layer | None = None,
+    voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
+) -> None:
+    """Set the voxel size of the selected layer."""
+    if layer is None:
+        raise ValueError("No layer selected.")
+
+    assert isinstance(layer, (Image, Labels)), "Only Image and Labels layers are supported for PlantSeg voxel size."
+    ps_image = PlantSegImage.from_napari_layer(layer)
+    return schedule_task(
+        set_voxel_size_task,
+        task_kwargs={
+            "image": ps_image,
+            "voxel_size": voxel_size,
+        },
+        widgets_to_update=[],
+    )
+
+
+widget_set_voxel_size.voxel_size.hide()
+
+
+@widget_set_voxel_size.layer.changed.connect
+def _on_set_voxel_size_layer_changed(layer: Layer):
+    if layer is None:
+        widget_set_voxel_size.voxel_size.hide()
+        return None
+
+    if isinstance(layer, Labels) or isinstance(layer, Image):
+        widget_set_voxel_size.voxel_size.show()
+        return None
+
+    raise ValueError("Only Image and Labels layers are supported for PlantSeg voxel size.")
+
+
+@widget_set_voxel_size.called.connect
+def _on_set_voxel_size_layer_done_set_voxel_size(*args):
+    widget_set_voxel_size.voxel_size.hide()
 
 
 ########################################################################################################################
