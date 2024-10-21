@@ -47,9 +47,9 @@ def launch_napari():
 
 def launch_workflow_headless(path: Path):
     """Run a workflow in headless mode."""
-    from plantseg.headless.headless import run_headless_workflow_from_path
+    from plantseg.headless.headless import run_headless_workflow
 
-    run_headless_workflow_from_path(path)
+    run_headless_workflow(path=path)
 
 
 def launch_training(path: Path):

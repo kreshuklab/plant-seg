@@ -104,7 +104,7 @@ def collect_jobs_list(inputs: dict | list[dict], inputs_schema: dict[str, RunTim
     return all_jobs
 
 
-def run_headles_workflow_from_config(config: dict, path: str | Path = None):
+def run_headles_workflow_from_config(config: dict, path: str | Path):
     config = validate_config(config)
 
     inputs = config["inputs"]
