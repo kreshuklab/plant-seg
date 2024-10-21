@@ -64,6 +64,8 @@ def test_create_workflow(tmp_path):
         },
     ]
 
+    config['inputs'] = job_list
+
     with open(tmp_path / 'workflow.yaml', 'w') as file:
         yaml.dump(config, file)
 

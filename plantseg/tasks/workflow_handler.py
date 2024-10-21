@@ -78,7 +78,7 @@ class Task(BaseModel):
 
 class DAG(BaseModel):
     infos: Infos = Field(default_factory=Infos)
-    inputs: dict[str, Any] | list[dict[str, Any]] = Field(default_factory=dict)
+    inputs: list[dict[str, Any]] = Field(default_factory=lambda: [{}])
     list_tasks: list[Task] = Field(default_factory=list)
 
     """
@@ -86,7 +86,7 @@ class DAG(BaseModel):
 
     Attributes:
         infos (Infos): A dictionary with the information of the workflow.
-        inputs (dict[str, Any]): A dictionary of the inputs of the workflow. For example path to the images and other runtime parameters.
+        inputs (list[dict[str, Any]): A dictionary of the inputs of the workflow. For example path to the images and other runtime parameters.
         list_tasks (list[Task]): A list of the tasks in the workflow.
 
     """
@@ -136,9 +136,9 @@ def prune_dag(dag: DAG) -> DAG:
         if task.id in reachable:
             new_dag.list_tasks.append(task)
 
-    for input_key, text in dag.inputs.items():
+    for input_key, text in dag.inputs[0].items():
         if input_key in reachable_inputs:
-            new_dag.inputs[input_key] = text
+            new_dag.inputs[0][input_key] = text
             new_dag.infos.inputs_schema[input_key] = dag.infos.inputs_schema[input_key]
 
     return new_dag
@@ -242,7 +242,7 @@ class WorkflowHandler:
         value_schema.task = func_name
         self._dag.infos.inputs_schema[unique_name] = value_schema
 
-        self._dag.inputs[unique_name] = value
+        self._dag.inputs[0][unique_name] = value
         return unique_name
 
     def clean_dag(self):

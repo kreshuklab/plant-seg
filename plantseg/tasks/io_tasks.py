@@ -13,10 +13,6 @@ from plantseg.tasks.workflow_handler import RunTimeInputSchema
             required=True,
             is_input_file=True,
         ),
-        "image_name": RunTimeInputSchema(
-            description="Name of the image (if None, the file name will be used)",
-            required=False,
-        ),
     },
 )
 def import_image_task(
@@ -68,7 +64,10 @@ def import_image_task(
         "export_directory": RunTimeInputSchema(
             description="Output directory path where the image will be saved", required=True
         ),
-        "name_pattern": RunTimeInputSchema(description="Output file name", required=False),
+        "name_pattern": RunTimeInputSchema(
+            description="Output file name pattern. Can contain the special {image_name} or {file_name} tokens ",
+            required=False,
+        ),
     },
 )
 def export_image_task(
