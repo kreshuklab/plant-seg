@@ -73,7 +73,7 @@ def import_image_task(
 def export_image_task(
     image: PlantSegImage,
     export_directory: Path,
-    name_pattern: str = "{original_name}_export",
+    name_pattern: str = "{file_name}_export",
     key: str | None = None,
     scale_to_origin: bool = True,
     export_format: str = "tiff",
@@ -85,7 +85,7 @@ def export_image_task(
     Args:
         image (PlantSegImage): input image to be saved to disk
         export_directory (Path): output directory path where the image will be saved
-        name_pattern (str): output file name pattern, can contain the {image_name} or {original_name} tokens
+        name_pattern (str): output file name pattern, can contain the {image_name} or {file_name} tokens
             to be replaced in the final file name.
         key (str | None): key for the image (used only for h5 and zarr formats).
         scale_to_origin (bool): scale the voxel size to the original one

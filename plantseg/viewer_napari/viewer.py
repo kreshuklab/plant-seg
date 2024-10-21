@@ -3,7 +3,6 @@ import napari
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.containers import (
     get_data_io_tab,
-    get_extras_tab,
     get_postprocessing_tab,
     get_preprocessing_tab,
     get_proofreading_tab,
@@ -14,16 +13,15 @@ from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybi
 
 def run_viewer():
     viewer = napari.Viewer(title='PlantSeg v2')
-    setup_proofreading_keybindings(viewer)
+    setup_proofreading_keybindings(viewer=viewer)
 
     # Create and add tabs
     for _containers, name in [
         (get_data_io_tab(), 'Input/Output'),
-        (get_preprocessing_tab(), 'Image Processing'),
+        (get_preprocessing_tab(), 'Preprocessing'),
         (get_segmentation_tab(), 'Segmentation'),
-        (get_postprocessing_tab(), 'Label Processing'),
+        (get_postprocessing_tab(), 'Postprocessing'),
         (get_proofreading_tab(), 'Proofreading'),
-        (get_extras_tab(), 'Models'),
     ]:
         viewer.window.add_dock_widget(_containers, name=name, tabify=True)
 

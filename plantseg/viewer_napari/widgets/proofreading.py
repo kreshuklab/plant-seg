@@ -1,19 +1,22 @@
 import os
-import pickle
 from collections import deque
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 
+import h5py
 import napari
 import numpy as np
 from magicgui import magicgui
 from napari.layers import Image, Labels
 from napari.qt.threading import thread_worker
 from napari.utils import CyclicLabelColormap
+from pydantic import BaseModel, Field
 
 from plantseg.core.image import ImageProperties, PlantSegImage, SemanticType
 from plantseg.functionals.proofreading.split_merge_tools import split_merge_from_seeds
 from plantseg.functionals.proofreading.utils import get_bboxes
+from plantseg.io import H5_EXTENSIONS
 from plantseg.viewer_napari import log
 
 DEFAULT_KEY_BINDING_PROOFREAD = 'n'
@@ -21,6 +24,12 @@ DEFAULT_KEY_BINDING_CLEAN = 'j'
 SCRIBBLES_LAYER_NAME = 'Scribbles'
 CORRECTED_CELLS_LAYER_NAME = 'Correct Labels'
 MAX_UNDO_ACTIONS = 10
+
+correct_cells_cmap = CyclicLabelColormap(
+    colors=[(0.76388469, 0.02003777, 0.61156412, 1.0), (0.76388469, 0.02003777, 0.61156412, 1.0)],
+    name=CORRECTED_CELLS_LAYER_NAME,
+)
+
 try:
     MAX_UNDO_ACTIONS = int(os.getenv('PLANTSEG_MAX_UNDO_ACTIONS', str(MAX_UNDO_ACTIONS)))
 except ValueError:
@@ -32,6 +41,134 @@ def copy_if_not_none(obj):
     return None if obj is None else obj.copy()
 
 
+def get_current_viewer_wrapper() -> napari.Viewer:
+    """Returns the current Napari viewer instance."""
+    viewer = napari.current_viewer()
+    if viewer is None:
+        log('No viewer found. Please open a viewer and try again.', thread='Get Current Viewer', level='error')
+    return viewer
+
+
+def update_layer(data: np.ndarray, layer_name: str, scale: tuple[float, ...], **kwargs) -> None:
+    """Updates a layer in the viewer with new data.
+
+    Args:
+        data (np.ndarray): The new data to update the layer with.
+        layer_name (str): The name of the layer to update.
+    """
+    viewer = get_current_viewer_wrapper()
+    if layer_name in viewer.layers:
+        viewer.layers[layer_name].data = data
+        viewer.layers[layer_name].scale = scale  # type: ignore
+        viewer.layers[layer_name].refresh()
+
+    else:
+        viewer.add_labels(data, name=layer_name, scale=scale, **kwargs)
+
+
+def update_corrected_cells_mask_layer(data: np.ndarray, scale: tuple[float, ...]) -> None:
+    """Updates the corrected cells mask layer in the viewer with new data.
+
+    Args:
+        data (np.ndarray): The new data to update the layer with.
+    """
+    update_layer(data, CORRECTED_CELLS_LAYER_NAME, scale=scale, colormap=correct_cells_cmap, opacity=1)
+
+
+def update_scribbles_layer(data: np.ndarray, scale: tuple[float, ...]) -> None:
+    """Updates the scribbles layer in the viewer with new data.
+
+    Args:
+        data (np.ndarray): The new data to update the layer with.
+    """
+    update_layer(data, SCRIBBLES_LAYER_NAME, scale=scale)
+
+
+def update_region(data: np.ndarray, layer_name: str, region_slice: tuple[slice, ...], scale: tuple[float, ...]) -> None:
+    """Updates a region of a layer in the viewer with new data.
+
+    Args:
+        data (np.ndarray): The new data to update the layer with.
+        layer_name (str): The name of the layer to update.
+        region_slice (tuple[slice, ...]): The region slice to update.
+    """
+    viewer = get_current_viewer_wrapper()
+    if layer_name in viewer.layers:
+        viewer.layers[layer_name].data[region_slice] = data
+        viewer.layers[layer_name].scale = scale  # type: ignore
+        viewer.layers[layer_name].refresh()
+    else:
+        raise ValueError(f'Layer {layer_name} not found in viewer')
+
+
+def get_layer_data(layer_name: str) -> np.ndarray:
+    """Returns the data of a layer in the viewer.
+
+    Args:
+        layer_name (str): The name of the layer to get the data from.
+
+    Returns:
+        np.ndarray: The data of the layer.
+    """
+    viewer = get_current_viewer_wrapper()
+    if layer_name not in viewer.layers:
+        log(f'Layer {layer_name} not found in viewer', thread='Get Layer Data', level='error')
+        raise ValueError(f'Layer {layer_name} not found in viewer')
+    return viewer.layers[layer_name].data
+
+
+def get_layer_region_data(layer_name: str, region_slice: tuple[slice, ...]) -> np.ndarray:
+    """Returns a region of the data of a layer in the viewer.
+
+    Args:
+        layer_name (str): The name of the layer to get the data from.
+        region_slice (tuple[slice, ...]): The region slice to get the data from.
+
+    Returns:
+        np.ndarray: The data of the region.
+    """
+    viewer = get_current_viewer_wrapper()
+    if layer_name not in viewer.layers:
+        log(f'Layer {layer_name} not found in viewer', thread='Get Layer Region Data', level='error')
+        raise ValueError(f'Layer {layer_name} not found in viewer')
+    return viewer.layers[layer_name].data[region_slice]
+
+
+def preserve_labels(layer_name: str) -> None:
+    """Preserves labels on a layer in the viewer.
+
+    Args:
+        layer_name (str): The name of the layer to preserve.
+    """
+    viewer = get_current_viewer_wrapper()
+    viewer.layers[layer_name].preserve_labels = True  # type: ignore
+    viewer.layers[layer_name].refresh()
+
+
+class ProofreadingState(BaseModel):
+    """Model for storing proofreading state."""
+
+    active: bool = False
+    lock: bool = False
+    current_seg_layer_name: str | None = None
+    corrected_cells: set = Field(default_factory=set)
+    bboxes: dict[int, list[list[int]]] | None = None
+    seg_properties: ImageProperties | None = None
+    history_undo: deque = deque(maxlen=MAX_UNDO_ACTIONS)
+    history_redo: deque = deque(maxlen=MAX_UNDO_ACTIONS)
+
+
+# We need to use the dataclass decorator to avoid issues with the BaseModel serialization of numpy arrays
+@dataclass()
+class ProofreadingData:
+    """Model for storing proofreading data."""
+
+    segmentation: np.ndarray
+    corrected_cells: set
+    corrected_cells_mask: np.ndarray
+    bboxes: dict[int, list[list[int]]]
+
+
 class ProofreadingHandler:
     """Handler for managing segmentation proofreading and corrections.
 
@@ -39,31 +176,10 @@ class ProofreadingHandler:
     and bounding boxes, while allowing for interactions such as undoing changes.
     """
 
-    _status: bool
-    _current_seg_layer_name: str | None
-    _corrected_cells: set
-    _segmentation: np.ndarray | None
-    _current_seg_properties: dict | None
-    _corrected_cells_mask: np.ndarray | None
-    _scribbles: np.ndarray | None
-    _bboxes: np.ndarray | None
-
-    _lock: bool = False
-    scale: tuple | None = None
-    scribbles_layer_name = SCRIBBLES_LAYER_NAME
-    corrected_cells_layer_name = CORRECTED_CELLS_LAYER_NAME
-    correct_cells_cmap = CyclicLabelColormap(
-        colors=[(0.76388469, 0.02003777, 0.61156412, 1.0), (0.76388469, 0.02003777, 0.61156412, 1.0)],
-        name='Corrected Cells',
-    )
-
-    # Stacks for saving snapshots
-    _history_undo: deque = deque(maxlen=MAX_UNDO_ACTIONS)
-    _history_redo: deque = deque(maxlen=MAX_UNDO_ACTIONS)
-
     def __init__(self):
         """Initializes the ProofreadingHandler with an inactive state."""
-        self._status = False
+        self._state = ProofreadingState()
+        self._scale = None
 
     @contextmanager
     def lock_manager(self):
@@ -74,79 +190,159 @@ class ProofreadingHandler:
         finally:
             self._lock = False
 
-    def is_locked(self):
+    def is_locked(self) -> bool:
         """Checks if the proofreading handler is locked."""
-        return self._lock
+        return self._state.lock
 
+    # Proofreading state properties
     @property
-    def status(self):
+    def active(self) -> bool:
         """Returns the proofreading status."""
-        return self._status
+        return self._state.active
 
     @property
-    def seg_layer_name(self):
+    def scale(self) -> tuple[float, ...]:
+        """Returns the current scale of the segmentation."""
+        if self._scale is None:
+            raise ValueError('Scale not found')
+        return self._scale
+
+    @property
+    def seg_layer_name(self) -> str:
         """Returns the current segmentation layer name."""
-        return self._current_seg_layer_name
+        if self._state.current_seg_layer_name is None:
+            raise ValueError('Segmentation layer not found')
+        return self._state.current_seg_layer_name
 
     @property
     def seg_properties(self) -> ImageProperties:
         """Returns the properties of the current segmentation."""
-        return self._current_seg_properties  # TODO: fix type hint
+
+        if self._state.seg_properties is None:
+            raise ValueError('Segmentation properties not found')
+        return self._state.seg_properties
 
     @property
-    def segmentation(self):
+    def segmentation(self) -> np.ndarray:
         """Returns the current segmentation data."""
-        return self._segmentation
+        if self._state.current_seg_layer_name is None:
+            raise ValueError('Segmentation layer not found')
+        return get_layer_data(self._state.current_seg_layer_name)
 
     @property
-    def scribbles(self):
+    def scribbles(self) -> np.ndarray:
         """Returns the current scribbles."""
-        return self._scribbles
+        return get_layer_data(SCRIBBLES_LAYER_NAME)
+
+    def reset_scribbles(self) -> None:
+        """Resets the scribble data to an empty state."""
+        if not self.active:
+            log(
+                'Proofreading widget not initialized. Run the proofreading widget tool once first',
+                thread='Reset Scribbles',
+            )
+            return None
+        update_layer(np.zeros_like(self.segmentation), SCRIBBLES_LAYER_NAME, scale=self.scale)
 
     @property
-    def corrected_cells_mask(self):
+    def corrected_cells(self) -> set:
+        """Returns the set of corrected cells."""
+        return self._state.corrected_cells
+
+    @property
+    def corrected_cells_mask(self) -> np.ndarray:
         """Returns the mask for corrected cells."""
-        return self._corrected_cells_mask
+        return get_layer_data(CORRECTED_CELLS_LAYER_NAME)
+
+    def reset_corrected(self) -> None:
+        """Resets the corrected cells mask to an empty state."""
+        if not self.active:
+            log(
+                'Proofreading widget not initialized. Run the proofreading widget tool once first',
+                thread='Reset Corrected Cells Mask',
+            )
+            return None
+
+        self._state.corrected_cells = set()
+        update_layer(
+            np.zeros_like(self.segmentation),
+            CORRECTED_CELLS_LAYER_NAME,
+            scale=self.scale,
+            colormap=correct_cells_cmap,
+            opacity=1,
+        )
 
     @property
-    def bboxes(self):
+    def bboxes(self) -> dict[int, list[list[int]]]:
         """Returns the bounding boxes (bboxes) for the segmentation."""
-        return self._bboxes
+        if self._state.bboxes is None:
+            self.reset_bboxes()
+
+        assert self._state.bboxes is not None
+        return self._state.bboxes
+
+    def reset_bboxes(self) -> None:
+        """Resets the bounding boxes (bboxes) for the segmentation."""
+        if not self.active:
+            log(
+                'Proofreading widget not initialized. Run the proofreading widget tool once first',
+                thread='Reset Bboxes',
+            )
+            raise ValueError('Proofreading widget not initialized. Run the proofreading widget tool once first')
+        self._state.bboxes = get_bboxes(self.segmentation, slack=(0, 0, 0))
 
     @property
-    def max_label(self):
+    def max_label(self) -> int:
         """Returns the maximum label value in the segmentation."""
         return self.segmentation.max()
 
-    @property
-    def corrected_cells(self):
-        """Returns the set of corrected cells."""
-        return self._corrected_cells
+    # Global properties
+    def reset(self) -> None:
+        """Resets the proofreading handler to its initial state."""
+        self._state = ProofreadingState()
 
-    def save_to_history(self):
-        """Saves the current state to the undo history and clears the redo history."""
-        self._history_undo.append(self._capture_state())
-        self._history_redo.clear()  # Clear the redo stack when new actions are made
+    def setup(self, segmentation: PlantSegImage):
+        """Initializes the proofreading handler with a new segmentation.
 
-    def _capture_state(self):
+        Args:
+            segmentation (PlantSegImage): The segmentation image to set up.
+        """
+        self.reset()
+        self._scale = segmentation.scale
+        self._state = ProofreadingState(
+            active=True,
+            current_seg_layer_name=segmentation.name,
+            seg_properties=segmentation.properties,
+        )
+        self.reset_bboxes()
+        self.reset_corrected()
+        self.reset_scribbles()
+
+    ## Undo/Redo actions
+    def _capture_state(self) -> ProofreadingData:
         """Captures the current state of the handler."""
-        return {
-            'segmentation': copy_if_not_none(self._segmentation),
-            'corrected_cells': copy_if_not_none(self._corrected_cells),
-            'scribbles': copy_if_not_none(self._scribbles),
-            'corrected_cells_mask': copy_if_not_none(self._corrected_cells_mask),
-            'bboxes': copy_if_not_none(self._bboxes),
-        }
+        return ProofreadingData(
+            segmentation=self.segmentation.copy(),
+            corrected_cells=self.corrected_cells.copy(),
+            corrected_cells_mask=self.corrected_cells_mask.copy(),
+            bboxes=self.bboxes.copy(),
+        )
 
-    def _restore_state(self, state):
+    def save_to_history(self) -> None:
+        """Saves the current state to the undo history and clears the redo history."""
+        self._state.history_undo.append(self._capture_state())
+        self._state.history_redo.clear()  # Clear the redo stack when new actions are made
+
+    def _restore_state(self, state: ProofreadingData) -> None:
         """Restores a given state."""
-        self._segmentation = state['segmentation']
-        self._corrected_cells = state['corrected_cells']
-        self._scribbles = state['scribbles']
-        self._corrected_cells_mask = state['corrected_cells_mask']
-        self._bboxes = state['bboxes']
+        update_layer(data=state.segmentation, layer_name=self.seg_layer_name, scale=self.scale)
+        update_layer(data=state.corrected_cells_mask, layer_name=CORRECTED_CELLS_LAYER_NAME, scale=self.scale)
 
-    def _perform_undo_redo(self, history_pop, history_append, viewer, action_name):
+        self.reset_scribbles()
+        self._state.corrected_cells = state.corrected_cells
+        self._state.bboxes = state.bboxes
+
+    def _perform_undo_redo(self, history_pop, history_append, action_name):
         """Generalized function to handle undo and redo actions."""
         if not history_pop:
             log(f"No more actions to {action_name}.", thread=action_name.capitalize())
@@ -157,51 +353,111 @@ class ProofreadingHandler:
 
         history_append.append(current_state)
         self._restore_state(last_state)
-
-        self._update_to_viewer(viewer, self._segmentation, self.seg_layer_name)
-        self.update_scribble_to_viewer(viewer)
         log(f'{action_name.capitalize()} completed', thread=action_name.capitalize())
 
-    def undo(self, viewer: napari.Viewer):
+    def undo(self):
         """Restores the previous state from the history stack."""
-        self._perform_undo_redo(self._history_undo, self._history_redo, viewer, 'undo')
+        self._perform_undo_redo(
+            history_pop=self._state.history_undo, history_append=self._state.history_redo, action_name='undo'
+        )
 
-    def redo(self, viewer: napari.Viewer):
+    def redo(self):
         """Restores the next state from the redo history."""
-        self._perform_undo_redo(self._history_redo, self._history_undo, viewer, 'redo')
+        self._perform_undo_redo(
+            history_pop=self._state.history_redo, history_append=self._state.history_undo, action_name='redo'
+        )
 
-    def setup(self, segmentation: PlantSegImage):
-        """Initializes the proofreading handler with a new segmentation.
+    def save_state_to_disk(self, filepath: Path, raw: Image | None, pmap: Image | None = None):
+        """Saves the current state to disk as an HDF5 file."""
+
+        if filepath.suffix not in H5_EXTENSIONS:
+            log(
+                f'Invalid file extension: {filepath.suffix}. Please use a valid HDF5 file extensions: {H5_EXTENSIONS}',
+                thread='Save State',
+            )
+            return None
+
+        viewer = get_current_viewer_wrapper()
+
+        segmentation_layer = viewer.layers[self.seg_layer_name]
+        assert isinstance(segmentation_layer, Labels)
+        ps_segmentation = PlantSegImage.from_napari_layer(segmentation_layer)
+        ps_segmentation.to_h5(filepath, key='label', mode='w')
+
+        mask_layer = self.corrected_cells_mask
+
+        with h5py.File(filepath, 'a') as f:
+            f.create_dataset(name='mask', data=mask_layer)
+            f['mask'].attrs['corrected_cells'] = list(self.corrected_cells)
+
+        for name, image in [('raw', raw), ('pmap', pmap)]:
+            if image is not None:
+                ps_image = PlantSegImage.from_napari_layer(image)
+                ps_image.to_h5(filepath, key=name)
+
+        log(f'State saved to {filepath}', thread='Save State')
+
+    def load_state_from_disk(self, filepath: Path):
+        """Loads a saved state from disk."""
+
+        if not filepath.exists():
+            log(f'File not found: {filepath}', thread='Load State')
+            return None
+
+        viewer = get_current_viewer_wrapper()
+        ps_segmentation = PlantSegImage.from_h5(filepath, key='label')
+
+        with h5py.File(filepath, 'r') as f:
+            if 'mask' not in f:
+                log('Corrected cells mask not found in file', thread='Load State')
+                corrected_cells = set()
+                mask = np.zeros_like(ps_segmentation._data)
+            else:
+                corrected_cells = set(f['mask'].attrs['corrected_cells'])  # type: ignore
+                mask: np.ndarray = f['mask'][...]  # type: ignore
+
+            for name in ['raw', 'pmap']:
+                if name in f:
+                    ps_image = PlantSegImage.from_h5(filepath, key=name)
+                    if ps_image.name not in viewer.layers:
+                        ps_image_layer_tuple = ps_image.to_napari_layer_tuple()
+                        viewer._add_layer_from_data(*ps_image_layer_tuple)
+                    else:
+                        log(f'Layer {ps_image.name} already exists in viewer', thread='Load State')
+
+        # Create the segmentation layer
+        ps_image_layer_tuple = ps_segmentation.to_napari_layer_tuple()
+        viewer._add_layer_from_data(*ps_image_layer_tuple)
+        self.setup(ps_segmentation)
+
+        update_layer(mask, CORRECTED_CELLS_LAYER_NAME, scale=self.scale, colormap=correct_cells_cmap, opacity=1)
+        self._state.corrected_cells = corrected_cells
+        log(f'State loaded from {filepath}', thread='Load State')
+
+    # Corrected cells Operations
+    def _toggle_corrected_cell(self, cell_id: int):
+        """Adds or removes the cell from the corrected set.
 
         Args:
-            segmentation (PlantSegImage): The segmentation image to set up.
+            cell_id (int): The ID of the cell to toggle.
         """
-        self.reset()
+        if cell_id in self._state.corrected_cells:
+            self._state.corrected_cells.remove(cell_id)
+        else:
+            self._state.corrected_cells.add(cell_id)
 
-        self._status = True
-        segmentation_data = segmentation.get_data()
+    def _update_masks(self, cell_id: int):
+        """Updates the corrected cells mask with the toggled cell.
 
-        self._current_seg_layer_name = segmentation.name
-        self._current_seg_properties = segmentation.properties
-        self.scale = segmentation.scale
+        Args:
+            cell_id (int): The ID of the cell to update.
+        """
+        id_mask = self.segmentation == cell_id
 
-        self._segmentation = segmentation_data
-        self.reset_scribbles()
-        self.reset_corrected_cells_mask()
-
-        self._bboxes = get_bboxes(segmentation_data)
-
-    def reset(self):
-        """Resets the proofreading handler to its initial state."""
-        self._status = False
-        self._current_seg_layer_name = None
-        self._corrected_cells = set()
-
-        self._segmentation = None
-        self._corrected_cells_mask = None
-        self._scribbles = None
-        self._bboxes = None
-        self.scale = None
+        corrected_mask = get_layer_data(CORRECTED_CELLS_LAYER_NAME)
+        corrected_mask[id_mask] += 1
+        corrected_mask[id_mask] %= 2
+        update_corrected_cells_mask_layer(corrected_mask, scale=self.scale)
 
     def toggle_corrected_cell(self, cell_id: int):
         """Toggles a cell as corrected or not.
@@ -212,162 +468,28 @@ class ProofreadingHandler:
         self._toggle_corrected_cell(cell_id)
         self._update_masks(cell_id)
 
-    def _toggle_corrected_cell(self, cell_id: int):
-        """Adds or removes the cell from the corrected set.
-
-        Args:
-            cell_id (int): The ID of the cell to toggle.
-        """
-        if cell_id in self._corrected_cells:
-            self._corrected_cells.remove(cell_id)
-        else:
-            self._corrected_cells.add(cell_id)
-
-    def _update_masks(self, cell_id: int):
-        """Updates the corrected cells mask with the toggled cell.
-
-        Args:
-            cell_id (int): The ID of the cell to update.
-        """
-        mask = self._segmentation == cell_id
-
-        self._corrected_cells_mask[mask] += 1
-        self._corrected_cells_mask = self._corrected_cells_mask % 2  # act as a toggle
-
-    @staticmethod
-    def _update_to_viewer(viewer: napari.Viewer, data: np.ndarray, layer_name: str, **kwargs):
-        """Updates a layer in the viewer with new data.
-
-        Args:
-            viewer (napari.Viewer): The current Napari viewer instance.
-            data (np.ndarray): The new data to update the layer with.
-            layer_name (str): The name of the layer to update.
-        """
-        if layer_name in viewer.layers:
-            viewer.layers[layer_name].data = data
-            viewer.layers[layer_name].refresh()
-
-        else:
-            viewer.add_labels(data, name=layer_name, **kwargs)
-
-    @staticmethod
-    def _update_slice_to_viewer(viewer: napari.Viewer, data: np.ndarray, layer_name: str, region_slice):
-        """Updates a slice of a layer in the viewer.
-
-        Args:
-            viewer (napari.Viewer): The current Napari viewer instance.
-            data (np.ndarray): The new slice data to update.
-            layer_name (str): The name of the layer to update.
-            region_slice (tuple): The region slice to update in the layer.
-        """
-        if layer_name in viewer.layers:
-            viewer.layers[layer_name].data[region_slice] = data
-            viewer.layers[layer_name].refresh()
-        else:
-            raise ValueError(f'Layer {layer_name} not found in viewer')
-
-    def update_scribble_to_viewer(self, viewer: napari.Viewer):
-        """Updates the scribble layer in the viewer.
-
-        Args:
-            viewer (napari.Viewer): The current Napari viewer instance.
-        """
-        self._update_to_viewer(viewer, self._scribbles, self.scribbles_layer_name, scale=self.scale)
-
-    def update_scribbles_from_viewer(self, viewer: napari.Viewer):
-        """Fetches scribbles data from the viewer and updates the handler.
-
-        Args:
-            viewer (napari.Viewer): The current Napari viewer instance.
-        """
-        self._scribbles = viewer.layers[self.scribbles_layer_name].data
-
-    def reset_scribbles(self):
-        """Resets the scribble data to an empty state."""
-        self._scribbles = np.zeros_like(self._segmentation).astype(np.uint16)
-
-    def preserve_labels(self, viewer: napari.Viewer, layer_name: str):
-        """Preserves labels on a layer in the viewer.
-
-        Args:
-            viewer (napari.Viewer): The current Napari viewer instance.
-            layer_name (str): The name of the layer to preserve.
-        """
-        viewer.layers[layer_name].preserve_labels = True
-        viewer.layers[layer_name].refresh()
-
-    def update_corrected_cells_mask_to_viewer(self, viewer: napari.Viewer):
-        """Updates the corrected cells mask in the viewer.
-
-        Args:
-            viewer (napari.Viewer): The current Napari viewer instance.
-        """
-        self._update_to_viewer(
-            viewer,
-            self.corrected_cells_mask,
-            self.corrected_cells_layer_name,
-            scale=self.scale,
-            colormap=self.correct_cells_cmap,
-            opacity=1,
-        )
-        self.preserve_labels(viewer, self.corrected_cells_layer_name)
-
-    def update_corrected_cells_mask_slice_to_viewer(
-        self, viewer: napari.Viewer, slice_data: np.ndarray, region_slice: tuple[slice, ...]
-    ):
+    def update_corrected_cells_mask_slice_to_viewer(self, slice_data: np.ndarray, region_slice: tuple[slice, ...]):
         """Updates a slice of the corrected cells mask in the viewer.
 
         Args:
-            viewer (napari.Viewer): The current Napari viewer instance.
             slice_data (np.ndarray): The data to update the slice with.
             region_slice (tuple[slice, ...]): The region slice to update.
         """
-        self._update_slice_to_viewer(viewer, slice_data, self.corrected_cells_layer_name, region_slice)
-        self.preserve_labels(viewer, self.corrected_cells_layer_name)
+        update_region(slice_data, CORRECTED_CELLS_LAYER_NAME, region_slice, scale=self.scale)
+        preserve_labels(CORRECTED_CELLS_LAYER_NAME)
 
     def update_after_proofreading(
-        self, viewer: napari.Viewer, seg_slice: np.ndarray, region_slice: tuple[slice, ...], bbox: np.ndarray
+        self, seg_slice: np.ndarray, region_slice: tuple[slice, ...], bbox: dict[int, list[list[int]]]
     ):
         """Updates the viewer after proofreading is completed.
 
         Args:
-            viewer (napari.Viewer): The current Napari viewer instance.
             seg_slice (np.ndarray): The segmentation slice to update.
             region_slice (tuple[slice, ...]): The region slice to update in the viewer.
             bbox (np.ndarray): The bounding box to update.
         """
-        self._bboxes = bbox
-        self._update_slice_to_viewer(viewer, seg_slice, self.seg_layer_name, region_slice)
-
-    def reset_corrected_cells_mask(self):
-        """Resets the corrected cells mask to an empty state."""
-        self._corrected_cells_mask = np.zeros_like(self._segmentation).astype(np.uint16)
-
-    def save_state_to_disk(self, filepath: Path):
-        """Saves the current state to disk."""
-        try:
-            filepath.parent.mkdir(parents=True, exist_ok=True)  # Create directories if they don't exist
-            with filepath.open('wb') as f:
-                pickle.dump(self._capture_state(), f)
-            log(f'State saved successfully to {filepath}', thread='Proofreading tool')
-        except Exception as e:
-            log(f'Error saving state to {filepath}: {e}', thread='Proofreading tool', level='error')
-
-    def load_state_from_disk(self, filepath: Path, viewer: napari.Viewer):
-        """Loads a saved state from disk."""
-        if not filepath.exists():
-            log(f'Error: State file not found at {filepath}', thread='Proofreading tool', level='error')
-            return
-
-        try:
-            with filepath.open('rb') as f:
-                state = pickle.load(f)
-            self._restore_state(state)
-            self._update_to_viewer(viewer, self._segmentation, self.seg_layer_name)
-            self.update_scribble_to_viewer(viewer)
-            log(f'State loaded successfully from {filepath}', thread='Proofreading tool')
-        except Exception as e:
-            log(f'Error loading state from {filepath}: {e}', thread='Proofreading tool', level='error')
+        self._state.bboxes = bbox
+        update_region(data=seg_slice, layer_name=self.seg_layer_name, region_slice=region_slice, scale=self.scale)
 
 
 segmentation_handler = ProofreadingHandler()
@@ -375,12 +497,8 @@ segmentation_handler = ProofreadingHandler()
 
 @magicgui(call_button=f'Clean scribbles - < {DEFAULT_KEY_BINDING_CLEAN} >')
 def widget_clean_scribble(viewer: napari.Viewer):
-    """Cleans the scribbles layer in the Napari viewer.
-
-    Args:
-        viewer (napari.Viewer): The current Napari viewer instance.
-    """
-    if not segmentation_handler.status:
+    """Cleans the scribbles layer in the Napari viewer."""
+    if not segmentation_handler.active:
         log('Proofreading widget not initialized. Run the proofreading widget tool once first', thread='Clean scribble')
 
     if 'Scribbles' not in viewer.layers:
@@ -388,26 +506,23 @@ def widget_clean_scribble(viewer: napari.Viewer):
         return None
 
     segmentation_handler.reset_scribbles()
-    segmentation_handler.update_scribble_to_viewer(viewer)
 
 
 def widget_add_label_to_corrected(viewer: napari.Viewer, position: tuple[int, ...]):
     """Adds or removes a label at a given position to/from the corrected cells.
 
     Args:
-        viewer (napari.Viewer): The current Napari viewer instance.
         position (tuple[int, ...]): The position of the cell in the viewer.
     """
-    if segmentation_handler.corrected_cells_layer_name not in viewer.layers:
-        return None
+    if CORRECTED_CELLS_LAYER_NAME not in viewer.layers:
+        raise ValueError('Corrected cells layer not found in viewer')
 
-    position = [int(p / s) for p, s in zip(position, segmentation_handler.scale)]
-    cell_id = segmentation_handler.segmentation[*position]
+    raster_position = [int(p / s) for p, s in zip(position, segmentation_handler.scale, strict=True)]
+    cell_id = segmentation_handler.segmentation[*raster_position]
     segmentation_handler.toggle_corrected_cell(cell_id)
-    segmentation_handler.update_corrected_cells_mask_to_viewer(viewer)
 
 
-def initialize_proofreading(viewer: napari.Viewer, segmentation: PlantSegImage, state: Path | None = None) -> None:
+def initialize_proofreading(segmentation: PlantSegImage) -> None:
     """Initializes the proofreading tool with the given segmentation.
 
     Args:
@@ -419,42 +534,12 @@ def initialize_proofreading(viewer: napari.Viewer, segmentation: PlantSegImage, 
     """
     segmentation_handler.reset()
     segmentation_handler.setup(segmentation)
-    segmentation_handler.update_scribble_to_viewer(viewer)
-    segmentation_handler.update_corrected_cells_mask_to_viewer(viewer)
-    widget_proofreading_initialisation.call_button.text = 'Re-initialize Proofreading'
+    widget_proofreading_initialisation.call_button.text = 'Re-initialize Proofreading'  # type: ignore
     setup_proofreading_widget()
     log('Proofreading initialized', thread='Proofreading tool')
-    if state:
-        segmentation_handler.load_state_from_disk(state, viewer)
-        log('State loaded successfully', thread='Proofreading tool')
 
 
-@magicgui(
-    call_button='Initialize Proofreading',
-    segmentation={
-        'label': 'Segmentation',
-        'tooltip': 'The segmentation layer to proofread',
-    },
-    state={
-        'label': 'Resume from file',
-        'mode': 'r',
-        'tooltip': 'Load a previous proofreading state from a pickle (*.pkl) file',
-    },
-    are_you_sure={'label': 'I understand this resets everything', 'visible': False},
-)
-def widget_proofreading_initialisation(
-    viewer: napari.Viewer,
-    segmentation: Labels,
-    state: Path | None = None,
-    are_you_sure: bool = False,
-) -> None:
-    """Initializes the proofreading widget.
-
-    Args:
-        viewer (napari.Viewer): The current Napari viewer instance.
-        segmentation (Labels): The segmentation layer.
-        state (Path | None): Path to a previous state file (optional).
-    """
+def initialize_from_layer(segmentation: Labels, are_you_sure: bool = False) -> None:
     if segmentation.name in [
         SCRIBBLES_LAYER_NAME,
         CORRECTED_CELLS_LAYER_NAME,
@@ -466,24 +551,99 @@ def widget_proofreading_initialisation(
         )
         return
 
-    if segmentation_handler.status and not are_you_sure:
+    if segmentation_handler.active and not are_you_sure:
         log(
             'Proofreading is already initialized. Are you sure you want to reset everything?',
             thread='Proofreading tool',
             level='warning',
         )
         widget_proofreading_initialisation.are_you_sure.show()
-        widget_proofreading_initialisation.call_button.text = 'I understand, please re-initialise!!'
+        widget_proofreading_initialisation.call_button.text = 'I understand, please re-initialise!!'  # type: ignore
         return
 
     ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
-    initialize_proofreading(viewer, ps_segmentation, state)
+    initialize_proofreading(ps_segmentation)
     widget_proofreading_initialisation.are_you_sure.value = False
     widget_proofreading_initialisation.are_you_sure.hide()
-    widget_proofreading_initialisation.call_button.text = 'Re-initialize Proofreading'
+    widget_proofreading_initialisation.call_button.text = 'Re-initialize Proofreading'  # type: ignore
+
+    viewer = get_current_viewer_wrapper()
     widget_proofreading_initialisation.segmentation.choices = [  # Avoid re-initializing with proofreading helper layers
         layer for layer in viewer.layers if layer.name not in [SCRIBBLES_LAYER_NAME, CORRECTED_CELLS_LAYER_NAME]
     ]
+
+
+def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
+    if segmentation_handler.active and not are_you_sure:
+        log(
+            'Proofreading is already initialized. Are you sure you want to reset everything?',
+            thread='Proofreading tool',
+            level='warning',
+        )
+        widget_proofreading_initialisation.are_you_sure.show()
+        widget_proofreading_initialisation.call_button.text = 'I understand, please re-initialise!!'  # type: ignore
+        return
+
+    segmentation_handler.load_state_from_disk(state)
+    widget_proofreading_initialisation.call_button.text = 'Re-initialize Proofreading'  # type: ignore
+    setup_proofreading_widget()
+    log('Proofreading initialized', thread='Proofreading tool')
+
+
+@magicgui(
+    call_button='Initialize Proofreading',
+    mode={
+        'label': 'Mode',
+        "choices": ["Layer", "File"],
+    },
+    segmentation={
+        'label': 'Segmentation',
+        'tooltip': 'The segmentation layer to proofread',
+    },
+    filepath={
+        'label': 'Resume from file',
+        'mode': 'r',
+        'tooltip': 'Load a previous proofreading state from a pickle (*.pkl) file',
+    },
+    are_you_sure={'label': 'I understand this resets everything', 'visible': False},
+)
+def widget_proofreading_initialisation(
+    mode: str = 'Layer',
+    segmentation: Labels | None = None,
+    filepath: Path | None = None,
+    are_you_sure: bool = False,
+) -> None:
+    """Initializes the proofreading widget.
+
+    Args:
+        segmentation (Labels): The segmentation layer.
+        state (Path | None): Path to a previous state file (optional).
+    """
+    if mode == 'Layer':
+        if segmentation is None:
+            log('No segmentation layer selected', thread='Proofreading tool', level='error')
+            return
+        initialize_from_layer(segmentation, are_you_sure=are_you_sure)
+    elif mode == 'File':
+        if filepath is None:
+            log('No state file selected', thread='Proofreading tool', level='error')
+            return
+        initialize_from_file(filepath, are_you_sure=are_you_sure)
+        widget_save_state.filepath.value = filepath
+
+
+widget_proofreading_initialisation.are_you_sure.hide()
+widget_proofreading_initialisation.filepath.hide()
+
+
+@widget_proofreading_initialisation.mode.changed.connect
+def _on_mode_changed(mode: str):
+    if mode == 'Layer':
+        widget_proofreading_initialisation.segmentation.show()
+        widget_proofreading_initialisation.filepath.hide()
+    elif mode == 'File':
+        widget_proofreading_initialisation.segmentation.hide()
+        widget_proofreading_initialisation.filepath.show()
 
 
 @magicgui(
@@ -500,10 +660,9 @@ def widget_split_and_merge_from_scribbles(
     """Splits or merges segments using scribbles as seeds for corrections.
 
     Args:
-        viewer (napari.Viewer): The current Napari viewer instance.
         image (Image): The probability map or raw image layer.
     """
-    if not segmentation_handler.status:
+    if not segmentation_handler.active:
         log('Proofreading is not initialized. Run the initialization widget first.', thread='Proofreading tool')
         return
 
@@ -526,8 +685,6 @@ def widget_split_and_merge_from_scribbles(
             level='error',
         )
 
-    segmentation_handler.update_scribbles_from_viewer(viewer)
-
     @thread_worker
     def func():
         if segmentation_handler.is_locked():
@@ -549,20 +706,20 @@ def widget_split_and_merge_from_scribbles(
                 correct_labels=segmentation_handler.corrected_cells,
             )
 
-            segmentation_handler.update_after_proofreading(viewer, new_seg, region_slice, bboxes)
+            segmentation_handler.update_after_proofreading(new_seg, region_slice, bboxes)
 
-    worker = func()
+    worker = func()  # type: ignore
     worker.start()
 
 
-@magicgui(call_button='Freeze correct labels')
+@magicgui(call_button='Extract Corrected labels')
 def widget_filter_segmentation() -> None:
     """Extracts corrected labels from the segmentation.
 
     Returns:
         Future[LayerDataTuple]: A future that will return the extracted segmentation layer.
     """
-    if not segmentation_handler.status:
+    if not segmentation_handler.active:
         log(
             'Proofreading widget not initialized. Run the proofreading widget tool once first',
             thread='Export correct labels',
@@ -598,36 +755,28 @@ def widget_filter_segmentation() -> None:
         if result is not None and viewer is not None:
             viewer._add_layer_from_data(*result)
 
-    worker = func()
+    worker = func()  # type: ignore
     worker.returned.connect(on_done)
     worker.start()
     return None
 
 
 @magicgui(call_button='Undo Last Action')
-def widget_undo(viewer: napari.Viewer):
-    """Undo the last proofreading action.
-
-    Args:
-        viewer (napari.Viewer): The current Napari viewer instance.
-    """
-    if not segmentation_handler.status:
+def widget_undo():
+    """Undo the last proofreading action."""
+    if not segmentation_handler.active:
         log('Proofreading widget not initialized. Nothing to undo.', thread='Undo')
         return
-    segmentation_handler.undo(viewer)
+    segmentation_handler.undo()
 
 
 @magicgui(call_button='Redo Last Action')
-def widget_redo(viewer: napari.Viewer):
-    """Redo the last undone action.
-
-    Args:
-        viewer (napari.Viewer): The current Napari viewer instance.
-    """
-    if not segmentation_handler.status:
+def widget_redo():
+    """Redo the last undone action."""
+    if not segmentation_handler.active:
         log('Proofreading widget not initialized. Nothing to redo.', thread='Redo')
         return
-    segmentation_handler.redo(viewer)
+    segmentation_handler.redo()
 
 
 @magicgui(
@@ -636,22 +785,26 @@ def widget_redo(viewer: napari.Viewer):
         'label': 'File path',
         'mode': 'w',
     },
-    images_saved={'label': 'I saved boundary references and original segmentations'},
+    raw={
+        'label': 'Raw image',
+        'tooltip': 'Optional raw image for reference',
+    },
+    pmap={
+        'label': 'Probability map',
+        'tooltip': 'Optional probability map for reference',
+    },
 )
-def widget_save_state(filepath: Path = Path.home(), images_saved: bool = False):
+def widget_save_state(filepath: Path = Path.home(), raw: Image | None = None, pmap: Image | None = None):
     """Saves the current proofreading state to disk.
 
     Args:
         filepath (str): The filepath to save the state to.
 
     """
-    if images_saved:
-        segmentation_handler.save_state_to_disk(filepath)
-    else:
-        log('Please save the pmap and segmentation images before saving the state', thread='Save State', level='error')
+    segmentation_handler.save_state_to_disk(filepath, raw=raw, pmap=pmap)
 
 
-def setup_proofreading_keybindings(viewer):
+def setup_proofreading_keybindings(viewer: napari.Viewer):
     """Sets up keybindings for the proofreading tool in Napari.
 
     Args:
@@ -660,7 +813,7 @@ def setup_proofreading_keybindings(viewer):
 
     @viewer.bind_key(DEFAULT_KEY_BINDING_PROOFREAD)
     def _widget_split_and_merge_from_scribbles(_viewer: napari.Viewer):
-        widget_split_and_merge_from_scribbles(viewer=_viewer)
+        widget_split_and_merge_from_scribbles(viewer=_viewer)  # type: ignore
 
     @viewer.bind_key(DEFAULT_KEY_BINDING_CLEAN)
     def _widget_clean_scribble(_viewer: napari.Viewer):

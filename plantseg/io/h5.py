@@ -158,7 +158,7 @@ def create_h5(
             del f[key]
         f.create_dataset(key, data=stack, compression="gzip")
         # save voxel_size
-        if voxel_size is not None:
+        if voxel_size is not None and voxel_size.voxels_size is not None:
             f[key].attrs["element_size_um"] = voxel_size.voxels_size
 
 

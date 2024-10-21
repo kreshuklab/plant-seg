@@ -3,7 +3,7 @@ from enum import Enum
 from magicgui import magicgui
 from napari.layers import Image, Labels, Layer, Shapes
 
-from plantseg.core.image import PlantSegImage
+from plantseg.core.image import ImageDimensionality, PlantSegImage
 from plantseg.core.zoo import model_zoo
 from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks.dataprocessing_tasks import (
@@ -82,7 +82,7 @@ def widget_gaussian_smoothing(image: Image, sigma: float = 1.0, update_other_wid
         "tooltip": "This must be a shape layer with a rectangle XY overlaying the area to crop.",
     },
     crop_z={
-        "label": "Z slices [Start, End)",
+        "label": "Z slices [start, end)",
         "tooltip": "Number of z slices to take next to the current selection.\nSTART is included, END is not.",
         "widget_type": "RangeSlider",
         "max": 100,
@@ -133,13 +133,21 @@ def _on_cropping_image_changed(image: Layer):
         widget_cropping.crop_z.hide()
         return None
 
-    image_shape_z = int(image.data.shape[0])
+    assert isinstance(
+        image, (Image, Labels)
+    ), f"{type(image)} cannot be cropped, please use Image layers or Labels layers"
+    ps_image = PlantSegImage.from_napari_layer(image)
 
-    if image_shape_z == 1:
+    if ps_image.dimensionality == ImageDimensionality.TWO:
         widget_cropping.crop_z.hide()
         return None
 
+    if ps_image.is_multichannel:
+        raise ValueError("Multichannel images are not supported for cropping.")
+
     widget_cropping.crop_z.show()
+    image_shape_z = ps_image.shape[0]
+
     widget_cropping.crop_z.step = 1
 
     if widget_cropping.crop_z.value[1] > image_shape_z:
@@ -413,7 +421,7 @@ def _on_rescale_order_changed(order):
 
 
 @magicgui(
-    call_button="Remove False Instances by Foreground",
+    call_button="Remove Objects with Low Foreground Probability",
     segmentation={
         "label": "Segmentation",
         "tooltip": "Segmentation layer to remove false positives.",
@@ -461,16 +469,18 @@ def widget_remove_false_positives_by_foreground(
     call_button='Split/Merge Instances by Nuclei',
     segmentation_cells={'label': 'Cell instances'},
     segmentation_nuclei={'label': 'Nuclear instances'},
-    boundary_pmaps={'label': 'Boundary Pmap/Image'},
+    boundary_pmaps={'label': 'Boundary image'},
     threshold={
-        'label': 'Threshold',
+        'label': 'Boundary threshold',
+        'tooltip': 'Threshold range for merging (first value) and splitting (second value) cells. ',
         'widget_type': 'FloatRangeSlider',
         'max': 100,
         'min': 0,
         'step': 0.1,
     },
     quantile={
-        'label': 'Nuclei Quantile',
+        'label': 'Nuclei size filter',
+        'tooltip': 'Quantile range to filter nuclei size, ignoring outliers.',
         'widget_type': 'FloatRangeSlider',
         'max': 100,
         'min': 0,
