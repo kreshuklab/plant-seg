@@ -41,7 +41,7 @@ def test_create_workflow(tmp_path):
 
     dag = workflow_handler.dag
     assert len(dag.list_tasks) == 3
-    assert len(dag.inputs.keys()) == 3
+    assert len(dag.inputs[0].keys()) == 3
 
     # Run the headless workflow
 
