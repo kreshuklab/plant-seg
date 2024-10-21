@@ -193,7 +193,7 @@ def _on_done(*args):  # Required by magicgui. pylint: disable=unused-argument
     name_pattern={
         "label": "Export name pattern",
         "tooltip": "Pattern for the exported file name. Use {image_name} to include the layer name, "
-        "or {original_name} to include the original file name.",
+        "or {file_name} to include the original file name.",
     },
     export_format={
         "label": "Export format",
@@ -220,7 +220,7 @@ def _on_done(*args):  # Required by magicgui. pylint: disable=unused-argument
 def widget_export_image(
     image: Layer | None = None,
     directory: Path = Path.home(),
-    name_pattern: str = "{image_name}_export",
+    name_pattern: str = "{file_name}_export",
     export_format: str = "tiff",
     key: str = "raw",
     scale_to_origin: bool = True,
