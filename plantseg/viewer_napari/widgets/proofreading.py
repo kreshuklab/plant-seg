@@ -386,8 +386,6 @@ class ProofreadingHandler:
 
         mask_layer = self.corrected_cells_mask
 
-        import h5py
-
         with h5py.File(filepath, 'a') as f:
             f.create_dataset(name='mask', data=mask_layer)
             f['mask'].attrs['corrected_cells'] = list(self.corrected_cells)
@@ -407,19 +405,16 @@ class ProofreadingHandler:
             return None
 
         viewer = get_current_viewer_wrapper()
-
         ps_segmentation = PlantSegImage.from_h5(filepath, key='label')
-        self.setup(ps_segmentation)
 
         with h5py.File(filepath, 'r') as f:
             if 'mask' not in f:
                 log('Corrected cells mask not found in file', thread='Load State')
-                self.reset_corrected()
+                corrected_cells = set()
+                mask = np.zeros_like(ps_segmentation._data)
             else:
                 corrected_cells = set(f['mask'].attrs['corrected_cells'])  # type: ignore
                 mask: np.ndarray = f['mask'][...]  # type: ignore
-                update_layer(mask, CORRECTED_CELLS_LAYER_NAME, scale=self.scale, colormap=correct_cells_cmap, opacity=1)
-                self._state.corrected_cells = corrected_cells
 
             for name in ['raw', 'pmap']:
                 if name in f:
@@ -429,6 +424,15 @@ class ProofreadingHandler:
                         viewer._add_layer_from_data(*ps_image_layer_tuple)
                     else:
                         log(f'Layer {ps_image.name} already exists in viewer', thread='Load State')
+
+        # Create the segmentation layer
+        ps_image_layer_tuple = ps_segmentation.to_napari_layer_tuple()
+        viewer._add_layer_from_data(*ps_image_layer_tuple)
+        self.setup(ps_segmentation)
+
+        update_layer(mask, CORRECTED_CELLS_LAYER_NAME, scale=self.scale, colormap=correct_cells_cmap, opacity=1)
+        self._state.corrected_cells = corrected_cells
+        log(f'State loaded from {filepath}', thread='Load State')
 
     # Corrected cells Operations
     def _toggle_corrected_cell(self, cell_id: int):
@@ -578,6 +582,7 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
         )
         widget_proofreading_initialisation.are_you_sure.show()
         widget_proofreading_initialisation.call_button.text = 'I understand, please re-initialise!!'  # type: ignore
+        return
 
     segmentation_handler.load_state_from_disk(state)
     widget_proofreading_initialisation.call_button.text = 'Re-initialize Proofreading'  # type: ignore
@@ -595,7 +600,7 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
         'label': 'Segmentation',
         'tooltip': 'The segmentation layer to proofread',
     },
-    state={
+    filepath={
         'label': 'Resume from file',
         'mode': 'r',
         'tooltip': 'Load a previous proofreading state from a pickle (*.pkl) file',
@@ -605,7 +610,7 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
 def widget_proofreading_initialisation(
     mode: str = 'Layer',
     segmentation: Labels | None = None,
-    state: Path | None = None,
+    filepath: Path | None = None,
     are_you_sure: bool = False,
 ) -> None:
     """Initializes the proofreading widget.
@@ -620,24 +625,25 @@ def widget_proofreading_initialisation(
             return
         initialize_from_layer(segmentation, are_you_sure=are_you_sure)
     elif mode == 'File':
-        if state is None:
+        if filepath is None:
             log('No state file selected', thread='Proofreading tool', level='error')
             return
-        initialize_from_file(state, are_you_sure=are_you_sure)
+        initialize_from_file(filepath, are_you_sure=are_you_sure)
+        widget_save_state.filepath.value = filepath
 
 
 widget_proofreading_initialisation.are_you_sure.hide()
-widget_proofreading_initialisation.state.hide()
+widget_proofreading_initialisation.filepath.hide()
 
 
 @widget_proofreading_initialisation.mode.changed.connect
 def _on_mode_changed(mode: str):
     if mode == 'Layer':
         widget_proofreading_initialisation.segmentation.show()
-        widget_proofreading_initialisation.state.hide()
+        widget_proofreading_initialisation.filepath.hide()
     elif mode == 'File':
         widget_proofreading_initialisation.segmentation.hide()
-        widget_proofreading_initialisation.state.show()
+        widget_proofreading_initialisation.filepath.show()
 
 
 @magicgui(
