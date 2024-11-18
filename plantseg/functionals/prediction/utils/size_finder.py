@@ -170,6 +170,10 @@ def find_batch_size(
                 if "out of memory" in str(e):
                     batch_size //= 2
                     break
+                elif "less than INT_MAX elements" in str(e):
+                    logger.warning(f"Encountered '{e}', unexpected but continuing with reduced batch size.")
+                    batch_size //= 2
+                    break
                 else:
                     raise
             finally:
