@@ -13,7 +13,7 @@ extend-select = ["I"]
 quote-style = "preserve"
 
 [tool.bumpversion]
-current_version = "2.0.0a5"
+current_version = "2.0.0a6"
 parse = """(?x)
     (?P<major>[0-9]+)               # Major version
     \\.(?P<minor>[0-9]+)            # Minor version
