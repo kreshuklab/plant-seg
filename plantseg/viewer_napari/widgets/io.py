@@ -80,6 +80,10 @@ class PathMode(Enum):
         "widget_type": "RadioButtons",
         "orientation": "horizontal",
     },
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
 )
 def widget_open_file(
     path_mode: str = PathMode.FILE.value,
@@ -88,6 +92,7 @@ def widget_open_file(
     new_layer_name: str = "",
     dataset_key: str | None = None,
     stack_layout: str = ImageLayout.ZYX.value,
+    update_other_widgets: bool = True,
 ) -> None:
     """Open a file and return a napari layer."""
 
@@ -95,6 +100,8 @@ def widget_open_file(
         semantic_type = SemanticType.RAW
     elif layer_type == ImageType.LABEL.value:
         semantic_type = SemanticType.SEGMENTATION
+
+    widgets_to_update = [widget_set_voxel_size.layer]
 
     return schedule_task(
         import_image_task,
@@ -105,7 +112,7 @@ def widget_open_file(
             "semantic_type": semantic_type,
             "stack_layout": stack_layout,
         },
-        widgets_to_update=[widget_set_voxel_size.layer],
+        widgets_to_update=widgets_to_update if update_other_widgets else [],
     )
 
 
