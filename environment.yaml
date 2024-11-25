@@ -22,4 +22,4 @@ dependencies:
   # Other
   - requests
   - pyyaml
-  - pydantic>2
+  - pydantic>2,<2.10  # 2.10 cause problem spec-bioimage-io/issues/663
