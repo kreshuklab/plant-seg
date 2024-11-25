@@ -42,7 +42,7 @@ detailed description of the parameters.
 ## PlantSeg with Legacy GUI
 
 !!! failure "Deprecated"
-    This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or install PlantSeg v1.
+    This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or [install PlantSeg v1](../plantseg_legacy/installation.md).
 
 PlantSeg app can also be started in a GUI mode, where basic user interface allows to configure and run the pipeline.
 First, activate the newly created conda environment with:
