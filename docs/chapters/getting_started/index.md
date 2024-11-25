@@ -17,7 +17,7 @@ then, start the plantseg in napari
 plantseg --napari
 ```
 
-A more in depth guide can be found in our [documentation (GUI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_interactive_napari/).
+A more in depth guide can be found in our [documentation (GUI)](../plantseg_interactive_napari/index.md).
 
 ## Command Line PlantSeg
 
@@ -36,7 +36,7 @@ plantseg --config CONFIG_PATH
 ```
 
 where `CONFIG_PATH` is the path to the `YAML` configuration file. See [config.yaml](https://github.com/kreshuklab/plant-seg/blob/master/examples/config.yaml) for a sample configuration
-file and our [documentation (CLI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_cli/) for a
+file and our [documentation (CLI)](../plantseg_legacy/plantseg_classic_cli/index.md) for a
 detailed description of the parameters.
 
 ## PlantSeg with Legacy GUI
@@ -57,4 +57,4 @@ then, run the GUI by simply typing:
 plantseg --gui
 ```
 
-A more in depth guide can be found in our [documentation (Classic GUI)](https://hci-unihd.github.io/plant-seg/chapters/plantseg_classic_gui/).
+A more in depth guide can be found in our [documentation (Classic GUI)](../plantseg_legacy/plantseg_classic_gui/index.md).
