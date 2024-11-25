@@ -1,5 +1,7 @@
 # Installation
 
+This is the installation guide for the latest PlantSeg. Please check the installation guide for PlantSeg v1 at [PlantSeg Legacy Installation](../plantseg_legacy/installation.md).
+
 ## Prerequisites for Conda package
 
 * Linux, Windows, macOS (not all features are available on macOS)
@@ -105,3 +107,7 @@ If you plan to use SimpleITK-based watershed segmentation, you will need to inst
 conda activate plant-seg
 pip install SimpleITK
 ```
+
+## Installing PlantSeg v1
+
+Please check the installation guide for PlantSeg v1 at [PlantSeg Legacy Installation](../plantseg_legacy/installation.md).
