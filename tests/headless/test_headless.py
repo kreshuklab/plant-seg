@@ -41,7 +41,7 @@ def test_create_workflow(tmp_path):
 
     dag = workflow_handler.dag
     assert len(dag.list_tasks) == 3
-    assert len(dag.inputs.keys()) == 3
+    assert len(dag.inputs[0].keys()) == 3
 
     # Run the headless workflow
 
@@ -51,9 +51,20 @@ def test_create_workflow(tmp_path):
     with open(tmp_path / 'workflow.yaml', 'r') as file:
         config = yaml.safe_load(file)
 
-    config['inputs']['input_path']['value'] = [str(path_tiff_1), str(path_tiff_2)]
-    config['inputs']['export_directory']['value'] = str(tmp_path / 'output')
-    config['inputs']['name_pattern']['value'] = '{original_name}_export'
+    job_list = [
+        {
+            "input_path": str(path_tiff_1),
+            "export_directory": str(tmp_path / 'output'),
+            "name_pattern": "{file_name}_export",
+        },
+        {
+            "input_path": str(path_tiff_2),
+            "export_directory": str(tmp_path / 'output'),
+            "name_pattern": "{file_name}_export",
+        },
+    ]
+
+    config['inputs'] = job_list
 
     with open(tmp_path / 'workflow.yaml', 'w') as file:
         yaml.dump(config, file)

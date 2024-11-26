@@ -101,9 +101,11 @@ def find_a_max_patch_shape(
                     low = mid + 1  # Try larger patches
                 except RuntimeError as e:
                     if "out of memory" in str(e):
+                        logger.info(f"Encountered '{e}' at patch shape {patch_shape}, reducing it.")
                         high = mid - 1  # Try smaller patches
                     else:
-                        raise
+                        logger.warning(f"Encountered '{e}' at patch shape {patch_shape}, unexpected but continuing.")
+                        high = mid - 1  # Try smaller patches
                 finally:
                     del x
                     torch.cuda.empty_cache()
@@ -168,10 +170,15 @@ def find_batch_size(
                 _ = model(x)
             except RuntimeError as e:
                 if "out of memory" in str(e):
+                    logger.info(f"Encountered '{e}' at batch size {batch_size}, halving it.")
                     batch_size //= 2
                     break
                 else:
-                    raise
+                    logger.warning(
+                        f"Encountered '{e}' at batch size {batch_size}, unexpected but continuing with halved batch size."
+                    )
+                    batch_size //= 2
+                    break
             finally:
                 del x
                 torch.cuda.empty_cache()

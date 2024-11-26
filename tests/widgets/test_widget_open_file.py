@@ -21,6 +21,7 @@ def test_widget_open_file(make_napari_viewer_proxy, path_h5):
         new_layer_name="test_raw",
         dataset_key="/raw",
         stack_layout="ZYX",
+        update_other_widgets=False,
     )
     napari.run()
 

@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 
+from plantseg.core.image import PlantSegImage
 from plantseg.tasks.workflow_handler import DAG, Task, WorkflowHandler
 
 logger = logging.getLogger(__name__)
@@ -43,12 +44,21 @@ class SerialRunner:
         func = self.func_registry.get_func(task.func)
         outputs = func(**inputs, **task.parameters)
 
-        # Save outputs in var_space
-        for i, name in enumerate(task.outputs):
-            if isinstance(outputs, tuple):
-                var_space[name] = outputs[i]
-            else:
-                var_space[name] = outputs
+        if isinstance(outputs, PlantSegImage):
+            outputs = [outputs]
+
+        elif outputs is None:
+            outputs = []
+
+        assert isinstance(
+            outputs, (list, tuple)
+        ), f"Task {task.func} should return a list of PlantSegImage, got {type(outputs)}"
+        assert len(outputs) == len(
+            task.outputs
+        ), f"Task {task.func} should return {len(task.outputs)} outputs, got {len(outputs)}"
+
+        for name, output in zip(task.outputs, outputs, strict=True):
+            var_space[name] = output
 
         return var_space
 

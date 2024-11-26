@@ -2,24 +2,16 @@ from pathlib import Path
 
 from plantseg.core.image import PlantSegImage, import_image, save_image
 from plantseg.tasks import task_tracker
-from plantseg.tasks.workflow_handler import TaskUserInput
+from plantseg.tasks.workflow_handler import RunTimeInputSchema
 
 
 @task_tracker(
     is_root=True,
-    list_private_params=["semantic_type", "stack_layout"],
     list_inputs={
-        "input_path": TaskUserInput(
-            allowed_types=['str', 'list[str]'],
+        "input_path": RunTimeInputSchema(
             description="Path to a file, or a directory containing files (all files will be imported) or list of paths.",
-            headless_default=None,
-            user_input_required=True,
-        ),
-        "image_name": TaskUserInput(
-            allowed_types=['None', 'str'],
-            description="Name of the image (if None, the file name will be used)",
-            headless_default=None,
-            user_input_required=False,
+            required=True,
+            is_input_file=True,
         ),
     },
 )
@@ -38,7 +30,7 @@ def import_image_task(
         input_path (Path): path to the image file
         semantic_type (str): semantic type of the image (raw, segmentation, prediction)
         stack_layout (str): stack layout of the image (3D, 2D, 2D_time)
-        image_name (str | None): name of the image (if None, the file name will be used)
+        image_name (str): name of the image, if None the name will be the same as the file name
         key (str | None): key for the image (used only for h5 and zarr formats)
         m_slicing (str | None): m_slicing of the image (None, time, z, y, x)
     """
@@ -59,21 +51,19 @@ def import_image_task(
 @task_tracker(
     is_leaf=True,
     list_inputs={
-        "export_directory": TaskUserInput(
-            allowed_types=['str'],
-            description="Output directory path where the image will be saved",
-            headless_default=None,
-            user_input_required=True,
+        "export_directory": RunTimeInputSchema(
+            description="Output directory path where the image will be saved", required=True
         ),
-        "name_pattern": TaskUserInput(
-            allowed_types=['str'], description="Output file name", headless_default=None, user_input_required=False
+        "name_pattern": RunTimeInputSchema(
+            description="Output file name pattern. Can contain the special {image_name} or {file_name} tokens ",
+            required=False,
         ),
     },
 )
 def export_image_task(
     image: PlantSegImage,
     export_directory: Path,
-    name_pattern: str = "{original_name}_export",
+    name_pattern: str = "{file_name}_export",
     key: str | None = None,
     scale_to_origin: bool = True,
     export_format: str = "tiff",
@@ -85,7 +75,7 @@ def export_image_task(
     Args:
         image (PlantSegImage): input image to be saved to disk
         export_directory (Path): output directory path where the image will be saved
-        name_pattern (str): output file name pattern, can contain the {image_name} or {original_name} tokens
+        name_pattern (str): output file name pattern, can contain the {image_name} or {file_name} tokens
             to be replaced in the final file name.
         key (str | None): key for the image (used only for h5 and zarr formats).
         scale_to_origin (bool): scale the voxel size to the original one

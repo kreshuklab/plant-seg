@@ -115,18 +115,25 @@ nav:
       - Custom Datasets: chapters/plantseg_models/custom_datasets.md
       - Training: chapters/plantseg_models/training.md
 
-  - Classic GUI:
-      - chapters/plantseg_classic_gui/index.md
-      - Data Processing: chapters/plantseg_classic_gui/data_processing.md
-      - Prediction: chapters/plantseg_classic_gui/cnn_prediction.md
-      - Segmentation: chapters/plantseg_classic_gui/segmentation.md
-
-  - Classic CLI:
-      - chapters/plantseg_classic_cli/index.md
-
   - API:
-      # - chapters/python_api/index.md
-      - plantseg.io: chapters/python_api/io.md
-      - plantseg.dataprocessing: chapters/python_api/data_processing.md
-      - plantseg.prediction: chapters/python_api/cnn_prediction.md
-      - plantseg.segmentation: chapters/python_api/segmentation.md
+      - tasks:
+        - plantseg.tasks.io_tasks: chapters/python_api/tasks/io_tasks.md
+        - plantseg.tasks.dataprocessing_tasks: chapters/python_api/tasks/dataprocessing_tasks.md
+        - plantseg.tasks.segmentation_tasks: chapters/python_api/tasks/segmentation_tasks.md
+        - plantseg.tasks.prediction_tasks: chapters/python_api/tasks/prediction_tasks.md
+      - functionals:
+        - plantseg.io: chapters/python_api/functionals/io.md
+        - plantseg.functionals.dataprocessing: chapters/python_api/functionals/data_processing.md
+        - plantseg.functionals.prediction: chapters/python_api/functionals/cnn_prediction.md
+        - plantseg.functionals.segmentation: chapters/python_api/functionals/segmentation.md
+
+  - PlantSeg v1:
+      - chapters/plantseg_legacy/installation.md
+      - Classic GUI:
+          - chapters/plantseg_legacy/plantseg_classic_gui/index.md
+          - Data Processing: chapters/plantseg_legacy/plantseg_classic_gui/data_processing.md
+          - Prediction: chapters/plantseg_legacy/plantseg_classic_gui/cnn_prediction.md
+          - Segmentation: chapters/plantseg_legacy/plantseg_classic_gui/segmentation.md
+
+      - Classic CLI:
+          - chapters/plantseg_legacy/plantseg_classic_cli/index.md

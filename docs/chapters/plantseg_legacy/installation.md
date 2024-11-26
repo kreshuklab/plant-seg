@@ -1,7 +1,5 @@
 # Installation
 
-This is the installation guide for the latest PlantSeg. Please check the installation guide for PlantSeg v1 at [PlantSeg Legacy Installation](../plantseg_legacy/installation.md).
-
 ## Prerequisites for Conda package
 
 * Linux, Windows, macOS (not all features are available on macOS)
@@ -43,19 +41,19 @@ PlantSeg can be installed directly by executing in the terminal (or PowerShell o
     * NVIDIA GPU version, CUDA=12.x
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 plant-seg=1.8.1 bioimageio.core --no-channel-priority
         ```
 
     * NVIDIA GPU version, CUDA=11.x
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 plant-seg=1.8.1 bioimageio.core --no-channel-priority
         ```
 
     * CPU version
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly plant-seg=1.8.1 bioimageio.core --no-channel-priority
         ```
 
 === "Windows"
@@ -63,19 +61,19 @@ PlantSeg can be installed directly by executing in the terminal (or PowerShell o
     * NVIDIA GPU version, CUDA=12.x
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 nifty=1.2.1=*_4 plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 nifty=1.2.1=*_4 plant-seg=1.8.1 bioimageio.core --no-channel-priority
         ```
 
     * NVIDIA GPU version, CUDA=11.x
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 nifty=1.2.1=*_4 plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 nifty=1.2.1=*_4 plant-seg=1.8.1 bioimageio.core --no-channel-priority
         ```
 
     * CPU version
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly nifty=1.2.1=*_4 plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly nifty=1.2.1=*_4 plant-seg=1.8.1 bioimageio.core --no-channel-priority
         ```
 
 === "macOS"
@@ -83,7 +81,7 @@ PlantSeg can be installed directly by executing in the terminal (or PowerShell o
     * Apple silicon version
 
         ```bash
-        mamba create -n plant-seg -c pytorch -c conda-forge python=3.11 pytorch::pytorch plant-seg --no-channel-priority
+        mamba create -n plant-seg -c pytorch -c conda-forge python=3.11 pytorch::pytorch plant-seg=1.8.1 bioimageio.core --no-channel-priority
         ```
 
 If you used older versions of PlantSeg, please delete the old config files in `~/.plantseg_models/configs/` after installing new PlantSeg.
@@ -107,7 +105,3 @@ If you plan to use SimpleITK-based watershed segmentation, you will need to inst
 conda activate plant-seg
 pip install SimpleITK
 ```
-
-## Installing PlantSeg v1
-
-Please check the installation guide for PlantSeg v1 at [PlantSeg Legacy Installation](../plantseg_legacy/installation.md).

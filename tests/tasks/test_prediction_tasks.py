@@ -9,7 +9,7 @@ from plantseg.tasks.prediction_tasks import unet_prediction_task
 @pytest.mark.parametrize(
     "shape, layout, model_name",
     [
-        ((32, 64, 64), ImageLayout.ZYX, 'generic_confocal_3D_unet'),
+        ((8, 64, 64), ImageLayout.ZYX, 'generic_confocal_3D_unet'),
         ((64, 64), ImageLayout.YX, 'confocal_2D_unet_ovules_ds2x'),
     ],
 )

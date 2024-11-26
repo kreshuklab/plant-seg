@@ -83,7 +83,7 @@ def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Wid
         log(f"{task_name} complete in {timer:.2f}s", thread='Task')
 
         if isinstance(task_result, PlantSegImage):
-            add_ps_image_to_viewer(task_result)
+            add_ps_image_to_viewer(task_result, replace=True)
             setup_layers_suggestions(out_name=task_result.name, widgets=widgets_to_update)
 
         elif isinstance(task_result, (tuple, list)):
@@ -92,7 +92,7 @@ def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Wid
                     raise ValueError(f"Task {task_name} returned an unexpected value {task_result}")
 
             for ps_im in task_result:
-                add_ps_image_to_viewer(ps_im)
+                add_ps_image_to_viewer(ps_im, replace=True)
             setup_layers_suggestions(out_name=task_result[-1].name, widgets=widgets_to_update)
 
         elif task_result is None:
