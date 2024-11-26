@@ -128,8 +128,8 @@ model_filters = Container(
 )
 def widget_unet_prediction(
     image: Image,
-    plantseg_filter: bool = True,
     mode: UNetPredictionMode = UNetPredictionMode.PLANTSEG,
+    plantseg_filter: bool = True,
     model_name: Optional[str] = None,
     model_id: Optional[str] = None,
     device: str = ALL_DEVICES[0],
