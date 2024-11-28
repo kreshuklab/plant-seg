@@ -1938,7 +1938,7 @@ If the format is not supported, a default loader can be provided (default: load_
 <span class="sd">        &gt;&gt;&gt; data = smart_load(&#39;path/to/file.h5&#39;, key=&#39;raw&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ext</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span>
+    <span class="n">ext</span> <span class="o">=</span> <span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
         <span class="n">key</span> <span class="o">=</span> <span class="kc">None</span>
 
