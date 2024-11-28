@@ -32,7 +32,7 @@ def smart_load(path: Path, key: str | None = None, default=load_tiff) -> np.ndar
         >>> data = smart_load('path/to/file.h5', key='raw')
 
     """
-    ext = path.suffix
+    ext = (path.suffix).lower()
     if key == "":
         key = None
 
@@ -72,7 +72,7 @@ def smart_load_with_vs(path: Path, key: str | None = None, default=load_tiff) ->
         >>> data = smart_load('path/to/file.h5', key='raw')
 
     """
-    ext = path.suffix
+    ext = (path.suffix).lower()
     if key == "":
         key = None
 
@@ -85,9 +85,9 @@ def smart_load_with_vs(path: Path, key: str | None = None, default=load_tiff) ->
     if ext in PIL_EXTENSIONS:
         return load_pil(path), None
 
-    if ".zarr" in path.suffixes:
+    if ext in ZARR_EXTENSIONS:
         return load_zarr(path, key), read_zarr_voxel_size(path, key)
 
     else:
-        logger.warning(f"No default found for {ext}, reverting to default loader.")
-        return default(path)
+        logger.warning(f"No default found for {ext}, reverting to default loader with no voxel size reader.")
+        return default(path), None
