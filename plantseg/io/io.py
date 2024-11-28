@@ -89,5 +89,5 @@ def smart_load_with_vs(path: Path, key: str | None = None, default=load_tiff) ->
         return load_zarr(path, key), read_zarr_voxel_size(path, key)
 
     else:
-        logger.warning(f"No default found for {ext}, reverting to default loader.")
-        return default(path)
+        logger.warning(f"No default found for {ext}, reverting to default loader with no voxel size reader.")
+        return default(path), None
