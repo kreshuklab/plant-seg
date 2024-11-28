@@ -85,7 +85,7 @@ def smart_load_with_vs(path: Path, key: str | None = None, default=load_tiff) ->
     if ext in PIL_EXTENSIONS:
         return load_pil(path), None
 
-    if ".zarr" in path.suffixes:
+    if ext in ZARR_EXTENSIONS:
         return load_zarr(path, key), read_zarr_voxel_size(path, key)
 
     else:
