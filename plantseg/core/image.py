@@ -331,7 +331,7 @@ class PlantSegImage:
         if isinstance(path, str):
             path = Path(path)
 
-        if path.suffix not in H5_EXTENSIONS:
+        if path.suffix.lower() not in H5_EXTENSIONS:
             raise ValueError(f"File format {path.suffix} not supported, should be one of {H5_EXTENSIONS}")
 
         key = key if key is not None else self.name

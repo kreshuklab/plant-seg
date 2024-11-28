@@ -370,7 +370,7 @@ class ProofreadingHandler:
     def save_state_to_disk(self, filepath: Path, raw: Image | None, pmap: Image | None = None):
         """Saves the current state to disk as an HDF5 file."""
 
-        if filepath.suffix not in H5_EXTENSIONS:
+        if filepath.suffix.lower() not in H5_EXTENSIONS:
             log(
                 f'Invalid file extension: {filepath.suffix}. Please use a valid HDF5 file extensions: {H5_EXTENSIONS}',
                 thread='Save State',
