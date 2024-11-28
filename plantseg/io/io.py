@@ -32,7 +32,7 @@ def smart_load(path: Path, key: str | None = None, default=load_tiff) -> np.ndar
         >>> data = smart_load('path/to/file.h5', key='raw')
 
     """
-    ext = path.suffix
+    ext = (path.suffix).lower()
     if key == "":
         key = None
 
@@ -72,7 +72,7 @@ def smart_load_with_vs(path: Path, key: str | None = None, default=load_tiff) ->
         >>> data = smart_load('path/to/file.h5', key='raw')
 
     """
-    ext = path.suffix
+    ext = (path.suffix).lower()
     if key == "":
         key = None
 
