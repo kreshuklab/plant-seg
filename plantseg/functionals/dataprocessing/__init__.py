@@ -3,8 +3,10 @@ from plantseg.functionals.dataprocessing.advanced_dataprocessing import (
     remove_false_positives_by_foreground_probability,
 )
 from plantseg.functionals.dataprocessing.dataprocessing import (
+    add_image,
     compute_scaling_factor,
     compute_scaling_voxelsize,
+    divide_image,
     fix_layout,
     fix_layout_to_CYX,
     fix_layout_to_CZYX,
@@ -14,10 +16,14 @@ from plantseg.functionals.dataprocessing.dataprocessing import (
     image_gaussian_smoothing,
     image_median,
     image_rescale,
+    max_image,
+    multiply_image,
     normalize_01,
     normalize_01_channel_wise,
+    process_images,
     scale_image_to_voxelsize,
     select_channel,
+    subtract_image,
 )
 from plantseg.functionals.dataprocessing.labelprocessing import (
     relabel_segmentation,
@@ -45,6 +51,13 @@ __all__ = [
     "fix_layout_to_ZYX",
     "fix_layout_to_YX",
     "fix_layout",
+    # simple image operations
+    "process_images",
+    "max_image",
+    "add_image",
+    "subtract_image",
+    "multiply_image",
+    "divide_image",
     # labelprocessing
     "relabel_segmentation",
     "set_background_to_value",
