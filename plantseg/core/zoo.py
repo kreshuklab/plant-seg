@@ -16,7 +16,7 @@ from bioimageio.spec.model.v0_4 import ModelDescr as ModelDescr_v0_4
 from bioimageio.spec.model.v0_5 import ModelDescr as ModelDescr_v0_5
 from bioimageio.spec.utils import download
 from pandas import DataFrame, concat
-from pydantic import AliasChoices, BaseModel, Field, model_validator
+from pydantic import AliasChoices, BaseModel, Field, HttpUrl, model_validator
 from torch.nn import Conv2d, Conv3d, MaxPool2d, MaxPool3d, Module
 
 from plantseg import (
@@ -48,7 +48,7 @@ class ModelZooRecord(BaseModel):
     """Model Zoo Record"""
 
     name: str
-    url: Optional[str] = Field(None, validation_alias=AliasChoices('model_url', 'url'))
+    url: Optional[HttpUrl] = Field(None, validation_alias=AliasChoices('model_url', 'url'))
     path: Optional[str] = None
     description: Optional[str] = None
     resolution: Optional[tuple[float, float, float]] = None
@@ -62,7 +62,7 @@ class ModelZooRecord(BaseModel):
     # BioImage.IO models specific fields. TODO: unify.
     id: Optional[str] = None
     name_display: Optional[str] = None
-    rdf_source: Optional[str] = None
+    rdf_source: Optional[HttpUrl] = None
     supported: Optional[bool] = None
 
     @model_validator(mode='after')
@@ -374,6 +374,8 @@ class ModelZoo:
         elif isinstance(model_description, ModelDescr_v0_5):  # then it is `ArchitectureDescr` with `callable`
             architecture_callable = model_description.weights.pytorch_state_dict.architecture.callable
             architecture_kwargs = model_description.weights.pytorch_state_dict.architecture.kwargs
+        else:
+            raise ValueError(f"Unsupported model description format: {type(model_description).__name__}")
         logger_zoo.info(f"Got {architecture_callable} model with kwargs {architecture_kwargs}.")
 
         # Create model from architecture and kwargs
