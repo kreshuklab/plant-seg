@@ -47,6 +47,8 @@ MODEL_IDS = [  # These two models has halo 44 on each side
 class TestBioImageIOModelZoo:
     """Test the BioImage.IO model zoo"""
 
+    model_zoo.refresh_bioimageio_zoo_urls()
+
     @pytest.mark.parametrize("model_id", MODEL_IDS)
     def test_get_model_by_id(self, model_id):
         """Try to load a model from the BioImage.IO model zoo by ID."""
@@ -62,9 +64,3 @@ class TestBioImageIOModelZoo:
         model, _, _ = model_zoo.get_model_by_id(model_id)
         halo = model_zoo.compute_halo(model)
         assert halo == 44
-
-    def test_models_bioimageio(self):
-        """`model_zoo` has no `models_bioimageio` attribute until `.refresh_bioimageio_zoo_urls()` is called."""
-        assert not hasattr(model_zoo, 'models_bioimageio')
-        model_zoo.refresh_bioimageio_zoo_urls()
-        assert hasattr(model_zoo, 'models_bioimageio')

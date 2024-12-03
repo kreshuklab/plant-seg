@@ -342,7 +342,7 @@ class ModelZoo:
         https://bioimage-io.github.io/collection-bioimage-io/rdfs/10.5281/zenodo.8401064/8429203/rdf.yaml
         """
 
-        if not self.models_bioimageio:
+        if not hasattr(self, 'models_bioimageio'):
             self.refresh_bioimageio_zoo_urls()
 
         if model_id not in self.models_bioimageio.index:
@@ -458,13 +458,13 @@ class ModelZoo:
 
     def get_bioimageio_zoo_plantseg_model_names(self) -> list[str]:
         """Return a list of model names in the BioImage.IO Model Zoo tagged with 'plantseg'."""
-        if not self.models_bioimageio:
+        if not hasattr(self, 'models_bioimageio'):
             self.refresh_bioimageio_zoo_urls()
         return sorted(model_zoo.models_bioimageio[model_zoo.models_bioimageio["supported"]].index.to_list())
 
     def get_bioimageio_zoo_all_model_names(self) -> list[str]:
         """Return a list of all model names in the BioImage.IO Model Zoo."""
-        if not self.models_bioimageio:
+        if not hasattr(self, 'models_bioimageio'):
             self.refresh_bioimageio_zoo_urls()
         return sorted(model_zoo.models_bioimageio.index.to_list())
 
