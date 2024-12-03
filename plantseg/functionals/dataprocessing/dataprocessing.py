@@ -355,10 +355,13 @@ def normalize_01_channel_wise(data: np.ndarray, channel_axis: int = 0, eps=1e-12
     return np.moveaxis(normalized_channels, 0, channel_axis)
 
 
+ImagePairOperation = Literal["add", "multiply", "subtract", "divide", "max"]
+
+
 def process_images(
     image1: np.ndarray,
     image2: np.ndarray,
-    operation: str,
+    operation: ImagePairOperation,
     normalize_input: bool = False,
     clip_output: bool = False,
     normalize_output: bool = True,

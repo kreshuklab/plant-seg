@@ -3,6 +3,7 @@ from plantseg.functionals.dataprocessing.advanced_dataprocessing import (
     remove_false_positives_by_foreground_probability,
 )
 from plantseg.functionals.dataprocessing.dataprocessing import (
+    ImagePairOperation,
     add_images,
     compute_scaling_factor,
     compute_scaling_voxelsize,
@@ -52,6 +53,7 @@ __all__ = [
     "fix_layout_to_YX",
     "fix_layout",
     # simple image operations
+    "ImagePairOperation",
     "process_images",
     "max_images",
     "add_images",

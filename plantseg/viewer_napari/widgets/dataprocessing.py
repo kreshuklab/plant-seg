@@ -7,9 +7,11 @@ from plantseg.core.image import ImageDimensionality, PlantSegImage
 from plantseg.core.zoo import model_zoo
 from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks.dataprocessing_tasks import (
+    ImagePairOperation,
     fix_over_under_segmentation_from_nuclei_task,
     gaussian_smoothing_task,
     image_cropping_task,
+    image_pair_operation_task,
     image_rescale_to_shape_task,
     image_rescale_to_voxel_size_task,
     relabel_segmentation_task,
@@ -114,7 +116,7 @@ def widget_cropping(
 
     ps_image = PlantSegImage.from_napari_layer(image)
 
-    widgets_to_update = []
+    widgets_to_update = None
 
     return schedule_task(
         image_cropping_task,
@@ -631,4 +633,65 @@ def widget_set_biggest_instance_to_zero(
             "instance_could_be_zero": instance_could_be_zero,
         },
         widgets_to_update=widgets_to_update,
+    )
+
+
+########################################################################################################################
+#                                                                                                                      #
+# Image Pair Operation Widget                                                                                          #
+#                                                                                                                      #
+########################################################################################################################
+
+
+@magicgui(
+    call_button="Run Operation",
+    image1={
+        "label": "Image 1",
+        "tooltip": "First image to apply the operation.",
+    },
+    image2={
+        "label": "Image 2",
+        "tooltip": "Second image to apply the operation.",
+    },
+    operation={
+        "label": "Operation",
+        "choices": ImagePairOperation,
+    },
+    normalize_input={
+        "label": "Normalize input",
+        "tooltip": "Normalize the input images to the range [0, 1].",
+    },
+    clip_output={
+        "label": "Clip output",
+        "tooltip": "Clip the output to the range [0, 1].",
+    },
+    normalize_output={
+        "label": "Normalize output",
+        "tooltip": "Normalize the output image to the range [0, 1].",
+    },
+)
+def widget_image_pair_operations(
+    image1: Image,
+    image2: Image,
+    operation: ImagePairOperation = "add",
+    normalize_input: bool = False,
+    clip_output: bool = False,
+    normalize_output: bool = False,
+) -> None:
+    """Apply an operation to two image layers."""
+
+    ps_image1 = PlantSegImage.from_napari_layer(image1)
+    ps_image2 = PlantSegImage.from_napari_layer(image2)
+
+    return schedule_task(
+        image_pair_operation_task,
+        task_kwargs={
+            "image1": ps_image1,
+            "image2": ps_image2,
+            "operation": operation,
+            "normalize_input": normalize_input,
+            "clip_output": clip_output,
+            "normalize_output": normalize_output,
+        },
+        widgets_to_update=[],
     )

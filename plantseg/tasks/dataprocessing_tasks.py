@@ -2,9 +2,11 @@ import logging
 
 from plantseg.core.image import ImageDimensionality, ImageLayout, PlantSegImage, SemanticType
 from plantseg.functionals.dataprocessing import (
+    ImagePairOperation,
     fix_over_under_segmentation_from_nuclei,
     image_gaussian_smoothing,
     image_rescale,
+    process_images,
     relabel_segmentation,
     remove_false_positives_by_foreground_probability,
     set_biggest_instance_to_zero,
@@ -305,4 +307,36 @@ def relabel_segmentation_task(image: PlantSegImage, background: int | None = Non
     data = image.get_data()
     new_data = relabel_segmentation(data, background=background)
     new_image = image.derive_new(new_data, name=f"{image.name}_relabeled")
+    return new_image
+
+
+@task_tracker
+def image_pair_operation_task(
+    image1: PlantSegImage,
+    image2: PlantSegImage,
+    operation: ImagePairOperation,
+    normalize_input: bool = False,
+    clip_output: bool = False,
+    normalize_output: bool = False,
+) -> PlantSegImage:
+    """
+    Task to perform an operation on two images.
+
+    Args:
+        image1 (PlantSegImage): First image to process.
+        Image2 (PlantSegImage): Second image to process.
+        operation (str): Operation to perform on the images.
+
+    Returns:
+        PlantSegImage: New image resulting from the operation.
+    """
+    result = process_images(
+        image1.get_data(),
+        image2.get_data(),
+        operation=operation,
+        normalize_input=normalize_input,
+        clip_output=clip_output,
+        normalize_output=normalize_output,
+    )
+    new_image = image1.derive_new(result, name=f"{image1.name}_{operation}_{image2.name}")
     return new_image

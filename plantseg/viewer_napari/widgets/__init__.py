@@ -2,6 +2,7 @@ from plantseg.viewer_napari.widgets.dataprocessing import (
     widget_cropping,
     widget_fix_over_under_segmentation_from_nuclei,
     widget_gaussian_smoothing,
+    widget_image_pair_operations,
     widget_relabel,
     widget_remove_false_positives_by_foreground,
     widget_rescaling,
@@ -40,6 +41,7 @@ __all__ = [
     "widget_gaussian_smoothing",
     "widget_rescaling",
     "widget_cropping",
+    "widget_image_pair_operations",
     # IO
     "widget_open_file",
     "widget_export_image",
