@@ -326,6 +326,9 @@ def image_pair_operation_task(
         image1 (PlantSegImage): First image to process.
         Image2 (PlantSegImage): Second image to process.
         operation (str): Operation to perform on the images.
+        normalize_input (bool): Normalize input images before processing.
+        clip_output (bool): Clip output values to the range [0, 1].
+        normalize_output (bool): Normalize output values to the range [0, 1].
 
     Returns:
         PlantSegImage: New image resulting from the operation.

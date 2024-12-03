@@ -10,6 +10,7 @@ Basic data processing functions are provided in the `dataprocessing` module. The
 ::: plantseg.functionals.dataprocessing.dataprocessing.image_median
 ::: plantseg.functionals.dataprocessing.dataprocessing.image_gaussian_smoothing
 ::: plantseg.functionals.dataprocessing.dataprocessing.image_crop
+::: plantseg.functionals.dataprocessing.dataprocessing.process_images
 
 ## Segmentation Functions
 

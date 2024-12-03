@@ -11,7 +11,6 @@ from plantseg.functionals.dataprocessing import (
 )
 
 
-# Mock normalize_01 function (replace with your actual implementation)
 def normalize_01(image: np.ndarray) -> np.ndarray:
     min_val, max_val = image.min(), image.max()
     if max_val - min_val == 0:
@@ -19,7 +18,6 @@ def normalize_01(image: np.ndarray) -> np.ndarray:
     return (image - min_val) / (max_val - min_val)
 
 
-# Test cases for process_images
 @pytest.mark.parametrize(
     "operation, expected_result",
     [
@@ -103,12 +101,16 @@ def test_max_images():
     assert np.allclose(result, expected), "Max operation failed"
 
 
-# Error handling
 def test_process_images_invalid_operation():
     image1 = np.array([[1, 2], [3, 4]])
     image2 = np.array([[1, 2], [3, 4]])
 
     with pytest.raises(ValueError, match="Unsupported operation: invalid"):
         process_images(
-            image1, image2, operation="invalid", normalize_input=False, clip_output=False, normalize_output=False
+            image1,
+            image2,
+            operation="invalid",
+            normalize_input=False,
+            clip_output=False,
+            normalize_output=False,
         )
