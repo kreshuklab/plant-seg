@@ -50,7 +50,6 @@ class ModelZooRecord(BaseModel):
     name: str
     url: Optional[str] = Field(None, validation_alias=AliasChoices('model_url', 'url'))
     path: Optional[str] = None
-    id: Optional[str] = None
     description: Optional[str] = None
     resolution: Optional[tuple[float, float, float]] = None
     dimensionality: Optional[str] = None
@@ -60,11 +59,25 @@ class ModelZooRecord(BaseModel):
     doi: Optional[str] = None
     added_by: Optional[str] = None
 
+    # BioImage.IO models specific fields. TODO: unify.
+    id: Optional[str] = None
+    name_display: Optional[str] = None
+    rdf_source: Optional[str] = None
+    supported: Optional[bool] = None
+
     @model_validator(mode='after')
     def check_one_id_present(self) -> Self:
         """Check that one of url (zenodo), path (custom/local) or id (bioimage.io) is present"""
         if self.url is None and self.path is None and self.id is None:
-            raise ValueError(f'One of url, path or id must be present: {self}')
+            raise ValueError(f'One of `url`, `path` or `id` must be present: {self}')
+        return self
+
+    @model_validator(mode='after')
+    def check_id_fields_present(self) -> Self:
+        if self.id is not None and (self.name_display is None or self.rdf_source is None or self.supported is None):
+            raise ValueError(
+                f'If `id` exists, then `name_display`, `rdf_source` and `supported` must be present: {self}'
+            )
         return self
 
 
@@ -384,6 +397,16 @@ class ModelZoo:
         logger_zoo.info(f"Loaded model from BioImage.IO Model Zoo: {model_id}")
         return model, model_config, model_weights_path
 
+    def _init_bioimageio_zoo_df(self) -> None:
+        records = []
+        for _, model in self._bioimageio_zoo_all_model_url_dict.items():
+            records.append(ModelZooRecord(**model, added_by=Author.BIOIMAGEIO).model_dump())
+
+        self.models_bioimageio = DataFrame(
+            records,
+            columns=list(ModelZooRecord.model_fields.keys()),
+        ).set_index('id')
+
     def refresh_bioimageio_zoo_urls(self):
         """Initialize the BioImage.IO Model Zoo collection and URL dictionaries.
 
@@ -404,13 +427,20 @@ class ModelZoo:
         def build_model_url_dict(filter_func=None):
             filtered_models = filter(filter_func, models) if filter_func else models
             return {
-                f"{entry['nickname']:<{max_nickname_length}}: {truncate_name(entry['name'])}": entry["rdf_source"]
+                entry['name']: {
+                    "id": entry["nickname"],
+                    "name": entry["name"],
+                    "name_display": f"{entry['nickname']:<{max_nickname_length}}: {truncate_name(entry['name'])}",
+                    "rdf_source": entry["rdf_source"],
+                    "supported": self._is_plantseg_model(entry),
+                }
                 for entry in filtered_models
             }
 
         self._bioimageio_zoo_collection = collection
         self._bioimageio_zoo_all_model_url_dict = build_model_url_dict()
         self._bioimageio_zoo_plantseg_model_url_dict = build_model_url_dict(self._is_plantseg_model)
+        self._init_bioimageio_zoo_df()
 
     def _is_plantseg_model(self, collection_entry: dict) -> bool:
         """Determines if the 'tags' field in a collection entry contains the keyword 'plantseg'."""
