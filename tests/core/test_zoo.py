@@ -62,3 +62,9 @@ class TestBioImageIOModelZoo:
         model, _, _ = model_zoo.get_model_by_id(model_id)
         halo = model_zoo.compute_halo(model)
         assert halo == 44
+
+    def test_models_bioimageio(self):
+        """`model_zoo` has no `models_bioimageio` attribute until `.refresh_bioimageio_zoo_urls()` is called."""
+        assert not hasattr(model_zoo, 'models_bioimageio')
+        model_zoo.refresh_bioimageio_zoo_urls()
+        assert hasattr(model_zoo, 'models_bioimageio')

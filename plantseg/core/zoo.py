@@ -412,6 +412,8 @@ class ModelZoo:
 
         The BioImage.IO Model Zoo collection is not downloaded during ModelZoo initialization to avoid unnecessary
         network requests. This method downloads the collection and extracts the model URLs for all models.
+
+        Note that `models_bioimageio` doesn't exist until this method is called.
         """
         logger_zoo.info(f"Fetching BioImage.IO Model Zoo collection from {BIOIMAGE_IO_COLLECTION_URL}")
         collection_path = Path(pooch.retrieve(BIOIMAGE_IO_COLLECTION_URL, known_hash=None))
