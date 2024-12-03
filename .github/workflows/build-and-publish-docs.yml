@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - master
-      - qy/add-plantseg-v1-installation
+      - qy/mask-pred
 
 permissions:
   contents: write
