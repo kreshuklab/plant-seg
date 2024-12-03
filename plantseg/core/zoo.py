@@ -97,7 +97,6 @@ class ModelZoo:
     _zoo_custom_dict: dict = {}
     _bioimageio_zoo_collection: dict = {}
     _bioimageio_zoo_all_model_url_dict: dict = {}
-    _bioimageio_zoo_plantseg_model_url_dict: dict = {}
 
     path_zoo: Path = PATH_MODEL_ZOO
     path_zoo_custom: Path = PATH_MODEL_ZOO_CUSTOM
@@ -343,13 +342,13 @@ class ModelZoo:
         https://bioimage-io.github.io/collection-bioimage-io/rdfs/10.5281/zenodo.8401064/8429203/rdf.yaml
         """
 
-        if not self._bioimageio_zoo_all_model_url_dict:
+        if not self.models_bioimageio:
             self.refresh_bioimageio_zoo_urls()
 
-        if model_id not in self._bioimageio_zoo_all_model_url_dict:
+        if model_id not in self.models_bioimageio.index:
             raise ValueError(f"Model ID {model_id} not found in BioImage.IO Model Zoo")
 
-        rdf_url = self._bioimageio_zoo_all_model_url_dict[model_id]
+        rdf_url = self.models_bioimageio.at[model_id, 'rdf_source']
         model_description = load_description(rdf_url)
 
         # Check if description is `ResourceDescr`
@@ -441,7 +440,6 @@ class ModelZoo:
 
         self._bioimageio_zoo_collection = collection
         self._bioimageio_zoo_all_model_url_dict = build_model_url_dict()
-        self._bioimageio_zoo_plantseg_model_url_dict = build_model_url_dict(self._is_plantseg_model)
         self._init_bioimageio_zoo_df()
 
     def _is_plantseg_model(self, collection_entry: dict) -> bool:
@@ -458,15 +456,15 @@ class ModelZoo:
 
     def get_bioimageio_zoo_plantseg_model_names(self) -> list[str]:
         """Return a list of model names in the BioImage.IO Model Zoo tagged with 'plantseg'."""
-        if not self._bioimageio_zoo_plantseg_model_url_dict:
+        if not self.models_bioimageio:
             self.refresh_bioimageio_zoo_urls()
-        return sorted(list(self._bioimageio_zoo_plantseg_model_url_dict.keys()))
+        return sorted(model_zoo.models_bioimageio[model_zoo.models_bioimageio["supported"]].index.to_list())
 
     def get_bioimageio_zoo_all_model_names(self) -> list[str]:
         """Return a list of all model names in the BioImage.IO Model Zoo."""
-        if not self._bioimageio_zoo_all_model_url_dict:
+        if not self.models_bioimageio:
             self.refresh_bioimageio_zoo_urls()
-        return sorted(list(self._bioimageio_zoo_all_model_url_dict.keys()))
+        return sorted(model_zoo.models_bioimageio.index.to_list())
 
     def get_bioimageio_zoo_other_model_names(self) -> list[str]:
         """Return a list of model names in the BioImage.IO Model Zoo not tagged with 'plantseg'."""
