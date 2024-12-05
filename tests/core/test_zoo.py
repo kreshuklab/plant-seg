@@ -47,6 +47,8 @@ MODEL_IDS = [  # These two models has halo 44 on each side
 class TestBioImageIOModelZoo:
     """Test the BioImage.IO model zoo"""
 
+    model_zoo.refresh_bioimageio_zoo_urls()
+
     @pytest.mark.parametrize("model_id", MODEL_IDS)
     def test_get_model_by_id(self, model_id):
         """Try to load a model from the BioImage.IO model zoo by ID."""
