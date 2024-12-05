@@ -39,9 +39,7 @@ class Author(str, Enum):
     USER = 'user'
 
 
-BIOIMAGE_IO_COLLECTION_URL = (
-    "https://raw.githubusercontent.com/bioimage-io/collection-bioimage-io/gh-pages/collection.json"
-)
+BIOIMAGE_IO_COLLECTION_URL = "https://uk1s3.embassy.ebi.ac.uk/public-datasets/bioimage.io/collection.json"
 
 
 class ModelZooRecord(BaseModel):
@@ -421,8 +419,11 @@ class ModelZoo:
         with collection_path.open(encoding='utf-8') as f:
             collection = json.load(f)
 
+        def get_id(entry):
+            return entry["id"] if "nickname" not in entry else entry["nickname"]
+
         models = [entry for entry in collection["collection"] if entry["type"] == "model"]
-        max_nickname_length = max(len(entry["nickname"]) for entry in models)
+        max_nickname_length = max(len(get_id(entry)) for entry in models)
 
         def truncate_name(name, length=100):
             return name[:length] + '...' if len(name) > length else name
@@ -431,9 +432,9 @@ class ModelZoo:
             filtered_models = filter(filter_func, models) if filter_func else models
             return {
                 entry['name']: {
-                    "id": entry["nickname"],
+                    "id": get_id(entry),
                     "name": entry["name"],
-                    "name_display": f"{entry['nickname']:<{max_nickname_length}}: {truncate_name(entry['name'])}",
+                    "name_display": f"{get_id(entry):<{max_nickname_length}}: {truncate_name(entry['name'])}",
                     "rdf_source": entry["rdf_source"],
                     "supported": self._is_plantseg_model(entry),
                 }
