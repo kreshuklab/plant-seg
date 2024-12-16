@@ -4,7 +4,7 @@ site_description: Cell instance aware segmentation in densely packed 3D volumetr
 repo_name: kreshuklab/plant-seg
 repo_url: https://github.com/kreshuklab/plant-seg
 edit_uri: edit/main/docs/
-copyright: Copyright &copy; 2019 - 2024 Lorenzo Cerrone, Adrian Wolny, Qin Yu
+copyright: Copyright &copy; 2019 - 2025 Lorenzo Cerrone, Adrian Wolny, Qin Yu
 
 theme:
   name: material
@@ -116,6 +116,7 @@ nav:
       - Training: chapters/plantseg_models/training.md
 
   - API:
+      - chapters/python_api/index.md
       - tasks:
         - plantseg.tasks.io_tasks: chapters/python_api/tasks/io_tasks.md
         - plantseg.tasks.dataprocessing_tasks: chapters/python_api/tasks/dataprocessing_tasks.md
