@@ -54,9 +54,23 @@ def biio_prediction(
             [AxisId(a) if isinstance(a, str) else a.id for a in model.inputs[0].axes]
         )
     }
-    sample = Sample(members=members, stat={}, id="raw")
+    input_block_shape = {
+        TensorId(tensor_id): {
+            # 'emotional-cricket' has:
+            #   {'batch': None, 'channel': 1, 'z': 100, 'y': 128, 'x': 128}
+            #
+            # 'philosophical-panda' has:
+            #   {'z': ParameterizedSize(min=1, step=1),
+            #    'channel': 2,
+            #    'y': ParameterizedSize(min=16, step=16),
+            #    'x': ParameterizedSize(min=16, step=16)}
+            AxisId(a) if isinstance(a, str) else a.id: a.size if a.size is not None else 1
+            for a in model.inputs[0].axes
+        }
+    }
 
-    sample_out = predict(model=model, inputs=sample)
+    sample = Sample(members=members, stat={}, id="raw")
+    sample_out = predict(model=model, inputs=sample, input_block_shape=input_block_shape)
     assert isinstance(sample_out, Sample)
     if len(sample_out.members) != 1:
         logger.warning("Model has more than one output tensor. PlantSeg does not support this yet.")
