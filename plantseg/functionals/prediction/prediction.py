@@ -47,17 +47,14 @@ def biio_prediction(
 
     assert isinstance(input_layout, str)
     dims = tuple(
-        'channel' if item.lower() == 'c' else item.lower() for item in input_layout
+        AxisId('channel') if item.lower() == 'c' else AxisId(item.lower()) for item in input_layout
     )  # `AxisId` has to be "channel" not "c"
-    sample = Sample(
-        members={
-            TensorId(tensor_id): Tensor(array=raw, dims=dims).transpose(
-                [AxisId(a) if isinstance(a, str) else a.id for a in model.inputs[0].axes]
-            )
-        },
-        stat={},
-        id="raw",
-    )
+    members = {
+        TensorId(tensor_id): Tensor(array=raw, dims=dims).transpose(
+            [AxisId(a) if isinstance(a, str) else a.id for a in model.inputs[0].axes]
+        )
+    }
+    sample = Sample(members=members, stat={}, id="raw")
 
     sample_out = predict(model=model, inputs=sample)
     assert isinstance(sample_out, Sample)
