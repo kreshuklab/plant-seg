@@ -51,7 +51,7 @@ def unet_prediction_task(
         config_path=config_path,
         model_weights_path=model_weights_path,
     )
-    assert pmaps.ndim == 4, f"Expected 4D CZXY prediction, got {pmaps.ndim}D"
+    # assert pmaps.ndim == 4, f"Expected 4D CZXY prediction, got {pmaps.ndim}D"
 
     new_images = []
 

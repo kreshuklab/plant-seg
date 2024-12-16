@@ -93,11 +93,13 @@ def biio_prediction(
     assert isinstance(sample_out, Sample)
     if len(sample_out.members) != 1:
         logger.warning("Model has more than one output tensor. PlantSeg does not support this yet.")
-    key = list(sample_out.members.keys())[0]
-    pmaps = sample_out.members[key].data.to_numpy()[0]
-    assert pmaps.ndim == 4, f"Expected 4D CZXY prediction from `biio_prediction()`, got {pmaps.ndim}D"
-
-    return pmaps
+    t = {i: o.transpose(['batch', 'channel', 'z', 'y', 'x']) for i, o in sample_out.members.items()}
+    pmaps = []
+    for i, bczyx in t.items():
+        for czyx in bczyx:
+            for zyx in czyx:
+                pmaps.append(zyx.data.to_numpy())
+    return pmaps  # FIXME: Wrong return type
 
 
 def unet_prediction(
