@@ -29,6 +29,8 @@ def biio_prediction(
     input_layout: ImageLayout,
     model_id: str,
 ) -> np.ndarray:
+    assert isinstance(input_layout, str)
+
     model = load_model_description(model_id)
     if isinstance(model, v0_4.ModelDescr):
         input_ids = [input_tensor.name for input_tensor in model.inputs]
@@ -37,40 +39,57 @@ def biio_prediction(
     else:
         assert_never(model)
 
+    logger.info(f"Model expects these inputs: {input_ids}.")
     if len(input_ids) < 1:
-        logger.error("Model needs no input tensor.")
+        logger.error("Model needs no input tensor. PlantSeg does not support this yet.")
     if len(input_ids) > 1:
-        logger.warning("Model needs more than one input tensor. PlantSeg does not support this yet.")
+        logger.error("Model needs more than one input tensor. PlantSeg does not support this yet.")
+
     tensor_id = input_ids[0]
-
-    logger.info(f"model expects these inputs: {input_ids}")
-
-    assert isinstance(input_layout, str)
+    axes = model.inputs[0].axes  # PlantSeg only supports one input tensor for now
     dims = tuple(
         AxisId('channel') if item.lower() == 'c' else AxisId(item.lower()) for item in input_layout
     )  # `AxisId` has to be "channel" not "c"
     members = {
         TensorId(tensor_id): Tensor(array=raw, dims=dims).transpose(
-            [AxisId(a) if isinstance(a, str) else a.id for a in model.inputs[0].axes]
+            [AxisId(a) if isinstance(a, str) else a.id for a in axes]
         )
     }
-    input_block_shape = {
-        TensorId(tensor_id): {
-            # 'emotional-cricket' has:
-            #   {'batch': None, 'channel': 1, 'z': 100, 'y': 128, 'x': 128}
-            #
-            # 'philosophical-panda' has:
-            #   {'z': ParameterizedSize(min=1, step=1),
-            #    'channel': 2,
-            #    'y': ParameterizedSize(min=16, step=16),
-            #    'x': ParameterizedSize(min=16, step=16)}
-            AxisId(a) if isinstance(a, str) else a.id: a.size if a.size is not None else 1
-            for a in model.inputs[0].axes
-        }
-    }
-
     sample = Sample(members=members, stat={}, id="raw")
-    sample_out = predict(model=model, inputs=sample, input_block_shape=input_block_shape)
+
+    for a in axes:
+        if isinstance(a, str):
+            raise ValueError(f"Model has a string axis: {a}, please report issue to PlantSeg developers.")
+    sizes_in_rdf = {a.id: a.size for a in axes}
+    assert 'x' in sizes_in_rdf, "Model does not have 'x' axis in input tensor."
+    size_to_check = sizes_in_rdf[AxisId('x')]
+    if isinstance(size_to_check, int):  # e.g. 'emotional-cricket'
+        # 'emotional-cricket' has {'batch': None, 'channel': 1, 'z': 100, 'y': 128, 'x': 128}
+        input_block_shape = {
+            TensorId(tensor_id): {
+                a.id: a.size if isinstance(a.size, int) else 1
+                for a in axes
+                if not isinstance(a, str)  # for a.size/a.id type checking only
+            }
+        }
+        sample_out = predict(model=model, inputs=sample, input_block_shape=input_block_shape)
+    elif isinstance(size_to_check, v0_5.ParameterizedSize):  # e.g. 'philosophical-panda'
+        # 'philosophical-panda' has:
+        #   {'z': ParameterizedSize(min=1, step=1),
+        #    'channel': 2,
+        #    'y': ParameterizedSize(min=16, step=16),
+        #    'x': ParameterizedSize(min=16, step=16)}
+        blocksize_parameter = {
+            (TensorId(tensor_id), a.id): (
+                (96 - a.size.min) // a.size.step if isinstance(a.size, v0_5.ParameterizedSize) else 1
+            )
+            for a in axes
+            if not isinstance(a, str)  # for a.size/a.id type checking only
+        }
+        sample_out = predict(model=model, inputs=sample, blocksize_parameter=blocksize_parameter)
+    else:
+        assert_never(size_to_check)
+
     assert isinstance(sample_out, Sample)
     if len(sample_out.members) != 1:
         logger.warning("Model has more than one output tensor. PlantSeg does not support this yet.")
