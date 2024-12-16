@@ -10,28 +10,24 @@
       
       
       
-        <link rel="canonical" href="https://kreshuklab.github.io/plant-seg/chapters/plantseg_interactive_napari/unet_training/">
+        <link rel="canonical" href="https://kreshuklab.github.io/plant-seg/chapters/python_api/">
       
       
-        <link rel="prev" href="../extra/">
       
       
-        <link rel="next" href="../../plantseg_models/">
-      
-      
-      <link rel="icon" href="../../../images/favicon.ico">
+      <link rel="icon" href="../../images/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
     
     
       
-        <title>Training - PlantSeg</title>
+        <title>Hierarchical Design of PlantSeg - PlantSeg</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.6f8fc17f.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6f8fc17f.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -50,11 +46,11 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/_markdown_exec_pyodide.css">
+      <link rel="stylesheet" href="../../assets/_markdown_exec_pyodide.css">
     
-      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -80,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#unet-training" class="md-skip">
+        <a href="#hierarchical-design-of-plantseg" class="md-skip">
           Skip to content
         </a>
       
@@ -96,9 +92,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="PlantSeg" class="md-header__button md-logo" aria-label="PlantSeg" data-md-component="logo">
+    <a href="../.." title="PlantSeg" class="md-header__button md-logo" aria-label="PlantSeg" data-md-component="logo">
       
-  <img src="../../../logos/logo_white.png" alt="logo">
+  <img src="../../logos/logo_white.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -115,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Training
+              Hierarchical Design of PlantSeg
             
           </span>
         </div>
@@ -235,9 +231,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="PlantSeg" class="md-nav__button md-logo" aria-label="PlantSeg" data-md-component="logo">
+    <a href="../.." title="PlantSeg" class="md-nav__button md-logo" aria-label="PlantSeg" data-md-component="logo">
       
-  <img src="../../../logos/logo_white.png" alt="logo">
+  <img src="../../logos/logo_white.png" alt="logo">
 
     </a>
     PlantSeg
@@ -287,7 +283,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../.." class="md-nav__link ">
+            <a href="../.." class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -351,7 +347,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../getting_started/" class="md-nav__link ">
+            <a href="../getting_started/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -384,7 +380,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting_started/installation/" class="md-nav__link">
+      <a href="../getting_started/installation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -405,7 +401,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting_started/contributing/" class="md-nav__link">
+      <a href="../getting_started/contributing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -426,7 +422,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting_started/troubleshooting/" class="md-nav__link">
+      <a href="../getting_started/troubleshooting/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -451,8 +447,6 @@
       
   
   
-    
-  
   
   
     
@@ -484,16 +478,16 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../plantseg_interactive_napari/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -510,7 +504,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             Napari GUI
@@ -526,7 +520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../import_export/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/import_export/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -547,7 +541,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../preprocessing/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/preprocessing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -568,7 +562,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../unet_gasp_workflow/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/unet_gasp_workflow/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -589,7 +583,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../proofreading_auto/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/proofreading_auto/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -610,7 +604,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../proofreading_manual/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/proofreading_manual/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -631,7 +625,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../extra/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/extra/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -649,19 +643,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../plantseg_interactive_napari/unet_training/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -670,7 +655,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -717,7 +701,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../plantseg_models/" class="md-nav__link ">
+            <a href="../plantseg_models/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -750,7 +734,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_models/custom_datasets/" class="md-nav__link">
+      <a href="../plantseg_models/custom_datasets/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -771,7 +755,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_models/training/" class="md-nav__link">
+      <a href="../plantseg_models/training/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -892,7 +876,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/tasks/io_tasks/" class="md-nav__link">
+      <a href="tasks/io_tasks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -913,7 +897,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/tasks/dataprocessing_tasks/" class="md-nav__link">
+      <a href="tasks/dataprocessing_tasks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -934,7 +918,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/tasks/segmentation_tasks/" class="md-nav__link">
+      <a href="tasks/segmentation_tasks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -955,7 +939,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/tasks/prediction_tasks/" class="md-nav__link">
+      <a href="tasks/prediction_tasks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1031,7 +1015,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/functionals/io/" class="md-nav__link">
+      <a href="functionals/io/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1052,7 +1036,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/functionals/data_processing/" class="md-nav__link">
+      <a href="functionals/data_processing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1073,7 +1057,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/functionals/cnn_prediction/" class="md-nav__link">
+      <a href="functionals/cnn_prediction/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1094,7 +1078,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/functionals/segmentation/" class="md-nav__link">
+      <a href="functionals/segmentation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1178,7 +1162,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_legacy/installation/" class="md-nav__link">
+      <a href="../plantseg_legacy/installation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1225,7 +1209,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../plantseg_legacy/plantseg_classic_gui/" class="md-nav__link ">
+            <a href="../plantseg_legacy/plantseg_classic_gui/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1258,7 +1242,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_legacy/plantseg_classic_gui/data_processing/" class="md-nav__link">
+      <a href="../plantseg_legacy/plantseg_classic_gui/data_processing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1279,7 +1263,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_legacy/plantseg_classic_gui/cnn_prediction/" class="md-nav__link">
+      <a href="../plantseg_legacy/plantseg_classic_gui/cnn_prediction/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1300,7 +1284,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_legacy/plantseg_classic_gui/segmentation/" class="md-nav__link">
+      <a href="../plantseg_legacy/plantseg_classic_gui/segmentation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1349,7 +1333,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../plantseg_legacy/plantseg_classic_cli/" class="md-nav__link ">
+            <a href="../plantseg_legacy/plantseg_classic_cli/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1421,11 +1405,13 @@
   
 
 
-<h1 id="unet-training">UNet Training</h1>
-<div class="admonition warning">
-<p class="admonition-title">Feature in Progress</p>
-<p>This feature is under development.</p>
-</div>
+<h1 id="hierarchical-design-of-plantseg">Hierarchical Design of PlantSeg</h1>
+<p>PlantSeg is organized into three layers:</p>
+<ol>
+<li>Functionals (Python API): The foundational layer of PlantSeg, providing its core functionality. This layer can be accessed directly in Python scripts or Jupyter notebooks.</li>
+<li>Tasks: The intermediate layer of PlantSeg, which encapsulates the functionals to handle resource management and support distributed computing.</li>
+<li>Napari Widgets: The top layer of PlantSeg, which integrates tasks into user-friendly widgets for easy interaction within graphical interfaces.</li>
+</ol>
 
 
 
@@ -1448,7 +1434,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">September 15, 2024</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">December 14, 2024</span>
   </span>
 
     
@@ -1476,14 +1462,14 @@
     
     <nav>
       
+        <a href="https://github.com/lorenzocerrone" class="md-author" title="@lorenzocerrone">
+          
+          <img src="https://avatars.githubusercontent.com/u/23013839?v=4&size=72" alt="lorenzocerrone">
+        </a>
+      
         <a href="https://github.com/qin-yu" class="md-author" title="@qin-yu">
           
           <img src="https://avatars.githubusercontent.com/u/17722010?v=4&size=72" alt="qin-yu">
-        </a>
-      
-        <a href="https://github.com/lorenzocerrone" class="md-author" title="@lorenzocerrone">
-          
-          <img src="https://avatars.githubusercontent.com/u/23013839?u=54d10771b2f6c357c50f6bd59f7bf18b08fa473e&v=4&size=72" alt="Lorenzo">
         </a>
       
         <a href="https://github.com/wolny" class="md-author" title="@wolny">
@@ -1515,44 +1501,6 @@
       
         <footer class="md-footer">
   
-    
-      
-      <nav class="md-footer__inner md-grid" aria-label="Footer" >
-        
-          
-          <a href="../extra/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Extra Workflows">
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-            </div>
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              <div class="md-ellipsis">
-                Extra Workflows
-              </div>
-            </div>
-          </a>
-        
-        
-          
-          <a href="../../plantseg_models/" class="md-footer__link md-footer__link--next" aria-label="Next: Official Data and Models">
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              <div class="md-ellipsis">
-                Official Data and Models
-              </div>
-            </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-            </div>
-          </a>
-        
-      </nav>
     
   
   <div class="md-footer-meta md-typeset">
@@ -1595,12 +1543,12 @@
       <div class="md-progress" data-md-component="progress" role="progressbar"></div>
     
     
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["content.tooltips", "content.code.annotate", "navigation.instant", "navigation.instant.progress", "navigation.sections", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "search.suggest", "search.share"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.tooltips", "content.code.annotate", "navigation.instant", "navigation.instant.progress", "navigation.sections", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "search.suggest", "search.share"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.88dd0f4e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
-        <script src="../../../assets/_markdown_exec_pyodide.js"></script>
+        <script src="../../assets/_markdown_exec_pyodide.js"></script>
       
     
   </body>
