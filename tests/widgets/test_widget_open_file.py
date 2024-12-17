@@ -1,11 +1,17 @@
+import os
+
 import napari
 import numpy as np
+import pytest
 
 from plantseg.io.h5 import create_h5
 from plantseg.io.voxelsize import VoxelSize
 from plantseg.viewer_napari.widgets.io import PathMode, widget_open_file
 
+IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"  # set to true in GitHub Actions by default to skip CUDA tests
 
+
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="GUI tests hangs in GitHub Actions.")
 def test_widget_open_file(make_napari_viewer_proxy, path_h5):
     viewer = make_napari_viewer_proxy()
     shape = (10, 10, 10)
