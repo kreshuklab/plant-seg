@@ -14,6 +14,7 @@ from plantseg.viewer_napari.widgets import (
     widget_filter_segmentation,
     widget_fix_over_under_segmentation_from_nuclei,
     widget_gaussian_smoothing,
+    widget_image_pair_operations,
     widget_infos,
     widget_open_file,
     widget_proofreading_initialisation,
@@ -57,6 +58,7 @@ def get_preprocessing_tab():
             widget_gaussian_smoothing,
             widget_rescaling,
             widget_cropping,
+            widget_image_pair_operations,
         ],
         labels=False,
     )

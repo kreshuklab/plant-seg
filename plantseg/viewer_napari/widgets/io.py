@@ -126,7 +126,7 @@ def generate_layer_name(path: Path, dataset_key: str) -> str:
 
 def look_up_dataset_keys(path: Path):
     path = _return_value_if_widget(path)
-    ext = path.suffix
+    ext = path.suffix.lower()
 
     if ext in H5_EXTENSIONS:
         widget_open_file.dataset_key.show()

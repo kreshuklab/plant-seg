@@ -353,3 +353,155 @@ def normalize_01_channel_wise(data: np.ndarray, channel_axis: int = 0, eps=1e-12
 
     # Move the axis back to its original position
     return np.moveaxis(normalized_channels, 0, channel_axis)
+
+
+ImagePairOperation = Literal["add", "multiply", "subtract", "divide", "max"]
+
+
+def process_images(
+    image1: np.ndarray,
+    image2: np.ndarray,
+    operation: ImagePairOperation,
+    normalize_input: bool = False,
+    clip_output: bool = False,
+    normalize_output: bool = True,
+) -> np.ndarray:
+    """
+    General function for performing image operations with optional preprocessing and post-processing.
+
+    Args:
+        image1 (np.ndarray): First input image.
+        image2 (np.ndarray): Second input image.
+        operation (str): Operation to perform ('add', 'multiply', 'subtract', 'divide', 'max').
+        normalize_input (bool): Whether to normalize the input images to the range [0, 1]. Default is False.
+        clip_output (bool): Whether to clip the resulting image values to the range [0, 1]. Default is False.
+        normalize_output (bool): Whether to normalize the output image to the range [0, 1]. Default is True.
+
+    Returns:
+        np.ndarray: The resulting image after performing the operation.
+    """
+    # Preprocessing: Normalize input images if specified
+    if normalize_input:
+        image1, image2 = normalize_01(image1), normalize_01(image2)
+
+    # Perform the specified operation
+    if operation == "add":
+        result = image1 + image2
+    elif operation == "multiply":
+        result = image1 * image2
+    elif operation == "subtract":
+        result = image1 - image2
+    elif operation == "divide":
+        result = image1 / image2
+    elif operation == "max":
+        result = np.maximum(image1, image2)
+    else:
+        raise ValueError(f"Unsupported operation: {operation}")
+
+    # Post-processing: Clip and/or normalize output if specified
+    if clip_output:
+        result = np.clip(result, 0, 1)
+    if normalize_output:
+        result = normalize_01(result)
+
+    return result
+
+
+def add_images(
+    image1: np.ndarray,
+    image2: np.ndarray,
+    clip_output: bool = False,
+    normalize_output: bool = True,
+    normalize_input: bool = False,
+) -> np.ndarray:
+    """
+    Adds two images with optional preprocessing and post-processing.
+    """
+    return process_images(
+        image1,
+        image2,
+        operation="add",
+        clip_output=clip_output,
+        normalize_output=normalize_output,
+        normalize_input=normalize_input,
+    )
+
+
+def multiply_images(
+    image1: np.ndarray,
+    image2: np.ndarray,
+    clip_output: bool = False,
+    normalize_output: bool = True,
+    normalize_input: bool = False,
+) -> np.ndarray:
+    """
+    Multiplies two images with optional preprocessing and post-processing.
+    """
+    return process_images(
+        image1,
+        image2,
+        operation="multiply",
+        clip_output=clip_output,
+        normalize_output=normalize_output,
+        normalize_input=normalize_input,
+    )
+
+
+def subtract_images(
+    image1: np.ndarray,
+    image2: np.ndarray,
+    clip_output: bool = False,
+    normalize_output: bool = True,
+    normalize_input: bool = False,
+) -> np.ndarray:
+    """
+    Subtracts the second image from the first with optional preprocessing and post-processing.
+    """
+    return process_images(
+        image1,
+        image2,
+        operation="subtract",
+        clip_output=clip_output,
+        normalize_output=normalize_output,
+        normalize_input=normalize_input,
+    )
+
+
+def divide_images(
+    image1: np.ndarray,
+    image2: np.ndarray,
+    clip_output: bool = False,
+    normalize_output: bool = True,
+    normalize_input: bool = False,
+) -> np.ndarray:
+    """
+    Divides the first image by the second with optional preprocessing and post-processing.
+    """
+    return process_images(
+        image1,
+        image2,
+        operation="divide",
+        clip_output=clip_output,
+        normalize_output=normalize_output,
+        normalize_input=normalize_input,
+    )
+
+
+def max_images(
+    image1: np.ndarray,
+    image2: np.ndarray,
+    clip_output: bool = False,
+    normalize_output: bool = True,
+    normalize_input: bool = False,
+) -> np.ndarray:
+    """
+    Computes the pixel-wise maximum of two images with optional preprocessing and post-processing.
+    """
+    return process_images(
+        image1,
+        image2,
+        operation="max",
+        clip_output=clip_output,
+        normalize_output=normalize_output,
+        normalize_input=normalize_input,
+    )

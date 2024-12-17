@@ -51,7 +51,7 @@ def parse_import_image_task(input_path, allow_dir: bool) -> list[Path]:
     else:
         raise ValueError(f"Path {input_path} is not a file or a directory.")
 
-    list_files = [f for f in list_files if f.suffix in allowed_data_format]
+    list_files = [f for f in list_files if f.suffix.lower() in allowed_data_format]
     if not list_files:
         raise ValueError(f"No valid files found in {input_path}.")
 
