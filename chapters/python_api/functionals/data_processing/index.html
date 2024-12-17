@@ -1167,6 +1167,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#plantseg.functionals.dataprocessing.dataprocessing.process_images" class="md-nav__link">
+    <span class="md-ellipsis">
+      process_images
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1651,6 +1660,15 @@
   <a href="#plantseg.functionals.dataprocessing.dataprocessing.image_crop" class="md-nav__link">
     <span class="md-ellipsis">
       image_crop
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plantseg.functionals.dataprocessing.dataprocessing.process_images" class="md-nav__link">
+    <span class="md-ellipsis">
+      process_images
     </span>
   </a>
   
@@ -2306,6 +2324,191 @@
             </details>
     </div>
 
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="plantseg.functionals.dataprocessing.dataprocessing.process_images" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">process_images</span><span class="p">(</span><span class="n">image1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">image2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">operation</span><span class="p">:</span> <span class="n">ImagePairOperation</span><span class="p">,</span> <span class="n">normalize_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">clip_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">normalize_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>General function for performing image operations with optional preprocessing and post-processing.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>image1</code></b>
+              (<code><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>First input image.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>image2</code></b>
+              (<code><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Second input image.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>operation</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Operation to perform ('add', 'multiply', 'subtract', 'divide', 'max').</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>normalize_input</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Whether to normalize the input images to the range [0, 1]. Default is False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>clip_output</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Whether to clip the resulting image values to the range [0, 1]. Default is False.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>normalize_output</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Whether to normalize the output image to the range [0, 1]. Default is True.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>
+          –
+          <div class="doc-md-description">
+            <p>np.ndarray: The resulting image after performing the operation.</p>
+          </div>
+        </li>
+    </ul>
+
+            <details class="quote">
+              <summary>Source code in <code>plantseg/functionals/dataprocessing/dataprocessing.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">process_images</span><span class="p">(</span>
+    <span class="n">image1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">image2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">operation</span><span class="p">:</span> <span class="n">ImagePairOperation</span><span class="p">,</span>
+    <span class="n">normalize_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">clip_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">normalize_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    General function for performing image operations with optional preprocessing and post-processing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        image1 (np.ndarray): First input image.</span>
+<span class="sd">        image2 (np.ndarray): Second input image.</span>
+<span class="sd">        operation (str): Operation to perform (&#39;add&#39;, &#39;multiply&#39;, &#39;subtract&#39;, &#39;divide&#39;, &#39;max&#39;).</span>
+<span class="sd">        normalize_input (bool): Whether to normalize the input images to the range [0, 1]. Default is False.</span>
+<span class="sd">        clip_output (bool): Whether to clip the resulting image values to the range [0, 1]. Default is False.</span>
+<span class="sd">        normalize_output (bool): Whether to normalize the output image to the range [0, 1]. Default is True.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: The resulting image after performing the operation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Preprocessing: Normalize input images if specified</span>
+    <span class="k">if</span> <span class="n">normalize_input</span><span class="p">:</span>
+        <span class="n">image1</span><span class="p">,</span> <span class="n">image2</span> <span class="o">=</span> <span class="n">normalize_01</span><span class="p">(</span><span class="n">image1</span><span class="p">),</span> <span class="n">normalize_01</span><span class="p">(</span><span class="n">image2</span><span class="p">)</span>
+
+    <span class="c1"># Perform the specified operation</span>
+    <span class="k">if</span> <span class="n">operation</span> <span class="o">==</span> <span class="s2">&quot;add&quot;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">image1</span> <span class="o">+</span> <span class="n">image2</span>
+    <span class="k">elif</span> <span class="n">operation</span> <span class="o">==</span> <span class="s2">&quot;multiply&quot;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">image1</span> <span class="o">*</span> <span class="n">image2</span>
+    <span class="k">elif</span> <span class="n">operation</span> <span class="o">==</span> <span class="s2">&quot;subtract&quot;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">image1</span> <span class="o">-</span> <span class="n">image2</span>
+    <span class="k">elif</span> <span class="n">operation</span> <span class="o">==</span> <span class="s2">&quot;divide&quot;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">image1</span> <span class="o">/</span> <span class="n">image2</span>
+    <span class="k">elif</span> <span class="n">operation</span> <span class="o">==</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">image1</span><span class="p">,</span> <span class="n">image2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported operation: </span><span class="si">{</span><span class="n">operation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Post-processing: Clip and/or normalize output if specified</span>
+    <span class="k">if</span> <span class="n">clip_output</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">normalize_output</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">normalize_01</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
 </div><h2 id="segmentation-functions">Segmentation Functions</h2>
 
 
@@ -2898,7 +3101,7 @@ is used to treat all regions equally. This can help refine under-segmentation co
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">September 14, 2024</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">December 3, 2024</span>
   </span>
 
     
