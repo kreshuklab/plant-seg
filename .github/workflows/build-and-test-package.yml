@@ -18,10 +18,10 @@ jobs:
         uses: tlambert03/setup-qt-libs@v1
 
       # Start X virtual framebuffer for GUI testing
-      - name: Start Xvfb
-        run: |
-          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
-          --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+      # - name: Start Xvfb
+      #   run: |
+      #     /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
+      #     --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
 
       # Set the PlantSeg version based on the current date and time
       - name: Set PlantSeg Version
@@ -59,11 +59,13 @@ jobs:
 
       # Run tests using pytest
       - name: Run Tests with Pytest
-        shell: bash -l {0}
-        run: |
-          conda activate plant-seg
-          pytest -sv --cov --cov-report=xml
-          conda deactivate
+        uses: aganders3/headless-gui@v2
+        with:
+          shell: bash -l {0}
+          run: |
+            conda activate plant-seg
+            pytest -sv --cov --cov-report=xml
+            conda deactivate
 
       # Upload Codecov report
       - name: Upload coverage reports to Codecov
