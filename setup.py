@@ -13,9 +13,4 @@ setup(
     author='Lorenzo Cerrone, Adrian Wolny, Qin Yu',
     url='https://github.com/kreshuklab/plant-seg',
     author_email='lorenzo.cerrone@uzh.ch, qin.yu@embl.de',
-    entry_points={
-        'console_scripts': [
-            'plantseg=plantseg.run_plantseg:main',
-        ],
-    },
 )
