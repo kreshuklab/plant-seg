@@ -23,8 +23,8 @@ def run_viewer():
         (get_postprocessing_tab(), 'Postprocessing'),
         (get_proofreading_tab(), 'Proofreading'),
     ]:
-        this_widget = viewer.window.add_dock_widget(_containers, name=name, tabify=True)
-        this_widget.setFixedWidth(666)
+        viewer.window.add_dock_widget(_containers, name=name, tabify=True)
+        # this_widget.setFixedWidth(666)
 
     # Show data tab by default
     viewer.window._dock_widgets['Input/Output'].show()
