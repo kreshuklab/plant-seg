@@ -1510,6 +1510,9 @@
         <p>Generate prediction from raw data using a specified 3D U-Net model.</p>
 <p>This function handles both single and multi-channel outputs from the model,
 returning appropriately shaped arrays based on the output channel configuration.</p>
+<p>For Bioimage.IO Model Zoo models, weights are downloaded and loaded into <code>UNet3D</code> or <code>UNet2D</code>
+in <code>plantseg.training.model</code>, i.e. <code>bioimageio.core</code> is not used. <code>biio_prediction()</code> uses
+<code>bioimageio.core</code> for loading and running models.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1654,12 +1657,7 @@ returning appropriately shaped arrays based on the output channel configuration.
 
             <details class="quote">
               <summary>Source code in <code>plantseg/functionals/prediction/prediction.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">110</span>
 <span class="normal">111</span>
 <span class="normal">112</span>
 <span class="normal">113</span>
@@ -1758,7 +1756,13 @@ returning appropriately shaped arrays based on the output channel configuration.
 <span class="normal">206</span>
 <span class="normal">207</span>
 <span class="normal">208</span>
-<span class="normal">209</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">unet_prediction</span><span class="p">(</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">unet_prediction</span><span class="p">(</span>
     <span class="n">raw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">input_layout</span><span class="p">:</span> <span class="n">ImageLayout</span><span class="p">,</span>
     <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
@@ -1776,6 +1780,10 @@ returning appropriately shaped arrays based on the output channel configuration.
 
 <span class="sd">    This function handles both single and multi-channel outputs from the model,</span>
 <span class="sd">    returning appropriately shaped arrays based on the output channel configuration.</span>
+
+<span class="sd">    For Bioimage.IO Model Zoo models, weights are downloaded and loaded into `UNet3D` or `UNet2D`</span>
+<span class="sd">    in `plantseg.training.model`, i.e. `bioimageio.core` is not used. `biio_prediction()` uses</span>
+<span class="sd">    `bioimageio.core` for loading and running models.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        raw (np.ndarray): Raw input data.</span>
@@ -1803,10 +1811,7 @@ returning appropriately shaped arrays based on the output channel configuration.
         <span class="n">model</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">model_path</span> <span class="o">=</span> <span class="n">model_zoo</span><span class="o">.</span><span class="n">get_model_by_config_path</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">model_weights_path</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">model_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># BioImage.IO zoo mode</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;BioImage.IO prediction: Running model from BioImage.IO model zoo.&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="kc">True</span><span class="p">:</span>  <span class="c1"># NOTE: For now, do not use native pytorch-3dunet prediction if using BioImage.IO models</span>
-            <span class="k">return</span> <span class="n">biio_prediction</span><span class="p">(</span><span class="n">raw</span><span class="o">=</span><span class="n">raw</span><span class="p">,</span> <span class="n">input_layout</span><span class="o">=</span><span class="n">input_layout</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">model</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">model_path</span> <span class="o">=</span> <span class="n">model_zoo</span><span class="o">.</span><span class="n">get_model_by_id</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
+        <span class="n">model</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">model_path</span> <span class="o">=</span> <span class="n">model_zoo</span><span class="o">.</span><span class="n">get_model_by_id</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">model_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># PlantSeg zoo mode</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Zoo prediction: Running model from PlantSeg official zoo.&quot;</span><span class="p">)</span>
         <span class="n">model</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">model_path</span> <span class="o">=</span> <span class="n">model_zoo</span><span class="o">.</span><span class="n">get_model_by_name</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model_update</span><span class="o">=</span><span class="n">model_update</span><span class="p">)</span>
