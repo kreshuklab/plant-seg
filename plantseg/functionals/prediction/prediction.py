@@ -28,7 +28,7 @@ def biio_prediction(
     raw: np.ndarray,
     input_layout: ImageLayout,
     model_id: str,
-) -> np.ndarray:
+) -> dict[str, np.ndarray]:
     assert isinstance(input_layout, str)
 
     model = load_model_description(model_id)
@@ -93,13 +93,15 @@ def biio_prediction(
     assert isinstance(sample_out, Sample)
     if len(sample_out.members) != 1:
         logger.warning("Model has more than one output tensor. PlantSeg does not support this yet.")
-    t = {i: o.transpose(['batch', 'channel', 'z', 'y', 'x']) for i, o in sample_out.members.items()}
-    pmaps = []
-    for i, bczyx in t.items():
-        for czyx in bczyx:
-            for zyx in czyx:
-                pmaps.append(zyx.data.to_numpy())
-    return pmaps  # FIXME: Wrong return type
+    desired_axes = [AxisId(a) for a in ['batch', 'channel', 'z', 'y', 'x']]
+    t = {i: o.transpose(desired_axes) for i, o in sample_out.members.items()}
+    named_pmaps = {}
+    for key, bczyx in t.items():
+        bczyx = bczyx.data.to_numpy()
+        assert bczyx.ndim == 5, f"Expected 5D BCZYX-transposed prediction from `bioimageio.core`, got {bczyx.ndim}D"
+        for b, czyx in enumerate(bczyx):
+            named_pmaps[f'{key}_{b}'] = czyx
+    return named_pmaps  # list of CZYX arrays
 
 
 def unet_prediction(
@@ -120,6 +122,10 @@ def unet_prediction(
 
     This function handles both single and multi-channel outputs from the model,
     returning appropriately shaped arrays based on the output channel configuration.
+
+    For Bioimage.IO Model Zoo models, weights are downloaded and loaded into `UNet3D` or `UNet2D`
+    in `plantseg.training.model`, i.e. `bioimageio.core` is not used. `biio_prediction()` uses
+    `bioimageio.core` for loading and running models.
 
     Args:
         raw (np.ndarray): Raw input data.
@@ -147,10 +153,7 @@ def unet_prediction(
         model, model_config, model_path = model_zoo.get_model_by_config_path(config_path, model_weights_path)
     elif model_id is not None:  # BioImage.IO zoo mode
         logger.info("BioImage.IO prediction: Running model from BioImage.IO model zoo.")
-        if True:  # NOTE: For now, do not use native pytorch-3dunet prediction if using BioImage.IO models
-            return biio_prediction(raw=raw, input_layout=input_layout, model_id=model_id)
-        else:
-            model, model_config, model_path = model_zoo.get_model_by_id(model_id)
+        model, model_config, model_path = model_zoo.get_model_by_id(model_id)
     elif model_name is not None:  # PlantSeg zoo mode
         logger.info("Zoo prediction: Running model from PlantSeg official zoo.")
         model, model_config, model_path = model_zoo.get_model_by_name(model_name, model_update=model_update)

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.functionals.dataprocessing import fix_layout
-from plantseg.functionals.prediction import unet_prediction
+from plantseg.functionals.prediction import biio_prediction, unet_prediction
 from plantseg.tasks import task_tracker
 
 
@@ -51,7 +51,7 @@ def unet_prediction_task(
         config_path=config_path,
         model_weights_path=model_weights_path,
     )
-    # assert pmaps.ndim == 4, f"Expected 4D CZXY prediction, got {pmaps.ndim}D"
+    assert pmaps.ndim == 4, f"Expected 4D CZXY prediction, got {pmaps.ndim}D"
 
     new_images = []
 
@@ -67,4 +67,34 @@ def unet_prediction_task(
             )
         )
 
+    return new_images
+
+
+@task_tracker
+def biio_prediction_task(
+    image: PlantSegImage,
+    model_id: str,
+    suffix: str = "_prediction",
+) -> list[PlantSegImage]:
+    data = image.get_data()
+    input_layout = image.image_layout.value
+
+    named_pmaps = biio_prediction(
+        raw=data,
+        input_layout=input_layout,
+        model_id=model_id,
+    )
+
+    new_images = []
+    for name, pmap in named_pmaps.items():
+        # Input layout is always ZYX this loop
+        pmap = fix_layout(pmap, input_layout=input_layout, output_layout='CZYX')
+        new_images.append(
+            image.derive_new(
+                pmap,
+                name=f"{image.name}_{suffix}_{name}",
+                semantic_type=SemanticType.PREDICTION,
+                image_layout='CZYX',
+            )
+        )
     return new_images

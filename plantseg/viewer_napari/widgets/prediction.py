@@ -12,7 +12,7 @@ from napari.layers import Image
 
 from plantseg.core.image import PlantSegImage
 from plantseg.core.zoo import model_zoo
-from plantseg.tasks.prediction_tasks import unet_prediction_task
+from plantseg.tasks.prediction_tasks import biio_prediction_task, unet_prediction_task
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws
@@ -138,34 +138,43 @@ def widget_unet_prediction(
     patch_halo: tuple[int, int, int] = (0, 0, 0),
     single_patch: bool = False,
 ) -> None:
+    ps_image = PlantSegImage.from_napari_layer(image)
+    widgets_to_update = [
+        widget_dt_ws.image,
+        widget_agglomeration.image,
+        widget_split_and_merge_from_scribbles.image,
+    ]
     if mode is UNetPredictionMode.PLANTSEG:
         suffix = model_name
         model_id = None
+        return schedule_task(
+            unet_prediction_task,
+            task_kwargs={
+                "image": ps_image,
+                "model_name": model_name,
+                "model_id": model_id,
+                "suffix": suffix,
+                "patch": patch_size if advanced else None,
+                "patch_halo": patch_halo if advanced else None,
+                "single_batch_mode": single_patch if advanced else False,
+                "device": device,
+            },
+            widgets_to_update=widgets_to_update,
+        )
     elif mode is UNetPredictionMode.BIOIMAGEIO:
         suffix = model_id
         model_name = None
+        return schedule_task(
+            biio_prediction_task,
+            task_kwargs={
+                "image": ps_image,
+                "model_id": model_id,
+                "suffix": suffix,
+            },
+            widgets_to_update=widgets_to_update,
+        )
     else:
         raise NotImplementedError(f'Mode {mode} not implemented yet.')
-
-    ps_image = PlantSegImage.from_napari_layer(image)
-    return schedule_task(
-        unet_prediction_task,
-        task_kwargs={
-            "image": ps_image,
-            "model_name": model_name,
-            "model_id": model_id,
-            "suffix": suffix,
-            "patch": patch_size if advanced else None,
-            "patch_halo": patch_halo if advanced else None,
-            "single_batch_mode": single_patch if advanced else False,
-            "device": device,
-        },
-        widgets_to_update=[
-            widget_dt_ws.image,
-            widget_agglomeration.image,
-            widget_split_and_merge_from_scribbles.image,
-        ],
-    )
 
 
 widget_unet_prediction.insert(3, model_filters)
