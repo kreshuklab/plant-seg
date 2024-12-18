@@ -62,7 +62,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate plant-seg
-          pytest --cov --cov-report=xml
+          pytest -s --cov --cov-report=xml
           conda deactivate
 
       # Upload Codecov report
