@@ -87,8 +87,7 @@ def biio_prediction_task(
 
     new_images = []
     for name, pmap in named_pmaps.items():
-        # Input layout is always ZYX this loop
-        pmap = fix_layout(pmap, input_layout=input_layout, output_layout='CZYX')
+        # Input layout is always CZYX this loop
         new_images.append(
             image.derive_new(
                 pmap,
