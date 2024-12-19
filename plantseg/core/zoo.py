@@ -457,23 +457,26 @@ class ModelZoo:
         normalized_tags = ["".join(filter(str.isalnum, tag.lower())) for tag in tags]
         return 'plantseg' in normalized_tags
 
-    def get_bioimageio_zoo_plantseg_model_names(self) -> list[str]:
-        """Return a list of model names in the BioImage.IO Model Zoo tagged with 'plantseg'."""
+    def get_bioimageio_zoo_all_model_names(self) -> list[tuple[str, str]]:
+        """Return a list of (model id, model display name) in the BioImage.IO Model Zoo."""
         if not hasattr(self, 'models_bioimageio'):
             self.refresh_bioimageio_zoo_urls()
-        return sorted(model_zoo.models_bioimageio[model_zoo.models_bioimageio["supported"]].index.to_list())
+        id_name = self.models_bioimageio[['name_display']]
+        return sorted([(name, id) for id, name in id_name.itertuples()])
 
-    def get_bioimageio_zoo_all_model_names(self) -> list[str]:
-        """Return a list of all model names in the BioImage.IO Model Zoo."""
+    def get_bioimageio_zoo_plantseg_model_names(self) -> list[tuple[str, str]]:
+        """Return a list of (model id, model display name) in the BioImage.IO Model Zoo tagged with 'plantseg'."""
         if not hasattr(self, 'models_bioimageio'):
             self.refresh_bioimageio_zoo_urls()
-        return sorted(model_zoo.models_bioimageio.index.to_list())
+        id_name = self.models_bioimageio[self.models_bioimageio["supported"]][['name_display']]
+        return sorted([(name, id) for id, name in id_name.itertuples()])
 
-    def get_bioimageio_zoo_other_model_names(self) -> list[str]:
-        """Return a list of model names in the BioImage.IO Model Zoo not tagged with 'plantseg'."""
-        return sorted(
-            list(set(self.get_bioimageio_zoo_all_model_names()) - set(self.get_bioimageio_zoo_plantseg_model_names()))
-        )
+    def get_bioimageio_zoo_other_model_names(self) -> list[tuple[str, str]]:
+        """Return a list of (model id, model display name) in the BioImage.IO Model Zoo not tagged with 'plantseg'."""
+        if not hasattr(self, 'models_bioimageio'):
+            self.refresh_bioimageio_zoo_urls()
+        id_name = self.models_bioimageio[~self.models_bioimageio["supported"]][['name_display']]
+        return sorted([(name, id) for id, name in id_name.itertuples()])
 
     def _flatten_module(self, module: Module) -> list[Module]:
         """Recursively flatten a PyTorch nn.Module into a list of its elemental layers."""
