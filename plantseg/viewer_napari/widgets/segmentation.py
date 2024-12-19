@@ -219,8 +219,15 @@ def _on_show_advanced_changed(state: bool):
             widget.hide()
 
 
+initialised_widget_dt_ws: bool = (
+    False  # Avoid throwing an error when the first image is loaded but its layout is not supported
+)
+
+
 @widget_dt_ws.image.changed.connect
 def _on_image_changed(image: Image):
+    global initialised_widget_dt_ws
+
     ps_image = PlantSegImage.from_napari_layer(image)
 
     if ps_image.image_layout == ImageLayout.ZYX:
@@ -229,4 +236,7 @@ def _on_image_changed(image: Image):
         widget_dt_ws.stacked.hide()
         widget_dt_ws.stacked.value = False
         if ps_image.image_layout != ImageLayout.YX:
-            log(f"Unsupported image layout: {ps_image.image_layout}", thread="DT Watershed", level="error")
+            if initialised_widget_dt_ws:
+                log(f"Unsupported image layout: {ps_image.image_layout}", thread="DT Watershed", level="error")
+            else:
+                initialised_widget_dt_ws = True

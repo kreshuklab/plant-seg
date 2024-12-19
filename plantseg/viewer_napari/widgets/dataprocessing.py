@@ -129,8 +129,15 @@ def widget_cropping(
     )
 
 
+initialised_widget_cropping: bool = (
+    False  # Avoid throwing an error when the first image is loaded but its layout is not supported
+)
+
+
 @widget_cropping.image.changed.connect
 def _on_cropping_image_changed(image: Layer):
+    global initialised_widget_cropping
+
     if image is None:
         widget_cropping.crop_z.hide()
         return None
@@ -145,7 +152,10 @@ def _on_cropping_image_changed(image: Layer):
         return None
 
     if ps_image.is_multichannel:
-        raise ValueError("Multichannel images are not supported for cropping.")
+        if initialised_widget_cropping:
+            raise ValueError("Multichannel images are not supported for cropping.")
+        else:
+            initialised_widget_cropping = True
 
     widget_cropping.crop_z.show()
     image_shape_z = ps_image.shape[0]

@@ -417,7 +417,10 @@ class PlantSegImage:
                 return data[:, 0], properties
 
         elif self.image_layout == ImageLayout.ZCYX:
-            raise ValueError(f"Image layout {self.image_layout} not supported, should have been converted to CZYX")
+            logger.warning("Image layout is ZCYX but should have been converted to CZYX. PlantSeg is doing this now.")
+            properties.image_layout = ImageLayout.CZYX
+            data = np.moveaxis(data, 0, 1)
+            return self._check_shape(data, properties)
 
         return data, properties
 

@@ -1,3 +1,5 @@
+import os
+
 import napari
 import numpy as np
 import pytest
@@ -7,6 +9,8 @@ from napari.types import LayerDataTuple
 from plantseg.core.image import ImageLayout, ImageProperties, PlantSegImage, SemanticType
 from plantseg.io.voxelsize import VoxelSize
 from plantseg.viewer_napari.widgets.dataprocessing import RescaleModes, widget_rescaling
+
+IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"  # set to true in GitHub Actions by default to skip CUDA tests
 
 
 def create_layer_name(name: str, suffix: str):
@@ -47,6 +51,7 @@ def widget_add_image(image: PlantSegImage) -> LayerDataTuple:
     return image.to_napari_layer_tuple()
 
 
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="GUI tests hangs in GitHub Actions.")
 class TestWidgetRescaling:
     def test_rescaling_from_factor(self, make_napari_viewer_proxy, sample_image):
         viewer = make_napari_viewer_proxy()

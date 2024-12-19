@@ -12,7 +12,7 @@ from napari.layers import Image
 
 from plantseg.core.image import PlantSegImage
 from plantseg.core.zoo import model_zoo
-from plantseg.tasks.prediction_tasks import unet_prediction_task
+from plantseg.tasks.prediction_tasks import biio_prediction_task, unet_prediction_task
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.proofreading import widget_split_and_merge_from_scribbles
 from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws
@@ -106,6 +106,7 @@ model_filters = Container(
         'label': 'BioImage.IO model',
         'tooltip': 'Select a model from BioImage.IO model zoo.',
         'choices': model_zoo.get_bioimageio_zoo_plantseg_model_names(),
+        'value': model_zoo.get_bioimageio_zoo_plantseg_model_names()[0][1],
     },
     advanced={
         'label': 'Show advanced parameters',
@@ -128,44 +129,58 @@ model_filters = Container(
 )
 def widget_unet_prediction(
     image: Image,
-    plantseg_filter: bool = True,
     mode: UNetPredictionMode = UNetPredictionMode.PLANTSEG,
+    plantseg_filter: bool = True,
     model_name: Optional[str] = None,
-    model_id: Optional[str] = None,
+    model_id: Optional[str] = model_zoo.get_bioimageio_zoo_plantseg_model_names()[0][1],
     device: str = ALL_DEVICES[0],
     advanced: bool = False,
     patch_size: tuple[int, int, int] = (128, 128, 128),
     patch_halo: tuple[int, int, int] = (0, 0, 0),
     single_patch: bool = False,
 ) -> None:
+    ps_image = PlantSegImage.from_napari_layer(image)
+
     if mode is UNetPredictionMode.PLANTSEG:
         suffix = model_name
         model_id = None
-    elif mode is UNetPredictionMode.BIOIMAGEIO:
-        suffix = model_id
-        model_name = None
-    else:
-        raise NotImplementedError(f'Mode {mode} not implemented yet.')
-
-    ps_image = PlantSegImage.from_napari_layer(image)
-    return schedule_task(
-        unet_prediction_task,
-        task_kwargs={
-            "image": ps_image,
-            "model_name": model_name,
-            "model_id": model_id,
-            "suffix": suffix,
-            "patch": patch_size if advanced else None,
-            "patch_halo": patch_halo if advanced else None,
-            "single_batch_mode": single_patch if advanced else False,
-            "device": device,
-        },
-        widgets_to_update=[
+        widgets_to_update = [
             widget_dt_ws.image,
             widget_agglomeration.image,
             widget_split_and_merge_from_scribbles.image,
-        ],
-    )
+        ]
+        return schedule_task(
+            unet_prediction_task,
+            task_kwargs={
+                "image": ps_image,
+                "model_name": model_name,
+                "model_id": model_id,
+                "suffix": suffix,
+                "patch": patch_size if advanced else None,
+                "patch_halo": patch_halo if advanced else None,
+                "single_batch_mode": single_patch if advanced else False,
+                "device": device,
+            },
+            widgets_to_update=widgets_to_update,
+        )
+    elif mode is UNetPredictionMode.BIOIMAGEIO:
+        suffix = model_id
+        model_name = None
+        widgets_to_update = [
+            # BioImage.IO models may output multi-channel 3D image or even multi-channel scalar in CZYX format.
+            # So PlantSeg widgets, which all take ZYX or YX, are better not to be updated.
+        ]
+        return schedule_task(
+            biio_prediction_task,
+            task_kwargs={
+                "image": ps_image,
+                "model_id": model_id,
+                "suffix": suffix,
+            },
+            widgets_to_update=widgets_to_update,
+        )
+    else:
+        raise NotImplementedError(f'Mode {mode} not implemented yet.')
 
 
 widget_unet_prediction.insert(3, model_filters)
@@ -201,17 +216,11 @@ def update_halo():
                 widget_unet_prediction.patch_size[0].enabled = True
                 widget_unet_prediction.patch_halo[0].enabled = True
         elif widget_unet_prediction.mode.value is UNetPredictionMode.BIOIMAGEIO:
-            widget_unet_prediction.patch_halo.value = model_zoo.compute_3D_halo_for_bioimageio_models(
-                widget_unet_prediction.model_id.value
+            log(
+                'Automatic halo not implemented for BioImage.IO models yet because they are handled by BioImage.IO Core.',
+                thread='BioImage.IO Core prediction',
+                level='info',
             )
-            if model_zoo.is_2D_bioimageio_model(widget_unet_prediction.model_id.value):
-                widget_unet_prediction.patch_size[0].value = 0
-                widget_unet_prediction.patch_size[0].enabled = False
-                widget_unet_prediction.patch_halo[0].enabled = False
-            else:
-                widget_unet_prediction.patch_size[0].value = widget_unet_prediction.patch_size[1].value
-                widget_unet_prediction.patch_size[0].enabled = True
-                widget_unet_prediction.patch_halo[0].enabled = True
         else:
             raise NotImplementedError(f'Automatic halo not implemented for {widget_unet_prediction.mode.value} mode.')
 
@@ -261,7 +270,7 @@ def _on_widget_unet_prediction_plantseg_filter_change(plantseg_filter: bool):
     else:
         widget_unet_prediction.model_id.choices = (
             model_zoo.get_bioimageio_zoo_plantseg_model_names()
-            + [Separator]
+            + [('', Separator)]  # `[('', Separator)]` for list[tuple[str, str]], [Separator] for list[str]
             + model_zoo.get_bioimageio_zoo_other_model_names()
         )
 

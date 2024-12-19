@@ -3,15 +3,42 @@
 import shutil
 from pathlib import Path
 
+import numpy as np
+import pooch
 import pytest
+import skimage.transform as skt
 import torch
 import yaml
+
+from plantseg.io.io import smart_load
 
 TEST_FILES = Path(__file__).resolve().parent / "resources"
 VOXEL_SIZE = (0.235, 0.15, 0.15)
 KEY_ZARR = "volumes/new"
 
 IS_CUDA_AVAILABLE = torch.cuda.is_available()
+CELLPOSE_TEST_IMAGE_RGB_3D = 'http://www.cellpose.org/static/data/rgb_3D.tif'
+
+
+@pytest.fixture
+def raw_zcyx_75x2x75x75(tmpdir) -> np.ndarray:
+    path_rgb_3d_75x2x75x75 = Path(pooch.retrieve(CELLPOSE_TEST_IMAGE_RGB_3D, path=tmpdir, known_hash=None))
+    return smart_load(path_rgb_3d_75x2x75x75)
+
+
+@pytest.fixture
+def raw_zcyx_96x2x96x96(raw_zcyx_75x2x75x75):
+    return skt.resize(raw_zcyx_75x2x75x75, (96, 2, 96, 96), order=1)
+
+
+@pytest.fixture
+def raw_cell_3d_100x128x128(raw_zcyx_75x2x75x75):
+    return skt.resize(raw_zcyx_75x2x75x75[:, 1], (100, 128, 128), order=1)
+
+
+@pytest.fixture
+def raw_cell_2d_96x96(raw_cell_3d_100x128x128):
+    return raw_cell_3d_100x128x128[48]
 
 
 @pytest.fixture
