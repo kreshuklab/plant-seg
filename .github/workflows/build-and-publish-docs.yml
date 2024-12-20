@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - master
-      - qy/mask-pred
+      - qy/unify-prediction
 
 permissions:
   contents: write

@@ -1,8 +1,16 @@
 import logging
 from pathlib import Path
+from typing import assert_never
 
 import numpy as np
 import torch
+from bioimageio.core.axis import AxisId
+from bioimageio.core.prediction import predict
+from bioimageio.core.sample import Sample
+from bioimageio.core.tensor import Tensor
+from bioimageio.spec import load_model_description
+from bioimageio.spec.model import v0_4, v0_5
+from bioimageio.spec.model.v0_5 import TensorId
 
 from plantseg.core.zoo import model_zoo
 from plantseg.functionals.dataprocessing.dataprocessing import ImageLayout, fix_layout_to_CZYX, fix_layout_to_ZYX
@@ -14,6 +22,108 @@ from plantseg.functionals.prediction.utils.utils import get_stride_shape
 from plantseg.training.augs import get_test_augmentations
 
 logger = logging.getLogger(__name__)
+
+
+def biio_prediction(
+    raw: np.ndarray,
+    input_layout: ImageLayout,
+    model_id: str,
+) -> dict[str, np.ndarray]:
+    assert isinstance(input_layout, str)
+
+    model = load_model_description(model_id)
+    if isinstance(model, v0_4.ModelDescr):
+        input_ids = [input_tensor.name for input_tensor in model.inputs]
+    elif isinstance(model, v0_5.ModelDescr):
+        input_ids = [input_tensor.id for input_tensor in model.inputs]
+    else:
+        assert_never(model)
+
+    logger.info(f"Model expects these inputs: {input_ids}.")
+    if len(input_ids) < 1:
+        logger.error("Model needs no input tensor. PlantSeg does not support this yet.")
+    if len(input_ids) > 1:
+        logger.error("Model needs more than one input tensor. PlantSeg does not support this yet.")
+
+    tensor_id = input_ids[0]
+    axes = model.inputs[0].axes  # PlantSeg only supports one input tensor for now
+    dims = tuple(
+        AxisId('channel') if item.lower() == 'c' else AxisId(item.lower()) for item in input_layout
+    )  # `AxisId` has to be "channel" not "c"
+
+    if isinstance(axes[0], str):  # then it's a <=0.4.10 model, `predict_sample_block` is not implemented
+        logger.warning(
+            "Model is older than 0.5.0. PlantSeg will try to run BioImage.IO core inference, but it is not supported by BioImage.IO core."
+        )
+        axis_mapping = {'b': 'batch', 'c': 'channel'}
+        axes = [AxisId(axis_mapping.get(a, a)) for a in list(axes)]
+        members = {TensorId(tensor_id): Tensor(array=raw, dims=dims).transpose([AxisId(a) for a in axes])}
+        sample = Sample(members=members, stat={}, id="raw")
+        sample_out = predict(model=model, inputs=sample)
+
+        # If inference is supported by BioImage.IO core, this is how it should be done in PlantSeg:
+        #
+        # shape = model.inputs[0].shape
+        # input_block_shape = {TensorId(tensor_id): {AxisId(a): s for a, s in zip(axes, shape)}}
+        # sample_out = predict(model=model, inputs=sample, input_block_shape=input_block_shape)
+    else:
+        members = {
+            TensorId(tensor_id): Tensor(array=raw, dims=dims).transpose(
+                [AxisId(a) if isinstance(a, str) else a.id for a in axes]
+            )
+        }
+        sample = Sample(members=members, stat={}, id="raw")
+        sizes_in_rdf = {a.id: a.size for a in axes}
+        assert 'x' in sizes_in_rdf, "Model does not have 'x' axis in input tensor."
+        size_to_check = sizes_in_rdf[AxisId('x')]
+        if isinstance(size_to_check, int):  # e.g. 'emotional-cricket'
+            # 'emotional-cricket' has {'batch': None, 'channel': 1, 'z': 100, 'y': 128, 'x': 128}
+            input_block_shape = {
+                TensorId(tensor_id): {
+                    a.id: a.size if isinstance(a.size, int) else 1
+                    for a in axes
+                    if not isinstance(a, str)  # for a.size/a.id type checking only
+                }
+            }
+            sample_out = predict(model=model, inputs=sample, input_block_shape=input_block_shape)
+        elif isinstance(size_to_check, v0_5.ParameterizedSize):  # e.g. 'philosophical-panda'
+            # 'philosophical-panda' has:
+            #   {'z': ParameterizedSize(min=1, step=1),
+            #    'channel': 2,
+            #    'y': ParameterizedSize(min=16, step=16),
+            #    'x': ParameterizedSize(min=16, step=16)}
+            blocksize_parameter = {
+                (TensorId(tensor_id), a.id): (
+                    (96 - a.size.min) // a.size.step if isinstance(a.size, v0_5.ParameterizedSize) else 1
+                )
+                for a in axes
+                if not isinstance(a, str)  # for a.size/a.id type checking only
+            }
+            sample_out = predict(model=model, inputs=sample, blocksize_parameter=blocksize_parameter)
+        else:
+            assert_never(size_to_check)
+
+    assert isinstance(sample_out, Sample)
+    if len(sample_out.members) != 1:
+        logger.warning("Model has more than one output tensor. PlantSeg does not support this yet.")
+
+    desired_axes_short = [AxisId(a) for a in ['b', 'c', 'z', 'y', 'x']]
+    desired_axes = [AxisId(a) for a in ['batch', 'channel', 'z', 'y', 'x']]
+    t = {
+        i: o.transpose(desired_axes_short) if 'b' in o.dims or 'c' in o.dims else o.transpose(desired_axes)
+        for i, o in sample_out.members.items()
+    }
+
+    named_pmaps = {}
+    for key, tensor_bczyx in t.items():
+        bczyx = tensor_bczyx.data.to_numpy()
+        assert bczyx.ndim == 5, f"Expected 5D BCZYX-transposed prediction from `bioimageio.core`, got {bczyx.ndim}D"
+        if bczyx.shape[0] == 1:
+            named_pmaps[f'{key}'] = bczyx[0]
+        else:
+            for b, czyx in enumerate(bczyx):
+                named_pmaps[f'{key}_{b}'] = czyx
+    return named_pmaps  # list of CZYX arrays
 
 
 def unet_prediction(
@@ -34,6 +144,10 @@ def unet_prediction(
 
     This function handles both single and multi-channel outputs from the model,
     returning appropriately shaped arrays based on the output channel configuration.
+
+    For Bioimage.IO Model Zoo models, weights are downloaded and loaded into `UNet3D` or `UNet2D`
+    in `plantseg.training.model`, i.e. `bioimageio.core` is not used. `biio_prediction()` uses
+    `bioimageio.core` for loading and running models.
 
     Args:
         raw (np.ndarray): Raw input data.

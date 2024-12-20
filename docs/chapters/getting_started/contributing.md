@@ -17,6 +17,10 @@ To install PlantSeg in development mode, run:
 pip install -e . --no-deps
 ```
 
+## Hierarchical Design of PlantSeg
+
+Please refer to [Python API](../python_api/index.md).
+
 ## Coding Style
 
 PlantSeg uses _Ruff_ for linting and formatting. _Ruff_ is compatible with _Black_ for formatting. Ensure you have _Black_ set as the formatter with a line length of 120.

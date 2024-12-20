@@ -14,6 +14,7 @@ from plantseg.tasks.dataprocessing_tasks import set_voxel_size_task
 from plantseg.tasks.io_tasks import export_image_task, import_image_task
 from plantseg.tasks.workflow_handler import workflow_handler
 from plantseg.viewer_napari import log
+from plantseg.viewer_napari.widgets.prediction import widget_unet_prediction
 from plantseg.viewer_napari.widgets.utils import _return_value_if_widget, schedule_task
 
 current_dataset_keys: list[str] | None = None
@@ -101,7 +102,10 @@ def widget_open_file(
     elif layer_type == ImageType.LABEL.value:
         semantic_type = SemanticType.SEGMENTATION
 
-    widgets_to_update = [widget_set_voxel_size.layer]
+    widgets_to_update = [
+        widget_set_voxel_size.layer,
+        widget_unet_prediction.image,
+    ]
 
     return schedule_task(
         import_image_task,
