@@ -7,6 +7,9 @@ dependencies:
   - python
   # Neural Network
   - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.1
   # Bioimage and CV
   - tifffile
   - h5py
@@ -23,3 +26,12 @@ dependencies:
   - requests
   - pyyaml
   - pydantic>2,<2.10  # 2.10 cause problem spec-bioimage-io/issues/663
+  # Testing
+  - pytest
+  - pytest-cov
+  - coverage
+  - pluggy
+  - iniconfig
+  - pytest-qt
+  - pytest-mock
+  - requests-mock
