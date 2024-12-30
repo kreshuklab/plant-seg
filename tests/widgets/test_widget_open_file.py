@@ -2,7 +2,7 @@ import os
 
 import napari
 import numpy as np
-import pytest
+from pytestqt import qtbot
 
 from plantseg.io.h5 import create_h5
 from plantseg.io.voxelsize import VoxelSize
@@ -11,8 +11,7 @@ from plantseg.viewer_napari.widgets.io import PathMode, widget_open_file
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"  # set to true in GitHub Actions by default to skip CUDA tests
 
 
-@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="GUI tests hangs in GitHub Actions.")
-def test_widget_open_file(make_napari_viewer_proxy, path_h5):
+def test_widget_open_file(qtbot, make_napari_viewer_proxy, path_h5):
     viewer = make_napari_viewer_proxy()
     shape = (10, 10, 10)
     data = np.random.rand(*shape).astype(np.float32)
@@ -29,7 +28,8 @@ def test_widget_open_file(make_napari_viewer_proxy, path_h5):
         stack_layout="ZYX",
         update_other_widgets=False,
     )
-    napari.run()
+
+    qtbot.wait(100)
 
     assert viewer.layers[0].name == "test_raw"
     assert viewer.layers[0].data.shape == shape
