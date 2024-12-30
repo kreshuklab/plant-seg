@@ -5,11 +5,11 @@ import numpy as np
 import pytest
 from magicgui import magicgui
 from napari.types import LayerDataTuple
+from pytestqt import qtbot
 
 from plantseg.core.image import ImageLayout, ImageProperties, PlantSegImage, SemanticType
 from plantseg.io.voxelsize import VoxelSize
 from plantseg.viewer_napari.widgets.dataprocessing import RescaleModes, widget_rescaling
-from pytestqt import qtbot
 
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"  # set to true in GitHub Actions by default to skip CUDA tests
 
