@@ -52,10 +52,10 @@ jobs:
           conda install -q conda-build
           conda build -c conda-forge conda-recipe
 
-      # Create a Conda environment for testing
+      # Create a Conda environment for testing using environment.yaml
       - name: Create PlantSeg Test Environment
         run: |
-          conda create -n plant-seg -c local -c conda-forge plantseg pytest pytest-qt pytest-cov pytest-mock requests-mock
+          conda env create -f environment.yaml
 
       # Run tests using pytest
       - name: Run Tests with Pytest
