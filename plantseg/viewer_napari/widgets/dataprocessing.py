@@ -532,6 +532,7 @@ def widget_fix_over_under_segmentation_from_nuclei(
     else:
         ps_pmap_cell_boundary = None
     threshold_merge, threshold_split = threshold[0] / 100, threshold[1] / 100
+    quantile = (quantile[0] / 100, quantile[1] / 100)
 
     return schedule_task(
         fix_over_under_segmentation_from_nuclei_task,
