@@ -64,28 +64,38 @@ def test_remove_false_positives_by_foreground_probability():
 
 
 def test_fix_over_under_segmentation_from_nuclei(complex_test_data):
+    """
+    Test the fix_over_under_segmentation_from_nuclei function with complex input data.
+
+    Args:
+        complex_test_data (tuple): A tuple containing cell segmentation array,
+                                   nuclei segmentation array, and boundary probability map.
+
+    Tests:
+        - Verifies the initial state of the input data.
+        - Ensures under-segmented regions are split correctly.
+        - Ensures over-segmented regions are merged correctly.
+    """
     cell_seg, nuclei_seg, boundary_pmap = complex_test_data
 
     # Check that the input data is as expected
-    assert len(np.unique(cell_seg[2:6, 2:6, 2:6])) == 1
-    assert len(np.unique(cell_seg[1:4, 1:4, 6:9])) == 1
-    assert len(np.unique(cell_seg[6:10, 6:10, 6:10])) == 2
+    assert len(np.unique(cell_seg[2:6, 2:6, 2:6])) == 1, "Initial region should have 1 unique label."
+    assert len(np.unique(cell_seg[1:4, 1:4, 6:9])) == 1, "Initial region should have 1 unique label."
+    assert len(np.unique(cell_seg[6:10, 6:10, 6:10])) == 2, "Initial region should have 2 unique labels."
 
     corrected_seg = fix_over_under_segmentation_from_nuclei(
         cell_seg=cell_seg,
         nuclei_seg=nuclei_seg,
         threshold_merge=0.3,
         threshold_split=0.6,
-        quantiles_nuclei=(0.1, 0.9),
+        quantile_min=0.1,
+        quantile_max=0.9,
         boundary=boundary_pmap,
     )
 
     # Check under-segmented regions are split
-    # Check that there are two unique labels in cell_seg[2:6, 2:6, 2:6]
-    # Check that there are two unique labels in cell_seg[1:4, 1:4, 6:9]
-    assert len(np.unique(corrected_seg[2:6, 2:6, 2:6])) == 2, "Undersegmentation not split."
-    assert len(np.unique(corrected_seg[1:4, 1:4, 6:9])) == 2, "Undersegmentation not split."
+    assert len(np.unique(corrected_seg[2:6, 2:6, 2:6])) == 2, "Undersegmentation not split as expected."
+    assert len(np.unique(corrected_seg[1:4, 1:4, 6:9])) == 2, "Undersegmentation not split as expected."
 
     # Check over-segmented regions are merged
-    # Check that there are 1 unique labels in cell_seg[6:8, 6:10, 6:10]
-    assert len(np.unique(corrected_seg[6:10, 6:10, 6:10])) == 1, "Oversegmentation not merged."
+    assert len(np.unique(corrected_seg[6:10, 6:10, 6:10])) == 1, "Oversegmentation not merged as expected."
