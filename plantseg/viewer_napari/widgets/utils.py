@@ -66,9 +66,6 @@ def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Wid
             and return a PlantSegImage or a tuple/list of PlantSegImage, or None.
         task_kwargs (dict): Keyword arguments for the function.
         widgets_to_update (list[Widget] | None, optional): Widgets to be updated with the result. Defaults to None.
-
-    Returns:
-        Future: A Future object representing the asynchronous execution of the task.
     """
 
     if hasattr(task, '__plantseg_task__'):

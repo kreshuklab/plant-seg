@@ -483,16 +483,19 @@ def widget_remove_false_positives_by_foreground(
     segmentation_nuclei={'label': 'Nuclear instances'},
     boundary_pmaps={'label': 'Boundary image'},
     threshold={
-        'label': 'Boundary threshold',
-        'tooltip': 'Threshold range for merging (first value) and splitting (second value) cells. ',
+        'label': 'Boundary Threshold (%)',
+        'tooltip': 'Set the percentage range for merging (first value) and splitting (second value) cells. '
+        'For example, "33" means cells with less than 33% overlap with nuclei are merged, and '
+        '"66" means cells with more than 66% overlap are split.',
         'widget_type': 'FloatRangeSlider',
         'max': 100,
         'min': 0,
         'step': 0.1,
     },
     quantile={
-        'label': 'Nuclei size filter',
-        'tooltip': 'Quantile range to filter nuclei size, ignoring outliers.',
+        'label': 'Nuclei Size Filter (%)',
+        'tooltip': 'Set the size range to filter nuclei, represented as percentages. '
+        'For example, "0.3" excludes the smallest 30%, and "99.9" excludes the largest 0.1% of nuclei.',
         'widget_type': 'FloatRangeSlider',
         'max': 100,
         'min': 0,
@@ -507,31 +510,37 @@ def widget_fix_over_under_segmentation_from_nuclei(
     quantile=(0.3, 99.9),
 ) -> None:
     """
-    Widget interface for correcting over- and under-segmentation of cells based on nuclei segmentation.
+    Widget for correcting over- and under-segmentation of cells based on nuclei segmentation.
 
-    This GUI interface allows the user to specify the input cell and nuclear segmentations, along with optional boundary
-    probability maps. The user can control the merging and splitting thresholds, and define quantiles to filter out
-    irregular nuclei. The widget schedules the correction task in the background and updates the displayed results accordingly.
+    This widget allows users to adjust cell segmentation by leveraging nuclei segmentation. It supports
+    merging over-segmented cells and splitting under-segmented cells, with optional boundary refinement.
 
     Args:
-        cell_segmentation (Labels): Input label layer for cell segmentation.
-        nuclei_segmentation (Labels): Input label layer for nuclei segmentation.
-        boundary_pmaps (Image | None, optional): Optional boundary probability map or image to assist in segmentation refinement.
-        threshold (tuple[float, float], optional): Threshold range for merging (first value) and splitting (second value) cells.
-            The values should be between 0 and 100, corresponding to 0%-100% overlap. Default is (33, 66).
-        quantile (tuple[float, float], optional): Quantile range to filter nuclei size, ignoring outliers.
-            Values should be between 0 and 100. Default is (0.3, 99.9).
+        segmentation_cells (Labels): Input layer representing segmented cell instances.
+        segmentation_nuclei (Labels): Input layer representing segmented nuclei instances.
+        boundary_pmaps (Image | None, optional): Optional boundary probability map (same shape as input layers).
+            Higher values indicate probable cell boundaries, used to refine segmentation.
+        threshold (tuple[float, float], optional): Merge and split thresholds as percentages (0-100).
+            - The first value is the merge threshold: cells with nuclei overlap below this value are merged.
+            - The second value is the split threshold: cells with nuclei overlap above this value are split.
+            Default is (33, 66).
+        quantile (tuple[float, float], optional): Minimum and maximum quantile values for filtering nuclei sizes (0-100).
+            - The first value excludes the smallest nuclei (e.g., "0.3" excludes the smallest 0.3%).
+            - The second value excludes the largest nuclei (e.g., "99.9" excludes the largest 0.1%).
+            Default is (0.3, 99.9).
 
     Returns:
-        Future[LayerDataTuple]: A future object that contains the corrected segmentation layer once the task completes.
+        None
     """
     ps_seg_cel = PlantSegImage.from_napari_layer(segmentation_cells)
     ps_seg_nuc = PlantSegImage.from_napari_layer(segmentation_nuclei)
-    if boundary_pmaps:
-        ps_pmap_cell_boundary = PlantSegImage.from_napari_layer(boundary_pmaps)
-    else:
-        ps_pmap_cell_boundary = None
-    threshold_merge, threshold_split = threshold[0] / 100, threshold[1] / 100
+    ps_pmap_cell_boundary = PlantSegImage.from_napari_layer(boundary_pmaps) if boundary_pmaps else None
+
+    # Normalize percentages to fractions
+    threshold_merge = threshold[0] / 100
+    threshold_split = threshold[1] / 100
+    quantile_min = quantile[0] / 100
+    quantile_max = quantile[1] / 100
 
     return schedule_task(
         fix_over_under_segmentation_from_nuclei_task,
@@ -540,7 +549,8 @@ def widget_fix_over_under_segmentation_from_nuclei(
             'nuclei_seg': ps_seg_nuc,
             'threshold_merge': threshold_merge,
             'threshold_split': threshold_split,
-            'quantiles_nuclei': quantile,
+            'quantile_min': quantile_min,
+            'quantile_max': quantile_max,
             'boundary': ps_pmap_cell_boundary,
         },
         widgets_to_update=[],
