@@ -2718,14 +2718,14 @@ To be noted that measure.label is different from ndimage.label.</p>
 
 
 <h3 id="plantseg.functionals.dataprocessing.advanced_dataprocessing.fix_over_under_segmentation_from_nuclei" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">advanced_dataprocessing</span><span class="o">.</span><span class="n">fix_over_under_segmentation_from_nuclei</span><span class="p">(</span><span class="n">cell_seg</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nuclei_seg</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold_merge</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.33</span><span class="p">,</span> <span class="n">threshold_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.66</span><span class="p">,</span> <span class="n">quantiles_nuclei</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">),</span> <span class="n">boundary</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
+            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">advanced_dataprocessing</span><span class="o">.</span><span class="n">fix_over_under_segmentation_from_nuclei</span><span class="p">(</span><span class="n">cell_seg</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nuclei_seg</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold_merge</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">threshold_split</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">quantile_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">quantile_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">boundary</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
 </h3>
 
 
     <div class="doc doc-contents first">
 
-        <p>Corrects over-segmentation and under-segmentation of cells based on a trusted nuclei segmentation.</p>
+        <p>Correct over-segmentation and under-segmentation of cells based on nuclei information.</p>
 <p>This function uses information from nuclei segmentation to refine cell segmentation by first identifying
 over-segmented cells (cells mistakenly split into multiple segments) and merging them. It then corrects
 under-segmented cells (multiple nuclei within a single cell) by splitting them based on nuclei position
@@ -2739,7 +2739,7 @@ and optional boundary information.</p>
               (<code><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
           –
           <div class="doc-md-description">
-            <p>A 2D or 3D array representing segmented cell instances.</p>
+            <p>A 2D or 3D array of segmented cells, where each integer represents a unique cell.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2747,40 +2747,44 @@ and optional boundary information.</p>
               (<code><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
           –
           <div class="doc-md-description">
-            <p>A 2D or 3D array representing segmented nuclei instances, with the same shape as <code>cell_seg</code>.</p>
+            <p>A 2D or 3D array of segmented nuclei, matching the shape of <code>cell_seg</code>.
+Used to guide merging and splitting.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
             <b><code>threshold_merge</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
-                  <code>0.33</code>
-)
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
           –
           <div class="doc-md-description">
-            <p>Threshold for identifying over-segmentation, based on the ratio of nuclei overlap.
-Cells with overlap below this threshold will be merged. Default is 0.33.</p>
+            <p>A value between 0 and 1. Cells with less than this fraction of nuclei overlap
+are considered over-segmented and will be merged. Default is 0.33.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
             <b><code>threshold_split</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
-                  <code>0.66</code>
-)
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
           –
           <div class="doc-md-description">
-            <p>Threshold for identifying under-segmentation, based on the ratio of nuclei overlap.
-Cells with overlap above this threshold will be split. Default is 0.66.</p>
+            <p>A value between 0 and 1. Cells with more than this fraction of nuclei overlap
+are considered under-segmented and will be split. Default is 0.66.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-            <b><code>quantiles_nuclei</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>, default:
-                  <code>(0.3, 0.99)</code>
-)
+            <b><code>quantile_min</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
           –
           <div class="doc-md-description">
-            <p>Quantile range for filtering nuclei based on size, helping to ignore
-outliers such as very small or very large nuclei. Default is (0.3, 0.99).</p>
+            <p>The lower size limit for nuclei, as a fraction (0-1). Nuclei smaller than this
+quantile are ignored. Default is 0.3.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>quantile_max</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>The upper size limit for nuclei, as a fraction (0-1). Nuclei larger than this
+quantile are ignored. Default is 0.99.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2790,8 +2794,8 @@ outliers such as very small or very large nuclei. Default is (0.3, 0.99).</p>
 )
           –
           <div class="doc-md-description">
-            <p>An optional boundary probability map for the cells. If None, a constant map
-is used to treat all regions equally. This can help refine under-segmentation correction.</p>
+            <p>Optional boundary map of the same shape as <code>cell_seg</code>. High values
+indicate cell boundaries and help refine splitting. If None, all regions are treated equally.</p>
           </div>
         </li>
     </ul>
@@ -2803,7 +2807,7 @@ is used to treat all regions equally. This can help refine under-segmentation co
               <code><a class="autorefs autorefs-external" title="numpy.ndarray" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>
           –
           <div class="doc-md-description">
-            <p>np.ndarray: The corrected cell segmentation array, of the same shape as the input <code>cell_seg</code>.</p>
+            <p>np.ndarray: Corrected cell segmentation array.</p>
           </div>
         </li>
     </ul>
@@ -2856,16 +2860,24 @@ is used to treat all regions equally. This can help refine under-segmentation co
 <span class="normal">299</span>
 <span class="normal">300</span>
 <span class="normal">301</span>
-<span class="normal">302</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fix_over_under_segmentation_from_nuclei</span><span class="p">(</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">fix_over_under_segmentation_from_nuclei</span><span class="p">(</span>
     <span class="n">cell_seg</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">nuclei_seg</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="n">threshold_merge</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.33</span><span class="p">,</span>
-    <span class="n">threshold_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.66</span><span class="p">,</span>
-    <span class="n">quantiles_nuclei</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">),</span>
+    <span class="n">threshold_merge</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">threshold_split</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">quantile_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">quantile_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">boundary</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Corrects over-segmentation and under-segmentation of cells based on a trusted nuclei segmentation.</span>
+<span class="sd">    Correct over-segmentation and under-segmentation of cells based on nuclei information.</span>
 
 <span class="sd">    This function uses information from nuclei segmentation to refine cell segmentation by first identifying</span>
 <span class="sd">    over-segmented cells (cells mistakenly split into multiple segments) and merging them. It then corrects</span>
@@ -2873,32 +2885,38 @@ is used to treat all regions equally. This can help refine under-segmentation co
 <span class="sd">    and optional boundary information.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        cell_seg (np.ndarray): A 2D or 3D array representing segmented cell instances.</span>
-<span class="sd">        nuclei_seg (np.ndarray): A 2D or 3D array representing segmented nuclei instances, with the same shape as `cell_seg`.</span>
-<span class="sd">        threshold_merge (float, optional): Threshold for identifying over-segmentation, based on the ratio of nuclei overlap.</span>
-<span class="sd">            Cells with overlap below this threshold will be merged. Default is 0.33.</span>
-<span class="sd">        threshold_split (float, optional): Threshold for identifying under-segmentation, based on the ratio of nuclei overlap.</span>
-<span class="sd">            Cells with overlap above this threshold will be split. Default is 0.66.</span>
-<span class="sd">        quantiles_nuclei (tuple[float, float], optional): Quantile range for filtering nuclei based on size, helping to ignore</span>
-<span class="sd">            outliers such as very small or very large nuclei. Default is (0.3, 0.99).</span>
-<span class="sd">        boundary (np.ndarray | None, optional): An optional boundary probability map for the cells. If None, a constant map</span>
-<span class="sd">            is used to treat all regions equally. This can help refine under-segmentation correction.</span>
+<span class="sd">        cell_seg (np.ndarray): A 2D or 3D array of segmented cells, where each integer represents a unique cell.</span>
+<span class="sd">        nuclei_seg (np.ndarray): A 2D or 3D array of segmented nuclei, matching the shape of `cell_seg`.</span>
+<span class="sd">            Used to guide merging and splitting.</span>
+<span class="sd">        threshold_merge (float, optional): A value between 0 and 1. Cells with less than this fraction of nuclei overlap</span>
+<span class="sd">            are considered over-segmented and will be merged. Default is 0.33.</span>
+<span class="sd">        threshold_split (float, optional): A value between 0 and 1. Cells with more than this fraction of nuclei overlap</span>
+<span class="sd">            are considered under-segmented and will be split. Default is 0.66.</span>
+<span class="sd">        quantile_min (float, optional): The lower size limit for nuclei, as a fraction (0-1). Nuclei smaller than this</span>
+<span class="sd">            quantile are ignored. Default is 0.3.</span>
+<span class="sd">        quantile_max (float, optional): The upper size limit for nuclei, as a fraction (0-1). Nuclei larger than this</span>
+<span class="sd">            quantile are ignored. Default is 0.99.</span>
+<span class="sd">        boundary (np.ndarray | None, optional): Optional boundary map of the same shape as `cell_seg`. High values</span>
+<span class="sd">            indicate cell boundaries and help refine splitting. If None, all regions are treated equally.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        np.ndarray: The corrected cell segmentation array, of the same shape as the input `cell_seg`.</span>
+<span class="sd">        np.ndarray: Corrected cell segmentation array.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Find overlaps between cells and nuclei</span>
     <span class="n">cell_counts</span><span class="p">,</span> <span class="n">nuclei_counts</span><span class="p">,</span> <span class="n">cell_nuclei_counts</span> <span class="o">=</span> <span class="n">numba_find_overlaps</span><span class="p">(</span><span class="n">cell_seg</span><span class="p">,</span> <span class="n">nuclei_seg</span><span class="p">)</span>
-    <span class="n">nuclei_assignments</span> <span class="o">=</span> <span class="n">find_potential_over_seg</span><span class="p">(</span><span class="n">nuclei_counts</span><span class="p">,</span> <span class="n">cell_nuclei_counts</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">threshold_merge</span><span class="p">)</span>
 
+    <span class="c1"># Identify over-segmentation and correct it</span>
+    <span class="n">nuclei_assignments</span> <span class="o">=</span> <span class="n">find_potential_over_seg</span><span class="p">(</span><span class="n">nuclei_counts</span><span class="p">,</span> <span class="n">cell_nuclei_counts</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">threshold_merge</span><span class="p">)</span>
     <span class="n">corrected_seg</span> <span class="o">=</span> <span class="n">fix_over_segmentation</span><span class="p">(</span><span class="n">cell_seg</span><span class="p">,</span> <span class="n">nuclei_assignments</span><span class="p">)</span>
 
+    <span class="c1"># Identify under-segmentation and correct it</span>
     <span class="n">cell_counts</span><span class="p">,</span> <span class="n">nuclei_counts</span><span class="p">,</span> <span class="n">cell_nuclei_counts</span> <span class="o">=</span> <span class="n">numba_find_overlaps</span><span class="p">(</span><span class="n">corrected_seg</span><span class="p">,</span> <span class="n">nuclei_seg</span><span class="p">)</span>
     <span class="n">cell_assignments</span> <span class="o">=</span> <span class="n">find_potential_under_seg</span><span class="p">(</span>
         <span class="n">nuclei_counts</span><span class="p">,</span>
         <span class="n">cell_counts</span><span class="p">,</span>
         <span class="n">cell_nuclei_counts</span><span class="p">,</span>
         <span class="n">threshold</span><span class="o">=</span><span class="n">threshold_split</span><span class="p">,</span>
-        <span class="n">quantiles_clip</span><span class="o">=</span><span class="n">quantiles_nuclei</span><span class="p">,</span>
+        <span class="n">quantiles_clip</span><span class="o">=</span><span class="p">(</span><span class="n">quantile_min</span><span class="p">,</span> <span class="n">quantile_max</span><span class="p">),</span>
     <span class="p">)</span>
 
     <span class="n">boundary_pmap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">cell_seg</span><span class="p">)</span> <span class="k">if</span> <span class="n">boundary</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">boundary</span>
@@ -2969,14 +2987,7 @@ is used to treat all regions equally. This can help refine under-segmentation co
 
             <details class="quote">
               <summary>Source code in <code>plantseg/functionals/dataprocessing/advanced_dataprocessing.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
 <span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
@@ -3021,7 +3032,14 @@ is used to treat all regions equally. This can help refine under-segmentation co
 <span class="normal">354</span>
 <span class="normal">355</span>
 <span class="normal">356</span>
-<span class="normal">357</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_false_positives_by_foreground_probability</span><span class="p">(</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">remove_false_positives_by_foreground_probability</span><span class="p">(</span>
     <span class="n">segmentation</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">foreground</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>

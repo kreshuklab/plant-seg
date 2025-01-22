@@ -2521,7 +2521,12 @@
 
             <details class="quote">
               <summary>Source code in <code>plantseg/tasks/dataprocessing_tasks.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">313</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
 <span class="normal">316</span>
@@ -2548,12 +2553,7 @@
 <span class="normal">337</span>
 <span class="normal">338</span>
 <span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span>
+<span class="normal">340</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">image_pair_operation_task</span><span class="p">(</span>
     <span class="n">image1</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span>
     <span class="n">image2</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span>
@@ -2688,17 +2688,14 @@
 
 
 <h3 id="plantseg.tasks.dataprocessing_tasks.fix_over_under_segmentation_from_nuclei_task" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">dataprocessing_tasks</span><span class="o">.</span><span class="n">fix_over_under_segmentation_from_nuclei_task</span><span class="p">(</span><span class="n">cell_seg</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span> <span class="n">nuclei_seg</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span> <span class="n">threshold_merge</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.33</span><span class="p">,</span> <span class="n">threshold_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.66</span><span class="p">,</span> <span class="n">quantiles_nuclei</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">),</span> <span class="n">boundary</span><span class="p">:</span> <span class="n">PlantSegImage</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PlantSegImage</span></code>
+            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">dataprocessing_tasks</span><span class="o">.</span><span class="n">fix_over_under_segmentation_from_nuclei_task</span><span class="p">(</span><span class="n">cell_seg</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span> <span class="n">nuclei_seg</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span> <span class="n">threshold_merge</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">threshold_split</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">quantile_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">quantile_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">boundary</span><span class="p">:</span> <span class="n">PlantSegImage</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PlantSegImage</span></code>
 
 </h3>
 
 
     <div class="doc doc-contents first">
 
-        <p>Task function to fix over- and under-segmentation in cell segmentation based on nuclear segmentation.</p>
-<p>This function is used to run the over- and under-segmentation correction within a task management system.
-It uses the segmentation arrays and nuclear information to merge and split cell regions. This task ensures
-that the provided <code>cell_seg</code> and <code>nuclei_seg</code> have matching shapes and processes the data accordingly.</p>
+        <p>Task to fix over- and under-segmentation of cells based on nuclear segmentation.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2708,7 +2705,7 @@ that the provided <code>cell_seg</code> and <code>nuclei_seg</code> have matchin
               (<code><span title="plantseg.core.image.PlantSegImage">PlantSegImage</span></code>)
           –
           <div class="doc-md-description">
-            <p>Input cell segmentation as a <code>PlantSegImage</code> object.</p>
+            <p>Input cell segmentation as a PlantSegImage object.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2716,37 +2713,39 @@ that the provided <code>cell_seg</code> and <code>nuclei_seg</code> have matchin
               (<code><span title="plantseg.core.image.PlantSegImage">PlantSegImage</span></code>)
           –
           <div class="doc-md-description">
-            <p>Input nuclear segmentation as a <code>PlantSegImage</code> object.</p>
+            <p>Input nuclear segmentation as a PlantSegImage object.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
             <b><code>threshold_merge</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
-                  <code>0.33</code>
-)
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
           –
           <div class="doc-md-description">
-            <p>Threshold for merging cells based on the overlap with nuclei. Default is 0.33.</p>
+            <p>Threshold for merging cells, as a fraction (0-1).</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
             <b><code>threshold_split</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
-                  <code>0.66</code>
-)
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
           –
           <div class="doc-md-description">
-            <p>Threshold for splitting cells based on the overlap with nuclei. Default is 0.66.</p>
+            <p>Threshold for splitting cells, as a fraction (0-1).</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-            <b><code>quantiles_nuclei</code></b>
-              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a>]</code>, default:
-                  <code>(0.3, 0.99)</code>
-)
+            <b><code>quantile_min</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
           –
           <div class="doc-md-description">
-            <p>Quantiles used to filter nuclei by size. Default is (0.3, 0.99).</p>
+            <p>Minimum quantile for filtering nuclei sizes, as a fraction (0-1).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>quantile_max</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Maximum quantile for filtering nuclei sizes, as a fraction (0-1).</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2756,7 +2755,7 @@ that the provided <code>cell_seg</code> and <code>nuclei_seg</code> have matchin
 )
           –
           <div class="doc-md-description">
-            <p>Optional boundary probability map. If not provided, a constant map is used.</p>
+            <p>Optional boundary probability map for segmentation refinement.</p>
           </div>
         </li>
     </ul>
@@ -2768,7 +2767,7 @@ that the provided <code>cell_seg</code> and <code>nuclei_seg</code> have matchin
 <b><code>PlantSegImage</code></b> (              <code><span title="plantseg.core.image.PlantSegImage">PlantSegImage</span></code>
 )          –
           <div class="doc-md-description">
-            <p>A new <code>PlantSegImage</code> object containing the corrected cell segmentation.</p>
+            <p>Corrected cell segmentation as a PlantSegImage object.</p>
           </div>
         </li>
     </ul>
@@ -2809,51 +2808,41 @@ that the provided <code>cell_seg</code> and <code>nuclei_seg</code> have matchin
 <span class="normal">262</span>
 <span class="normal">263</span>
 <span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span>
+<span class="normal">265</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">fix_over_under_segmentation_from_nuclei_task</span><span class="p">(</span>
     <span class="n">cell_seg</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span>
     <span class="n">nuclei_seg</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span>
-    <span class="n">threshold_merge</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.33</span><span class="p">,</span>
-    <span class="n">threshold_split</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.66</span><span class="p">,</span>
-    <span class="n">quantiles_nuclei</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">),</span>
+    <span class="n">threshold_merge</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">threshold_split</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">quantile_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">quantile_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">boundary</span><span class="p">:</span> <span class="n">PlantSegImage</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PlantSegImage</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Task function to fix over- and under-segmentation in cell segmentation based on nuclear segmentation.</span>
-
-<span class="sd">    This function is used to run the over- and under-segmentation correction within a task management system.</span>
-<span class="sd">    It uses the segmentation arrays and nuclear information to merge and split cell regions. This task ensures</span>
-<span class="sd">    that the provided `cell_seg` and `nuclei_seg` have matching shapes and processes the data accordingly.</span>
+<span class="sd">    Task to fix over- and under-segmentation of cells based on nuclear segmentation.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        cell_seg (PlantSegImage): Input cell segmentation as a `PlantSegImage` object.</span>
-<span class="sd">        nuclei_seg (PlantSegImage): Input nuclear segmentation as a `PlantSegImage` object.</span>
-<span class="sd">        threshold_merge (float, optional): Threshold for merging cells based on the overlap with nuclei. Default is 0.33.</span>
-<span class="sd">        threshold_split (float, optional): Threshold for splitting cells based on the overlap with nuclei. Default is 0.66.</span>
-<span class="sd">        quantiles_nuclei (tuple[float, float], optional): Quantiles used to filter nuclei by size. Default is (0.3, 0.99).</span>
-<span class="sd">        boundary (PlantSegImage | None, optional): Optional boundary probability map. If not provided, a constant map is used.</span>
+<span class="sd">        cell_seg (PlantSegImage): Input cell segmentation as a PlantSegImage object.</span>
+<span class="sd">        nuclei_seg (PlantSegImage): Input nuclear segmentation as a PlantSegImage object.</span>
+<span class="sd">        threshold_merge (float): Threshold for merging cells, as a fraction (0-1).</span>
+<span class="sd">        threshold_split (float): Threshold for splitting cells, as a fraction (0-1).</span>
+<span class="sd">        quantile_min (float): Minimum quantile for filtering nuclei sizes, as a fraction (0-1).</span>
+<span class="sd">        quantile_max (float): Maximum quantile for filtering nuclei sizes, as a fraction (0-1).</span>
+<span class="sd">        boundary (PlantSegImage | None, optional): Optional boundary probability map for segmentation refinement.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        PlantSegImage: A new `PlantSegImage` object containing the corrected cell segmentation.</span>
+<span class="sd">        PlantSegImage: Corrected cell segmentation as a PlantSegImage object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">cell_seg</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">nuclei_seg</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cell and nuclei segmentation must have the same shape.&quot;</span><span class="p">)</span>
-
-    <span class="n">out_data</span> <span class="o">=</span> <span class="n">fix_over_under_segmentation_from_nuclei</span><span class="p">(</span>
+    <span class="n">corrected_data</span> <span class="o">=</span> <span class="n">fix_over_under_segmentation_from_nuclei</span><span class="p">(</span>
         <span class="n">cell_seg</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span>
         <span class="n">nuclei_seg</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span>
         <span class="n">threshold_merge</span><span class="o">=</span><span class="n">threshold_merge</span><span class="p">,</span>
         <span class="n">threshold_split</span><span class="o">=</span><span class="n">threshold_split</span><span class="p">,</span>
-        <span class="n">quantiles_nuclei</span><span class="o">=</span><span class="n">quantiles_nuclei</span><span class="p">,</span>
+        <span class="n">quantile_min</span><span class="o">=</span><span class="n">quantile_min</span><span class="p">,</span>
+        <span class="n">quantile_max</span><span class="o">=</span><span class="n">quantile_max</span><span class="p">,</span>
         <span class="n">boundary</span><span class="o">=</span><span class="n">boundary</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span> <span class="k">if</span> <span class="n">boundary</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">new_image</span> <span class="o">=</span> <span class="n">cell_seg</span><span class="o">.</span><span class="n">derive_new</span><span class="p">(</span><span class="n">out_data</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cell_seg</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_nuc_fixed&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">new_image</span>
+    <span class="k">return</span> <span class="n">cell_seg</span><span class="o">.</span><span class="n">derive_new</span><span class="p">(</span><span class="n">corrected_data</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cell_seg</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_nuc_fixed&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2911,7 +2900,12 @@ that the provided <code>cell_seg</code> and <code>nuclei_seg</code> have matchin
 
             <details class="quote">
               <summary>Source code in <code>plantseg/tasks/dataprocessing_tasks.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">273</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
 <span class="normal">274</span>
 <span class="normal">275</span>
 <span class="normal">276</span>
@@ -2924,12 +2918,7 @@ that the provided <code>cell_seg</code> and <code>nuclei_seg</code> have matchin
 <span class="normal">283</span>
 <span class="normal">284</span>
 <span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span>
+<span class="normal">286</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">set_biggest_instance_to_zero_task</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span> <span class="n">instance_could_be_zero</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PlantSegImage</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Task to set the largest segment in a segmentation image to zero.</span>
@@ -2995,7 +2984,12 @@ that the provided <code>cell_seg</code> and <code>nuclei_seg</code> have matchin
 
             <details class="quote">
               <summary>Source code in <code>plantseg/tasks/dataprocessing_tasks.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">294</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
 <span class="normal">295</span>
 <span class="normal">296</span>
 <span class="normal">297</span>
@@ -3006,12 +3000,7 @@ that the provided <code>cell_seg</code> and <code>nuclei_seg</code> have matchin
 <span class="normal">302</span>
 <span class="normal">303</span>
 <span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span>
+<span class="normal">305</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">relabel_segmentation_task</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span> <span class="n">background</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PlantSegImage</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Task to relabel a segmentation image contiguously, ensuring non-touching segments with the same ID are relabeled.</span>
