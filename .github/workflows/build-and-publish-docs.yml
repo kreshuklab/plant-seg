@@ -59,11 +59,16 @@ jobs:
         shell: bash -l {0}
         run: conda info --envs
 
+      # Disable `anaconda_telemetry` to avoid errors (issue 379)
+      - name: Configure Conda
+        run: |
+          echo "anaconda_telemetry: false" > ~/.condarc
+
       # Build the PlantSeg Conda package (for screenshots in documentation)
       - name: Build PlantSeg Package
         shell: bash -l {0}
         run: |
-          conda install -q "conda-build<25"
+          conda install -q conda-build
           conda build -c conda-forge conda-recipe
 
       # Create a Conda environment for PlantSeg
