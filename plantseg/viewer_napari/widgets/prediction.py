@@ -208,7 +208,7 @@ def update_halo():
                 widget_unet_prediction.model_name.value
             )
             if model_zoo.is_2D_zoo_model(widget_unet_prediction.model_name.value):
-                widget_unet_prediction.patch_size[0].value = 0
+                widget_unet_prediction.patch_size[0].value = 1
                 widget_unet_prediction.patch_size[0].enabled = False
                 widget_unet_prediction.patch_halo[0].enabled = False
             else:
@@ -401,7 +401,7 @@ def widget_add_custom_model(
         widget_unet_prediction.model_name.choices = model_zoo.list_models()
     else:
         log(
-            f'Error adding new model {new_model_name} to the list of available models: ' f'{error_msg}',
+            f'Error adding new model {new_model_name} to the list of available models: {error_msg}',
             level='error',
             thread='Add Custom Model',
         )
