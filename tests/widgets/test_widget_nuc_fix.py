@@ -1,15 +1,9 @@
-import os
-
-import napari
-import pytest
 from magicgui import magicgui
 from napari.types import LayerDataTuple
 
 from plantseg.core.image import PlantSegImage
 from plantseg.viewer_napari.widgets.dataprocessing import widget_fix_over_under_segmentation_from_nuclei
 from tests.tasks.dataprocessing.test_advanced_dataprocessing_tasks import complex_test_PlantSegImages
-
-IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"  # set to true in GitHub Actions by default to skip CUDA tests
 
 
 @magicgui
@@ -18,9 +12,7 @@ def widget_add_image(image: PlantSegImage) -> LayerDataTuple:
     return image.to_napari_layer_tuple()
 
 
-@pytest.mark.skip(reason="Test hangs even if scheduled task completes.")
-@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="GUI tests hang in GitHub Actions.")
-def test_widget_fix_over_under_segmentation_from_nuclei(make_napari_viewer_proxy, complex_test_PlantSegImages):
+def test_widget_fix_over_under_segmentation_from_nuclei(qtbot, make_napari_viewer_proxy, complex_test_PlantSegImages):
     """
     Test the widget_fix_over_under_segmentation_from_nuclei function in a napari viewer environment.
 
@@ -47,6 +39,7 @@ def test_widget_fix_over_under_segmentation_from_nuclei(make_napari_viewer_proxy
         widget_add_image(boundary_pmap)
 
     # Run the widget for correcting segmentation
+    count_layers = len(viewer.layers)
     widget_fix_over_under_segmentation_from_nuclei(
         segmentation_cells=viewer.layers[cell_seg.name],
         segmentation_nuclei=viewer.layers[nuclei_seg.name],
@@ -54,9 +47,8 @@ def test_widget_fix_over_under_segmentation_from_nuclei(make_napari_viewer_proxy
         threshold=(30, 60),  # Threshold range as percentages (30% merge, 60% split)
         quantile=(10, 90),  # Quantile range as percentages (10%-90%)
     )
-    napari.run()
+    qtbot.waitUntil(lambda: count_layers < len(viewer.layers), timeout=20000)
 
-    # Validate the corrected segmentation layer properties
-    corrected_layer = viewer.layers[f"{cell_seg.name}_nuc_fix"]
-    assert corrected_layer.data.shape == cell_seg.data.shape, "Corrected layer shape is incorrect."
-    assert corrected_layer.data.dtype == cell_seg.data.dtype, "Corrected layer data type is incorrect."
+    corrected_layer = viewer.layers[f"{cell_seg.name}_nuc_fixed"]
+    assert corrected_layer.data.shape == cell_seg.shape, "Corrected layer shape is incorrect."
+    assert corrected_layer.data.dtype == cell_seg._data.dtype, "Corrected layer data type is incorrect."
