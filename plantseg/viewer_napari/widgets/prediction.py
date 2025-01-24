@@ -126,6 +126,10 @@ model_filters = Container(
         'choices': SINGLE_PATCH_MODE,
     },
     device={'label': 'Device', 'choices': ALL_DEVICES},
+    update_other_widgets={
+        "visible": False,
+        "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
+    },
 )
 def widget_unet_prediction(
     image: Image,
@@ -138,6 +142,7 @@ def widget_unet_prediction(
     patch_size: tuple[int, int, int] = (128, 128, 128),
     patch_halo: tuple[int, int, int] = (0, 0, 0),
     single_patch: bool = False,
+    update_other_widgets: bool = True,
 ) -> None:
     ps_image = PlantSegImage.from_napari_layer(image)
 
@@ -161,7 +166,7 @@ def widget_unet_prediction(
                 "single_batch_mode": single_patch if advanced else False,
                 "device": device,
             },
-            widgets_to_update=widgets_to_update,
+            widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
     elif mode is UNetPredictionMode.BIOIMAGEIO:
         suffix = model_id
@@ -177,7 +182,7 @@ def widget_unet_prediction(
                 "model_id": model_id,
                 "suffix": suffix,
             },
-            widgets_to_update=widgets_to_update,
+            widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
     else:
         raise NotImplementedError(f'Mode {mode} not implemented yet.')
