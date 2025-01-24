@@ -13,7 +13,7 @@ This section provides solutions to common issues you might encounter while using
 
 ## Font size problems in GUI
 
-If you find the font size varies within either Napari or Legacy GUIs, or some buttons or texts are not visible, it might relate to your system's DPI settings or sreen resolution. To fix this, you can try to reset the resolution of your system.
+If you find the font size varies within either Napari or Legacy GUIs, or some buttons or texts are not visible, it might relate to your system's DPI settings or screen resolution. To fix this, you can try to reset the resolution of your system.
 
 Related discussions:
 

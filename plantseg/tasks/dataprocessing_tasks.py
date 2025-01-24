@@ -232,42 +232,37 @@ def remove_false_positives_by_foreground_probability_task(
 def fix_over_under_segmentation_from_nuclei_task(
     cell_seg: PlantSegImage,
     nuclei_seg: PlantSegImage,
-    threshold_merge: float = 0.33,
-    threshold_split: float = 0.66,
-    quantiles_nuclei: tuple[float, float] = (0.3, 0.99),
+    threshold_merge: float,
+    threshold_split: float,
+    quantile_min: float,
+    quantile_max: float,
     boundary: PlantSegImage | None = None,
 ) -> PlantSegImage:
     """
-    Task function to fix over- and under-segmentation in cell segmentation based on nuclear segmentation.
-
-    This function is used to run the over- and under-segmentation correction within a task management system.
-    It uses the segmentation arrays and nuclear information to merge and split cell regions. This task ensures
-    that the provided `cell_seg` and `nuclei_seg` have matching shapes and processes the data accordingly.
+    Task to fix over- and under-segmentation of cells based on nuclear segmentation.
 
     Args:
-        cell_seg (PlantSegImage): Input cell segmentation as a `PlantSegImage` object.
-        nuclei_seg (PlantSegImage): Input nuclear segmentation as a `PlantSegImage` object.
-        threshold_merge (float, optional): Threshold for merging cells based on the overlap with nuclei. Default is 0.33.
-        threshold_split (float, optional): Threshold for splitting cells based on the overlap with nuclei. Default is 0.66.
-        quantiles_nuclei (tuple[float, float], optional): Quantiles used to filter nuclei by size. Default is (0.3, 0.99).
-        boundary (PlantSegImage | None, optional): Optional boundary probability map. If not provided, a constant map is used.
+        cell_seg (PlantSegImage): Input cell segmentation as a PlantSegImage object.
+        nuclei_seg (PlantSegImage): Input nuclear segmentation as a PlantSegImage object.
+        threshold_merge (float): Threshold for merging cells, as a fraction (0-1).
+        threshold_split (float): Threshold for splitting cells, as a fraction (0-1).
+        quantile_min (float): Minimum quantile for filtering nuclei sizes, as a fraction (0-1).
+        quantile_max (float): Maximum quantile for filtering nuclei sizes, as a fraction (0-1).
+        boundary (PlantSegImage | None, optional): Optional boundary probability map for segmentation refinement.
 
     Returns:
-        PlantSegImage: A new `PlantSegImage` object containing the corrected cell segmentation.
+        PlantSegImage: Corrected cell segmentation as a PlantSegImage object.
     """
-    if cell_seg.shape != nuclei_seg.shape:
-        raise ValueError("Cell and nuclei segmentation must have the same shape.")
-
-    out_data = fix_over_under_segmentation_from_nuclei(
+    corrected_data = fix_over_under_segmentation_from_nuclei(
         cell_seg.get_data(),
         nuclei_seg.get_data(),
         threshold_merge=threshold_merge,
         threshold_split=threshold_split,
-        quantiles_nuclei=quantiles_nuclei,
+        quantile_min=quantile_min,
+        quantile_max=quantile_max,
         boundary=boundary.get_data() if boundary else None,
     )
-    new_image = cell_seg.derive_new(out_data, name=f"{cell_seg.name}_nuc_fixed")
-    return new_image
+    return cell_seg.derive_new(corrected_data, name=f"{cell_seg.name}_nuc_fixed")
 
 
 @task_tracker

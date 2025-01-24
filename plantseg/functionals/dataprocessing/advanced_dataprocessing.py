@@ -256,13 +256,14 @@ def fix_over_segmentation(
 def fix_over_under_segmentation_from_nuclei(
     cell_seg: np.ndarray,
     nuclei_seg: np.ndarray,
-    threshold_merge: float = 0.33,
-    threshold_split: float = 0.66,
-    quantiles_nuclei: tuple[float, float] = (0.3, 0.99),
+    threshold_merge: float,
+    threshold_split: float,
+    quantile_min: float,
+    quantile_max: float,
     boundary: np.ndarray | None = None,
 ) -> np.ndarray:
     """
-    Corrects over-segmentation and under-segmentation of cells based on a trusted nuclei segmentation.
+    Correct over-segmentation and under-segmentation of cells based on nuclei information.
 
     This function uses information from nuclei segmentation to refine cell segmentation by first identifying
     over-segmented cells (cells mistakenly split into multiple segments) and merging them. It then corrects
@@ -270,32 +271,38 @@ def fix_over_under_segmentation_from_nuclei(
     and optional boundary information.
 
     Args:
-        cell_seg (np.ndarray): A 2D or 3D array representing segmented cell instances.
-        nuclei_seg (np.ndarray): A 2D or 3D array representing segmented nuclei instances, with the same shape as `cell_seg`.
-        threshold_merge (float, optional): Threshold for identifying over-segmentation, based on the ratio of nuclei overlap.
-            Cells with overlap below this threshold will be merged. Default is 0.33.
-        threshold_split (float, optional): Threshold for identifying under-segmentation, based on the ratio of nuclei overlap.
-            Cells with overlap above this threshold will be split. Default is 0.66.
-        quantiles_nuclei (tuple[float, float], optional): Quantile range for filtering nuclei based on size, helping to ignore
-            outliers such as very small or very large nuclei. Default is (0.3, 0.99).
-        boundary (np.ndarray | None, optional): An optional boundary probability map for the cells. If None, a constant map
-            is used to treat all regions equally. This can help refine under-segmentation correction.
+        cell_seg (np.ndarray): A 2D or 3D array of segmented cells, where each integer represents a unique cell.
+        nuclei_seg (np.ndarray): A 2D or 3D array of segmented nuclei, matching the shape of `cell_seg`.
+            Used to guide merging and splitting.
+        threshold_merge (float, optional): A value between 0 and 1. Cells with less than this fraction of nuclei overlap
+            are considered over-segmented and will be merged. Default is 0.33.
+        threshold_split (float, optional): A value between 0 and 1. Cells with more than this fraction of nuclei overlap
+            are considered under-segmented and will be split. Default is 0.66.
+        quantile_min (float, optional): The lower size limit for nuclei, as a fraction (0-1). Nuclei smaller than this
+            quantile are ignored. Default is 0.3.
+        quantile_max (float, optional): The upper size limit for nuclei, as a fraction (0-1). Nuclei larger than this
+            quantile are ignored. Default is 0.99.
+        boundary (np.ndarray | None, optional): Optional boundary map of the same shape as `cell_seg`. High values
+            indicate cell boundaries and help refine splitting. If None, all regions are treated equally.
 
     Returns:
-        np.ndarray: The corrected cell segmentation array, of the same shape as the input `cell_seg`.
+        np.ndarray: Corrected cell segmentation array.
     """
+    # Find overlaps between cells and nuclei
     cell_counts, nuclei_counts, cell_nuclei_counts = numba_find_overlaps(cell_seg, nuclei_seg)
-    nuclei_assignments = find_potential_over_seg(nuclei_counts, cell_nuclei_counts, threshold=threshold_merge)
 
+    # Identify over-segmentation and correct it
+    nuclei_assignments = find_potential_over_seg(nuclei_counts, cell_nuclei_counts, threshold=threshold_merge)
     corrected_seg = fix_over_segmentation(cell_seg, nuclei_assignments)
 
+    # Identify under-segmentation and correct it
     cell_counts, nuclei_counts, cell_nuclei_counts = numba_find_overlaps(corrected_seg, nuclei_seg)
     cell_assignments = find_potential_under_seg(
         nuclei_counts,
         cell_counts,
         cell_nuclei_counts,
         threshold=threshold_split,
-        quantiles_clip=quantiles_nuclei,
+        quantiles_clip=(quantile_min, quantile_max),
     )
 
     boundary_pmap = np.ones_like(cell_seg) if boundary is None else boundary
