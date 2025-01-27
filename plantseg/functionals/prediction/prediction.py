@@ -30,8 +30,7 @@ def biio_prediction(
     model_id: str,
 ) -> dict[str, np.ndarray]:
     assert isinstance(input_layout, str)
-    with ValidationContext(perform_io_checks=False):
-        model = load_model_description(model_id)
+    model = load_model_description(model_id, perform_io_checks=False)
     if isinstance(model, v0_4.ModelDescr):
         input_ids = [input_tensor.name for input_tensor in model.inputs]
     elif isinstance(model, v0_5.ModelDescr):
