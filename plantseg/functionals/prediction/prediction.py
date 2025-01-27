@@ -8,7 +8,7 @@ from bioimageio.core.axis import AxisId
 from bioimageio.core.prediction import predict
 from bioimageio.core.sample import Sample
 from bioimageio.core.tensor import Tensor
-from bioimageio.spec import load_model_description
+from bioimageio.spec import ValidationContext, load_model_description
 from bioimageio.spec.model import v0_4, v0_5
 from bioimageio.spec.model.v0_5 import TensorId
 
@@ -30,8 +30,8 @@ def biio_prediction(
     model_id: str,
 ) -> dict[str, np.ndarray]:
     assert isinstance(input_layout, str)
-
-    model = load_model_description(model_id)
+    with ValidationContext(perform_io_checks=False):
+        model = load_model_description(model_id)
     if isinstance(model, v0_4.ModelDescr):
         input_ids = [input_tensor.name for input_tensor in model.inputs]
     elif isinstance(model, v0_5.ModelDescr):
