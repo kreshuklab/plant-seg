@@ -662,6 +662,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Widget: Proofreading with Manual Split and Merge">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keybinding" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keybinding
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1471,6 +1486,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Widget: Proofreading with Manual Split and Merge">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keybinding" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keybinding
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1493,10 +1523,22 @@
 
 <h1 id="manual-proofreading">Manual Proofreading</h1>
 <h2 id="widget-proofreading-with-manual-split-and-merge">Widget: Proofreading with Manual Split and Merge</h2>
-<div class="admonition info">
-<p class="admonition-title">Documentation in Progress</p>
-<p>This documentation is under development, but the widget is ready to use.</p>
-</div>
+<p>Once the segmentation is done, or a label image is loaded along with a boundary image, the user can start the proofreading process. In the proofreading widget, set the "Mode" to "Layer" if you are going to correct a loaded image, or set the "Mode" to "File" if you already had a proofreading session exported as a file. For "Segmentation", select the image layer that you want to correct, then click "Initialise" to start the proofreading process.</p>
+<p>After a few second of initialisation, the initialised proofreading widget will be displayed, and two new layers will be added to the Napari viewer, "Scribbles" and "Correct Labels". Click "Scribbles" first, and you may draw on this layer with the "paint brush" tool - you can press <code>2</code> or <code>P</code> key to activate the brush tool or find it on the "layer controls" panel of the Napari viewer. The scribbles drawn on this layer will be used to split or merge the segmentation: strokes with the same color will merge the instance(s) in the segmentation layer, and strokes with different colors will split the instance(s) in the segmentation layer. After drawing the scribbles, click "Split / Merge" or press <code>n</code> to apply the scribbles to the segmentation layer. If you want to undo the last split or merge operation, click "Undo Last Action".</p>
+<p>When you are done or want to stop the proofreading session, you may save the current state of the proofreading session by clicking "Save current proofreading snapshot" into a snapshot file, which can be loaded into the proofreading widget later in another session of PlantSeg.</p>
+<h3 id="keybinding">Keybinding</h3>
+<ul>
+<li><code>s</code>: Save stack</li>
+<li><code>n</code>: Merge or split from seeds</li>
+<li><code>ctrl+n</code>: Undo merge or split from seeds</li>
+<li><code>c</code>: Clean seeds</li>
+<li><code>o</code>: Mark/un-mark correct segmentation</li>
+<li><code>b</code>: show/un-show correct segmentation layer</li>
+<li><code>j</code>: Update boundaries from segmentation</li>
+<li><code>k</code>: Update segmentation from boundaries</li>
+<li><code>ctrl + arrows</code>: to move the field of view</li>
+<li><code>alt + down/up arrows</code>: to increase or decrease the field of view</li>
+</ul>
 
 
 
@@ -1519,7 +1561,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">September 15, 2024</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">January 28, 2025</span>
   </span>
 
     
@@ -1550,6 +1592,11 @@
         <a href="https://github.com/qin-yu" class="md-author" title="@qin-yu">
           
           <img src="https://avatars.githubusercontent.com/u/17722010?v=4&size=72" alt="qin-yu">
+        </a>
+      
+        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
+          
+          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
         </a>
       
       
