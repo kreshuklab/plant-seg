@@ -21,7 +21,7 @@ requirements:
 
   run:
     - python >=3.9
-    - pytorch >=1.7.0,<2.5
+    - pytorch >=1.7.0
     - tifffile
     - h5py
     - zarr
