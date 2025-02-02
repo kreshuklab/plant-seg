@@ -58,22 +58,20 @@ def find_patch_and_halo_shapes(
 
     if n_voxels_patch >= n_voxels_sample:
         return tuple(shape_volume), (0, 0, 0)
-    else:  # otherwise at least one dim needs to be tiled
+    else:  # otherwise at least one dim needs to be tiled, count_shrink < 3.
         dim_shrink = shape_patch_max > shape_volume
         halo_shape = np.where(dim_shrink, 0, shape_halo_min)
         count_shrink = dim_shrink.sum()
 
         adjusted_patch_shape = np.minimum(shape_volume, shape_patch_max)
-        if count_shrink == 3:
-            assert np.all(adjusted_patch_shape == shape_volume)
-        elif count_shrink == 2:
+        if count_shrink == 2:
             remaining_dim = np.flatnonzero(~dim_shrink)
             adjusted_patch_shape[remaining_dim] = n_voxels_patch // np.prod(shape_volume[dim_shrink])
         elif count_shrink == 1:
             remaining_dims = np.flatnonzero(~dim_shrink)
             max_area = n_voxels_patch // shape_volume[dim_shrink]
             adjusted_patch_shape[remaining_dims] = np.sqrt(max_area).astype(int)
-        else:  # count_shrink == 0
+        else:  # count_shrink == 0.
             assert np.all(shape_patch_max <= shape_volume)
             adjusted_patch_shape = shape_patch_max
         return tuple(adjusted_patch_shape - halo_shape * 2), tuple(halo_shape)
