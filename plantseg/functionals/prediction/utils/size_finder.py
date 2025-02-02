@@ -65,7 +65,7 @@ def find_patch_and_halo_shapes(
 
         adjusted_patch_shape = np.minimum(shape_volume, shape_patch_max)
         if count_shrink == 3:
-            pass  # adjusted_patch_shape is already shape_volume
+            assert np.all(adjusted_patch_shape == shape_volume)
         elif count_shrink == 2:
             remaining_dim = np.flatnonzero(~dim_shrink)
             adjusted_patch_shape[remaining_dim] = n_voxels_patch // np.prod(shape_volume[dim_shrink])
