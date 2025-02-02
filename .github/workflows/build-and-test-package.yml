@@ -54,7 +54,7 @@ jobs:
       - name: Build PlantSeg Package
         shell: bash -l {0}
         run: |
-          conda install -q conda-build
+          conda install -q conda-build conda-verify
           conda build -c conda-forge conda-recipe
 
       # Create a Conda environment for testing
