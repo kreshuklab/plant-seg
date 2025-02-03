@@ -124,9 +124,9 @@ class ArrayDataset(Dataset):
             halo_shape = (0,) + self.halo_shape
         else:
             halo_shape = self.halo_shape
-        assert len(raw_idx) == len(
-            halo_shape
-        ), f"raw_idx {len(raw_idx)} and halo_shape {len(halo_shape)} must have the same length."
+        assert len(raw_idx) == len(halo_shape), (
+            f"raw_idx {len(raw_idx)} and halo_shape {len(halo_shape)} must have the same length."
+        )
 
         raw_idx_padded = tuple(
             slice(index.start, index.stop + 2 * halo, None) for index, halo in zip(raw_idx, halo_shape)

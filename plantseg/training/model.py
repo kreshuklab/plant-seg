@@ -61,9 +61,9 @@ def create_conv(in_channels, out_channels, kernel_size, order, num_groups, paddi
             if num_channels < num_groups:
                 num_groups = 1
 
-            assert (
-                num_channels % num_groups == 0
-            ), f'Expected number of channels in input to be divisible by num_groups. num_channels={num_channels}, num_groups={num_groups}'
+            assert num_channels % num_groups == 0, (
+                f'Expected number of channels in input to be divisible by num_groups. num_channels={num_channels}, num_groups={num_groups}'
+            )
             modules.append(('groupnorm', nn.GroupNorm(num_groups=num_groups, num_channels=num_channels)))
         elif char == 'b':
             is_before_conv = i < order.index('c')

@@ -95,7 +95,7 @@ def pmaps_evaluation(
 
     else:
         NotImplementedError(
-            "gt and predictions inputs must be directories or single files. " "Moreover, types must match."
+            "gt and predictions inputs must be directories or single files. Moreover, types must match."
         )
 
     results = []

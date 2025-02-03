@@ -68,9 +68,9 @@ class TestIO:
 
         # Read the voxel size of the Zarr file
         voxel_size = read_zarr_voxel_size(path_zarr, "raw")
-        assert np.allclose(
-            voxel_size, self.voxel_size
-        ), "Voxel size read from Zarr file is not equal to the original voxel size"
+        assert np.allclose(voxel_size, self.voxel_size), (
+            "Voxel size read from Zarr file is not equal to the original voxel size"
+        )
 
         data_read2 = smart_load(path_zarr, "raw")
         assert np.array_equal(data, data_read2), "Data read from Zarr file is not equal to the original data"
