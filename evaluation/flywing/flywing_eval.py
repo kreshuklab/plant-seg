@@ -21,8 +21,7 @@ def relabel(tracks):
 
     if len(labels) >= 2**16:
         print(
-            "Track graph contains %d distinct labels, can not be expressed "
-            "in int16. Skipping evaluation." % len(labels)
+            "Track graph contains %d distinct labels, can not be expressed in int16. Skipping evaluation." % len(labels)
         )
         raise RuntimeError()
 

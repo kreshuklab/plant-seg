@@ -98,9 +98,9 @@ class ArrayPredictor:
 
     def __call__(self, test_dataset: Dataset) -> np.ndarray:
         assert isinstance(test_dataset, ArrayDataset), "Dataset must be an instance of ArrayDataset"
-        assert (
-            self.patch_halo == test_dataset.halo_shape
-        ), f"Predictor halo shape {self.patch_halo} does not match dataset halo shape {test_dataset.halo_shape}"
+        assert self.patch_halo == test_dataset.halo_shape, (
+            f"Predictor halo shape {self.patch_halo} does not match dataset halo shape {test_dataset.halo_shape}"
+        )
 
         test_loader = DataLoader(
             test_dataset,

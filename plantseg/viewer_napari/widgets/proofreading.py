@@ -679,8 +679,7 @@ def widget_split_and_merge_from_scribbles(
 
     if ps_image.is_multichannel:
         log(
-            'Pmap/Image layer appears to be a multichannel image. '
-            'Proofreading does not support multichannel images. ',
+            'Pmap/Image layer appears to be a multichannel image. Proofreading does not support multichannel images. ',
             thread='Proofreading tool',
             level='error',
         )

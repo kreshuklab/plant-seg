@@ -29,7 +29,7 @@ ADVANCED_SETTINGS = [("Enable", True), ("Disable", False)]
 # Using Enum causes more complexity, stay constant
 ALL_DIM = 'All dimensions'
 ALL_MOD = 'All modalities'
-ALL_TYP = 'All types'
+ALL_TYPO = 'All types'
 CUSTOM = 'Custom'
 
 
@@ -70,7 +70,7 @@ model_filters = Container(
             name="output_type",
             label='Prediction type',
             widget_type='ComboBox',
-            options={'choices': [ALL_TYP] + model_zoo.get_unique_output_types()},
+            options={'choices': [ALL_TYPO] + model_zoo.get_unique_output_types()},
         ),
     ],
     label='Model filters',
@@ -293,7 +293,7 @@ def _on_any_metadata_changed(widget):
     dimensionality = widget.dimensionality.value
 
     modality = [modality] if modality != ALL_MOD else None
-    output_type = [output_type] if output_type != ALL_TYP else None
+    output_type = [output_type] if output_type != ALL_TYPO else None
     dimensionality = [dimensionality] if dimensionality != ALL_DIM else None
     widget_unet_prediction.model_name.choices = model_zoo.list_models(
         modality_filter=modality,
