@@ -485,9 +485,9 @@ class Relabel:
         self.run_cc = run_cc
 
         if ignore_label is not None:
-            assert (
-                append_original
-            ), "ignore_label present, so append_original must be true, so that one can localize the ignore region"
+            assert append_original, (
+                "ignore_label present, so append_original must be true, so that one can localize the ignore region"
+            )
 
     def __call__(self, m):
         orig = m

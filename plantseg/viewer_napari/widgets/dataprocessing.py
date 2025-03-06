@@ -142,9 +142,9 @@ def _on_cropping_image_changed(image: Layer):
         widget_cropping.crop_z.hide()
         return None
 
-    assert isinstance(
-        image, (Image, Labels)
-    ), f"{type(image)} cannot be cropped, please use Image layers or Labels layers"
+    assert isinstance(image, (Image, Labels)), (
+        f"{type(image)} cannot be cropped, please use Image layers or Labels layers"
+    )
     ps_image = PlantSegImage.from_napari_layer(image)
 
     if ps_image.dimensionality == ImageDimensionality.TWO:

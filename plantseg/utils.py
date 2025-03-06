@@ -64,8 +64,7 @@ def clean_models() -> None:
     for _ in range(3):
         answer = (
             input(
-                "This will delete all models in the model zoo."
-                "Ensure you've backed up custom models. Continue? (y/n): "
+                "This will delete all models in the model zoo.Ensure you've backed up custom models. Continue? (y/n): "
             )
             .strip()
             .lower()

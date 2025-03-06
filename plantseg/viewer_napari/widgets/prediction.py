@@ -27,9 +27,9 @@ SINGLE_PATCH_MODE = [("Auto", False), ("One (lower VRAM usage)", True)]
 ADVANCED_SETTINGS = [("Enable", True), ("Disable", False)]
 
 # Using Enum causes more complexity, stay constant
-ALL_DIM = 'All dimensions'
-ALL_MOD = 'All modalities'
-ALL_TYP = 'All types'
+ALL_DIMENSIONS = 'All dimensions'
+ALL_MODALITIES = 'All modalities'
+ALL_TYPES = 'All types'
 CUSTOM = 'Custom'
 
 
@@ -56,21 +56,21 @@ model_filters = Container(
             name="dimensionality",
             label='Dimensionality',
             widget_type='ComboBox',
-            options={'choices': [ALL_DIM] + model_zoo.get_unique_dimensionalities()},
+            options={'choices': [ALL_DIMENSIONS] + model_zoo.get_unique_dimensionalities()},
         ),
         create_widget(
             annotation=str,
             name="modality",
             label='Microscopy modality',
             widget_type='ComboBox',
-            options={'choices': [ALL_MOD] + model_zoo.get_unique_modalities()},
+            options={'choices': [ALL_MODALITIES] + model_zoo.get_unique_modalities()},
         ),
         create_widget(
             annotation=str,
             name="output_type",
             label='Prediction type',
             widget_type='ComboBox',
-            options={'choices': [ALL_TYP] + model_zoo.get_unique_output_types()},
+            options={'choices': [ALL_TYPES] + model_zoo.get_unique_output_types()},
         ),
     ],
     label='Model filters',
@@ -292,9 +292,9 @@ def _on_any_metadata_changed(widget):
     output_type = widget.output_type.value
     dimensionality = widget.dimensionality.value
 
-    modality = [modality] if modality != ALL_MOD else None
-    output_type = [output_type] if output_type != ALL_TYP else None
-    dimensionality = [dimensionality] if dimensionality != ALL_DIM else None
+    modality = [modality] if modality != ALL_MODALITIES else None
+    output_type = [output_type] if output_type != ALL_TYPES else None
+    dimensionality = [dimensionality] if dimensionality != ALL_DIMENSIONS else None
     widget_unet_prediction.model_name.choices = model_zoo.list_models(
         modality_filter=modality,
         output_type_filter=output_type,

@@ -50,12 +50,12 @@ class SerialRunner:
         elif outputs is None:
             outputs = []
 
-        assert isinstance(
-            outputs, (list, tuple)
-        ), f"Task {task.func} should return a list of PlantSegImage, got {type(outputs)}"
-        assert len(outputs) == len(
-            task.outputs
-        ), f"Task {task.func} should return {len(task.outputs)} outputs, got {len(outputs)}"
+        assert isinstance(outputs, (list, tuple)), (
+            f"Task {task.func} should return a list of PlantSegImage, got {type(outputs)}"
+        )
+        assert len(outputs) == len(task.outputs), (
+            f"Task {task.func} should return {len(task.outputs)} outputs, got {len(outputs)}"
+        )
 
         for name, output in zip(task.outputs, outputs, strict=True):
             var_space[name] = output

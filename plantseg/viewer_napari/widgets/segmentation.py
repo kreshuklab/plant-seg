@@ -127,7 +127,7 @@ def _on_mode_changed(mode: str):
     },
     stacked={
         'label': 'Mode',
-        'tooltip': 'Define if the Watershed will run slice by slice (faster) ' 'or on the full volume (slower).',
+        'tooltip': 'Define if the Watershed will run slice by slice (faster) or on the full volume (slower).',
         'widget_type': 'RadioButtons',
         'orientation': 'horizontal',
         'choices': STACKED,
