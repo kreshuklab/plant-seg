@@ -33,7 +33,7 @@ jobs:
 
       # Set the documentation release version
       - name: Set Documentation Version
-        run: echo "RELEASE_VERSION=DOC_RELEASE" >> $GITHUB_ENV
+        run: echo "RELEASE_VERSION=$(date +%Y%m%d%H%M%S)+DOC_RELEASE" >> $GITHUB_ENV
 
       # Print the documentation version name (for debugging purposes)
       - name: Print Documentation Version
