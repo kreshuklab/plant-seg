@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - master
-      - qy/unify-prediction
+      - qy/fix-conda-no-plugin
 
 permissions:
   contents: write
@@ -33,7 +33,7 @@ jobs:
 
       # Set the documentation release version
       - name: Set Documentation Version
-        run: echo "RELEASE_VERSION=DOC_RELEASE" >> $GITHUB_ENV
+        run: echo "RELEASE_VERSION=$(date +%Y%m%d%H%M%S)+DOC_RELEASE" >> $GITHUB_ENV
 
       # Print the documentation version name (for debugging purposes)
       - name: Print Documentation Version
@@ -68,7 +68,7 @@ jobs:
       - name: Build PlantSeg Package
         shell: bash -l {0}
         run: |
-          conda install -q conda-build
+          conda install -q conda-build conda-verify
           conda build -c conda-forge conda-recipe
 
       # Create a Conda environment for PlantSeg
