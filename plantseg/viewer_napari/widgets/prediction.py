@@ -131,6 +131,7 @@ model_filters = Container(
         'choices': SINGLE_PATCH_MODE,
     },
     device={'label': 'Device', 'choices': ALL_DEVICES},
+    pbar={"label": "Progress", "max": 0, "min": 0, "visible": False},
     update_other_widgets={
         "visible": False,
         "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",

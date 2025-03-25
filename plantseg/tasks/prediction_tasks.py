@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.functionals.dataprocessing import fix_layout
@@ -20,7 +21,7 @@ def unet_prediction_task(
     disable_tqdm: bool = False,
     config_path: Path | None = None,
     model_weights_path: Path | None = None,
-    _tracker=None,
+    _tracker: Optional["PBar_Tracker"] = None,
 ) -> list[PlantSegImage]:
     """
     Apply a trained U-Net model to a PlantSegImage object.
@@ -74,9 +75,7 @@ def unet_prediction_task(
 
 @task_tracker
 def biio_prediction_task(
-    image: PlantSegImage,
-    model_id: str,
-    suffix: str = "_prediction",
+    image: PlantSegImage, model_id: str, suffix: str = "_prediction", _tracker: Optional["PBar_Tracker"] = None
 ) -> list[PlantSegImage]:
     data = image.get_data()
     input_layout = image.image_layout.value

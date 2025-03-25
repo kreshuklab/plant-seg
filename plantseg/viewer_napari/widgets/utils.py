@@ -136,8 +136,7 @@ def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Wid
         pbar.max = tracker.total
         pbar.visible = True
         tracker.events.progress.connect(update_progressbar(pbar, tracker), thread="main")
-        if "_tracker" in task.__code__.co_varnames:
-            task_kwargs["_tracker"] = tracker
+        task_kwargs["_tracker"] = tracker
         start_emitting_from_queue()
     if hide_list := task_kwargs.pop("_to_hide", None):
         for to_hide in hide_list:
