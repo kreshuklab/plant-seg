@@ -7,20 +7,25 @@ from typing import Optional
 import torch.cuda
 from magicgui import magicgui
 from magicgui.types import Separator
-from magicgui.widgets import Container, create_widget
+from magicgui.widgets import Container, ProgressBar, create_widget
 from napari.layers import Image
 
 from plantseg.core.image import PlantSegImage
 from plantseg.core.zoo import model_zoo
 from plantseg.tasks.prediction_tasks import biio_prediction_task, unet_prediction_task
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.proofreading import widget_split_and_merge_from_scribbles
-from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws
+from plantseg.viewer_napari.widgets.proofreading import (
+    widget_split_and_merge_from_scribbles,
+)
+from plantseg.viewer_napari.widgets.segmentation import (
+    widget_agglomeration,
+    widget_dt_ws,
+)
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
-ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
-MPS = ['mps'] if torch.backends.mps.is_available() else []
-ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ['cpu']
+ALL_CUDA_DEVICES = [f"cuda:{i}" for i in range(torch.cuda.device_count())]
+MPS = ["mps"] if torch.backends.mps.is_available() else []
+ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ["cpu"]
 
 BIOIMAGEIO_FILTER = [("PlantSeg Only", True), ("All", False)]
 SINGLE_PATCH_MODE = [("Auto", False), ("One (lower VRAM usage)", True)]
@@ -142,6 +147,7 @@ def widget_unet_prediction(
     patch_size: tuple[int, int, int] = (128, 128, 128),
     patch_halo: tuple[int, int, int] = (0, 0, 0),
     single_patch: bool = False,
+    pbar: Optional[ProgressBar] = None,
     update_other_widgets: bool = True,
 ) -> None:
     ps_image = PlantSegImage.from_napari_layer(image)
@@ -165,6 +171,8 @@ def widget_unet_prediction(
                 "patch_halo": patch_halo if advanced else None,
                 "single_batch_mode": single_patch if advanced else False,
                 "device": device,
+                "_pbar": pbar,
+                "_to_hide": [widget_unet_prediction.call_button],
             },
             widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
@@ -181,11 +189,13 @@ def widget_unet_prediction(
                 "image": ps_image,
                 "model_id": model_id,
                 "suffix": suffix,
+                "_pbar": pbar,
+                "_to_hide": [widget_unet_prediction.call_button],
             },
             widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
     else:
-        raise NotImplementedError(f'Mode {mode} not implemented yet.')
+        raise NotImplementedError(f"Mode {mode} not implemented yet.")
 
 
 widget_unet_prediction.insert(3, model_filters)

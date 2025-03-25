@@ -20,6 +20,7 @@ def unet_prediction_task(
     disable_tqdm: bool = False,
     config_path: Path | None = None,
     model_weights_path: Path | None = None,
+    _tracker=None,
 ) -> list[PlantSegImage]:
     """
     Apply a trained U-Net model to a PlantSegImage object.
@@ -50,6 +51,7 @@ def unet_prediction_task(
         disable_tqdm=disable_tqdm,
         config_path=config_path,
         model_weights_path=model_weights_path,
+        tracker=_tracker,
     )
     assert pmaps.ndim == 4, f"Expected 4D CZXY prediction, got {pmaps.ndim}D"
 
@@ -93,7 +95,7 @@ def biio_prediction_task(
                 pmap,
                 name=f"{image.name}_{suffix}_{name}",
                 semantic_type=SemanticType.PREDICTION,
-                image_layout='CZYX',
+                image_layout="CZYX",
             )
         )
     return new_images
