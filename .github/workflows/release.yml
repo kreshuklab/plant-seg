@@ -39,6 +39,7 @@ jobs:
         # if: startsWith(github.ref, 'refs/tags/')
         with:
           generate_release_notes: true
+          # necessary comment
           tag_name: ${{ steps.bump.outputs.current-version }}
           name: ${{ steps.bump.outputs.current-version }}
           token: ${{ secrets.GITHUB_TOKEN }}
