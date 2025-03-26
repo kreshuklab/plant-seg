@@ -1,9 +1,5 @@
 name: Docs Build and Publish
-on:
-  push:
-    branches:
-      - master
-      - qy/fix-conda-no-plugin
+on: workflow_dispatch
 
 permissions:
   contents: write
@@ -19,7 +15,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-            fetch-depth: 0
+          fetch-depth: 0
 
       # Set up Qt libraries (required for PyQt applications)
       - name: Set Up Qt Libraries
