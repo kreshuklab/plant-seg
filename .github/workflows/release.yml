@@ -40,5 +40,6 @@ jobs:
         with:
           generate_release_notes: true
           tag_name: ${{ steps.bump.output.current-version }}
+          name: ${{ steps.bump.output.current-version }}
           token: ${{ secrets.GITHUB_TOKEN }}
           make_latest: true
