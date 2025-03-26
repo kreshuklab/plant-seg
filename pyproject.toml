@@ -3,10 +3,10 @@ nd = "nd"       # N-dimensional (ND)
 ome = "ome"     # Open Microscopy Environment (OME)
 datas = "datas" # pyinstaller
 
-[tool.ruff]
-line-length = 120
-
 [tool.black]
+exclude = ".py"
+
+[tool.ruff]
 line-length = 120
 
 [tool.ruff.lint]
@@ -27,8 +27,8 @@ parse = """(?x)
     )?
 """
 serialize = [
-    "{major}.{minor}.{patch}{pre_label}{pre_n}", # Pre-release format: 2.0.0a0
-    "{major}.{minor}.{patch}",                   # Stable version format: 2.0.0
+  "{major}.{minor}.{patch}{pre_label}{pre_n}", # Pre-release format: 2.0.0a0
+  "{major}.{minor}.{patch}",                   # Stable version format: 2.0.0
 ]
 search = "{current_version}"
 replace = "{new_version}"
