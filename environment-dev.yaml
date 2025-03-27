@@ -31,6 +31,7 @@ dependencies:
   - pydantic>2,<2.10  # 2.10 cause problem spec-bioimage-io/issues/663
   # Test
   - pytest
+  - pytest-cov
   - pytest-qt
   - pytest-mock
   - requests-mock
