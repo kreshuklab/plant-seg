@@ -29,7 +29,8 @@ requirements:
     - python-elf
     - python-graphviz
     - scikit-image
-    - bioimageio.core >=0.6.5
+    - bioimageio.core >=0.6.5,<=0.7.0
+    - xarray<2025.3.0  # 2025.3.0 cause problem plant-seg/issues/396
     - napari
     - pyqt
     - requests
@@ -43,6 +44,7 @@ test:
     - pytest
   run:
     - pytest
+
 about:
   home: https://kreshuklab.github.io/plant-seg/
   license: MIT
