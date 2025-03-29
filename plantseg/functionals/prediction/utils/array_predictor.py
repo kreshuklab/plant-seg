@@ -11,7 +11,11 @@ from plantseg.functionals.prediction.utils.array_dataset import (
     default_prediction_collate,
     remove_padding,
 )
-from plantseg.functionals.prediction.utils.size_finder import _is_2d_model, find_batch_size, will_CUDA_OOM
+from plantseg.functionals.prediction.utils.size_finder import (
+    _is_2d_model,
+    find_batch_size,
+    will_CUDA_OOM,
+)
 from plantseg.training.embeddings import embeddings_to_affinities
 
 logger = logging.getLogger(__name__)
@@ -50,6 +54,7 @@ class ArrayPredictor:
         verbose_logging (bool): Flag to enable detailed logging.
         disable_tqdm (bool): Flag to disable tqdm progress bars during prediction.
         is_embedding (bool): Flag to determine if the output should be treated as embeddings.
+        tracker (Optional[PBar_Tracker]): Relais progress bar information from task to widget.
     """
 
     def __init__(
@@ -65,8 +70,10 @@ class ArrayPredictor:
         is_embedding: bool = False,
         verbose_logging: bool = False,
         disable_tqdm: bool = False,
+        tracker=None,
     ):
         self.device = device
+        self.tracker = tracker
 
         if single_batch_mode:  # then check if OOM happens at batch size 1
             self.batch_size = 1
@@ -143,9 +150,12 @@ class ArrayPredictor:
         # It is necessary for batchnorm/dropout layers if present as well as final Sigmoid/Softmax to be applied
         self.model.eval()
         # Run prediction on the entire input dataset
-
+        if self.tracker is not None:
+            self.tracker.total = len(test_loader)
         with torch.no_grad():
             for input_, indices in tqdm.tqdm(test_loader, disable=self.disable_tqdm):
+                if self.tracker is not None:
+                    self.tracker.progress += 1
                 input_ = input_.to(self.device)  # input is padded with halo in dataset __getitem__
                 # forward pass
                 if is_2d_model:

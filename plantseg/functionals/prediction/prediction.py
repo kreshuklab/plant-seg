@@ -138,6 +138,7 @@ def unet_prediction(
     disable_tqdm: bool = False,
     config_path: Path | None = None,
     model_weights_path: Path | None = None,
+    tracker=None,
 ) -> np.ndarray:
     """Generate prediction from raw data using a specified 3D U-Net model.
 
@@ -213,6 +214,7 @@ def unet_prediction(
         headless=False,
         verbose_logging=False,
         disable_tqdm=disable_tqdm,
+        tracker=tracker,
     )
 
     if int(model_config["in_channels"]) > 1:  # if multi-channel input
