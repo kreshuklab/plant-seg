@@ -74,6 +74,10 @@ class PathMode(Enum):
         "choices": get_current_dataset_keys,
         "tooltip": "Key to be loaded from h5",
     },
+    button_key_refresh={
+        "label": "Refresh keys",
+        "widget_type": "PushButton",
+    },
     stack_layout={
         "label": "Stack layout",
         "choices": ImageLayout.to_choices(),
@@ -92,6 +96,7 @@ def widget_open_file(
     layer_type: str = ImageType.IMAGE.value,
     new_layer_name: str = "",
     dataset_key: str | None = None,
+    button_key_refresh: bool = True,
     stack_layout: str = ImageLayout.ZYX.value,
     update_other_widgets: bool = True,
 ) -> None:
@@ -121,6 +126,7 @@ def widget_open_file(
 
 
 widget_open_file.dataset_key.hide()
+widget_open_file.button_key_refresh.hide()
 
 
 def generate_layer_name(path: Path, dataset_key: str) -> str:
@@ -134,10 +140,12 @@ def look_up_dataset_keys(path: Path):
 
     if ext in H5_EXTENSIONS:
         widget_open_file.dataset_key.show()
+        widget_open_file.button_key_refresh.show()
         dataset_keys = list_h5_keys(path)
 
     elif ext in ZARR_EXTENSIONS:
         widget_open_file.dataset_key.show()
+        widget_open_file.button_key_refresh.show()
         dataset_keys = list_zarr_keys(path)
 
     else:
@@ -150,6 +158,7 @@ def look_up_dataset_keys(path: Path):
     widget_open_file.dataset_key.choices = dataset_keys
     if dataset_keys == [None]:
         widget_open_file.dataset_key.hide()
+        widget_open_file.button_key_refresh.hide()
     if widget_open_file.dataset_key.value not in dataset_keys:
         widget_open_file.dataset_key.value = dataset_keys[0]
         widget_open_file.new_layer_name.value = generate_layer_name(path, widget_open_file.dataset_key.value)
@@ -169,6 +178,11 @@ def _on_path_mode_changed(path_mode: str):
 @widget_open_file.path.changed.connect
 def _on_path_changed(path: Path):
     look_up_dataset_keys(path)
+
+
+@widget_open_file.button_key_refresh.changed.connect
+def _update_key(press: bool):
+    look_up_dataset_keys(widget_open_file.path.value)
 
 
 @widget_open_file.dataset_key.changed.connect
@@ -255,7 +269,11 @@ def widget_export_image(
         data_type=data_type,
     )
     timer = time.time() - timer
-    log(f"export_image_task finished in {timer:.2f} seconds", thread="Export stacks", level="info")
+    log(
+        f"export_image_task finished in {timer:.2f} seconds",
+        thread="Export stacks",
+        level="info",
+    )
 
 
 export_details = [
@@ -449,7 +467,9 @@ def widget_show_info(layer: Layer, update_other_widgets: bool = False) -> None:
 
 
 widget_infos = Label(
-    value="Select layer to show information here...", label="Infos", tooltip="Information about the selected layer."
+    value="Select layer to show information here...",
+    label="Infos",
+    tooltip="Information about the selected layer.",
 )
 
 
