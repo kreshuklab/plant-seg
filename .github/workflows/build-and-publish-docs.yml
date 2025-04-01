@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - master
-      - qy/fix-conda-no-plugin
+      - qy/pin-xarray-bioimageio-core
 
 permissions:
   contents: write

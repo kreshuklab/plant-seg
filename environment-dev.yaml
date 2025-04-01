@@ -21,7 +21,8 @@ dependencies:
   - python-elf
   - python-graphviz
   - scikit-image
-  - bioimageio.core>=0.6.5
+  - bioimageio.core>=0.6.5,<=0.7.0
+  - xarray<2025.3.0  # 2025.3.0 cause problem plant-seg/issues/396
   # GUI
   - pyqt
   - napari
@@ -31,6 +32,7 @@ dependencies:
   - pydantic>2,<2.10  # 2.10 cause problem spec-bioimage-io/issues/663
   # Test
   - pytest
+  - pytest-cov
   - pytest-qt
   - pytest-mock
   - requests-mock
