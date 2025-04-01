@@ -7,30 +7,35 @@ from typing import Optional
 import torch.cuda
 from magicgui import magicgui
 from magicgui.types import Separator
-from magicgui.widgets import Container, create_widget
+from magicgui.widgets import Container, ProgressBar, create_widget
 from napari.layers import Image
 
 from plantseg.core.image import PlantSegImage
 from plantseg.core.zoo import model_zoo
 from plantseg.tasks.prediction_tasks import biio_prediction_task, unet_prediction_task
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.proofreading import widget_split_and_merge_from_scribbles
-from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws
+from plantseg.viewer_napari.widgets.proofreading import (
+    widget_split_and_merge_from_scribbles,
+)
+from plantseg.viewer_napari.widgets.segmentation import (
+    widget_agglomeration,
+    widget_dt_ws,
+)
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
-ALL_CUDA_DEVICES = [f'cuda:{i}' for i in range(torch.cuda.device_count())]
-MPS = ['mps'] if torch.backends.mps.is_available() else []
-ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ['cpu']
+ALL_CUDA_DEVICES = [f"cuda:{i}" for i in range(torch.cuda.device_count())]
+MPS = ["mps"] if torch.backends.mps.is_available() else []
+ALL_DEVICES = ALL_CUDA_DEVICES + MPS + ["cpu"]
 
 BIOIMAGEIO_FILTER = [("PlantSeg Only", True), ("All", False)]
 SINGLE_PATCH_MODE = [("Auto", False), ("One (lower VRAM usage)", True)]
 ADVANCED_SETTINGS = [("Enable", True), ("Disable", False)]
 
 # Using Enum causes more complexity, stay constant
-ALL_DIMENSIONS = 'All dimensions'
-ALL_MODALITIES = 'All modalities'
-ALL_TYPES = 'All types'
-CUSTOM = 'Custom'
+ALL_DIMENSIONS = "All dimensions"
+ALL_MODALITIES = "All modalities"
+ALL_TYPES = "All types"
+CUSTOM = "Custom"
 
 
 ########################################################################################################################
@@ -41,8 +46,8 @@ CUSTOM = 'Custom'
 
 
 class UNetPredictionMode(Enum):
-    PLANTSEG = 'PlantSeg Zoo'
-    BIOIMAGEIO = 'BioImage.IO Zoo'
+    PLANTSEG = "PlantSeg Zoo"
+    BIOIMAGEIO = "BioImage.IO Zoo"
 
     @classmethod
     def to_choices(cls):
@@ -54,78 +59,85 @@ model_filters = Container(
         create_widget(
             annotation=str,
             name="dimensionality",
-            label='Dimensionality',
-            widget_type='ComboBox',
-            options={'choices': [ALL_DIMENSIONS] + model_zoo.get_unique_dimensionalities()},
+            label="Dimensionality",
+            widget_type="ComboBox",
+            options={"choices": [ALL_DIMENSIONS] + model_zoo.get_unique_dimensionalities()},
         ),
         create_widget(
             annotation=str,
             name="modality",
-            label='Microscopy modality',
-            widget_type='ComboBox',
-            options={'choices': [ALL_MODALITIES] + model_zoo.get_unique_modalities()},
+            label="Microscopy modality",
+            widget_type="ComboBox",
+            options={"choices": [ALL_MODALITIES] + model_zoo.get_unique_modalities()},
         ),
         create_widget(
             annotation=str,
             name="output_type",
-            label='Prediction type',
-            widget_type='ComboBox',
-            options={'choices': [ALL_TYPES] + model_zoo.get_unique_output_types()},
+            label="Prediction type",
+            widget_type="ComboBox",
+            options={"choices": [ALL_TYPES] + model_zoo.get_unique_output_types()},
         ),
     ],
-    label='Model filters',
+    label="Model filters",
     layout="horizontal",
     labels=False,
 )
 
 
 @magicgui(
-    call_button='Image to Prediction',
+    call_button="Image to Prediction",
     mode={
-        'label': 'Mode',
-        'tooltip': 'Select the mode to run the prediction.',
-        'widget_type': 'RadioButtons',
-        'orientation': 'horizontal',
-        'choices': UNetPredictionMode.to_choices(),
+        "label": "Mode",
+        "tooltip": "Select the mode to run the prediction.",
+        "widget_type": "RadioButtons",
+        "orientation": "horizontal",
+        "choices": UNetPredictionMode.to_choices(),
     },
-    image={'label': 'Image', 'tooltip': 'Raw image to be processed with a neural network.'},
+    image={
+        "label": "Image",
+        "tooltip": "Raw image to be processed with a neural network.",
+    },
     plantseg_filter={
-        'label': 'Model filter',
-        'tooltip': 'Choose to only show models tagged with `plantseg`.',
-        'widget_type': 'RadioButtons',
-        'orientation': 'horizontal',
-        'choices': BIOIMAGEIO_FILTER,
+        "label": "Model filter",
+        "tooltip": "Choose to only show models tagged with `plantseg`.",
+        "widget_type": "RadioButtons",
+        "orientation": "horizontal",
+        "choices": BIOIMAGEIO_FILTER,
     },
     model_name={
-        'label': 'PlantSeg model',
-        'tooltip': f'Select a pretrained PlantSeg model. '
-        f'Current model description: {model_zoo.get_model_description(model_zoo.list_models()[0])}',
-        'choices': model_zoo.list_models(),
+        "label": "PlantSeg model",
+        "tooltip": f"Select a pretrained PlantSeg model. "
+        f"Current model description: {model_zoo.get_model_description(model_zoo.list_models()[0])}",
+        "choices": model_zoo.list_models(),
     },
     model_id={
-        'label': 'BioImage.IO model',
-        'tooltip': 'Select a model from BioImage.IO model zoo.',
-        'choices': model_zoo.get_bioimageio_zoo_plantseg_model_names(),
-        'value': model_zoo.get_bioimageio_zoo_plantseg_model_names()[0][1],
+        "label": "BioImage.IO model",
+        "tooltip": "Select a model from BioImage.IO model zoo.",
+        "choices": model_zoo.get_bioimageio_zoo_plantseg_model_names(),
+        "value": model_zoo.get_bioimageio_zoo_plantseg_model_names()[0][1],
     },
     advanced={
-        'label': 'Show advanced parameters',
-        'tooltip': 'Change the patch shape, halo shape, and batch size.',
+        "label": "Show advanced parameters",
+        "tooltip": "Change the patch shape, halo shape, and batch size.",
     },
-    patch_size={'label': 'Patch size', 'tooltip': 'Patch size used to process the data.'},
+    patch_size={
+        "label": "Patch size",
+        "tooltip": "Patch size used to process the data.",
+    },
     patch_halo={
-        'label': 'Patch halo',
-        'tooltip': 'Patch halo is extra padding for correct prediction on image borders. '
-        'The value is for one side of a given dimension.',
+        "label": "Patch halo",
+        "tooltip": "Patch halo is extra padding for correct prediction on image borders. "
+        "The value is for one side of a given dimension.",
     },
     single_patch={
-        'label': 'Batch size',
-        'tooltip': 'Single patch = batch size 1 (lower GPU memory usage);\nFind Batch Size = find the biggest batch size.',
-        'widget_type': 'RadioButtons',
-        'orientation': 'horizontal',
-        'choices': SINGLE_PATCH_MODE,
+        "label": "Batch size",
+        "tooltip": "Single patch = batch size 1 (lower GPU memory usage);\nFind Batch Size = find the biggest batch size.",
+        "widget_type": "RadioButtons",
+        "orientation": "horizontal",
+        "choices": SINGLE_PATCH_MODE,
     },
-    device={'label': 'Device', 'choices': ALL_DEVICES},
+    device={"label": "Device", "choices": ALL_DEVICES},
+    pbar={"label": "Progress", "max": 0, "min": 0, "visible": False},
     update_other_widgets={
         "visible": False,
         "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
@@ -142,6 +154,7 @@ def widget_unet_prediction(
     patch_size: tuple[int, int, int] = (128, 128, 128),
     patch_halo: tuple[int, int, int] = (0, 0, 0),
     single_patch: bool = False,
+    pbar: Optional[ProgressBar] = None,
     update_other_widgets: bool = True,
 ) -> None:
     ps_image = PlantSegImage.from_napari_layer(image)
@@ -165,6 +178,8 @@ def widget_unet_prediction(
                 "patch_halo": patch_halo if advanced else None,
                 "single_batch_mode": single_patch if advanced else False,
                 "device": device,
+                "_pbar": pbar,
+                "_to_hide": [widget_unet_prediction.call_button],
             },
             widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
@@ -181,11 +196,13 @@ def widget_unet_prediction(
                 "image": ps_image,
                 "model_id": model_id,
                 "suffix": suffix,
+                "_pbar": pbar,
+                "_to_hide": [widget_unet_prediction.call_button],
             },
             widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
     else:
-        raise NotImplementedError(f'Mode {mode} not implemented yet.')
+        raise NotImplementedError(f"Mode {mode} not implemented yet.")
 
 
 widget_unet_prediction.insert(3, model_filters)
@@ -203,9 +220,9 @@ def update_halo():
         return
     if widget_unet_prediction.advanced.value:
         log(
-            'Refreshing halo for the selected model; this might take a while...',
-            thread='UNet prediction',
-            level='info',
+            "Refreshing halo for the selected model; this might take a while...",
+            thread="UNet prediction",
+            level="info",
         )
 
         if widget_unet_prediction.mode.value is UNetPredictionMode.PLANTSEG:
@@ -222,12 +239,12 @@ def update_halo():
                 widget_unet_prediction.patch_halo[0].enabled = True
         elif widget_unet_prediction.mode.value is UNetPredictionMode.BIOIMAGEIO:
             log(
-                'Automatic halo not implemented for BioImage.IO models yet because they are handled by BioImage.IO Core.',
-                thread='BioImage.IO Core prediction',
-                level='info',
+                "Automatic halo not implemented for BioImage.IO models yet because they are handled by BioImage.IO Core.",
+                thread="BioImage.IO Core prediction",
+                level="info",
             )
         else:
-            raise NotImplementedError(f'Automatic halo not implemented for {widget_unet_prediction.mode.value} mode.')
+            raise NotImplementedError(f"Automatic halo not implemented for {widget_unet_prediction.mode.value} mode.")
 
 
 @widget_unet_prediction.advanced.changed.connect
@@ -262,7 +279,7 @@ def _on_widget_unet_prediction_mode_change(mode: UNetPredictionMode):
         for widget in widgets_b:
             widget.show()
     else:
-        raise NotImplementedError(f'Mode {mode} not implemented yet.')
+        raise NotImplementedError(f"Mode {mode} not implemented yet.")
 
     if widget_unet_prediction.advanced.value:
         update_halo()
@@ -275,7 +292,7 @@ def _on_widget_unet_prediction_plantseg_filter_change(plantseg_filter: bool):
     else:
         widget_unet_prediction.model_id.choices = (
             model_zoo.get_bioimageio_zoo_plantseg_model_names()
-            + [('', Separator)]  # `[('', Separator)]` for list[tuple[str, str]], [Separator] for list[str]
+            + [("", Separator)]  # `[('', Separator)]` for list[tuple[str, str]], [Separator] for list[str]
             + model_zoo.get_bioimageio_zoo_other_model_names()
         )
 
@@ -306,13 +323,13 @@ def _on_any_metadata_changed(widget):
 def _on_model_name_changed(model_name: str):
     description = model_zoo.get_model_description(model_name)
     if description is None:
-        description = 'No description available for this model.'
+        description = "No description available for this model."
         widget_unet_prediction.advanced.hide()
         widget_unet_prediction.device.hide()
     else:
         widget_unet_prediction.advanced.show()
         widget_unet_prediction.device.show()
-    widget_unet_prediction.model_name.tooltip = f'Select a pretrained model. Current model description: {description}'
+    widget_unet_prediction.model_name.tooltip = f"Select a pretrained model. Current model description: {description}"
 
     if widget_unet_prediction.advanced.value:
         update_halo()
@@ -333,7 +350,7 @@ def _on_model_id_changed(model_id: str):
 # Add Custom Model Widget                                                                                              #
 #                                                                                                                      #
 ########################################################################################################################
-@magicgui(call_button='Add Custom Model')
+@magicgui(call_button="Add Custom Model")
 def widget_add_custom_model_toggl() -> None:
     widget_unet_prediction.hide()
     widget_add_custom_model_toggl.hide()
@@ -341,46 +358,46 @@ def widget_add_custom_model_toggl() -> None:
 
 
 @magicgui(
-    call_button='Add Custom Model',
-    new_model_name={'label': 'New model name'},
-    model_location={'label': 'Model location', 'mode': 'd'},
+    call_button="Add Custom Model",
+    new_model_name={"label": "New model name"},
+    model_location={"label": "Model location", "mode": "d"},
     resolution={
-        'label': 'Voxel Size',
-        'options': {'step': 0.00001},
-        'tooltip': 'Resolution of the dataset used to model in micrometers per pixel.',
+        "label": "Voxel Size",
+        "options": {"step": 0.00001},
+        "tooltip": "Resolution of the dataset used to model in micrometers per pixel.",
     },
-    description={'label': 'Description'},
+    description={"label": "Description"},
     dimensionality={
-        'label': 'Dimensionality',
-        'tooltip': 'Dimensionality of the model (2D or 3D). Any 2D model can be used for 3D data.',
-        'widget_type': 'ComboBox',
-        'choices': model_zoo.get_unique_dimensionalities(),
+        "label": "Dimensionality",
+        "tooltip": "Dimensionality of the model (2D or 3D). Any 2D model can be used for 3D data.",
+        "widget_type": "ComboBox",
+        "choices": model_zoo.get_unique_dimensionalities(),
     },
     modality={
-        'label': 'Microscopy modality',
-        'tooltip': 'Modality of the model (e.g. confocal, light-sheet ...).',
-        'widget_type': 'ComboBox',
-        'choices': model_zoo.get_unique_modalities() + [CUSTOM],
+        "label": "Microscopy modality",
+        "tooltip": "Modality of the model (e.g. confocal, light-sheet ...).",
+        "widget_type": "ComboBox",
+        "choices": model_zoo.get_unique_modalities() + [CUSTOM],
     },
-    custom_modality={'label': 'Custom modality'},
+    custom_modality={"label": "Custom modality"},
     output_type={
-        'label': 'Prediction type',
-        'widget_type': 'ComboBox',
-        'tooltip': 'Type of prediction (e.g. cell boundaries prediction or nuclei...).',
-        'choices': model_zoo.get_unique_output_types() + [CUSTOM],
+        "label": "Prediction type",
+        "widget_type": "ComboBox",
+        "tooltip": "Type of prediction (e.g. cell boundaries prediction or nuclei...).",
+        "choices": model_zoo.get_unique_output_types() + [CUSTOM],
     },
-    custom_output_type={'label': 'Custom type'},
+    custom_output_type={"label": "Custom type"},
 )
 def widget_add_custom_model(
-    new_model_name: str = 'custom_model',
+    new_model_name: str = "custom_model",
     model_location: Path = Path.home(),
     resolution: tuple[float, float, float] = (1.0, 1.0, 1.0),
-    description: str = 'A model trained by the user.',
+    description: str = "A model trained by the user.",
     dimensionality: str = model_zoo.get_unique_dimensionalities()[0],
     modality: str = model_zoo.get_unique_modalities()[0],
-    custom_modality: str = '',
+    custom_modality: str = "",
     output_type: str = model_zoo.get_unique_output_types()[0],
-    custom_output_type: str = '',
+    custom_output_type: str = "",
 ) -> None:
     if modality == CUSTOM:
         modality = custom_modality
@@ -399,16 +416,16 @@ def widget_add_custom_model(
 
     if finished:
         log(
-            f'New model {new_model_name} added to the list of available models.',
-            level='info',
-            thread='Add Custom Model',
+            f"New model {new_model_name} added to the list of available models.",
+            level="info",
+            thread="Add Custom Model",
         )
         widget_unet_prediction.model_name.choices = model_zoo.list_models()
     else:
         log(
-            f'Error adding new model {new_model_name} to the list of available models: {error_msg}',
-            level='error',
-            thread='Add Custom Model',
+            f"Error adding new model {new_model_name} to the list of available models: {error_msg}",
+            level="error",
+            thread="Add Custom Model",
         )
     widget_add_custom_model.hide()
     widget_unet_prediction.show()
