@@ -69,8 +69,12 @@ def test_voxel_size_equality():
     same_voxel_size = VoxelSize(voxels_size=(0.5, 1.0, 1.0), unit="um")
     different_voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
 
-    assert same_voxel_size == voxel_size, "VoxelSize objects should be equal if attributes match"
-    assert different_voxel_size != voxel_size, "VoxelSize objects should be different if attributes differ"
+    assert same_voxel_size == voxel_size, (
+        "VoxelSize objects should be equal if attributes match"
+    )
+    assert different_voxel_size != voxel_size, (
+        "VoxelSize objects should be different if attributes differ"
+    )
 
 
 def test_voxel_size_scalefactor_from_voxelsize():
@@ -79,7 +83,9 @@ def test_voxel_size_scalefactor_from_voxelsize():
     vs2 = VoxelSize(voxels_size=(2.0, 2.0, 2.0), unit="um")
 
     scale_factor = vs1.scalefactor_from_voxelsize(vs2)
-    assert scale_factor == (0.5, 0.5, 0.5), "Double voxel size should result in half the scale factor"
+    assert scale_factor == (0.5, 0.5, 0.5), (
+        "Double voxel size should result in half the scale factor"
+    )
 
     vs_missing = VoxelSize(unit="um")
     with pytest.raises(ValueError):
@@ -92,7 +98,9 @@ def test_voxel_size_voxelsize_from_factor():
     factor = (2.0, 2.0, 2.0)
 
     new_vs = vs.voxelsize_from_factor(factor)
-    assert new_vs.voxels_size == (0.5, 0.5, 0.5), "Doubling resolution should halve voxel size"
+    assert new_vs.voxels_size == (0.5, 0.5, 0.5), (
+        "Doubling resolution should halve voxel size"
+    )
     assert new_vs.unit == "um"
 
     vs_invalid = VoxelSize(unit="um")

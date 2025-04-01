@@ -55,14 +55,20 @@ def _read_ome_meta(tiff) -> VoxelSize:
     if image_element:
         image_element = image_element[0]
     else:
-        warnings.warn("Error parsing omero tiff meta Image. Reverting to default voxel size (1., 1., 1.) um")
+        warnings.warn(
+            "Error parsing omero tiff meta Image. Reverting to default voxel size (1., 1., 1.) um"
+        )
         return VoxelSize()
 
-    pixels_element = [pixels for pixels in image_element if pixels.tag.find("Pixels") != -1]
+    pixels_element = [
+        pixels for pixels in image_element if pixels.tag.find("Pixels") != -1
+    ]
     if pixels_element:
         pixels_element = pixels_element[0]
     else:
-        warnings.warn("Error parsing omero tiff meta Pixels. Reverting to default voxel size (1., 1., 1.) um")
+        warnings.warn(
+            "Error parsing omero tiff meta Pixels. Reverting to default voxel size (1., 1., 1.) um"
+        )
         return VoxelSize()
 
     units = []
@@ -128,7 +134,9 @@ def load_tiff(path: Path) -> np.ndarray:
     return tifffile.imread(path)
 
 
-def create_tiff(path: Path, stack: np.ndarray, voxel_size: VoxelSize, layout: str = "ZYX") -> None:
+def create_tiff(
+    path: Path, stack: np.ndarray, voxel_size: VoxelSize, layout: str = "ZYX"
+) -> None:
     """
     Create a tiff file from a numpy array
 
@@ -170,7 +178,9 @@ def create_tiff(path: Path, stack: np.ndarray, voxel_size: VoxelSize, layout: st
         raise ValueError(f"Layout {layout} not supported")
 
     if voxel_size.voxels_size is not None:
-        assert len(voxel_size.voxels_size) == 3, "Voxel size must have 3 elements (z, y, x)"
+        assert len(voxel_size.voxels_size) == 3, (
+            "Voxel size must have 3 elements (z, y, x)"
+        )
         spacing, y, x = voxel_size.voxels_size
     else:
         spacing, y, x = (1.0, 1.0, 1.0)

@@ -10,7 +10,7 @@ stacked_options = [True, False]
 @pytest.mark.parametrize("shape", shapes)
 @pytest.mark.parametrize("stacked", stacked_options)
 def test_dt_watershed(shape, stacked):
-    mock_data = np.random.rand(*shape).astype('float32')
+    mock_data = np.random.rand(*shape).astype("float32")
 
     if stacked and len(shape) == 2:
         with pytest.raises(ValueError):  # 2D data cannot be stacked

@@ -21,8 +21,8 @@ def write_csv(output_path, results):
     assert len(results) > 0
     keys = results[0].keys()
     time_stamp = datetime.now().strftime("%d_%m_%y_%H%M%S")
-    path_with_ts = os.path.splitext(output_path)[0] + '_' + time_stamp + '.csv'
-    print(f'Saving results to {path_with_ts}...')
+    path_with_ts = os.path.splitext(output_path)[0] + "_" + time_stamp + ".csv"
+    print(f"Saving results to {path_with_ts}...")
     with open(path_with_ts, "w") as output_file:
         dict_writer = csv.DictWriter(output_file, keys)
         dict_writer.writeheader()
@@ -30,34 +30,52 @@ def write_csv(output_path, results):
 
 
 def parse():
-    parser = argparse.ArgumentParser(description='Pmaps Quality Evaluation Script')
-    parser.add_argument('--gt', type=str, help='Path to directory with the ground truth files', required=True)
-    parser.add_argument('--predictions', type=str, help='Path to directory with the predictions files', required=True)
+    parser = argparse.ArgumentParser(description="Pmaps Quality Evaluation Script")
     parser.add_argument(
-        '--threshold',
-        type=float,
-        nargs='+',
-        help='thresholds at which the predictions will be binarized',
+        "--gt",
+        type=str,
+        help="Path to directory with the ground truth files",
         required=True,
     )
     parser.add_argument(
-        '--out-file',
+        "--predictions",
         type=str,
-        help='define name (and location) of output file (final name: out-file + timestamp + .csv)',
+        help="Path to directory with the predictions files",
+        required=True,
+    )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        nargs="+",
+        help="thresholds at which the predictions will be binarized",
+        required=True,
+    )
+    parser.add_argument(
+        "--out-file",
+        type=str,
+        help="define name (and location) of output file (final name: out-file + timestamp + .csv)",
         required=False,
         default="pmaps_evaluation",
     )
     parser.add_argument(
-        '--p-key', type=str, default="predictions", help='predictions dataset name inside h5', required=False
+        "--p-key",
+        type=str,
+        default="predictions",
+        help="predictions dataset name inside h5",
+        required=False,
     )
     parser.add_argument(
-        '--gt-key', type=str, default="label", help='ground truth dataset name inside h5', required=False
+        "--gt-key",
+        type=str,
+        default="label",
+        help="ground truth dataset name inside h5",
+        required=False,
     )
     parser.add_argument(
-        '--sigma',
+        "--sigma",
         type=float,
         default=1.0,
-        help='must match the default smoothing used in training. Default ovules 1.3',
+        help="must match the default smoothing used in training. Default ovules 1.3",
         required=False,
     )
     args = parser.parse_args()
@@ -85,10 +103,14 @@ def pmaps_evaluation(
 
     all_predictions, all_gt = [], []
     if os.path.isdir(gt_path) and os.path.isdir(predictions_path):
-        print("Correct ordering is not guaranteed!!! Please check the correctness at each run.")
+        print(
+            "Correct ordering is not guaranteed!!! Please check the correctness at each run."
+        )
         all_gt = sorted(glob.glob(gt_path + "/*.h5"))
         all_predictions = sorted(glob.glob(predictions_path + "/*.h5"))
-        assert len(all_gt) == len(all_predictions), "ground truth and predictions must have same length."
+        assert len(all_gt) == len(all_predictions), (
+            "ground truth and predictions must have same length."
+        )
     elif os.path.isfile(gt_path) and os.path.isfile(predictions_path):
         all_gt = [gt_path]
         all_predictions = [predictions_path]
@@ -101,19 +123,24 @@ def pmaps_evaluation(
     results = []
     for pmap_file, gt_file in zip(all_predictions, all_gt):
         print("Processing (gt, pmap): ", gt_file, pmap_file)
-        with h5py.File(gt_file, 'r') as gt_f:
-            with h5py.File(pmap_file, 'r') as pmap_f:
+        with h5py.File(gt_file, "r") as gt_f:
+            with h5py.File(pmap_file, "r") as pmap_f:
                 print("seg shape, gt shape: ", pmap_f[p_key].shape, gt_f[gt_key].shape)
                 pmap = pmap_f[p_key][0, ...]
                 gt = gt_f[gt_key][...]
 
         # Resize segmentation to gt size for apple to apple comparison in the scores
         if gt.shape != pmap.shape:
-            factor = tuple([g_shape / seg_shape for g_shape, seg_shape in zip(gt.shape, pmap.shape)])
+            factor = tuple(
+                [
+                    g_shape / seg_shape
+                    for g_shape, seg_shape in zip(gt.shape, pmap.shape)
+                ]
+            )
             pmap = zoom(pmap, factor)
 
         # generate gt boundaries
-        boundaries = find_boundaries(gt, connectivity=2, mode='thick').astype('uint8')
+        boundaries = find_boundaries(gt, connectivity=2, mode="thick").astype("uint8")
 
         for threshold in thresholds:
             _pmap = np.zeros_like(pmap)

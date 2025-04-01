@@ -33,7 +33,9 @@ def download_file(url: str, filename: Path) -> None:
         response = requests.get(url, stream=True)  # Use stream for large files
         response.raise_for_status()
         with open(filename, "wb") as f:
-            for chunk in response.iter_content(chunk_size=8192):  # Adjust chunk size as needed
+            for chunk in response.iter_content(
+                chunk_size=8192
+            ):  # Adjust chunk size as needed
                 f.write(chunk)
     except requests.RequestException as e:
         logger.warning(f"Failed to download {url}. Error: {e}")
@@ -86,7 +88,8 @@ def clean_models() -> None:
 
 
 def check_version(
-    current_version: str, plantseg_url: str = "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest"
+    current_version: str,
+    plantseg_url: str = "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest",
 ) -> None:
     """
     Check for the latest version of PlantSeg available on GitHub.
@@ -107,9 +110,13 @@ def check_version(
         latest_version_obj = Version(latest_version)
 
         if latest_version_obj > current_version_obj:
-            logger.warning(f"New version of PlantSeg available: {latest_version}. Please update to the latest version.")
+            logger.warning(
+                f"New version of PlantSeg available: {latest_version}. Please update to the latest version."
+            )
         else:
-            logger.info(f"You are using the latest version of PlantSeg: {current_version}.")
+            logger.info(
+                f"You are using the latest version of PlantSeg: {current_version}."
+            )
     except requests.RequestException as e:
         logger.warning(f"Could not check for new version. Error: {e}")
     except ValueError as e:

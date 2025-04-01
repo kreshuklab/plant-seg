@@ -2,9 +2,17 @@ from typing import Optional
 
 import nifty
 import numpy as np
-from elf.segmentation import GaspFromAffinities, project_node_labels_to_pixels, stacked_watershed
+from elf.segmentation import (
+    GaspFromAffinities,
+    project_node_labels_to_pixels,
+    stacked_watershed,
+)
 from elf.segmentation import lifted_multicut as lmc
-from elf.segmentation.features import compute_rag, lifted_problem_from_probabilities, lifted_problem_from_segmentation
+from elf.segmentation.features import (
+    compute_rag,
+    lifted_problem_from_probabilities,
+    lifted_problem_from_segmentation,
+)
 from elf.segmentation.multicut import multicut_kernighan_lin
 from elf.segmentation.watershed import apply_size_filter, distance_transform_watershed
 from vigra.filters import gaussianSmoothing
@@ -79,7 +87,7 @@ def dt_watershed(
 
     """
     # Prepare the keyword arguments for the watershed function
-    boundary_pmaps = boundary_pmaps.astype('float32')
+    boundary_pmaps = boundary_pmaps.astype("float32")
     ws_kwargs = {
         "threshold": threshold,
         "sigma_seeds": sigma_seeds,
@@ -93,7 +101,10 @@ def dt_watershed(
     if stacked:
         # Apply watershed slice by slice (for 3D data)
         segmentation, _ = stacked_watershed(
-            boundary_pmaps, ws_function=distance_transform_watershed, n_threads=n_threads, **ws_kwargs
+            boundary_pmaps,
+            ws_function=distance_transform_watershed,
+            n_threads=n_threads,
+            **ws_kwargs,
         )
     else:
         # Apply watershed in 3D for 3D data or in 2D for 2D data
@@ -105,7 +116,7 @@ def dt_watershed(
 def gasp(
     boundary_pmaps: np.ndarray,
     superpixels: Optional[np.ndarray] = None,
-    gasp_linkage_criteria: str = 'average',
+    gasp_linkage_criteria: str = "average",
     beta: float = 0.5,
     post_minsize: int = 100,
     n_threads: int = 6,
@@ -126,7 +137,9 @@ def gasp(
     """
     remove_singleton = False
     if superpixels is not None:
-        assert boundary_pmaps.shape == superpixels.shape, "Shape mismatch between boundary_pmaps and superpixels."
+        assert boundary_pmaps.shape == superpixels.shape, (
+            "Shape mismatch between boundary_pmaps and superpixels."
+        )
         if superpixels.ndim == 2:  # Ensure superpixels is 3D if provided
             superpixels = superpixels[None, ...]
             boundary_pmaps = boundary_pmaps[None, ...]
@@ -134,13 +147,13 @@ def gasp(
 
     # Prepare the arguments for running GASP
     run_GASP_kwargs = {
-        'linkage_criteria': gasp_linkage_criteria,
-        'add_cannot_link_constraints': False,
-        'use_efficient_implementations': False,
+        "linkage_criteria": gasp_linkage_criteria,
+        "add_cannot_link_constraints": False,
+        "use_efficient_implementations": False,
     }
 
     # Interpret boundary_pmaps as affinities and prepare for GASP
-    boundary_pmaps = boundary_pmaps.astype('float32')
+    boundary_pmaps = boundary_pmaps.astype("float32")
     affinities = np.stack([boundary_pmaps] * 3, axis=0)
 
     offsets = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
@@ -153,7 +166,9 @@ def gasp(
     # Initialize and run GASP
     gasp_instance = GaspFromAffinities(
         offsets,
-        superpixel_generator=None if superpixels is None else (lambda *args, **kwargs: superpixels),
+        superpixel_generator=None
+        if superpixels is None
+        else (lambda *args, **kwargs: superpixels),
         run_GASP_kwargs=run_GASP_kwargs,
         n_threads=n_threads,
         beta_bias=beta,
@@ -162,7 +177,9 @@ def gasp(
 
     # Apply size filtering if specified
     if post_minsize > 0:
-        segmentation, _ = apply_size_filter(segmentation.astype('uint32'), boundary_pmaps, post_minsize)
+        segmentation, _ = apply_size_filter(
+            segmentation.astype("uint32"), boundary_pmaps, post_minsize
+        )
 
     if remove_singleton:
         segmentation = segmentation[0]
@@ -196,7 +213,7 @@ def mutex_ws(
     return gasp(
         boundary_pmaps=boundary_pmaps,
         superpixels=superpixels,
-        gasp_linkage_criteria='mutex_watershed',
+        gasp_linkage_criteria="mutex_watershed",
         beta=beta,
         post_minsize=post_minsize,
         n_threads=n_threads,
@@ -226,7 +243,7 @@ def multicut(
     rag = compute_rag(superpixels)
 
     # Prob -> edge costs
-    boundary_pmaps = boundary_pmaps.astype('float32')
+    boundary_pmaps = boundary_pmaps.astype("float32")
     costs = compute_mc_costs(boundary_pmaps, rag, beta=beta)
 
     # Creating graph
@@ -239,7 +256,9 @@ def multicut(
 
     # run size threshold
     if post_minsize > 0:
-        segmentation, _ = apply_size_filter(segmentation.astype('uint32'), boundary_pmaps, post_minsize)
+        segmentation, _ = apply_size_filter(
+            segmentation.astype("uint32"), boundary_pmaps, post_minsize
+        )
     return segmentation
 
 
@@ -266,24 +285,24 @@ def lifted_multicut_from_nuclei_pmaps(
         segmentation (np.ndarray): Multicut output segmentation
     """
     if nuclei_pmaps.max() > 1 or nuclei_pmaps.min() < 0:
-        raise ValueError('nuclei_pmaps should be between 0 and 1')
+        raise ValueError("nuclei_pmaps should be between 0 and 1")
 
     # compute the region adjacency graph
     rag = compute_rag(superpixels)
 
     # compute multi cut edges costs
-    boundary_pmaps = boundary_pmaps.astype('float32')
+    boundary_pmaps = boundary_pmaps.astype("float32")
     costs = compute_mc_costs(boundary_pmaps, rag, beta)
 
     # assert nuclei pmaps are floats
-    nuclei_pmaps = nuclei_pmaps.astype('float32')
+    nuclei_pmaps = nuclei_pmaps.astype("float32")
     input_maps = [nuclei_pmaps]
     assignment_threshold = 0.9
 
     # compute lifted multicut features from boundary pmaps
     lifted_uvs, lifted_costs = lifted_problem_from_probabilities(
         rag,
-        superpixels.astype('uint32'),
+        superpixels.astype("uint32"),
         input_maps,
         assignment_threshold,
         graph_depth=4,
@@ -291,12 +310,16 @@ def lifted_multicut_from_nuclei_pmaps(
 
     # solve the full lifted problem using the kernighan lin approximation introduced in
     # http://openaccess.thecvf.com/content_iccv_2015/html/Keuper_Efficient_Decomposition_of_ICCV_2015_paper.html
-    node_labels = lmc.lifted_multicut_kernighan_lin(rag, costs, lifted_uvs, lifted_costs)
+    node_labels = lmc.lifted_multicut_kernighan_lin(
+        rag, costs, lifted_uvs, lifted_costs
+    )
     segmentation = project_node_labels_to_pixels(rag, node_labels)
 
     # run size threshold
     if post_minsize > 0:
-        segmentation, _ = apply_size_filter(segmentation.astype('uint32'), boundary_pmaps, post_minsize)
+        segmentation, _ = apply_size_filter(
+            segmentation.astype("uint32"), boundary_pmaps, post_minsize
+        )
     return segmentation
 
 
@@ -325,7 +348,7 @@ def lifted_multicut_from_nuclei_segmentation(
     rag = compute_rag(superpixels)
 
     # compute multi cut edges costs
-    boundary_pmaps = boundary_pmaps.astype('float32')
+    boundary_pmaps = boundary_pmaps.astype("float32")
     costs = compute_mc_costs(boundary_pmaps, rag, beta)
     max_cost = np.abs(np.max(costs))
     lifted_uvs, lifted_costs = lifted_problem_from_segmentation(
@@ -340,13 +363,17 @@ def lifted_multicut_from_nuclei_segmentation(
 
     # solve the full lifted problem using the kernighan lin approximation introduced in
     # http://openaccess.thecvf.com/content_iccv_2015/html/Keuper_Efficient_Decomposition_of_ICCV_2015_paper.html
-    lifted_costs = lifted_costs.astype('float64')
-    node_labels = lmc.lifted_multicut_kernighan_lin(rag, costs, lifted_uvs, lifted_costs)
+    lifted_costs = lifted_costs.astype("float64")
+    node_labels = lmc.lifted_multicut_kernighan_lin(
+        rag, costs, lifted_uvs, lifted_costs
+    )
     segmentation = project_node_labels_to_pixels(rag, node_labels)
 
     # run size threshold
     if post_minsize > 0:
-        segmentation, _ = apply_size_filter(segmentation.astype('uint32'), boundary_pmaps, post_minsize)
+        segmentation, _ = apply_size_filter(
+            segmentation.astype("uint32"), boundary_pmaps, post_minsize
+        )
     return segmentation
 
 
@@ -370,7 +397,7 @@ def simple_itk_watershed(
 
     """
     if not SIMPLE_ITK_INSTALLED:
-        raise ValueError('please install sitk before running this process')
+        raise ValueError("please install sitk before running this process")
 
     if sigma > 0:
         # fix ws sigma length
@@ -381,19 +408,23 @@ def simple_itk_watershed(
 
     # Itk watershed + size filtering
     itk_pmaps = sitk.GetImageFromArray(boundary_pmaps)
-    itk_segmentation = sitk.MorphologicalWatershed(itk_pmaps, threshold, markWatershedLine=False, fullyConnected=False)
+    itk_segmentation = sitk.MorphologicalWatershed(
+        itk_pmaps, threshold, markWatershedLine=False, fullyConnected=False
+    )
     itk_segmentation = sitk.RelabelComponent(itk_segmentation, minsize)
     segmentation = sitk.GetArrayFromImage(itk_segmentation).astype(np.uint16)
     return segmentation
 
 
-def simple_itk_watershed_from_markers(boundary_pmaps: np.ndarray, seeds: np.ndarray) -> np.ndarray:
+def simple_itk_watershed_from_markers(
+    boundary_pmaps: np.ndarray, seeds: np.ndarray
+) -> np.ndarray:
     if not SIMPLE_ITK_INSTALLED:
-        raise ValueError('please install sitk before running this process')
+        raise ValueError("please install sitk before running this process")
 
     itk_pmaps = sitk.GetImageFromArray(boundary_pmaps)
     itk_seeds = sitk.GetImageFromArray(seeds)
     segmentation = sitk.MorphologicalWatershedFromMarkers(
         itk_pmaps, itk_seeds, markWatershedLine=False, fullyConnected=False
     )
-    return sitk.GetArrayFromImage(segmentation).astype('uint32')
+    return sitk.GetArrayFromImage(segmentation).astype("uint32")

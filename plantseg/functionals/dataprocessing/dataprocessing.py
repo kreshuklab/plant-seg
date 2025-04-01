@@ -8,26 +8,36 @@ from vigra import gaussianSmoothing
 
 
 def compute_scaling_factor(
-    input_voxel_size: tuple[float, float, float], output_voxel_size: tuple[float, float, float]
+    input_voxel_size: tuple[float, float, float],
+    output_voxel_size: tuple[float, float, float],
 ) -> tuple[float, float, float]:
     """
     Compute the scaling factor to rescale an image from input voxel size to output voxel size.
     """
-    scaling = tuple(i_size / o_size for i_size, o_size in zip(input_voxel_size, output_voxel_size))
+    scaling = tuple(
+        i_size / o_size for i_size, o_size in zip(input_voxel_size, output_voxel_size)
+    )
     if len(scaling) != 3:
-        raise ValueError(f"Expected scaling factor to be 3D, but got {len(scaling)}D input")
+        raise ValueError(
+            f"Expected scaling factor to be 3D, but got {len(scaling)}D input"
+        )
     return scaling
 
 
 def compute_scaling_voxelsize(
-    input_voxel_size: tuple[float, float, float], scaling_factor: tuple[float, float, float]
+    input_voxel_size: tuple[float, float, float],
+    scaling_factor: tuple[float, float, float],
 ) -> tuple[float, float, float]:
     """
     Compute the output voxel size after scaling an image with a given scaling factor.
     """
-    output_voxel_size = tuple(i_size / s_size for i_size, s_size in zip(input_voxel_size, scaling_factor))
+    output_voxel_size = tuple(
+        i_size / s_size for i_size, s_size in zip(input_voxel_size, scaling_factor)
+    )
     if len(output_voxel_size) != 3:
-        raise ValueError(f"Expected output voxel size to be 3D, but got {len(output_voxel_size)}D input")
+        raise ValueError(
+            f"Expected output voxel size to be 3D, but got {len(output_voxel_size)}D input"
+        )
     return output_voxel_size
 
 
@@ -53,7 +63,9 @@ def scale_image_to_voxelsize(
     return image_rescale(image, factor, order=order)
 
 
-def image_rescale(image: np.ndarray, factor: tuple[float, float, float], order: int) -> np.ndarray:
+def image_rescale(
+    image: np.ndarray, factor: tuple[float, float, float], order: int
+) -> np.ndarray:
     """
     Scale an image by a given factor in each dimension
 
@@ -96,7 +108,9 @@ def image_median(image: np.ndarray, radius: int) -> np.ndarray:
             # 3D image
             return median(image, ball(radius))
     else:
-        raise ValueError("Unsupported image dimensionality. Image must be either 2D or 3D.")
+        raise ValueError(
+            "Unsupported image dimensionality. Image must be either 2D or 3D."
+        )
 
 
 def image_gaussian_smoothing(image: np.ndarray, sigma: float) -> np.ndarray:
@@ -129,7 +143,11 @@ def image_crop(image: np.ndarray, crop_str: str) -> np.ndarray:
     """
     crop_str = crop_str.replace("[", "").replace("]", "")
     slices = tuple(
-        (slice(*(int(i) if i else None for i in part.strip().split(":"))) if ":" in part else int(part.strip()))
+        (
+            slice(*(int(i) if i else None for i in part.strip().split(":")))
+            if ":" in part
+            else int(part.strip())
+        )
         for part in crop_str.split(",")
     )
     return image[slices]
@@ -276,7 +294,9 @@ def fix_layout_to_CYX(data: np.ndarray, input_layout: ImageLayout) -> np.ndarray
     return _data
 
 
-def fix_layout(data: np.ndarray, input_layout: ImageLayout, output_layout: ImageLayout) -> np.ndarray:
+def fix_layout(
+    data: np.ndarray, input_layout: ImageLayout, output_layout: ImageLayout
+) -> np.ndarray:
     """
     Fix the layout of the input data from any supported layout to the desired output layout.
 
@@ -333,7 +353,9 @@ def select_channel(data: np.ndarray, channel: int, channel_axis: int = 0) -> np.
     return np.take(data, channel, axis=channel_axis)
 
 
-def normalize_01_channel_wise(data: np.ndarray, channel_axis: int = 0, eps=1e-12) -> np.ndarray:
+def normalize_01_channel_wise(
+    data: np.ndarray, channel_axis: int = 0, eps=1e-12
+) -> np.ndarray:
     """
     Normalize each channel of a numpy array between 0 and 1 and converts it to float32.
 

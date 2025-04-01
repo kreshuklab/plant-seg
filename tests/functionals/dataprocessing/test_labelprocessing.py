@@ -222,10 +222,16 @@ def test_set_biggest_instance_to_value_instance_could_be_zero():
 
     new_segmentation = set_biggest_instance_to_value(segmentation, 0)
     assert np.allclose(np.unique(new_segmentation), [0, 2, 3, 999])
-    new_segmentation = set_biggest_instance_to_value(new_segmentation, instance_could_be_zero=True)
+    new_segmentation = set_biggest_instance_to_value(
+        new_segmentation, instance_could_be_zero=True
+    )
     assert np.allclose(np.unique(new_segmentation), [0, 2, 3, 999])
 
-    new_segmentation = set_biggest_instance_to_value(segmentation, 0, instance_could_be_zero=True)
+    new_segmentation = set_biggest_instance_to_value(
+        segmentation, 0, instance_could_be_zero=True
+    )
     assert np.allclose(np.unique(new_segmentation), [0, 2, 3, 999])
-    new_segmentation = set_biggest_instance_to_value(new_segmentation, instance_could_be_zero=True)
+    new_segmentation = set_biggest_instance_to_value(
+        new_segmentation, instance_could_be_zero=True
+    )
     assert np.allclose(np.unique(new_segmentation), [0, 2, 3, 999])

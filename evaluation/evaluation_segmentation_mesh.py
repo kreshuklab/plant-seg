@@ -12,8 +12,8 @@ def write_csv(output_path, results):
     assert len(results) > 0
     keys = results[0].keys()
     time_stamp = datetime.now().strftime("%d_%m_%y_%H%M%S")
-    path_with_ts = os.path.splitext(output_path)[0] + '_' + time_stamp + '.csv'
-    print(f'Saving results to {path_with_ts}...')
+    path_with_ts = os.path.splitext(output_path)[0] + "_" + time_stamp + ".csv"
+    print(f"Saving results to {path_with_ts}...")
     with open(path_with_ts, "w") as output_file:
         dict_writer = csv.DictWriter(output_file, keys)
         dict_writer.writeheader()

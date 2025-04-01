@@ -172,7 +172,9 @@ def list_zarr_keys(path: Path) -> list[str]:
         list[str]: A list of keys in the Zarr file.
     """
 
-    def _recursive_find_keys(zarr_group: zarr.Group, base: Path = Path("")) -> list[str]:
+    def _recursive_find_keys(
+        zarr_group: zarr.Group, base: Path = Path("")
+    ) -> list[str]:
         _list_keys = []
         for key, dataset in zarr_group.items():
             if isinstance(dataset, zarr.Group):

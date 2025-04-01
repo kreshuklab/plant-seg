@@ -20,7 +20,9 @@ from plantseg.tasks.dataprocessing_tasks import (
     set_voxel_size_task,
 )
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.proofreading import widget_proofreading_initialisation
+from plantseg.viewer_napari.widgets.proofreading import (
+    widget_proofreading_initialisation,
+)
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 ########################################################################################################################
@@ -49,7 +51,9 @@ from plantseg.viewer_napari.widgets.utils import schedule_task
         "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
     },
 )
-def widget_gaussian_smoothing(image: Image, sigma: float = 1.0, update_other_widgets: bool = True) -> None:
+def widget_gaussian_smoothing(
+    image: Image, sigma: float = 1.0, update_other_widgets: bool = True
+) -> None:
     """Apply Gaussian smoothing to an image layer."""
 
     ps_image = PlantSegImage.from_napari_layer(image)
@@ -103,11 +107,17 @@ def widget_cropping(
     update_other_widgets: bool = True,
 ) -> None:
     if crop_roi is not None:
-        assert len(crop_roi.shape_type) == 1, "Only one rectangle should be used for cropping"
-        assert crop_roi.shape_type[0] == "rectangle", "Only a rectangle shape should be used for cropping"
+        assert len(crop_roi.shape_type) == 1, (
+            "Only one rectangle should be used for cropping"
+        )
+        assert crop_roi.shape_type[0] == "rectangle", (
+            "Only a rectangle shape should be used for cropping"
+        )
 
     if not isinstance(image, (Image, Labels)):
-        raise ValueError(f"{type(image)} cannot be cropped, please use Image layers or Labels layers")
+        raise ValueError(
+            f"{type(image)} cannot be cropped, please use Image layers or Labels layers"
+        )
 
     if crop_roi is not None:
         rectangle = crop_roi.data[0].astype("int64")
@@ -129,9 +139,7 @@ def widget_cropping(
     )
 
 
-initialised_widget_cropping: bool = (
-    False  # Avoid throwing an error when the first image is loaded but its layout is not supported
-)
+initialised_widget_cropping: bool = False  # Avoid throwing an error when the first image is loaded but its layout is not supported
 
 
 @widget_cropping.image.changed.connect
@@ -268,8 +276,14 @@ def widget_rescaling(
 
     # Cover set voxel size case
     if not ps_image.has_valid_original_voxel_size():
-        if mode not in [RescaleModes.SET_VOXEL_SIZE, RescaleModes.TO_LAYER_SHAPE, RescaleModes.TO_SHAPE]:
-            raise ValueError("Original voxel size is missing, please set the voxel size manually.")
+        if mode not in [
+            RescaleModes.SET_VOXEL_SIZE,
+            RescaleModes.TO_LAYER_SHAPE,
+            RescaleModes.TO_SHAPE,
+        ]:
+            raise ValueError(
+                "Original voxel size is missing, please set the voxel size manually."
+            )
 
     # TODO add list of widgets to update
     widgets_to_update = []
@@ -308,10 +322,14 @@ def widget_rescaling(
         out_voxel_size = current_voxel_size.voxelsize_from_factor(rescaling_factor)
 
     if mode == RescaleModes.TO_VOXEL_SIZE:
-        out_voxel_size = VoxelSize(voxels_size=out_voxel_size, unit=current_voxel_size.unit)
+        out_voxel_size = VoxelSize(
+            voxels_size=out_voxel_size, unit=current_voxel_size.unit
+        )
 
     if mode == RescaleModes.TO_LAYER_VOXEL_SIZE:
-        if not (isinstance(reference_layer, Image) or isinstance(reference_layer, Labels)):
+        if not (
+            isinstance(reference_layer, Image) or isinstance(reference_layer, Labels)
+        ):
             raise ValueError("Reference layer must be an Image or Label layer.")
         reference_ps_image = PlantSegImage.from_napari_layer(reference_layer)
         out_voxel_size = reference_ps_image.voxel_size
@@ -319,8 +337,12 @@ def widget_rescaling(
     if mode == RescaleModes.TO_MODEL_VOXEL_SIZE:
         model_voxel_size = model_zoo.get_model_resolution(reference_model)
         if model_voxel_size is None:
-            raise ValueError(f"Model {reference_model} does not have a resolution defined.")
-        out_voxel_size = VoxelSize(voxels_size=model_voxel_size, unit=current_voxel_size.unit)
+            raise ValueError(
+                f"Model {reference_model} does not have a resolution defined."
+            )
+        out_voxel_size = VoxelSize(
+            voxels_size=model_voxel_size, unit=current_voxel_size.unit
+        )
 
     return schedule_task(
         image_rescale_to_voxel_size_task,
@@ -445,7 +467,7 @@ def _on_rescale_order_changed(order):
     threshold={
         "label": "Threshold",
         "tooltip": "Threshold value to remove false positives.",
-        'widget_type': 'FloatSlider',
+        "widget_type": "FloatSlider",
         "max": 1.0,
         "min": 0.0,
         "step": 0.01,
@@ -478,28 +500,28 @@ def widget_remove_false_positives_by_foreground(
 
 
 @magicgui(
-    call_button='Split/Merge Instances by Nuclei',
-    segmentation_cells={'label': 'Cell instances'},
-    segmentation_nuclei={'label': 'Nuclear instances'},
-    boundary_pmaps={'label': 'Boundary image'},
+    call_button="Split/Merge Instances by Nuclei",
+    segmentation_cells={"label": "Cell instances"},
+    segmentation_nuclei={"label": "Nuclear instances"},
+    boundary_pmaps={"label": "Boundary image"},
     threshold={
-        'label': 'Boundary Threshold (%)',
-        'tooltip': 'Set the percentage range for merging (first value) and splitting (second value) cells. '
+        "label": "Boundary Threshold (%)",
+        "tooltip": "Set the percentage range for merging (first value) and splitting (second value) cells. "
         'For example, "33" means cells with less than 33% overlap with nuclei are merged, and '
         '"66" means cells with more than 66% overlap are split.',
-        'widget_type': 'FloatRangeSlider',
-        'max': 100,
-        'min': 0,
-        'step': 0.1,
+        "widget_type": "FloatRangeSlider",
+        "max": 100,
+        "min": 0,
+        "step": 0.1,
     },
     quantile={
-        'label': 'Nuclei Size Filter (%)',
-        'tooltip': 'Set the size range to filter nuclei, represented as percentages. '
+        "label": "Nuclei Size Filter (%)",
+        "tooltip": "Set the size range to filter nuclei, represented as percentages. "
         'For example, "0.3" excludes the smallest 30%, and "99.9" excludes the largest 0.1% of nuclei.',
-        'widget_type': 'FloatRangeSlider',
-        'max': 100,
-        'min': 0,
-        'step': 0.1,
+        "widget_type": "FloatRangeSlider",
+        "max": 100,
+        "min": 0,
+        "step": 0.1,
     },
 )
 def widget_fix_over_under_segmentation_from_nuclei(
@@ -534,7 +556,9 @@ def widget_fix_over_under_segmentation_from_nuclei(
     """
     ps_seg_cel = PlantSegImage.from_napari_layer(segmentation_cells)
     ps_seg_nuc = PlantSegImage.from_napari_layer(segmentation_nuclei)
-    ps_pmap_cell_boundary = PlantSegImage.from_napari_layer(boundary_pmaps) if boundary_pmaps else None
+    ps_pmap_cell_boundary = (
+        PlantSegImage.from_napari_layer(boundary_pmaps) if boundary_pmaps else None
+    )
 
     # Normalize percentages to fractions
     threshold_merge = threshold[0] / 100
@@ -545,13 +569,13 @@ def widget_fix_over_under_segmentation_from_nuclei(
     return schedule_task(
         fix_over_under_segmentation_from_nuclei_task,
         task_kwargs={
-            'cell_seg': ps_seg_cel,
-            'nuclei_seg': ps_seg_nuc,
-            'threshold_merge': threshold_merge,
-            'threshold_split': threshold_split,
-            'quantile_min': quantile_min,
-            'quantile_max': quantile_max,
-            'boundary': ps_pmap_cell_boundary,
+            "cell_seg": ps_seg_cel,
+            "nuclei_seg": ps_seg_nuc,
+            "threshold_merge": threshold_merge,
+            "threshold_split": threshold_split,
+            "quantile_min": quantile_min,
+            "quantile_max": quantile_max,
+            "boundary": ps_pmap_cell_boundary,
         },
         widgets_to_update=[],
     )

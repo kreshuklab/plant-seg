@@ -70,7 +70,9 @@ def dt_watershed_task(
         )
 
     if image.image_layout == ImageLayout.YX and stacked:
-        logger.warning("Stack, or 'per slice' is only for 3D images (ZYX). The stack option will be disabled.")
+        logger.warning(
+            "Stack, or 'per slice' is only for 3D images (ZYX). The stack option will be disabled."
+        )
         stacked = False
 
     if is_nuclei_image:
@@ -95,7 +97,11 @@ def dt_watershed_task(
         mask=mask,
     )
 
-    dt_seg_image = image.derive_new(dt_seg, name=f"{image.name}_dt_watershed", semantic_type=SemanticType.SEGMENTATION)
+    dt_seg_image = image.derive_new(
+        dt_seg,
+        name=f"{image.name}_dt_watershed",
+        semantic_type=SemanticType.SEGMENTATION,
+    )
     return dt_seg_image
 
 
@@ -134,20 +140,41 @@ def clustering_segmentation_task(
         superpixels = over_segmentation.get_data()
 
         if boundary_pmaps.shape != superpixels.shape:
-            raise ValueError("The boundary probability map and the over-segmentation map should have the same shape.")
+            raise ValueError(
+                "The boundary probability map and the over-segmentation map should have the same shape."
+            )
 
     if mode == "gasp":
-        seg = gasp(boundary_pmaps, superpixels=superpixels, beta=beta, post_minsize=post_min_size)
+        seg = gasp(
+            boundary_pmaps,
+            superpixels=superpixels,
+            beta=beta,
+            post_minsize=post_min_size,
+        )
     elif mode == "multicut":
         if superpixels is None:
             raise ValueError("The superpixels are required for the multicut mode.")
-        seg = multicut(boundary_pmaps, superpixels=superpixels, beta=beta, post_minsize=post_min_size)
+        seg = multicut(
+            boundary_pmaps,
+            superpixels=superpixels,
+            beta=beta,
+            post_minsize=post_min_size,
+        )
     elif mode == "mutex_ws":
-        seg = mutex_ws(boundary_pmaps, superpixels=superpixels, beta=beta, post_minsize=post_min_size)
+        seg = mutex_ws(
+            boundary_pmaps,
+            superpixels=superpixels,
+            beta=beta,
+            post_minsize=post_min_size,
+        )
     else:
-        raise ValueError(f"Unknown mode: {mode}, select one of ['gasp', 'multicut', 'mutex_ws']")
+        raise ValueError(
+            f"Unknown mode: {mode}, select one of ['gasp', 'multicut', 'mutex_ws']"
+        )
 
-    seg_image = image.derive_new(seg, name=f"{image.name}_{mode}", semantic_type=SemanticType.SEGMENTATION)
+    seg_image = image.derive_new(
+        seg, name=f"{image.name}_{mode}", semantic_type=SemanticType.SEGMENTATION
+    )
     return seg_image
 
 
@@ -170,7 +197,10 @@ def lmc_segmentation_task(
             a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
         post_min_size (int): minimal size of the segments after Multicut. (default: 100)
     """
-    if nuclei.semantic_type is SemanticType.PREDICTION or nuclei.semantic_type is SemanticType.RAW:
+    if (
+        nuclei.semantic_type is SemanticType.PREDICTION
+        or nuclei.semantic_type is SemanticType.RAW
+    ):
         lmc = lifted_multicut_from_nuclei_pmaps
         extra_key = "nuclei_pmaps"
     else:

@@ -60,7 +60,9 @@ def unet_prediction_task(
 
     for i, pmap in enumerate(pmaps):
         # Input layout is always ZYX this loop
-        pmap = fix_layout(pmap, input_layout=ImageLayout.ZYX.value, output_layout=input_layout.value)
+        pmap = fix_layout(
+            pmap, input_layout=ImageLayout.ZYX.value, output_layout=input_layout.value
+        )
         new_images.append(
             image.derive_new(
                 pmap,
@@ -75,7 +77,10 @@ def unet_prediction_task(
 
 @task_tracker
 def biio_prediction_task(
-    image: PlantSegImage, model_id: str, suffix: str = "_prediction", _tracker: Optional["PBar_Tracker"] = None
+    image: PlantSegImage,
+    model_id: str,
+    suffix: str = "_prediction",
+    _tracker: Optional["PBar_Tracker"] = None,
 ) -> list[PlantSegImage]:
     data = image.get_data()
     input_layout = image.image_layout.value

@@ -3,17 +3,8 @@ nd = "nd"       # N-dimensional (ND)
 ome = "ome"     # Open Microscopy Environment (OME)
 datas = "datas" # pyinstaller
 
-[tool.black]
-exclude = ".py"
-
-[tool.ruff]
-line-length = 120
-
 [tool.ruff.lint]
 extend-select = ["I"]
-
-[tool.ruff.format]
-quote-style = "preserve"
 
 [tool.bumpversion]
 current_version = "2.0.0b3"

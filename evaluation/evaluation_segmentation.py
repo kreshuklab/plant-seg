@@ -21,11 +21,15 @@ metrics = {"voi": voi, "adapted_rand": adapted_rand, "hash": simple_hash}
 
 
 def load_config():
-    parser = argparse.ArgumentParser(description='Instances Segmentation Evaluation Script')
-    parser.add_argument('--config', type=str, help='Path to the YAML config file', required=True)
+    parser = argparse.ArgumentParser(
+        description="Instances Segmentation Evaluation Script"
+    )
+    parser.add_argument(
+        "--config", type=str, help="Path to the YAML config file", required=True
+    )
     args = parser.parse_args()
 
-    config = yaml.load(open(args.config, 'r'), yaml.SafeLoader)
+    config = yaml.load(open(args.config, "r"), yaml.SafeLoader)
     return config
 
 
@@ -41,13 +45,13 @@ def create_result_placeholder(config, metrics):
         header[key] = config["metadata"][key]
 
     if "train_config_file" in config:
-        with open(config["train_config_file"], 'r') as file:
+        with open(config["train_config_file"], "r") as file:
             header["metadata_train"] = file.readlines()
     else:
         header["metadata_train"] = None
 
     if "segmentation_config_file" in config:
-        with open(config["segmentation_config_file"], 'r') as file:
+        with open(config["segmentation_config_file"], "r") as file:
             header["metadata_segmentation"] = file.readlines()
     else:
         header["metadata_segmentation"] = None
@@ -94,10 +98,20 @@ def run_evaluation(gtarray, segarray, remove_background=True):
 
     # Resize segmentation to gt size for apple to apple comparison in the scores
     if segarray.shape != gtarray.shape:
-        print("- Segmentation shape:", segarray.shape, "Ground truth shape: ", gtarray.shape)
+        print(
+            "- Segmentation shape:",
+            segarray.shape,
+            "Ground truth shape: ",
+            gtarray.shape,
+        )
 
         print("- Shape mismatch, trying to fixing it")
-        factor = tuple([g_shape / seg_shape for g_shape, seg_shape in zip(gtarray.shape, segarray.shape)])
+        factor = tuple(
+            [
+                g_shape / seg_shape
+                for g_shape, seg_shape in zip(gtarray.shape, segarray.shape)
+            ]
+        )
         segarray = zoom(segarray, factor, order=0).astype(np.uint32)
 
     if remove_background:
@@ -133,8 +147,8 @@ def parse_gt_seg_file_pairs(file_pairs, gt_dir, seg_dir):
     results = []
     for file_pair in file_pairs:
         # open H5 file containing segmentation results
-        gt_file_path = os.path.join(gt_dir, file_pair['gt_filename'])
-        seg_file_path = os.path.join(seg_dir, file_pair['seg_filename'])
+        gt_file_path = os.path.join(gt_dir, file_pair["gt_filename"])
+        seg_file_path = os.path.join(seg_dir, file_pair["seg_filename"])
         results.append((gt_file_path, seg_file_path))
     return results
 
@@ -143,8 +157,8 @@ def write_csv(output_path, results):
     assert len(results) > 0
     keys = results[0].keys()
     time_stamp = datetime.now().strftime("%d_%m_%y_%H%M%S")
-    path_with_ts = os.path.splitext(output_path)[0] + '_' + time_stamp + '.csv'
-    print(f'Saving results to {path_with_ts}...')
+    path_with_ts = os.path.splitext(output_path)[0] + "_" + time_stamp + ".csv"
+    print(f"Saving results to {path_with_ts}...")
     with open(path_with_ts, "w") as output_file:
         dict_writer = csv.DictWriter(output_file, keys)
         dict_writer.writeheader()
@@ -159,15 +173,19 @@ if __name__ == "__main__":
     result_placeholder = create_result_placeholder(eval_config, metrics=metrics)
     results = []
 
-    remove_background = eval_config["remove_background"] if "remove_background" in eval_config else True
+    remove_background = (
+        eval_config["remove_background"] if "remove_background" in eval_config else True
+    )
 
     # Make sure that GT and segmentation directories are present in the FS
     # assert os.path.isdir(eval_config["gt_dir"]) and os.path.isdir(eval_config["seg_dir"])
 
     # Parse the files paths and return an iterable of tuples (gt_path, seg_path)
-    if 'files_pairs' in eval_config:
+    if "files_pairs" in eval_config:
         # create (gt, seg) file pairs
-        gt_seg_all = parse_gt_seg_file_pairs(eval_config['files_pairs'], eval_config['gt_dir'], eval_config['seg_dir'])
+        gt_seg_all = parse_gt_seg_file_pairs(
+            eval_config["files_pairs"], eval_config["gt_dir"], eval_config["seg_dir"]
+        )
     else:
         # List all files
         _all_gt = sorted(glob.glob(os.path.join(eval_config["gt_dir"], "*.h5")))
@@ -176,10 +194,10 @@ if __name__ == "__main__":
 
     # Run evaluation
     for _gt, _seg in gt_seg_all:
-        print(f'Evaluating {_seg} with GT {_gt}...')
+        print(f"Evaluating {_seg} with GT {_gt}...")
         # Load GT and segmentation into memory
-        with h5py.File(_gt, 'r') as gt:
-            with h5py.File(_seg, 'r') as seg:
+        with h5py.File(_gt, "r") as gt:
+            with h5py.File(_seg, "r") as seg:
                 _segarray = seg[eval_config["seg_name"]][...]
                 _gtarray = gt[eval_config["gt_name"]][...]
 

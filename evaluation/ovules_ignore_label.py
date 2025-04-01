@@ -33,24 +33,33 @@ def _ignore_unlabeled(label, seg, ignore_label=-1):
     return result
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Add ignore label to ovules dataset')
-    parser.add_argument('--gt_dir', type=str, help='Path to the ground truth directory', required=True)
-    parser.add_argument('--seg_dir', type=str, help='Path to the PlantSeg segmentation directory', required=True)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Add ignore label to ovules dataset")
+    parser.add_argument(
+        "--gt_dir", type=str, help="Path to the ground truth directory", required=True
+    )
+    parser.add_argument(
+        "--seg_dir",
+        type=str,
+        help="Path to the PlantSeg segmentation directory",
+        required=True,
+    )
 
     args = parser.parse_args()
-    gt_files = sorted(glob.glob(os.path.join(args.gt_dir, '*.h5')))
-    seg_files = sorted(glob.glob(os.path.join(args.seg_dir, '*.h5')))
+    gt_files = sorted(glob.glob(os.path.join(args.gt_dir, "*.h5")))
+    seg_files = sorted(glob.glob(os.path.join(args.seg_dir, "*.h5")))
 
     for gt_file, seg_file in zip(gt_files, seg_files):
-        print(f'GT file: {gt_file}, seg file: {seg_file}')
-        with h5py.File(gt_file, 'r') as f:
-            label = f['label'][...]
+        print(f"GT file: {gt_file}, seg file: {seg_file}")
+        with h5py.File(gt_file, "r") as f:
+            label = f["label"][...]
 
-        with h5py.File(seg_file, 'r') as f:
-            seg = f['segmentation'][...]
+        with h5py.File(seg_file, "r") as f:
+            seg = f["segmentation"][...]
 
         gt_with_ignore = _ignore_unlabeled(label, seg)
 
-        with h5py.File(gt_file, 'r+') as f:
-            f.create_dataset('label_with_ignore', data=gt_with_ignore, compression='gzip')
+        with h5py.File(gt_file, "r+") as f:
+            f.create_dataset(
+                "label_with_ignore", data=gt_with_ignore, compression="gzip"
+            )

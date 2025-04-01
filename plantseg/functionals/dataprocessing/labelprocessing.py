@@ -2,7 +2,9 @@ import numpy as np
 from skimage import measure  # lazy
 
 
-def relabel_segmentation(segmentation_image: np.ndarray, background: int | None = None) -> np.ndarray:
+def relabel_segmentation(
+    segmentation_image: np.ndarray, background: int | None = None
+) -> np.ndarray:
     r"""
     Relabels contiguously a segmentation image, non-touching instances with same id will be relabeled differently.
     To be noted that measure.label is different from ndimage.label.
@@ -33,7 +35,9 @@ def relabel_segmentation(segmentation_image: np.ndarray, background: int | None 
     return relabeled_segmentation
 
 
-def get_largest_instance_id(segmentation: np.ndarray, include_zero: bool = False) -> int:
+def get_largest_instance_id(
+    segmentation: np.ndarray, include_zero: bool = False
+) -> int:
     """
     Returns the label of the largest instance in the segmentation image based on pixel count.
 
@@ -76,13 +80,19 @@ def set_biggest_instance_to_value(
     Returns:
         np.ndarray: The segmentation image with the largest instance set to `value`.
     """
-    largest_label = get_largest_instance_id(segmentation_image, include_zero=instance_could_be_zero)
-    modified_segmentation_image = np.where(segmentation_image == largest_label, value, segmentation_image)
+    largest_label = get_largest_instance_id(
+        segmentation_image, include_zero=instance_could_be_zero
+    )
+    modified_segmentation_image = np.where(
+        segmentation_image == largest_label, value, segmentation_image
+    )
 
     return modified_segmentation_image
 
 
-def set_biggest_instance_to_zero(segmentation_image: np.ndarray, instance_could_be_zero: bool = False) -> np.ndarray:
+def set_biggest_instance_to_zero(
+    segmentation_image: np.ndarray, instance_could_be_zero: bool = False
+) -> np.ndarray:
     """
     Sets the largest segment in the segmentation image to zero.
 
@@ -97,10 +107,14 @@ def set_biggest_instance_to_zero(segmentation_image: np.ndarray, instance_could_
     Returns:
         np.ndarray: The segmentation image with the largest instance set to 0.
     """
-    return set_biggest_instance_to_value(segmentation_image, value=0, instance_could_be_zero=instance_could_be_zero)
+    return set_biggest_instance_to_value(
+        segmentation_image, value=0, instance_could_be_zero=instance_could_be_zero
+    )
 
 
-def set_value_to_value(segmentation_image: np.ndarray, value: int = 0, new_value: int = 0) -> np.ndarray:
+def set_value_to_value(
+    segmentation_image: np.ndarray, value: int = 0, new_value: int = 0
+) -> np.ndarray:
     """
     Replaces all occurrences of a specific value in the segmentation image with a new value.
 
@@ -115,7 +129,9 @@ def set_value_to_value(segmentation_image: np.ndarray, value: int = 0, new_value
     return np.where(segmentation_image == value, new_value, segmentation_image)
 
 
-def set_background_to_value(segmentation_image: np.ndarray, value: int = 0) -> np.ndarray:
+def set_background_to_value(
+    segmentation_image: np.ndarray, value: int = 0
+) -> np.ndarray:
     """
     Sets all occurrences of the background (label 0) in the segmentation image to a new value.
 

@@ -32,7 +32,10 @@ from plantseg.viewer_napari.widgets.proofreading import (
     widget_split_and_merge_from_scribbles,
     widget_undo,
 )
-from plantseg.viewer_napari.widgets.segmentation import widget_agglomeration, widget_dt_ws
+from plantseg.viewer_napari.widgets.segmentation import (
+    widget_agglomeration,
+    widget_dt_ws,
+)
 
 __all__ = [
     # Home

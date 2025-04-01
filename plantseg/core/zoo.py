@@ -34,19 +34,23 @@ logger_zoo = logging.getLogger("PlantSeg.Zoo")
 
 
 class Author(str, Enum):
-    BIOIMAGEIO = 'bioimage.io'
-    PLANTSEG = 'plantseg'
-    USER = 'user'
+    BIOIMAGEIO = "bioimage.io"
+    PLANTSEG = "plantseg"
+    USER = "user"
 
 
-BIOIMAGE_IO_COLLECTION_URL = "https://uk1s3.embassy.ebi.ac.uk/public-datasets/bioimage.io/collection.json"
+BIOIMAGE_IO_COLLECTION_URL = (
+    "https://uk1s3.embassy.ebi.ac.uk/public-datasets/bioimage.io/collection.json"
+)
 
 
 class ModelZooRecord(BaseModel):
     """Model Zoo Record"""
 
     name: str
-    url: Optional[HttpUrl] = Field(None, validation_alias=AliasChoices('model_url', 'url'))
+    url: Optional[HttpUrl] = Field(
+        None, validation_alias=AliasChoices("model_url", "url")
+    )
     path: Optional[str] = None
     description: Optional[str] = None
     resolution: Optional[tuple[float, float, float]] = None
@@ -63,18 +67,22 @@ class ModelZooRecord(BaseModel):
     rdf_source: Optional[HttpUrl] = None
     supported: Optional[bool] = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def check_one_id_present(self) -> Self:
         """Check that one of url (zenodo), path (custom/local) or id (bioimage.io) is present"""
         if self.url is None and self.path is None and self.id is None:
-            raise ValueError(f'One of `url`, `path` or `id` must be present: {self}')
+            raise ValueError(f"One of `url`, `path` or `id` must be present: {self}")
         return self
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def check_id_fields_present(self) -> Self:
-        if self.id is not None and (self.name_display is None or self.rdf_source is None or self.supported is None):
+        if self.id is not None and (
+            self.name_display is None
+            or self.rdf_source is None
+            or self.supported is None
+        ):
             raise ValueError(
-                f'If `id` exists, then `name_display`, `rdf_source` and `supported` must be present: {self}'
+                f"If `id` exists, then `name_display`, `rdf_source` and `supported` must be present: {self}"
             )
         return self
 
@@ -89,7 +97,7 @@ class ModelZoo:
     Records are added as ModelZooRecord instances, validated by the ModelZooRecord class.
     """
 
-    _instance: Optional['ModelZoo'] = None
+    _instance: Optional["ModelZoo"] = None
 
     _zoo_dict: dict = {}
     _zoo_custom_dict: dict = {}
@@ -131,17 +139,19 @@ class ModelZoo:
     def _init_zoo_df(self) -> None:
         records = []
         for name, model in self._zoo_dict.items():
-            model['name'] = name
-            records.append(ModelZooRecord(**model, added_by=Author.PLANTSEG).model_dump())
+            model["name"] = name
+            records.append(
+                ModelZooRecord(**model, added_by=Author.PLANTSEG).model_dump()
+            )
 
         for name, model in self._zoo_custom_dict.items():
-            model['name'] = name
+            model["name"] = name
             records.append(ModelZooRecord(**model, added_by=Author.USER).model_dump())
 
         self.models = DataFrame(
             records,
             columns=list(ModelZooRecord.model_fields.keys()),
-        ).set_index('name')
+        ).set_index("name")
 
     def refresh(
         self,
@@ -152,7 +162,7 @@ class ModelZoo:
         self._init_zoo_df()
 
     def get_model_zoo_dict(self) -> dict:
-        return self.models.to_dict(orient='index')
+        return self.models.to_dict(orient="index")
 
     def list_models(
         self,
@@ -166,16 +176,20 @@ class ModelZoo:
 
         if dimensionality_filter is not None:
             # `loc` to avoid pylint E1136 ; following lines have no warning because filtered_df now is a DataFrame
-            filtered_df = filtered_df.loc[filtered_df.loc[:, 'dimensionality'].isin(dimensionality_filter)]
+            filtered_df = filtered_df.loc[
+                filtered_df.loc[:, "dimensionality"].isin(dimensionality_filter)
+            ]
 
         if modality_filter is not None:
-            filtered_df = filtered_df[filtered_df['modality'].isin(modality_filter)]
+            filtered_df = filtered_df[filtered_df["modality"].isin(modality_filter)]
 
         if output_type_filter is not None:
-            filtered_df = filtered_df[filtered_df['output_type'].isin(output_type_filter)]
+            filtered_df = filtered_df[
+                filtered_df["output_type"].isin(output_type_filter)
+            ]
 
         if not use_custom_models:
-            filtered_df = filtered_df[filtered_df['added_by'] != Author.USER]
+            filtered_df = filtered_df[filtered_df["added_by"] != Author.USER]
 
         return filtered_df.index.tolist()
 
@@ -188,10 +202,14 @@ class ModelZoo:
     def get_model_description(self, model_name: str) -> Optional[str]:
         return self._get_model_record(model_name).description
 
-    def get_model_resolution(self, model_name: str) -> Optional[tuple[float, float, float]]:
+    def get_model_resolution(
+        self, model_name: str
+    ) -> Optional[tuple[float, float, float]]:
         return self._get_model_record(model_name).resolution
 
-    def get_model_patch_size(self, model_name: str) -> Optional[tuple[float, float, float]]:
+    def get_model_patch_size(
+        self, model_name: str
+    ) -> Optional[tuple[float, float, float]]:
         return self._get_model_record(model_name).recommended_patch_size
 
     def _get_unique_metadata(self, metadata_key: str) -> list[str]:
@@ -199,20 +217,20 @@ class ModelZoo:
         return [str(x) for x in metadata]
 
     def get_unique_dimensionalities(self) -> list[str]:
-        return self._get_unique_metadata('dimensionality')
+        return self._get_unique_metadata("dimensionality")
 
     def get_unique_modalities(self) -> list[str]:
-        return self._get_unique_metadata('modality')
+        return self._get_unique_metadata("modality")
 
     def get_unique_output_types(self) -> list[str]:
-        return self._get_unique_metadata('output_type')
+        return self._get_unique_metadata("output_type")
 
     def _add_model_record(self, model_record: ModelZooRecord) -> None:
         """Add a ModelZooRecord to the ModelZoo DataFrame"""
         models_new = DataFrame(
             [model_record.model_dump()],
             columns=list(ModelZooRecord.model_fields.keys()),
-        ).set_index('name')
+        ).set_index("name")
         self.models = concat([self.models, models_new], ignore_index=False)
 
     def add_custom_model(
@@ -220,10 +238,10 @@ class ModelZoo:
         new_model_name: str,
         location: Path = Path.home(),
         resolution: tuple[float, float, float] = (1.0, 1.0, 1.0),
-        description: str = '',
-        dimensionality: str = '',
-        modality: str = '',
-        output_type: str = '',
+        description: str = "",
+        dimensionality: str = "",
+        modality: str = "",
+        output_type: str = "",
     ) -> tuple[bool, Optional[str]]:
         """Add a custom trained model in the model zoo local record file"""
 
@@ -239,12 +257,14 @@ class ModelZoo:
 
         recommended_patch_size = [80, 170, 170]
         for file_path in location.glob("*"):
-            if file_path.name == 'config_train.yml':
+            if file_path.name == "config_train.yml":
                 try:
                     config_train = load_config(file_path)
-                    recommended_patch_size = config_train['loaders']['train']['slice_builder']['patch_shape']
+                    recommended_patch_size = config_train["loaders"]["train"][
+                        "slice_builder"
+                    ]["patch_shape"]
                 except Exception as e:
-                    return False, f'Failed to load or parse config_train.yml: {e}'
+                    return False, f"Failed to load or parse config_train.yml: {e}"
 
             if file_path.name in all_expected_files:
                 copy2(file_path, dest_dir)
@@ -252,7 +272,7 @@ class ModelZoo:
 
         missing_files = all_expected_files - found_files
         if missing_files:
-            msg = f'Missing required files in the specified directory: {", ".join(missing_files)}. Model cannot be loaded.'
+            msg = f"Missing required files in the specified directory: {', '.join(missing_files)}. Model cannot be loaded."
             return False, msg
 
         # Create and check the new model record
@@ -265,7 +285,11 @@ class ModelZoo:
             "modality": modality,
             "output_type": output_type,
         }
-        self._add_model_record(ModelZooRecord(name=new_model_name, **new_model_record, added_by=Author.USER))
+        self._add_model_record(
+            ModelZooRecord(
+                name=new_model_name, **new_model_record, added_by=Author.USER
+            )
+        )
 
         # Update the custom zoo dictionary in ModelZoo and save to file
         self._zoo_custom_dict[new_model_name] = new_model_record
@@ -273,7 +297,9 @@ class ModelZoo:
 
         return True, None
 
-    def _download_model_files(self, model_url: str, out_dir: Path, config_only: bool = False) -> None:
+    def _download_model_files(
+        self, model_url: str, out_dir: Path, config_only: bool = False
+    ) -> None:
         """Download model files and/or configuration based on the model URL."""
         if not out_dir.exists():
             out_dir.mkdir(parents=True, exist_ok=True)
@@ -284,7 +310,9 @@ class ModelZoo:
             urls[FILE_BEST_MODEL_PYTORCH] = model_url
         download_files(urls, out_dir)
 
-    def check_models(self, model_name: str, update_files: bool = False, config_only: bool = False) -> None:
+    def check_models(
+        self, model_name: str, update_files: bool = False, config_only: bool = False
+    ) -> None:
         """Check and download model files and configurations as needed."""
         model_dir = PATH_PLANTSEG_MODELS / model_name
         model_dir.mkdir(parents=True, exist_ok=True)
@@ -312,17 +340,23 @@ class ModelZoo:
 
     def _create_model_by_config(self, model_config: dict):
         """Create a model instance from a configuration."""
-        model_class = get_class(model_config['name'], modules=['plantseg.training.model'])
+        model_class = get_class(
+            model_config["name"], modules=["plantseg.training.model"]
+        )
         return model_class(**model_config)
 
-    def get_model_by_config_path(self, config_path: Path, model_weights_path: Optional[Path] = None):
+    def get_model_by_config_path(
+        self, config_path: Path, model_weights_path: Optional[Path] = None
+    ):
         """Create a safari model (may or may not be in zoo) from a configuration file."""
         config_train = load_config(config_path)
-        model_config = config_train.pop('model')
+        model_config = config_train.pop("model")
         model = self._create_model_by_config(model_config)
         if model_weights_path is None:
             model_weights_path = config_path.parent / FILE_BEST_MODEL_PYTORCH
-        logger_zoo.info(f"Loaded model from user specified weights: {model_weights_path}")
+        logger_zoo.info(
+            f"Loaded model from user specified weights: {model_weights_path}"
+        )
         return model, model_config, model_weights_path
 
     def get_model_by_name(self, model_name: str, model_update: bool = False):
@@ -340,13 +374,13 @@ class ModelZoo:
         https://bioimage-io.github.io/collection-bioimage-io/rdfs/10.5281/zenodo.8401064/8429203/rdf.yaml
         """
 
-        if not hasattr(self, 'models_bioimageio'):
+        if not hasattr(self, "models_bioimageio"):
             self.refresh_bioimageio_zoo_urls()
 
         if model_id not in self.models_bioimageio.index:
             raise ValueError(f"Model ID {model_id} not found in BioImage.IO Model Zoo")
 
-        rdf_url = self.models_bioimageio.at[model_id, 'rdf_source']
+        rdf_url = self.models_bioimageio.at[model_id, "rdf_source"]
         model_description = load_description(rdf_url)
 
         # Check if description is `ResourceDescr`
@@ -355,7 +389,9 @@ class ModelZoo:
             raise ValueError(f"Failed to load {model_id}")
 
         # Check `model_description` has `weights`
-        if not isinstance(model_description, ModelDescr_v0_4) and not isinstance(model_description, ModelDescr_v0_5):
+        if not isinstance(model_description, ModelDescr_v0_4) and not isinstance(
+            model_description, ModelDescr_v0_5
+        ):
             raise ValueError(
                 f"Model description {model_id} is not in v0.4 or v0.5 BioImage.IO model description format. "
                 "Only v0.4 and v0.5 formats are supported by BioImage.IO Spec and PlantSeg."
@@ -366,31 +402,49 @@ class ModelZoo:
             raise ValueError(f"Model {model_id} does not have PyTorch weights")
 
         # Spec format version v0.4 and v0.5 have different designs to store model architecture
-        if isinstance(model_description, ModelDescr_v0_4):  # then `pytorch_state_dict.architecture` is nn.Module
-            architecture_callable = model_description.weights.pytorch_state_dict.architecture
+        if isinstance(
+            model_description, ModelDescr_v0_4
+        ):  # then `pytorch_state_dict.architecture` is nn.Module
+            architecture_callable = (
+                model_description.weights.pytorch_state_dict.architecture
+            )
             architecture_kwargs = model_description.weights.pytorch_state_dict.kwargs
-        elif isinstance(model_description, ModelDescr_v0_5):  # then it is `ArchitectureDescr` with `callable`
-            architecture_callable = model_description.weights.pytorch_state_dict.architecture.callable
-            architecture_kwargs = model_description.weights.pytorch_state_dict.architecture.kwargs
+        elif isinstance(
+            model_description, ModelDescr_v0_5
+        ):  # then it is `ArchitectureDescr` with `callable`
+            architecture_callable = (
+                model_description.weights.pytorch_state_dict.architecture.callable
+            )
+            architecture_kwargs = (
+                model_description.weights.pytorch_state_dict.architecture.kwargs
+            )
         else:
-            raise ValueError(f"Unsupported model description format: {type(model_description).__name__}")
-        logger_zoo.info(f"Got {architecture_callable} model with kwargs {architecture_kwargs}.")
+            raise ValueError(
+                f"Unsupported model description format: {type(model_description).__name__}"
+            )
+        logger_zoo.info(
+            f"Got {architecture_callable} model with kwargs {architecture_kwargs}."
+        )
 
         # Create model from architecture and kwargs
-        architecture = str(architecture_callable)  # e.g. 'plantseg.training.model.UNet3D'
-        architecture = 'UNet3D' if 'UNet3D' in architecture else 'UNet2D'
+        architecture = str(
+            architecture_callable
+        )  # e.g. 'plantseg.training.model.UNet3D'
+        architecture = "UNet3D" if "UNet3D" in architecture else "UNet2D"
         model_config = {
-            'name': architecture,
-            'in_channels': 1,
-            'out_channels': 1,
-            'layer_order': 'gcr',
-            'f_maps': 32,
-            'num_groups': 8,
-            'final_sigmoid': True,
+            "name": architecture,
+            "in_channels": 1,
+            "out_channels": 1,
+            "layer_order": "gcr",
+            "f_maps": 32,
+            "num_groups": 8,
+            "final_sigmoid": True,
         }
         model_config.update(architecture_kwargs)
         model = self._create_model_by_config(model_config)
-        model_weights_path = download(model_description.weights.pytorch_state_dict.source).path
+        model_weights_path = download(
+            model_description.weights.pytorch_state_dict.source
+        ).path
 
         logger_zoo.info(f"Created {architecture} model with kwargs {model_config}.")
         logger_zoo.info(f"Loaded model from BioImage.IO Model Zoo: {model_id}")
@@ -399,12 +453,14 @@ class ModelZoo:
     def _init_bioimageio_zoo_df(self) -> None:
         records = []
         for _, model in self._bioimageio_zoo_all_model_url_dict.items():
-            records.append(ModelZooRecord(**model, added_by=Author.BIOIMAGEIO).model_dump())
+            records.append(
+                ModelZooRecord(**model, added_by=Author.BIOIMAGEIO).model_dump()
+            )
 
         self.models_bioimageio = DataFrame(
             records,
             columns=list(ModelZooRecord.model_fields.keys()),
-        ).set_index('id')
+        ).set_index("id")
 
     def refresh_bioimageio_zoo_urls(self):
         """Initialize the BioImage.IO Model Zoo collection and URL dictionaries.
@@ -414,24 +470,30 @@ class ModelZoo:
 
         Note that `models_bioimageio` doesn't exist until this method is called.
         """
-        logger_zoo.info(f"Fetching BioImage.IO Model Zoo collection from {BIOIMAGE_IO_COLLECTION_URL}")
-        collection_path = Path(pooch.retrieve(BIOIMAGE_IO_COLLECTION_URL, known_hash=None))
-        with collection_path.open(encoding='utf-8') as f:
+        logger_zoo.info(
+            f"Fetching BioImage.IO Model Zoo collection from {BIOIMAGE_IO_COLLECTION_URL}"
+        )
+        collection_path = Path(
+            pooch.retrieve(BIOIMAGE_IO_COLLECTION_URL, known_hash=None)
+        )
+        with collection_path.open(encoding="utf-8") as f:
             collection = json.load(f)
 
         def get_id(entry):
             return entry["id"] if "nickname" not in entry else entry["nickname"]
 
-        models = [entry for entry in collection["collection"] if entry["type"] == "model"]
+        models = [
+            entry for entry in collection["collection"] if entry["type"] == "model"
+        ]
         max_nickname_length = max(len(get_id(entry)) for entry in models)
 
         def truncate_name(name, length=100):
-            return name[:length] + '...' if len(name) > length else name
+            return name[:length] + "..." if len(name) > length else name
 
         def build_model_url_dict(filter_func=None):
             filtered_models = filter(filter_func, models) if filter_func else models
             return {
-                entry['name']: {
+                entry["name"]: {
                     "id": get_id(entry),
                     "name": entry["name"],
                     "name_display": f"{get_id(entry):<{max_nickname_length}}: {truncate_name(entry['name'])}",
@@ -451,31 +513,37 @@ class ModelZoo:
         if tags is None:
             return False
         if not isinstance(tags, list):
-            raise ValueError(f"Tags in a collection entry must be a list of strings, got {type(tags).__name__}")
+            raise ValueError(
+                f"Tags in a collection entry must be a list of strings, got {type(tags).__name__}"
+            )
 
         # Normalize tags to lower case and remove non-alphanumeric characters
         normalized_tags = ["".join(filter(str.isalnum, tag.lower())) for tag in tags]
-        return 'plantseg' in normalized_tags
+        return "plantseg" in normalized_tags
 
     def get_bioimageio_zoo_all_model_names(self) -> list[tuple[str, str]]:
         """Return a list of (model id, model display name) in the BioImage.IO Model Zoo."""
-        if not hasattr(self, 'models_bioimageio'):
+        if not hasattr(self, "models_bioimageio"):
             self.refresh_bioimageio_zoo_urls()
-        id_name = self.models_bioimageio[['name_display']]
+        id_name = self.models_bioimageio[["name_display"]]
         return sorted([(name, id) for id, name in id_name.itertuples()])
 
     def get_bioimageio_zoo_plantseg_model_names(self) -> list[tuple[str, str]]:
         """Return a list of (model id, model display name) in the BioImage.IO Model Zoo tagged with 'plantseg'."""
-        if not hasattr(self, 'models_bioimageio'):
+        if not hasattr(self, "models_bioimageio"):
             self.refresh_bioimageio_zoo_urls()
-        id_name = self.models_bioimageio[self.models_bioimageio["supported"]][['name_display']]
+        id_name = self.models_bioimageio[self.models_bioimageio["supported"]][
+            ["name_display"]
+        ]
         return sorted([(name, id) for id, name in id_name.itertuples()])
 
     def get_bioimageio_zoo_other_model_names(self) -> list[tuple[str, str]]:
         """Return a list of (model id, model display name) in the BioImage.IO Model Zoo not tagged with 'plantseg'."""
-        if not hasattr(self, 'models_bioimageio'):
+        if not hasattr(self, "models_bioimageio"):
             self.refresh_bioimageio_zoo_urls()
-        id_name = self.models_bioimageio[~self.models_bioimageio["supported"]][['name_display']]
+        id_name = self.models_bioimageio[~self.models_bioimageio["supported"]][
+            ["name_display"]
+        ]
         return sorted([(name, id) for id, name in id_name.itertuples()])
 
     def _flatten_module(self, module: Module) -> list[Module]:
@@ -522,7 +590,9 @@ class ModelZoo:
         halo = sum(conv_contribution)
         return halo
 
-    def compute_3D_halo_for_pytorch3dunet(self, module: AbstractUNet) -> tuple[int, int, int]:
+    def compute_3D_halo_for_pytorch3dunet(
+        self, module: AbstractUNet
+    ) -> tuple[int, int, int]:
         if isinstance(module, UNet3D):
             halo = self.compute_halo(module)
             return halo, halo, halo
@@ -536,7 +606,9 @@ class ModelZoo:
         model, _, _ = self.get_model_by_name(model_name)
         return self.compute_3D_halo_for_pytorch3dunet(model)
 
-    def compute_3D_halo_for_bioimageio_models(self, model_id: str) -> tuple[int, int, int]:
+    def compute_3D_halo_for_bioimageio_models(
+        self, model_id: str
+    ) -> tuple[int, int, int]:
         model, _, _ = self.get_model_by_id(model_id)
         return self.compute_3D_halo_for_pytorch3dunet(model)
 

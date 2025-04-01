@@ -61,7 +61,9 @@ model_filters = Container(
             name="dimensionality",
             label="Dimensionality",
             widget_type="ComboBox",
-            options={"choices": [ALL_DIMENSIONS] + model_zoo.get_unique_dimensionalities()},
+            options={
+                "choices": [ALL_DIMENSIONS] + model_zoo.get_unique_dimensionalities()
+            },
         ),
         create_widget(
             annotation=str,
@@ -216,7 +218,10 @@ advanced_unet_prediction_widgets = [
 
 
 def update_halo():
-    if widget_unet_prediction.model_name.value is None and widget_unet_prediction.model_id.value is None:
+    if (
+        widget_unet_prediction.model_name.value is None
+        and widget_unet_prediction.model_id.value is None
+    ):
         return
     if widget_unet_prediction.advanced.value:
         log(
@@ -226,15 +231,19 @@ def update_halo():
         )
 
         if widget_unet_prediction.mode.value is UNetPredictionMode.PLANTSEG:
-            widget_unet_prediction.patch_halo.value = model_zoo.compute_3D_halo_for_zoo_models(
-                widget_unet_prediction.model_name.value
+            widget_unet_prediction.patch_halo.value = (
+                model_zoo.compute_3D_halo_for_zoo_models(
+                    widget_unet_prediction.model_name.value
+                )
             )
             if model_zoo.is_2D_zoo_model(widget_unet_prediction.model_name.value):
                 widget_unet_prediction.patch_size[0].value = 1
                 widget_unet_prediction.patch_size[0].enabled = False
                 widget_unet_prediction.patch_halo[0].enabled = False
             else:
-                widget_unet_prediction.patch_size[0].value = widget_unet_prediction.patch_size[1].value
+                widget_unet_prediction.patch_size[
+                    0
+                ].value = widget_unet_prediction.patch_size[1].value
                 widget_unet_prediction.patch_size[0].enabled = True
                 widget_unet_prediction.patch_halo[0].enabled = True
         elif widget_unet_prediction.mode.value is UNetPredictionMode.BIOIMAGEIO:
@@ -244,7 +253,9 @@ def update_halo():
                 level="info",
             )
         else:
-            raise NotImplementedError(f"Automatic halo not implemented for {widget_unet_prediction.mode.value} mode.")
+            raise NotImplementedError(
+                f"Automatic halo not implemented for {widget_unet_prediction.mode.value} mode."
+            )
 
 
 @widget_unet_prediction.advanced.changed.connect
@@ -288,11 +299,15 @@ def _on_widget_unet_prediction_mode_change(mode: UNetPredictionMode):
 @widget_unet_prediction.plantseg_filter.changed.connect
 def _on_widget_unet_prediction_plantseg_filter_change(plantseg_filter: bool):
     if plantseg_filter:
-        widget_unet_prediction.model_id.choices = model_zoo.get_bioimageio_zoo_plantseg_model_names()
+        widget_unet_prediction.model_id.choices = (
+            model_zoo.get_bioimageio_zoo_plantseg_model_names()
+        )
     else:
         widget_unet_prediction.model_id.choices = (
             model_zoo.get_bioimageio_zoo_plantseg_model_names()
-            + [("", Separator)]  # `[('', Separator)]` for list[tuple[str, str]], [Separator] for list[str]
+            + [
+                ("", Separator)
+            ]  # `[('', Separator)]` for list[tuple[str, str]], [Separator] for list[str]
             + model_zoo.get_bioimageio_zoo_other_model_names()
         )
 
@@ -329,7 +344,9 @@ def _on_model_name_changed(model_name: str):
     else:
         widget_unet_prediction.advanced.show()
         widget_unet_prediction.device.show()
-    widget_unet_prediction.model_name.tooltip = f"Select a pretrained model. Current model description: {description}"
+    widget_unet_prediction.model_name.tooltip = (
+        f"Select a pretrained model. Current model description: {description}"
+    )
 
     if widget_unet_prediction.advanced.value:
         update_halo()

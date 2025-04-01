@@ -6,7 +6,9 @@ from magicgui.widgets import Container, create_widget
 
 from plantseg.viewer_napari import log
 
-LOGO_PATH = Path(__file__).resolve().parent.parent.parent / "resources" / "logo_white.png"
+LOGO_PATH = (
+    Path(__file__).resolve().parent.parent.parent / "resources" / "logo_white.png"
+)
 DOCS_URL = "https://kreshuklab.github.io/plant-seg/"
 
 
@@ -15,8 +17,8 @@ def create_doc_container() -> Container:
     container = Container(
         widgets=[
             create_widget(
-                widget_type='PushButton',
-                label='Open Documentation',
+                widget_type="PushButton",
+                label="Open Documentation",
             ),
         ],
         label=f'<img src="{LOGO_PATH}">',
@@ -40,4 +42,6 @@ widget_docs.insert(0, doc_container_widget)
 def open_docs(event):
     """Open the documentation URL in the default web browser when the button is clicked."""
     webbrowser.open(DOCS_URL)
-    log(message=f"Docs webpage opened: {DOCS_URL}", thread="Documentation", level="info")
+    log(
+        message=f"Docs webpage opened: {DOCS_URL}", thread="Documentation", level="info"
+    )

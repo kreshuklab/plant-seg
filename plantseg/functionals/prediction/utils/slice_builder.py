@@ -22,7 +22,9 @@ class SliceBuilder:
             self._label_slices = None
         else:
             # take the first element in the label_dataset to build slices
-            self._label_slices = self._build_slices(label_dataset, patch_shape, stride_shape)
+            self._label_slices = self._build_slices(
+                label_dataset, patch_shape, stride_shape
+            )
             assert len(self._raw_slices) == len(self._label_slices)
 
     @property
@@ -57,7 +59,11 @@ class SliceBuilder:
             for y in y_steps:
                 x_steps = SliceBuilder._gen_indices(i_x, k_x, s_x)
                 for x in x_steps:
-                    slice_idx = (slice(z, z + k_z), slice(y, y + k_y), slice(x, x + k_x))
+                    slice_idx = (
+                        slice(z, z + k_z),
+                        slice(y, y + k_y),
+                        slice(x, x + k_x),
+                    )
                     if dataset.ndim == 4:
                         slice_idx = (slice(0, in_channels),) + slice_idx
                     slices.append(slice_idx)
@@ -65,7 +71,7 @@ class SliceBuilder:
 
     @staticmethod
     def _gen_indices(i, k, s):
-        assert i >= k, 'Sample size has to be bigger than the patch size'
+        assert i >= k, "Sample size has to be bigger than the patch size"
         for j in range(0, i - k + 1, s):
             yield j
         if j + k < i:
@@ -73,8 +79,10 @@ class SliceBuilder:
 
     @staticmethod
     def _check_patch_shape(patch_shape):
-        assert len(patch_shape) == 3, 'patch_shape must be a 3D tuple'
-        assert patch_shape[1] >= 64 and patch_shape[2] >= 64, 'Height and Width must be greater or equal 64'
+        assert len(patch_shape) == 3, "patch_shape must be a 3D tuple"
+        assert patch_shape[1] >= 64 and patch_shape[2] >= 64, (
+            "Height and Width must be greater or equal 64"
+        )
 
 
 class FilterSliceBuilder(SliceBuilder):

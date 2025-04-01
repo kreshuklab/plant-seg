@@ -33,7 +33,9 @@ def compute_per_channel_dice(input, target, epsilon=1e-6, weight=None):
     """
 
     # input and target shapes must match
-    assert input.size() == target.size(), "'input' and 'target' must have the same shape"
+    assert input.size() == target.size(), (
+        "'input' and 'target' must have the same shape"
+    )
 
     input = flatten(input)
     target = flatten(target)
@@ -54,18 +56,18 @@ class _AbstractDiceLoss(nn.Module):
     Base class for different implementations of Dice loss.
     """
 
-    def __init__(self, weight=None, normalization='sigmoid'):
+    def __init__(self, weight=None, normalization="sigmoid"):
         super(_AbstractDiceLoss, self).__init__()
-        self.register_buffer('weight', weight)
+        self.register_buffer("weight", weight)
         # The output from the network during training is assumed to be un-normalized probabilities and we would
         # like to normalize the logits. Since Dice (or soft Dice in this case) is usually used for binary data,
         # normalizing the channels with Sigmoid is the default choice even for multi-class segmentation problems.
         # However if one would like to apply Softmax in order to get the proper probability distribution from the
         # output, just specify `normalization=Softmax`
-        assert normalization in ['sigmoid', 'softmax', 'none']
-        if normalization == 'sigmoid':
+        assert normalization in ["sigmoid", "softmax", "none"]
+        if normalization == "sigmoid":
             self.normalization = nn.Sigmoid()
-        elif normalization == 'softmax':
+        elif normalization == "softmax":
             self.normalization = nn.Softmax(dim=1)
         else:
             self.normalization = lambda x: x
@@ -91,7 +93,7 @@ class DiceLoss(_AbstractDiceLoss):
     The input to the loss function is assumed to be a logit and will be normalized by the Sigmoid function.
     """
 
-    def __init__(self, weight=None, normalization='sigmoid'):
+    def __init__(self, weight=None, normalization="sigmoid"):
         super().__init__(weight, normalization)
 
     def dice(self, input, target, weight):
