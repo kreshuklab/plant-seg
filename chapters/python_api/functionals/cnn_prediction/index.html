@@ -1735,37 +1735,7 @@ in <code>plantseg.training.model</code>, i.e. <code>bioimageio.core</code> is no
 
             <details class="quote">
               <summary>Source code in <code>plantseg/functionals/prediction/prediction.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">158</span>
 <span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
@@ -1842,7 +1812,60 @@ in <code>plantseg.training.model</code>, i.e. <code>bioimageio.core</code> is no
 <span class="normal">232</span>
 <span class="normal">233</span>
 <span class="normal">234</span>
-<span class="normal">235</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">unet_prediction</span><span class="p">(</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">unet_prediction</span><span class="p">(</span>
     <span class="n">raw</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">input_layout</span><span class="p">:</span> <span class="n">ImageLayout</span><span class="p">,</span>
     <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
@@ -1889,15 +1912,21 @@ in <code>plantseg.training.model</code>, i.e. <code>bioimageio.core</code> is no
 
     <span class="k">if</span> <span class="n">config_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># Safari mode for custom models outside zoos</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Safari prediction: Running model from custom config path.&quot;</span><span class="p">)</span>
-        <span class="n">model</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">model_path</span> <span class="o">=</span> <span class="n">model_zoo</span><span class="o">.</span><span class="n">get_model_by_config_path</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">model_weights_path</span><span class="p">)</span>
+        <span class="n">model</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">model_path</span> <span class="o">=</span> <span class="n">model_zoo</span><span class="o">.</span><span class="n">get_model_by_config_path</span><span class="p">(</span>
+            <span class="n">config_path</span><span class="p">,</span> <span class="n">model_weights_path</span>
+        <span class="p">)</span>
     <span class="k">elif</span> <span class="n">model_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># BioImage.IO zoo mode</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;BioImage.IO prediction: Running model from BioImage.IO model zoo.&quot;</span><span class="p">)</span>
         <span class="n">model</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">model_path</span> <span class="o">=</span> <span class="n">model_zoo</span><span class="o">.</span><span class="n">get_model_by_id</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">model_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># PlantSeg zoo mode</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Zoo prediction: Running model from PlantSeg official zoo.&quot;</span><span class="p">)</span>
-        <span class="n">model</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">model_path</span> <span class="o">=</span> <span class="n">model_zoo</span><span class="o">.</span><span class="n">get_model_by_name</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model_update</span><span class="o">=</span><span class="n">model_update</span><span class="p">)</span>
+        <span class="n">model</span><span class="p">,</span> <span class="n">model_config</span><span class="p">,</span> <span class="n">model_path</span> <span class="o">=</span> <span class="n">model_zoo</span><span class="o">.</span><span class="n">get_model_by_name</span><span class="p">(</span>
+            <span class="n">model_name</span><span class="p">,</span> <span class="n">model_update</span><span class="o">=</span><span class="n">model_update</span>
+        <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either `model_name` or `model_id` or `model_path` must be provided.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Either `model_name` or `model_id` or `model_path` must be provided.&quot;</span>
+        <span class="p">)</span>
     <span class="n">state</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="s2">&quot;model_state_dict&quot;</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>  <span class="c1"># Model weights format may vary between versions</span>
@@ -1909,16 +1938,24 @@ in <code>plantseg.training.model</code>, i.e. <code>bioimageio.core</code> is no
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Computing theoretical minimum halo from model.&quot;</span><span class="p">)</span>
             <span class="n">patch_halo</span> <span class="o">=</span> <span class="n">model_zoo</span><span class="o">.</span><span class="n">compute_3D_halo_for_pytorch3dunet</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not compute halo from model. Using 0 halo size, you may experience edge artifacts.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Could not compute halo from model. Using 0 halo size, you may experience edge artifacts.&quot;</span>
+            <span class="p">)</span>
             <span class="n">patch_halo</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">patch</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">maximum_patch_shape</span> <span class="o">=</span> <span class="n">find_a_max_patch_shape</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;in_channels&quot;</span><span class="p">],</span> <span class="n">device</span><span class="p">)</span>
-        <span class="n">raw_shape</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">shape</span> <span class="k">if</span> <span class="n">input_layout</span> <span class="o">==</span> <span class="s1">&#39;ZYX&#39;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="n">raw</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">maximum_patch_shape</span> <span class="o">=</span> <span class="n">find_a_max_patch_shape</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">,</span> <span class="n">model_config</span><span class="p">[</span><span class="s2">&quot;in_channels&quot;</span><span class="p">],</span> <span class="n">device</span>
+        <span class="p">)</span>
+        <span class="n">raw_shape</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">shape</span> <span class="k">if</span> <span class="n">input_layout</span> <span class="o">==</span> <span class="s2">&quot;ZYX&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="n">raw</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
-        <span class="n">patch</span><span class="p">,</span> <span class="n">patch_halo</span> <span class="o">=</span> <span class="n">find_patch_and_halo_shapes</span><span class="p">(</span><span class="n">raw_shape</span><span class="p">,</span> <span class="n">maximum_patch_shape</span><span class="p">,</span> <span class="n">patch_halo</span><span class="p">,</span> <span class="n">both_sides</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">patch</span><span class="p">,</span> <span class="n">patch_halo</span> <span class="o">=</span> <span class="n">find_patch_and_halo_shapes</span><span class="p">(</span>
+            <span class="n">raw_shape</span><span class="p">,</span> <span class="n">maximum_patch_shape</span><span class="p">,</span> <span class="n">patch_halo</span><span class="p">,</span> <span class="n">both_sides</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;For raw in shape </span><span class="si">{</span><span class="n">raw</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">: set patch shape </span><span class="si">{</span><span class="n">patch</span><span class="si">}</span><span class="s2">, set halo shape </span><span class="si">{</span><span class="n">patch_halo</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;For raw in shape </span><span class="si">{</span><span class="n">raw</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">: set patch shape </span><span class="si">{</span><span class="n">patch</span><span class="si">}</span><span class="s2">, set halo shape </span><span class="si">{</span><span class="n">patch_halo</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
 
     <span class="n">predictor</span> <span class="o">=</span> <span class="n">ArrayPredictor</span><span class="p">(</span>
         <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
@@ -1941,11 +1978,20 @@ in <code>plantseg.training.model</code>, i.e. <code>bioimageio.core</code> is no
         <span class="n">raw</span> <span class="o">=</span> <span class="n">fix_layout_to_ZYX</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">input_layout</span><span class="p">)</span>
         <span class="n">multichannel_input</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">raw</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
-    <span class="n">augs</span> <span class="o">=</span> <span class="n">get_test_augmentations</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>  <span class="c1"># using full raw to compute global normalization mean and std</span>
+    <span class="n">augs</span> <span class="o">=</span> <span class="n">get_test_augmentations</span><span class="p">(</span>
+        <span class="n">raw</span>
+    <span class="p">)</span>  <span class="c1"># using full raw to compute global normalization mean and std</span>
     <span class="n">stride</span> <span class="o">=</span> <span class="n">get_stride_shape</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
-    <span class="n">slice_builder</span> <span class="o">=</span> <span class="n">SliceBuilder</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">label_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">patch_shape</span><span class="o">=</span><span class="n">patch</span><span class="p">,</span> <span class="n">stride_shape</span><span class="o">=</span><span class="n">stride</span><span class="p">)</span>
+    <span class="n">slice_builder</span> <span class="o">=</span> <span class="n">SliceBuilder</span><span class="p">(</span>
+        <span class="n">raw</span><span class="p">,</span> <span class="n">label_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">patch_shape</span><span class="o">=</span><span class="n">patch</span><span class="p">,</span> <span class="n">stride_shape</span><span class="o">=</span><span class="n">stride</span>
+    <span class="p">)</span>
     <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">ArrayDataset</span><span class="p">(</span>
-        <span class="n">raw</span><span class="p">,</span> <span class="n">slice_builder</span><span class="p">,</span> <span class="n">augs</span><span class="p">,</span> <span class="n">halo_shape</span><span class="o">=</span><span class="n">patch_halo</span><span class="p">,</span> <span class="n">multichannel</span><span class="o">=</span><span class="n">multichannel_input</span><span class="p">,</span> <span class="n">verbose_logging</span><span class="o">=</span><span class="kc">False</span>
+        <span class="n">raw</span><span class="p">,</span>
+        <span class="n">slice_builder</span><span class="p">,</span>
+        <span class="n">augs</span><span class="p">,</span>
+        <span class="n">halo_shape</span><span class="o">=</span><span class="n">patch_halo</span><span class="p">,</span>
+        <span class="n">multichannel</span><span class="o">=</span><span class="n">multichannel_input</span><span class="p">,</span>
+        <span class="n">verbose_logging</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">pmaps</span> <span class="o">=</span> <span class="n">predictor</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">)</span>  <span class="c1"># pmaps either (C, Z, Y, X) or (C, Y, X)</span>

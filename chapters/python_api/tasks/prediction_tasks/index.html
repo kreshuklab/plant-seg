@@ -1762,7 +1762,9 @@
 <span class="normal">70</span>
 <span class="normal">71</span>
 <span class="normal">72</span>
-<span class="normal">73</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">unet_prediction_task</span><span class="p">(</span>
     <span class="n">image</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span>
     <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
@@ -1815,7 +1817,9 @@
 
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pmap</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pmaps</span><span class="p">):</span>
         <span class="c1"># Input layout is always ZYX this loop</span>
-        <span class="n">pmap</span> <span class="o">=</span> <span class="n">fix_layout</span><span class="p">(</span><span class="n">pmap</span><span class="p">,</span> <span class="n">input_layout</span><span class="o">=</span><span class="n">ImageLayout</span><span class="o">.</span><span class="n">ZYX</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">output_layout</span><span class="o">=</span><span class="n">input_layout</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">pmap</span> <span class="o">=</span> <span class="n">fix_layout</span><span class="p">(</span>
+            <span class="n">pmap</span><span class="p">,</span> <span class="n">input_layout</span><span class="o">=</span><span class="n">ImageLayout</span><span class="o">.</span><span class="n">ZYX</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">output_layout</span><span class="o">=</span><span class="n">input_layout</span><span class="o">.</span><span class="n">value</span>
+        <span class="p">)</span>
         <span class="n">new_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="n">image</span><span class="o">.</span><span class="n">derive_new</span><span class="p">(</span>
                 <span class="n">pmap</span><span class="p">,</span>

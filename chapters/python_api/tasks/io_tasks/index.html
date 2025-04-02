@@ -1946,11 +1946,13 @@ to be replaced in the final file name.</p>
 <span class="normal">91</span>
 <span class="normal">92</span>
 <span class="normal">93</span>
-<span class="normal">94</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span><span class="p">(</span>
+<span class="normal">94</span>
+<span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span><span class="p">(</span>
     <span class="n">is_leaf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">list_inputs</span><span class="o">=</span><span class="p">{</span>
         <span class="s2">&quot;export_directory&quot;</span><span class="p">:</span> <span class="n">RunTimeInputSchema</span><span class="p">(</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Output directory path where the image will be saved&quot;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Output directory path where the image will be saved&quot;</span><span class="p">,</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="s2">&quot;name_pattern&quot;</span><span class="p">:</span> <span class="n">RunTimeInputSchema</span><span class="p">(</span>
             <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Output file name pattern. Can contain the special </span><span class="si">{image_name}</span><span class="s2"> or </span><span class="si">{file_name}</span><span class="s2"> tokens &quot;</span><span class="p">,</span>
