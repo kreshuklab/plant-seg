@@ -1,9 +1,16 @@
 import numpy as np
 import pytest
 
-from plantseg.core.image import ImageLayout, ImageProperties, PlantSegImage, SemanticType
+from plantseg.core.image import (
+    ImageLayout,
+    ImageProperties,
+    PlantSegImage,
+    SemanticType,
+)
 from plantseg.io.voxelsize import VoxelSize
-from plantseg.tasks.dataprocessing_tasks import fix_over_under_segmentation_from_nuclei_task
+from plantseg.tasks.dataprocessing_tasks import (
+    fix_over_under_segmentation_from_nuclei_task,
+)
 
 
 @pytest.fixture
@@ -29,11 +36,11 @@ def complex_test_PlantSegImages(complex_test_data):
     cell_seg = PlantSegImage(
         data=cell_seg,
         properties=ImageProperties(
-            name='cell_seg',
-            voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit='um'),
+            name="cell_seg",
+            voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
             semantic_type=SemanticType.SEGMENTATION,
             image_layout=ImageLayout.ZYX,
-            original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit='um'),
+            original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
         ),
     )
 
@@ -41,11 +48,11 @@ def complex_test_PlantSegImages(complex_test_data):
     nuclei_seg = PlantSegImage(
         data=nuclei_seg,
         properties=ImageProperties(
-            name='nuclei_seg',
-            voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit='um'),
+            name="nuclei_seg",
+            voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
             semantic_type=SemanticType.SEGMENTATION,
             image_layout=ImageLayout.ZYX,
-            original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit='um'),
+            original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
         ),
     )
 
@@ -54,11 +61,11 @@ def complex_test_PlantSegImages(complex_test_data):
         PlantSegImage(
             data=boundary_pmap,
             properties=ImageProperties(
-                name='boundary_pmap',
-                voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit='um'),
+                name="boundary_pmap",
+                voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
                 semantic_type=SemanticType.PREDICTION,
                 image_layout=ImageLayout.ZYX,
-                original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit='um'),
+                original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
             ),
         )
         if boundary_pmap is not None
@@ -100,7 +107,9 @@ def test_fix_over_under_segmentation_from_nuclei_task(complex_test_PlantSegImage
     assert isinstance(result, PlantSegImage), "Task result is not a PlantSegImage."
 
     # Ensure the output segmentation data is modified compared to the input (functional tested elsewhere)
-    assert not np.array_equal(result.get_data(), cell_seg.get_data()), "Task did not modify the input data as expected."
+    assert not np.array_equal(result.get_data(), cell_seg.get_data()), (
+        "Task did not modify the input data as expected."
+    )
 
     # Validate the output's name
     assert result.name == "cell_seg_nuc_fixed", "Output name is incorrect."

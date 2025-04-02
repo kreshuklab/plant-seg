@@ -17,7 +17,9 @@ class TestModelPrediction:
         assert torch.all(y >= 0) and torch.all(y <= 1)
 
     def test_SpocoNet(self):
-        model = SpocoNet.from_unet_params(in_channels=1, out_channels=8, f_maps=[16, 32, 64, 128, 256])
+        model = SpocoNet.from_unet_params(
+            in_channels=1, out_channels=8, f_maps=[16, 32, 64, 128, 256]
+        )
         model.eval()
         x1 = torch.randn(4, 1, 260, 260)
         x2 = torch.rand(4, 1, 260, 260)

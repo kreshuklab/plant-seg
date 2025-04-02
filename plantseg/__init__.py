@@ -35,7 +35,7 @@ DIR_PLANTSEG_MODELS = ".plantseg_models"
 DIR_CONFIGS = "configs"
 FILE_MODEL_ZOO_CUSTOM = "custom_zoo.yaml"
 
-PATH_HOME = Path(getenv('PLANTSEG_HOME', str(Path.home())))
+PATH_HOME = Path(getenv("PLANTSEG_HOME", str(Path.home())))
 
 PATH_PLANTSEG_MODELS = PATH_HOME / DIR_PLANTSEG_MODELS
 PATH_CONFIGS = PATH_PLANTSEG_MODELS / DIR_CONFIGS
@@ -44,7 +44,7 @@ PATH_MODEL_ZOO_CUSTOM = PATH_PLANTSEG_MODELS / FILE_MODEL_ZOO_CUSTOM
 PATH_CONFIGS.mkdir(parents=True, exist_ok=True)
 
 if not PATH_MODEL_ZOO_CUSTOM.exists():
-    with PATH_MODEL_ZOO_CUSTOM.open('w') as file:
+    with PATH_MODEL_ZOO_CUSTOM.open("w") as file:
         yaml.dump({}, file)
 
 # Set up logging

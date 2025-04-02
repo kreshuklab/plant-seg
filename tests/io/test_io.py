@@ -32,21 +32,32 @@ class TestIO:
 
         # Read the HDF5 file
         data_read = load_h5(path_h5, "raw")
-        assert np.array_equal(data, data_read), "Data read from HDF5 file is not equal to the original data"
+        assert np.array_equal(data, data_read), (
+            "Data read from HDF5 file is not equal to the original data"
+        )
 
         # Read the shape of the HDF5 file
         shape = read_h5_shape(path_h5, "raw")
-        assert shape == data.shape, "Shape read from HDF5 file is not equal to the original shape"
+        assert shape == data.shape, (
+            "Shape read from HDF5 file is not equal to the original shape"
+        )
 
         # Read the voxel size of the HDF5 file
         voxel_size = read_h5_voxel_size(path_h5, "raw")
         self._check_voxel_size(voxel_size)
 
         data_read2 = smart_load(path_h5, "raw")
-        assert np.array_equal(data, data_read2), "Data read from HDF5 file is not equal to the original data"
+        assert np.array_equal(data, data_read2), (
+            "Data read from HDF5 file is not equal to the original data"
+        )
 
     def test_create_read_zarr(self, path_zarr):
-        from plantseg.io.zarr import create_zarr, load_zarr, read_zarr_shape, read_zarr_voxel_size
+        from plantseg.io.zarr import (
+            create_zarr,
+            load_zarr,
+            read_zarr_shape,
+            read_zarr_voxel_size,
+        )
 
         # Create a Zarr file
         data = np.random.rand(10, 10, 10)
@@ -60,11 +71,15 @@ class TestIO:
 
         # Read the Zarr file
         data_read = load_zarr(path_zarr, "raw")
-        assert np.array_equal(data, data_read), "Data read from Zarr file is not equal to the original data"
+        assert np.array_equal(data, data_read), (
+            "Data read from Zarr file is not equal to the original data"
+        )
 
         # Read the shape of the Zarr file
         shape = read_zarr_shape(path_zarr, "raw")
-        assert shape == data.shape, "Shape read from Zarr file is not equal to the original shape"
+        assert shape == data.shape, (
+            "Shape read from Zarr file is not equal to the original shape"
+        )
 
         # Read the voxel size of the Zarr file
         voxel_size = read_zarr_voxel_size(path_zarr, "raw")
@@ -73,7 +88,9 @@ class TestIO:
         )
 
         data_read2 = smart_load(path_zarr, "raw")
-        assert np.array_equal(data, data_read2), "Data read from Zarr file is not equal to the original data"
+        assert np.array_equal(data, data_read2), (
+            "Data read from Zarr file is not equal to the original data"
+        )
 
     def test_create_read_tiff(self, path_tiff):
         from plantseg.io.tiff import create_tiff, load_tiff, read_tiff_voxel_size
@@ -85,14 +102,18 @@ class TestIO:
 
         # Read the TIFF file
         data_read = load_tiff(path_tiff)
-        assert np.array_equal(data, data_read), "Data read from TIFF file is not equal to the original data"
+        assert np.array_equal(data, data_read), (
+            "Data read from TIFF file is not equal to the original data"
+        )
 
         # Read the voxel size of the TIFF file
         voxel_size = read_tiff_voxel_size(path_tiff)
         self._check_voxel_size(voxel_size)
 
         data_read2 = smart_load(path_tiff)
-        assert np.array_equal(data, data_read2), "Data read from TIFF file is not equal to the original data"
+        assert np.array_equal(data, data_read2), (
+            "Data read from TIFF file is not equal to the original data"
+        )
 
     def test_read_jpg(self, path_jpg):
         import numpy as np
@@ -108,4 +129,6 @@ class TestIO:
         # Implicitly convrrted from RGB to grayscale
         data_read = load_pil(path_jpg)
 
-        assert data.shape[:2] == data_read.shape, "Data read from JPG file is not equal to the original data"
+        assert data.shape[:2] == data_read.shape, (
+            "Data read from JPG file is not equal to the original data"
+        )

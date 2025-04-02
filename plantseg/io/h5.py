@@ -13,7 +13,9 @@ H5_KEYS = ["raw", "prediction", "segmentation"]
 
 
 def _validate_h5_file(path: Path) -> None:
-    assert path.suffix.lower() in H5_EXTENSIONS, f"File extension not supported. Supported extensions: {H5_EXTENSIONS}"
+    assert path.suffix.lower() in H5_EXTENSIONS, (
+        f"File extension not supported. Supported extensions: {H5_EXTENSIONS}"
+    )
     assert path.exists(), f"File not found: {path}"
 
 
@@ -73,7 +75,9 @@ def load_h5(
         np.ndarray: dataset as numpy array
     """
 
-    assert path.suffix.lower() in H5_EXTENSIONS, f"File extension not supported. Supported extensions: {H5_EXTENSIONS}"
+    assert path.suffix.lower() in H5_EXTENSIONS, (
+        f"File extension not supported. Supported extensions: {H5_EXTENSIONS}"
+    )
     assert path.exists(), f"File not found: {path}"
 
     with h5py.File(path, "r") as f:

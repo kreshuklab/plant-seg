@@ -48,7 +48,10 @@ class HDF5Dataset(Dataset):
 
             # build slice indices for raw and label data sets
             slice_builder = FilterSliceBuilder(
-                self.raw, self.label, patch_shape=patch_shape, stride_shape=tuple(i // 2 for i in patch_shape)
+                self.raw,
+                self.label,
+                patch_shape=patch_shape,
+                stride_shape=tuple(i // 2 for i in patch_shape),
             )
             self.raw_slices = slice_builder.raw_slices
             self.label_slices = slice_builder.label_slices
@@ -62,7 +65,9 @@ class HDF5Dataset(Dataset):
         assert ds.ndim in [
             3,
             4,
-        ], f"Invalid dataset dimension: {ds.ndim}. Supported dataset formats: (C, Z, Y, X) or (Z, Y, X)"
+        ], (
+            f"Invalid dataset dimension: {ds.ndim}. Supported dataset formats: (C, Z, Y, X) or (Z, Y, X)"
+        )
         return ds
 
     def __getitem__(self, idx):
@@ -97,7 +102,9 @@ class HDF5Dataset(Dataset):
         assert raw.ndim in [3, 4], "Raw dataset must be 3D (DxHxW) or 4D (CxDxHxW)"
         assert label.ndim in [3, 4], "Label dataset must be 3D (DxHxW) or 4D (CxDxHxW)"
 
-        assert _volume_shape(raw) == _volume_shape(label), "Raw and labels have to be of the same size"
+        assert _volume_shape(raw) == _volume_shape(label), (
+            "Raw and labels have to be of the same size"
+        )
 
 
 def calculate_stats(images, global_normalization=True):
@@ -107,7 +114,12 @@ def calculate_stats(images, global_normalization=True):
     if global_normalization:
         # flatten first since the images might not be the same size
         flat = np.concatenate([img.ravel() for img in images])
-        pmin, pmax, mean, std = np.percentile(flat, 1), np.percentile(flat, 99.6), np.mean(flat), np.std(flat)
+        pmin, pmax, mean, std = (
+            np.percentile(flat, 1),
+            np.percentile(flat, 99.6),
+            np.mean(flat),
+            np.std(flat),
+        )
     else:
         pmin, pmax, mean, std = None, None, None, None
 

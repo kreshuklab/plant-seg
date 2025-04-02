@@ -88,7 +88,9 @@ def update_progressbar(pbar: ProgressBar, tracker: PBar_Tracker):
     return lambda: (setattr(pbar, "max", tracker.total), pbar.increment(1))
 
 
-def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Widget] | None = None) -> None:
+def schedule_task(
+    task: Callable, task_kwargs: dict, widgets_to_update: list[Widget] | None = None
+) -> None:
     """Schedule a task to be executed in a separate thread and update the widgets with the result.
 
     Args:
@@ -111,22 +113,30 @@ def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Wid
 
         if isinstance(task_result, PlantSegImage):
             add_ps_image_to_viewer(task_result, replace=True)
-            setup_layers_suggestions(out_name=task_result.name, widgets=widgets_to_update)
+            setup_layers_suggestions(
+                out_name=task_result.name, widgets=widgets_to_update
+            )
 
         elif isinstance(task_result, (tuple, list)):
             for ps_im in task_result:
                 if not isinstance(ps_im, PlantSegImage):
-                    raise ValueError(f"Task {task_name} returned an unexpected value {task_result}")
+                    raise ValueError(
+                        f"Task {task_name} returned an unexpected value {task_result}"
+                    )
 
             for ps_im in task_result:
                 add_ps_image_to_viewer(ps_im, replace=True)
-            setup_layers_suggestions(out_name=task_result[-1].name, widgets=widgets_to_update)
+            setup_layers_suggestions(
+                out_name=task_result[-1].name, widgets=widgets_to_update
+            )
 
         elif task_result is None:
             return None
 
         else:
-            raise ValueError(f"Task {task_name} returned an unexpected value {task_result}")
+            raise ValueError(
+                f"Task {task_name} returned an unexpected value {task_result}"
+            )
 
     # Setup progress bar
     pbar = None
@@ -135,7 +145,9 @@ def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Wid
         pbar = task_kwargs.pop("_pbar")
         pbar.max = tracker.total
         pbar.visible = True
-        tracker.events.progress.connect(update_progressbar(pbar, tracker), thread="main")
+        tracker.events.progress.connect(
+            update_progressbar(pbar, tracker), thread="main"
+        )
         task_kwargs["_tracker"] = tracker
         start_emitting_from_queue()
     if hide_list := task_kwargs.pop("_to_hide", None):
@@ -150,7 +162,9 @@ def schedule_task(task: Callable, task_kwargs: dict, widgets_to_update: list[Wid
     if pbar is not None:
         worker.returned.connect(lambda _: setattr(pbar, "visible", False))
     if hide_list is not None:
-        worker.returned.connect(lambda _: [setattr(w, "visible", True) for w in hide_list])
+        worker.returned.connect(
+            lambda _: [setattr(w, "visible", True) for w in hide_list]
+        )
     worker.start()
     log(f"{task_name} started", thread="Task")
     return None

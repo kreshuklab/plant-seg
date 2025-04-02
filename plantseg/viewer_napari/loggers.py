@@ -1,6 +1,11 @@
 import logging
 
-from napari.utils.notifications import show_console_notification, show_error, show_info, show_warning
+from napari.utils.notifications import (
+    show_console_notification,
+    show_error,
+    show_info,
+    show_warning,
+)
 
 from plantseg.loggers import formatter_viewer_napari
 
@@ -21,7 +26,9 @@ class NapariHandler(logging.Handler):
     def emit(self, record):
         try:
             record.handler_name = self.get_name()
-            assert hasattr(record, "widget_name"), "For Napari logging, use 'napari_formatted_logging' in log record."
+            assert hasattr(record, "widget_name"), (
+                "For Napari logging, use 'napari_formatted_logging' in log record."
+            )
             message = self.format(record)
             level = record.levelno
             napari_notifications[level](message)

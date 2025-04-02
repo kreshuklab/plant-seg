@@ -12,18 +12,24 @@ logger = logging.getLogger(__name__)
 
 Runners = Literal["serial"]
 
-_implemented_runners = {'serial': SerialRunner}
+_implemented_runners = {"serial": SerialRunner}
 
 
 def validate_config(config: dict):
     if "inputs" not in config:
-        raise ValueError("The workflow configuration does not contain an 'inputs' section.")
+        raise ValueError(
+            "The workflow configuration does not contain an 'inputs' section."
+        )
 
     if "infos" not in config:
-        raise ValueError("The workflow configuration does not contain an 'infos' section.")
+        raise ValueError(
+            "The workflow configuration does not contain an 'infos' section."
+        )
 
     if "list_tasks" not in config:
-        raise ValueError("The workflow configuration does not contain an 'list_tasks' section.")
+        raise ValueError(
+            "The workflow configuration does not contain an 'list_tasks' section."
+        )
 
     if "runner" not in config:
         logger.warning(
@@ -45,7 +51,9 @@ def parse_import_image_task(input_path, allow_dir: bool) -> list[Path]:
         list_files = [input_path]
     elif input_path.is_dir():
         if not allow_dir:
-            raise ValueError(f"Directory {input_path} is not allowed when multiple input files are expected.")
+            raise ValueError(
+                f"Directory {input_path} is not allowed when multiple input files are expected."
+            )
 
         list_files = list(input_path.glob("*"))
     else:
@@ -58,7 +66,9 @@ def parse_import_image_task(input_path, allow_dir: bool) -> list[Path]:
     return list_files
 
 
-def collect_jobs_list(inputs: dict | list[dict], inputs_schema: dict[str, RunTimeInputSchema]) -> list[dict[str, Any]]:
+def collect_jobs_list(
+    inputs: dict | list[dict], inputs_schema: dict[str, RunTimeInputSchema]
+) -> list[dict[str, Any]]:
     """
     Parse the inputs and create a list of jobs to run.
     """
@@ -66,10 +76,14 @@ def collect_jobs_list(inputs: dict | list[dict], inputs_schema: dict[str, RunTim
     if isinstance(inputs, dict):
         inputs = [inputs]
 
-    num_is_input_file = sum([1 for schema in inputs_schema.values() if schema.is_input_file])
+    num_is_input_file = sum(
+        [1 for schema in inputs_schema.values() if schema.is_input_file]
+    )
 
     if num_is_input_file == 0:
-        raise ValueError("No input files found in the inputs schema. The workflow cannot run.")
+        raise ValueError(
+            "No input files found in the inputs schema. The workflow cannot run."
+        )
     elif num_is_input_file > 1:
         allow_dir = False
     else:
@@ -86,11 +100,15 @@ def collect_jobs_list(inputs: dict | list[dict], inputs_schema: dict[str, RunTim
                 if name not in inputs_files:
                     inputs_files[name] = []
 
-                inputs_files[name].extend(parse_import_image_task(input_dict[name], allow_dir=allow_dir))
+                inputs_files[name].extend(
+                    parse_import_image_task(input_dict[name], allow_dir=allow_dir)
+                )
 
         list_len = [len(files) for files in inputs_files.values()]
         if len(set(list_len)) != 1:
-            raise ValueError(f"Inputs have different number of files. found {inputs_files}")
+            raise ValueError(
+                f"Inputs have different number of files. found {inputs_files}"
+            )
 
         list_files = list(zip(*inputs_files.values()))
         list_keys = list(inputs_files.keys())

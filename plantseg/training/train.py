@@ -7,7 +7,12 @@ from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import ConcatDataset, DataLoader
 
-from plantseg import DIR_PLANTSEG_MODELS, FILE_CONFIG_TRAIN_YAML, PATH_HOME, PATH_TRAIN_TEMPLATE
+from plantseg import (
+    DIR_PLANTSEG_MODELS,
+    FILE_CONFIG_TRAIN_YAML,
+    PATH_HOME,
+    PATH_TRAIN_TEMPLATE,
+)
 from plantseg.training.augs import Augmenter
 from plantseg.training.h5dataset import HDF5Dataset
 from plantseg.training.losses import DiceLoss
@@ -18,7 +23,14 @@ logger = logging.getLogger(__name__)
 
 
 def create_model_config(
-    checkpoint_dir: Path, in_channels, out_channels, patch_size, dimensionality, sparse, f_maps, max_num_iters
+    checkpoint_dir: Path,
+    in_channels,
+    out_channels,
+    patch_size,
+    dimensionality,
+    sparse,
+    f_maps,
+    max_num_iters,
 ):
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     with open(PATH_TRAIN_TEMPLATE, "r") as f:
@@ -35,7 +47,9 @@ def create_model_config(
     train_template["trainer"]["checkpoint_dir"] = str(checkpoint_dir)
     train_template["trainer"]["max_num_iterations"] = max_num_iters
     train_template["loaders"]["train"]["slice_builder"]["patch_shape"] = patch_size
-    train_template["loaders"]["train"]["slice_builder"]["stride_shape"] = list(i // 2 for i in patch_size)
+    train_template["loaders"]["train"]["slice_builder"]["stride_shape"] = list(
+        i // 2 for i in patch_size
+    )
     train_template["loaders"]["val"]["slice_builder"]["patch_shape"] = patch_size
     train_template["loaders"]["val"]["slice_builder"]["stride_shape"] = patch_size
 
@@ -60,11 +74,17 @@ def unet_training(
     final_sigmoid = not sparse
     if dimensionality in ["2D", "2d"]:
         model = UNet2D(
-            in_channels=in_channels, out_channels=out_channels, f_maps=feature_maps, final_sigmoid=final_sigmoid
+            in_channels=in_channels,
+            out_channels=out_channels,
+            f_maps=feature_maps,
+            final_sigmoid=final_sigmoid,
         )
     else:
         model = UNet3D(
-            in_channels=in_channels, out_channels=out_channels, f_maps=feature_maps, final_sigmoid=final_sigmoid
+            in_channels=in_channels,
+            out_channels=out_channels,
+            f_maps=feature_maps,
+            final_sigmoid=final_sigmoid,
         )
     logger.info(f"Using {model.__class__.__name__} model for training.")
 
@@ -85,10 +105,18 @@ def unet_training(
     val_datasets = create_datasets(dataset_dir, "val", patch_size)
     loaders = {
         "train": DataLoader(
-            ConcatDataset(train_datasets), batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=1
+            ConcatDataset(train_datasets),
+            batch_size=batch_size,
+            shuffle=True,
+            pin_memory=True,
+            num_workers=1,
         ),
         "val": DataLoader(
-            ConcatDataset(val_datasets), batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=1
+            ConcatDataset(val_datasets),
+            batch_size=batch_size,
+            shuffle=False,
+            pin_memory=True,
+            num_workers=1,
         ),
     }
 
@@ -96,10 +124,19 @@ def unet_training(
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
     checkpoint_dir = PATH_HOME / DIR_PLANTSEG_MODELS / model_name
     logger.info(f"Saving training files in {checkpoint_dir}")
-    assert not checkpoint_dir.exists(), f"Checkpoint dir {checkpoint_dir} already exists!"
+    assert not checkpoint_dir.exists(), (
+        f"Checkpoint dir {checkpoint_dir} already exists!"
+    )
 
     create_model_config(
-        checkpoint_dir, in_channels, out_channels, patch_size, dimensionality, sparse, feature_maps, max_num_iters
+        checkpoint_dir,
+        in_channels,
+        out_channels,
+        patch_size,
+        dimensionality,
+        sparse,
+        feature_maps,
+        max_num_iters,
     )
 
     # Trainer initialization and execution
@@ -122,7 +159,8 @@ def create_datasets(dataset_dir: str, phase: str, patch_shape):
     phase_dir = Path(dataset_dir) / phase
     file_paths = find_h5_files(phase_dir)
     return [
-        HDF5Dataset(file_path=file_path, augmenter=Augmenter(), patch_shape=patch_shape) for file_path in file_paths
+        HDF5Dataset(file_path=file_path, augmenter=Augmenter(), patch_shape=patch_shape)
+        for file_path in file_paths
     ]
 
 

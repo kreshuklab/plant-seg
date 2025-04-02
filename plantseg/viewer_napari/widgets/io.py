@@ -152,7 +152,9 @@ def look_up_dataset_keys(path: Path):
         widget_open_file.dataset_key.hide()
     if widget_open_file.dataset_key.value not in dataset_keys:
         widget_open_file.dataset_key.value = dataset_keys[0]
-        widget_open_file.new_layer_name.value = generate_layer_name(path, widget_open_file.dataset_key.value)
+        widget_open_file.new_layer_name.value = generate_layer_name(
+            path, widget_open_file.dataset_key.value
+        )
 
 
 @widget_open_file.path_mode.changed.connect
@@ -175,7 +177,9 @@ def _on_path_changed(path: Path):
 def _on_dataset_key_changed(dataset_key: str):
     dataset_key = _return_value_if_widget(dataset_key)
     if dataset_key:
-        widget_open_file.new_layer_name.value = generate_layer_name(widget_open_file.path.value, dataset_key)
+        widget_open_file.new_layer_name.value = generate_layer_name(
+            widget_open_file.path.value, dataset_key
+        )
 
 
 @widget_open_file.called.connect
@@ -242,7 +246,9 @@ def widget_export_image(
     log("export_image_task started", thread="Export stacks", level="info")
 
     if not isinstance(image, (Image, Labels)):
-        raise ValueError("Only Image and Labels layers are supported for PlantSeg export.")
+        raise ValueError(
+            "Only Image and Labels layers are supported for PlantSeg export."
+        )
     ps_image = PlantSegImage.from_napari_layer(image)
 
     export_image_task(
@@ -255,7 +261,11 @@ def widget_export_image(
         data_type=data_type,
     )
     timer = time.time() - timer
-    log(f"export_image_task finished in {timer:.2f} seconds", thread="Export stacks", level="info")
+    log(
+        f"export_image_task finished in {timer:.2f} seconds",
+        thread="Export stacks",
+        level="info",
+    )
 
 
 export_details = [
@@ -297,9 +307,14 @@ def _on_images_changed(image: Image | Labels):
     if isinstance(image, Labels) or isinstance(image, Image):
         _toggle_export_details_widgets(True)
         _toggle_key(True)
-        widget_export_image.key.value = "raw" if isinstance(image, Image) else "segmentation"
+        widget_export_image.key.value = (
+            "raw" if isinstance(image, Image) else "segmentation"
+        )
 
-        if isinstance(image, Labels) and widget_export_image.data_type.value == "float32":
+        if (
+            isinstance(image, Labels)
+            and widget_export_image.data_type.value == "float32"
+        ):
             log(
                 "Data type float32 is not supported for Labels layers, changing to uint16",
                 thread="Export stacks",
@@ -392,7 +407,9 @@ def widget_set_voxel_size(
     if layer is None:
         raise ValueError("No layer selected.")
 
-    assert isinstance(layer, (Image, Labels)), "Only Image and Labels layers are supported for PlantSeg voxel size."
+    assert isinstance(layer, (Image, Labels)), (
+        "Only Image and Labels layers are supported for PlantSeg voxel size."
+    )
     ps_image = PlantSegImage.from_napari_layer(layer)
     return schedule_task(
         set_voxel_size_task,
@@ -417,7 +434,9 @@ def _on_set_voxel_size_layer_changed(layer: Layer):
         widget_set_voxel_size.voxel_size.show()
         return None
 
-    raise ValueError("Only Image and Labels layers are supported for PlantSeg voxel size.")
+    raise ValueError(
+        "Only Image and Labels layers are supported for PlantSeg voxel size."
+    )
 
 
 @widget_set_voxel_size.called.connect
@@ -449,7 +468,9 @@ def widget_show_info(layer: Layer, update_other_widgets: bool = False) -> None:
 
 
 widget_infos = Label(
-    value="Select layer to show information here...", label="Infos", tooltip="Information about the selected layer."
+    value="Select layer to show information here...",
+    label="Infos",
+    tooltip="Information about the selected layer.",
 )
 
 
@@ -464,7 +485,9 @@ def _on_layer_changed(layer):
         for vs in ps_image.voxel_size:
             voxel_size_formatted += f"{vs:.2f}, "
 
-        voxel_size_formatted = voxel_size_formatted[:-2] + f") {ps_image.voxel_size.unit}"
+        voxel_size_formatted = (
+            voxel_size_formatted[:-2] + f") {ps_image.voxel_size.unit}"
+        )
     else:
         voxel_size_formatted = "None"
 

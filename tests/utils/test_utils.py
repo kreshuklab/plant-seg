@@ -17,7 +17,8 @@ def test_check_version_new_version(mock_logger, requests_mock):
 
     # Mock the API response
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest", json={"tag_name": latest_version}
+        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest",
+        json={"tag_name": latest_version},
     )
 
     check_version(current_version)
@@ -35,13 +36,16 @@ def test_check_version_same_version(mock_logger, requests_mock):
 
     # Mock the API response
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest", json={"tag_name": latest_version}
+        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest",
+        json={"tag_name": latest_version},
     )
 
     check_version(current_version)
 
     # Assert logger info was called with appropriate message
-    mock_logger.info.assert_called_once_with(f"You are using the latest version of PlantSeg: {current_version}.")
+    mock_logger.info.assert_called_once_with(
+        f"You are using the latest version of PlantSeg: {current_version}."
+    )
 
 
 def test_check_version_old_version(mock_logger, requests_mock):
@@ -51,13 +55,16 @@ def test_check_version_old_version(mock_logger, requests_mock):
 
     # Mock the API response
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest", json={"tag_name": latest_version}
+        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest",
+        json={"tag_name": latest_version},
     )
 
     check_version(current_version)
 
     # Assert logger info was called with appropriate message
-    mock_logger.info.assert_called_once_with(f"You are using the latest version of PlantSeg: {current_version}.")
+    mock_logger.info.assert_called_once_with(
+        f"You are using the latest version of PlantSeg: {current_version}."
+    )
 
 
 def test_check_version_beta_version(mock_logger, requests_mock):
@@ -67,13 +74,16 @@ def test_check_version_beta_version(mock_logger, requests_mock):
 
     # Mock the API response
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest", json={"tag_name": latest_version}
+        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest",
+        json={"tag_name": latest_version},
     )
 
     check_version(current_version)
 
     # Assert logger info was called with appropriate message
-    mock_logger.info.assert_called_once_with(f"You are using the latest version of PlantSeg: {current_version}.")
+    mock_logger.info.assert_called_once_with(
+        f"You are using the latest version of PlantSeg: {current_version}."
+    )
 
 
 def test_check_version_new_beta_version(mock_logger, requests_mock):
@@ -83,7 +93,8 @@ def test_check_version_new_beta_version(mock_logger, requests_mock):
 
     # Mock the API response
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest", json={"tag_name": latest_version}
+        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest",
+        json={"tag_name": latest_version},
     )
 
     check_version(current_version)
@@ -100,13 +111,16 @@ def test_check_version_request_exception(mock_logger, requests_mock):
 
     # Mock the API to raise a RequestException
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest", exc=requests.RequestException
+        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest",
+        exc=requests.RequestException,
     )
 
     check_version(current_version)
 
     # Assert logger warning was called with appropriate message
-    mock_logger.warning.assert_called_once_with("Could not check for new version. Error: ")
+    mock_logger.warning.assert_called_once_with(
+        "Could not check for new version. Error: "
+    )
 
 
 def test_check_version_value_error(mock_logger, requests_mock):
@@ -115,7 +129,8 @@ def test_check_version_value_error(mock_logger, requests_mock):
 
     # Mock the API response with an invalid version format
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest", json={"tag_name": "invalid_version"}
+        "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest",
+        json={"tag_name": "invalid_version"},
     )
 
     check_version(current_version)

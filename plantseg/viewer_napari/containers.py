@@ -94,8 +94,12 @@ def get_postprocessing_tab():
 
 
 def get_proofreading_tab():
-    widget_fix_over_under_segmentation_from_nuclei.threshold.native.setStyleSheet(STYLE_SLIDER)
-    widget_fix_over_under_segmentation_from_nuclei.quantile.native.setStyleSheet(STYLE_SLIDER)
+    widget_fix_over_under_segmentation_from_nuclei.threshold.native.setStyleSheet(
+        STYLE_SLIDER
+    )
+    widget_fix_over_under_segmentation_from_nuclei.quantile.native.setStyleSheet(
+        STYLE_SLIDER
+    )
     container = Container(
         widgets=[
             widget_proofreading_initialisation,

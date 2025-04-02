@@ -21,7 +21,8 @@ def relabel(tracks):
 
     if len(labels) >= 2**16:
         print(
-            "Track graph contains %d distinct labels, can not be expressed in int16. Skipping evaluation." % len(labels)
+            "Track graph contains %d distinct labels, can not be expressed in int16. Skipping evaluation."
+            % len(labels)
         )
         raise RuntimeError()
 
@@ -37,11 +38,13 @@ def relabel(tracks):
 
 
 def compute_seg_score(res_seg, gt_seg):
-    SCRIPT_PATH = os.path.join(expanduser("~"), '.plantseg_models', 'segtra_measure', 'Linux', 'SEGMeasure')
-    SCRIPT_URL = 'https://github.com/maisli/tracking_evaluation/raw/master/segtra_measure/Linux/SEGMeasure'
+    SCRIPT_PATH = os.path.join(
+        expanduser("~"), ".plantseg_models", "segtra_measure", "Linux", "SEGMeasure"
+    )
+    SCRIPT_URL = "https://github.com/maisli/tracking_evaluation/raw/master/segtra_measure/Linux/SEGMeasure"
 
     if not os.path.exists(SCRIPT_PATH):
-        print('Downloading script from: ', SCRIPT_URL)
+        print("Downloading script from: ", SCRIPT_URL)
         out_dir = os.path.split(SCRIPT_PATH)[0]
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
@@ -65,8 +68,8 @@ def compute_seg_score(res_seg, gt_seg):
     print("Using temp dir %s" % dataset_dir)
 
     try:
-        res_dir = os.path.join(dataset_dir, '01_RES')
-        gt_dir = os.path.join(dataset_dir, '01_GT', 'SEG')
+        res_dir = os.path.join(dataset_dir, "01_RES")
+        gt_dir = os.path.join(dataset_dir, "01_GT", "SEG")
 
         os.makedirs(res_dir)
         os.makedirs(gt_dir)
@@ -89,17 +92,17 @@ def compute_seg_score(res_seg, gt_seg):
 
         print("Preparing files for evaluation binaries...")
         for z in range(res_seg.shape[0]):
-            res_outfile = os.path.join(res_dir, 'mask%03d.tif' % z)
-            gt_outfile = os.path.join(gt_dir, 'man_seg%03d.tif' % z)
+            res_outfile = os.path.join(res_dir, "mask%03d.tif" % z)
+            gt_outfile = os.path.join(gt_dir, "man_seg%03d.tif" % z)
 
-            res_im = Image.fromarray(res_seg[z].astype('uint16'))
-            gt_im = Image.fromarray(gt_seg[z].astype('uint16'))
+            res_im = Image.fromarray(res_seg[z].astype("uint16"))
+            gt_im = Image.fromarray(gt_seg[z].astype("uint16"))
             res_im.save(res_outfile)
             gt_im.save(gt_outfile)
 
         print("Computing SEG score...")
         try:
-            seg_output = check_output([SCRIPT_PATH, dataset_dir, '01'])
+            seg_output = check_output([SCRIPT_PATH, dataset_dir, "01"])
         except CalledProcessError as exc:
             print("Calling SEGMeasure failed: ", exc.returncode, exc.output)
             seg_score = 0
@@ -138,12 +141,12 @@ eval_tra = False
 
 
 def evaluate_seg(gt_file, seg_file, dataset_name, eval_tracking):
-    with h5py.File(gt_file, 'r') as f:
-        mask = f['volumes/labels/ignore'][...]
-        gt_tracks = f['volumes/labels/tracks'][...]
-        gt_track_graph = f['graphs/track_graph'][...]  # noqa: F841
+    with h5py.File(gt_file, "r") as f:
+        mask = f["volumes/labels/ignore"][...]
+        gt_tracks = f["volumes/labels/tracks"][...]
+        gt_track_graph = f["graphs/track_graph"][...]  # noqa: F841
 
-    with h5py.File(seg_file, 'r') as f:
+    with h5py.File(seg_file, "r") as f:
         seg_cells = f[dataset_name][...]
         seg_cells[mask == 1] = 0
         seg_cells = remove_small_labels(seg_cells, 3)
@@ -154,16 +157,18 @@ def evaluate_seg(gt_file, seg_file, dataset_name, eval_tracking):
 
     seg_score = compute_seg_score(seg_cells, gt_tracks)
     if eval_tracking:
-        tra_score = 0  # compute_tra_score(seg_cells, seg_lineages, gt_tracks, gt_track_graph)
+        tra_score = (
+            0  # compute_tra_score(seg_cells, seg_lineages, gt_tracks, gt_track_graph)
+        )
     else:
         tra_score = 0.0
 
     # write results to CSV
-    report = {'SEG': seg_score, 'TRA': tra_score}
+    report = {"SEG": seg_score, "TRA": tra_score}
 
     output_fields = report.keys()
-    out_csv = os.path.splitext(seg_file)[0] + '.csv'
-    with open(out_csv, 'w') as f:
+    out_csv = os.path.splitext(seg_file)[0] + ".csv"
+    with open(out_csv, "w") as f:
         w = csv.writer(f)
         w.writerow(output_fields)
         w.writerow([report[k] for k in output_fields])
@@ -174,31 +179,51 @@ def compute_mean_std(files):
     tra_scores = []
 
     for in_file in glob.glob(files):
-        print('Reading results from {}'.format(in_file))
-        with open(in_file, 'r') as f:
+        print("Reading results from {}".format(in_file))
+        with open(in_file, "r") as f:
             reader = csv.DictReader(f)
             result = list(reader)[0]
-            seg_score = float(result['SEG'])
+            seg_score = float(result["SEG"])
             seg_scores.append(seg_score)
-            tra_score = float(result['TRA'])
+            tra_score = float(result["TRA"])
             tra_scores.append(tra_score)
-            print('SEG: {}, TRA: {}'.format(seg_score, tra_score))
+            print("SEG: {}, TRA: {}".format(seg_score, tra_score))
 
     seg_scores = np.array(seg_scores)
     tra_scores = np.array(tra_scores)
 
-    return np.mean(seg_scores), np.std(seg_scores), np.mean(tra_scores), np.std(tra_scores)
+    return (
+        np.mean(seg_scores),
+        np.std(seg_scores),
+        np.mean(tra_scores),
+        np.std(tra_scores),
+    )
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Validate FlyWing segmentation')
-    parser.add_argument('--gt-dir', type=str, help='Path to directory with the ground truth files', required=True)
-    parser.add_argument('--seg-dir', type=str, help='Path to directory with the segmentation files', required=True)
-    parser.add_argument('--seg-dataset', type=str, default='segmentation', help='Segmentation dataset inside the H5')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Validate FlyWing segmentation")
+    parser.add_argument(
+        "--gt-dir",
+        type=str,
+        help="Path to directory with the ground truth files",
+        required=True,
+    )
+    parser.add_argument(
+        "--seg-dir",
+        type=str,
+        help="Path to directory with the segmentation files",
+        required=True,
+    )
+    parser.add_argument(
+        "--seg-dataset",
+        type=str,
+        default="segmentation",
+        help="Segmentation dataset inside the H5",
+    )
     args = parser.parse_args()
 
-    gt_files = list(glob.glob(os.path.join(args.gt_dir, '*.hdf')))
-    seg_files = list(glob.glob(os.path.join(args.seg_dir, '*.h5')))
+    gt_files = list(glob.glob(os.path.join(args.gt_dir, "*.hdf")))
+    seg_files = list(glob.glob(os.path.join(args.seg_dir, "*.h5")))
     gt_seg_map = {}
     for gt_file in gt_files:
         seg_file = None
@@ -224,11 +249,11 @@ if __name__ == '__main__':
         results = [t.result() for t in tasks]
 
     # compute mean/stdev for per/pro movies
-    for file_type in ['per', 'pro']:
-        per_result_files = os.path.join(args.seg_dir, '{}*.csv'.format(file_type))
+    for file_type in ["per", "pro"]:
+        per_result_files = os.path.join(args.seg_dir, "{}*.csv".format(file_type))
         seg_mean, seg_std, tra_mean, tra_std = compute_mean_std(per_result_files)
         print(
-            '{} movies: seg_mean {}, seg_std {}, tra_mean {}, tra_std {}'.format(
+            "{} movies: seg_mean {}, seg_std {}, tra_mean {}, tra_std {}".format(
                 file_type, seg_mean, seg_std, tra_mean, tra_std
             )
         )

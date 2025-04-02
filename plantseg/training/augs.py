@@ -38,13 +38,13 @@ class RandomFlip:
     """
 
     def __init__(self, random_state, axis_prob=0.5, **kwargs):
-        assert random_state is not None, 'RandomState cannot be None'
+        assert random_state is not None, "RandomState cannot be None"
         self.random_state = random_state
         self.axes = (0, 1, 2)
         self.axis_prob = axis_prob
 
     def __call__(self, m):
-        assert m.ndim in [3, 4], 'Supports only 3D (DxHxW) or 4D (CxDxHxW) images'
+        assert m.ndim in [3, 4], "Supports only 3D (DxHxW) or 4D (CxDxHxW) images"
 
         for axis in self.axes:
             if self.random_state.uniform() > self.axis_prob:
@@ -73,7 +73,7 @@ class RandomRotate90:
         self.axis = (1, 2)
 
     def __call__(self, m):
-        assert m.ndim in [3, 4], 'Supports only 3D (DxHxW) or 4D (CxDxHxW) images'
+        assert m.ndim in [3, 4], "Supports only 3D (DxHxW) or 4D (CxDxHxW) images"
 
         # pick number of rotations at random
         k = self.random_state.randint(0, 4)
@@ -93,7 +93,15 @@ class RandomRotate:
     Rotation axis is picked at random from the list of provided axes.
     """
 
-    def __init__(self, random_state, angle_spectrum=30, axes=None, mode='reflect', order=0, **kwargs):
+    def __init__(
+        self,
+        random_state,
+        angle_spectrum=30,
+        axes=None,
+        mode="reflect",
+        order=0,
+        **kwargs,
+    ):
         if axes is None:
             axes = [(1, 0), (2, 1), (2, 0)]
         else:
@@ -110,10 +118,26 @@ class RandomRotate:
         angle = self.random_state.randint(-self.angle_spectrum, self.angle_spectrum)
 
         if m.ndim == 3:
-            m = rotate(m, angle, axes=axis, reshape=False, order=self.order, mode=self.mode, cval=-1)
+            m = rotate(
+                m,
+                angle,
+                axes=axis,
+                reshape=False,
+                order=self.order,
+                mode=self.mode,
+                cval=-1,
+            )
         else:
             channels = [
-                rotate(m[c], angle, axes=axis, reshape=False, order=self.order, mode=self.mode, cval=-1)
+                rotate(
+                    m[c],
+                    angle,
+                    axes=axis,
+                    reshape=False,
+                    order=self.order,
+                    mode=self.mode,
+                    cval=-1,
+                )
                 for c in range(m.shape[0])
             ]
             m = np.stack(channels, axis=0)
@@ -126,7 +150,14 @@ class RandomContrast:
     Adjust contrast by scaling each voxel to `mean + alpha * (v - mean)`.
     """
 
-    def __init__(self, random_state, alpha=(0.5, 1.5), mean=0.0, execution_probability=0.1, **kwargs):
+    def __init__(
+        self,
+        random_state,
+        alpha=(0.5, 1.5),
+        mean=0.0,
+        execution_probability=0.1,
+        **kwargs,
+    ):
         self.random_state = random_state
         assert len(alpha) == 2
         self.alpha = alpha
@@ -151,7 +182,14 @@ class ElasticDeformation:
     """
 
     def __init__(
-        self, random_state, spline_order, alpha=2000, sigma=50, execution_probability=0.1, apply_3d=True, **kwargs
+        self,
+        random_state,
+        spline_order,
+        alpha=2000,
+        sigma=50,
+        execution_probability=0.1,
+        apply_3d=True,
+        **kwargs,
     ):
         """
         :param spline_order: the order of spline interpolation (use 0 for labeled images)
@@ -177,23 +215,40 @@ class ElasticDeformation:
                 volume_shape = m[0].shape
 
             if self.apply_3d:
-                dz = gaussian_filter(self.random_state.randn(*volume_shape), self.sigma, mode="reflect") * self.alpha
+                dz = (
+                    gaussian_filter(
+                        self.random_state.randn(*volume_shape),
+                        self.sigma,
+                        mode="reflect",
+                    )
+                    * self.alpha
+                )
             else:
                 dz = np.zeros_like(m)
 
             dy, dx = [
-                gaussian_filter(self.random_state.randn(*volume_shape), self.sigma, mode="reflect") * self.alpha
+                gaussian_filter(
+                    self.random_state.randn(*volume_shape), self.sigma, mode="reflect"
+                )
+                * self.alpha
                 for _ in range(2)
             ]
 
             z_dim, y_dim, x_dim = volume_shape
-            z, y, x = np.meshgrid(np.arange(z_dim), np.arange(y_dim), np.arange(x_dim), indexing='ij')
+            z, y, x = np.meshgrid(
+                np.arange(z_dim), np.arange(y_dim), np.arange(x_dim), indexing="ij"
+            )
             indices = z + dz, y + dy, x + dx
 
             if m.ndim == 3:
-                return map_coordinates(m, indices, order=self.spline_order, mode='reflect')
+                return map_coordinates(
+                    m, indices, order=self.spline_order, mode="reflect"
+                )
             else:
-                channels = [map_coordinates(c, indices, order=self.spline_order, mode='reflect') for c in m]
+                channels = [
+                    map_coordinates(c, indices, order=self.spline_order, mode="reflect")
+                    for c in m
+                ]
                 return np.stack(channels, axis=0)
 
         return m
@@ -245,13 +300,19 @@ class CropToFixed:
             x_start, x_pad = _start_and_pad(self.crop_x, x)
 
         if m.ndim == 3:
-            result = m[:, y_start : y_start + self.crop_y, x_start : x_start + self.crop_x]
-            return np.pad(result, pad_width=((0, 0), y_pad, x_pad), mode='reflect')
+            result = m[
+                :, y_start : y_start + self.crop_y, x_start : x_start + self.crop_x
+            ]
+            return np.pad(result, pad_width=((0, 0), y_pad, x_pad), mode="reflect")
         else:
             channels = []
             for c in range(m.shape[0]):
-                result = m[c][:, y_start : y_start + self.crop_y, x_start : x_start + self.crop_x]
-                channels.append(np.pad(result, pad_width=((0, 0), y_pad, x_pad), mode='reflect'))
+                result = m[c][
+                    :, y_start : y_start + self.crop_y, x_start : x_start + self.crop_x
+                ]
+                channels.append(
+                    np.pad(result, pad_width=((0, 0), y_pad, x_pad), mode="reflect")
+                )
             return np.stack(channels, axis=0)
 
 
@@ -262,7 +323,13 @@ class AbstractLabelToBoundary:
         (2, 0, 1),  # Z
     ]
 
-    def __init__(self, ignore_index=None, aggregate_affinities=False, append_label=False, **kwargs):
+    def __init__(
+        self,
+        ignore_index=None,
+        aggregate_affinities=False,
+        append_label=False,
+        **kwargs,
+    ):
         """
         :param ignore_index: label to be ignored in the output, i.e. after computing the boundary the label ignore_index
             will be restored where is was in the patch originally
@@ -284,20 +351,31 @@ class AbstractLabelToBoundary:
         assert m.ndim == 3
 
         kernels = self.get_kernels()
-        boundary_arr = [np.where(np.abs(convolve(m, kernel)) > 0, 1, 0) for kernel in kernels]
+        boundary_arr = [
+            np.where(np.abs(convolve(m, kernel)) > 0, 1, 0) for kernel in kernels
+        ]
         channels = np.stack(boundary_arr)
         results = []
         if self.aggregate_affinities:
-            assert len(kernels) % 3 == 0, "Number of kernels must be divided by 3 (one kernel per offset per Z,Y,X axes"
+            assert len(kernels) % 3 == 0, (
+                "Number of kernels must be divided by 3 (one kernel per offset per Z,Y,X axes"
+            )
             # aggregate affinities with the same offset
             for i in range(0, len(kernels), 3):
                 # merge across X,Y,Z axes (logical OR)
-                xyz_aggregated_affinities = np.logical_or.reduce(channels[i : i + 3, ...]).astype(np.int32)
+                xyz_aggregated_affinities = np.logical_or.reduce(
+                    channels[i : i + 3, ...]
+                ).astype(np.int32)
                 # recover ignore index
-                xyz_aggregated_affinities = _recover_ignore_index(xyz_aggregated_affinities, m, self.ignore_index)
+                xyz_aggregated_affinities = _recover_ignore_index(
+                    xyz_aggregated_affinities, m, self.ignore_index
+                )
                 results.append(xyz_aggregated_affinities)
         else:
-            results = [_recover_ignore_index(channels[i], m, self.ignore_index) for i in range(channels.shape[0])]
+            results = [
+                _recover_ignore_index(channels[i], m, self.ignore_index)
+                for i in range(channels.shape[0])
+            ]
 
         if self.append_label:
             # append original input data
@@ -320,7 +398,14 @@ class AbstractLabelToBoundary:
 
 
 class StandardLabelToBoundary:
-    def __init__(self, ignore_index=None, append_label=False, mode='thick', foreground=False, **kwargs):
+    def __init__(
+        self,
+        ignore_index=None,
+        append_label=False,
+        mode="thick",
+        foreground=False,
+        **kwargs,
+    ):
         self.ignore_index = ignore_index
         self.append_label = append_label
         self.mode = mode
@@ -330,11 +415,11 @@ class StandardLabelToBoundary:
         assert m.ndim == 3
 
         boundaries = find_boundaries(m, connectivity=2, mode=self.mode)
-        boundaries = boundaries.astype('int32')
+        boundaries = boundaries.astype("int32")
 
         results = []
         if self.foreground:
-            foreground = (m > 0).astype('uint8')
+            foreground = (m > 0).astype("uint8")
             results.append(_recover_ignore_index(foreground, m, self.ignore_index))
 
         results.append(_recover_ignore_index(boundaries, m, self.ignore_index))
@@ -423,7 +508,9 @@ class Normalize:
 
 
 class AdditiveGaussianNoise:
-    def __init__(self, random_state, scale=(0.0, 1.0), execution_probability=0.1, **kwargs):
+    def __init__(
+        self, random_state, scale=(0.0, 1.0), execution_probability=0.1, **kwargs
+    ):
         self.execution_probability = execution_probability
         self.random_state = random_state
         self.scale = scale
@@ -437,7 +524,9 @@ class AdditiveGaussianNoise:
 
 
 class AdditivePoissonNoise:
-    def __init__(self, random_state, lam=(0.0, 1.0), execution_probability=0.1, **kwargs):
+    def __init__(
+        self, random_state, lam=(0.0, 1.0), execution_probability=0.1, **kwargs
+    ):
         self.execution_probability = execution_probability
         self.random_state = random_state
         self.lam = lam
@@ -464,7 +553,7 @@ class ToTensor:
         self.dtype = dtype
 
     def __call__(self, m):
-        assert m.ndim in [3, 4], 'Supports only 3D (DxHxW) or 4D (CxDxHxW) images'
+        assert m.ndim in [3, 4], "Supports only 3D (DxHxW) or 4D (CxDxHxW) images"
         # add channel dimension
         if self.expand_dims and m.ndim == 3:
             m = np.expand_dims(m, axis=0)
@@ -521,7 +610,7 @@ class RgbToLabel:
 class LabelToTensor:
     def __call__(self, m):
         m = np.array(m)
-        return torch.from_numpy(m.astype(dtype='int64'))
+        return torch.from_numpy(m.astype(dtype="int64"))
 
 
 class GaussianBlur3D:
@@ -552,10 +641,15 @@ class Augmenter:
     def raw_transform(self, stats):
         return Compose(
             [
-                Standardize(mean=stats['mean'], std=stats['std']),
+                Standardize(mean=stats["mean"], std=stats["std"]),
                 RandomFlip(np.random.RandomState(self.seed)),
                 RandomRotate90(np.random.RandomState(self.seed)),
-                RandomRotate(np.random.RandomState(self.seed), axes=[[2, 1]], angle_spectrum=45, mode='reflect'),
+                RandomRotate(
+                    np.random.RandomState(self.seed),
+                    axes=[[2, 1]],
+                    angle_spectrum=45,
+                    mode="reflect",
+                ),
                 GaussianBlur3D(),
                 AdditiveGaussianNoise(np.random.RandomState()),
                 AdditivePoissonNoise(np.random.RandomState()),
@@ -568,7 +662,12 @@ class Augmenter:
             [
                 RandomFlip(np.random.RandomState(self.seed)),
                 RandomRotate90(np.random.RandomState(self.seed)),
-                RandomRotate(np.random.RandomState(self.seed), axes=[[2, 1]], angle_spectrum=45, mode='reflect'),
+                RandomRotate(
+                    np.random.RandomState(self.seed),
+                    axes=[[2, 1]],
+                    angle_spectrum=45,
+                    mode="reflect",
+                ),
                 StandardLabelToBoundary(),
                 ToTensor(expand_dims=False),
             ]

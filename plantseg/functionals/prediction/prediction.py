@@ -8,15 +8,22 @@ from bioimageio.core.axis import AxisId
 from bioimageio.core.prediction import predict
 from bioimageio.core.sample import Sample
 from bioimageio.core.tensor import Tensor
-from bioimageio.spec import ValidationContext, load_model_description
+from bioimageio.spec import load_model_description
 from bioimageio.spec.model import v0_4, v0_5
 from bioimageio.spec.model.v0_5 import TensorId
 
 from plantseg.core.zoo import model_zoo
-from plantseg.functionals.dataprocessing.dataprocessing import ImageLayout, fix_layout_to_CZYX, fix_layout_to_ZYX
+from plantseg.functionals.dataprocessing.dataprocessing import (
+    ImageLayout,
+    fix_layout_to_CZYX,
+    fix_layout_to_ZYX,
+)
 from plantseg.functionals.prediction.utils.array_dataset import ArrayDataset
 from plantseg.functionals.prediction.utils.array_predictor import ArrayPredictor
-from plantseg.functionals.prediction.utils.size_finder import find_a_max_patch_shape, find_patch_and_halo_shapes
+from plantseg.functionals.prediction.utils.size_finder import (
+    find_a_max_patch_shape,
+    find_patch_and_halo_shapes,
+)
 from plantseg.functionals.prediction.utils.slice_builder import SliceBuilder
 from plantseg.functionals.prediction.utils.utils import get_stride_shape
 from plantseg.training.augs import get_test_augmentations
@@ -42,21 +49,30 @@ def biio_prediction(
     if len(input_ids) < 1:
         logger.error("Model needs no input tensor. PlantSeg does not support this yet.")
     if len(input_ids) > 1:
-        logger.error("Model needs more than one input tensor. PlantSeg does not support this yet.")
+        logger.error(
+            "Model needs more than one input tensor. PlantSeg does not support this yet."
+        )
 
     tensor_id = input_ids[0]
     axes = model.inputs[0].axes  # PlantSeg only supports one input tensor for now
     dims = tuple(
-        AxisId('channel') if item.lower() == 'c' else AxisId(item.lower()) for item in input_layout
+        AxisId("channel") if item.lower() == "c" else AxisId(item.lower())
+        for item in input_layout
     )  # `AxisId` has to be "channel" not "c"
 
-    if isinstance(axes[0], str):  # then it's a <=0.4.10 model, `predict_sample_block` is not implemented
+    if isinstance(
+        axes[0], str
+    ):  # then it's a <=0.4.10 model, `predict_sample_block` is not implemented
         logger.warning(
             "Model is older than 0.5.0. PlantSeg will try to run BioImage.IO core inference, but it is not supported by BioImage.IO core."
         )
-        axis_mapping = {'b': 'batch', 'c': 'channel'}
+        axis_mapping = {"b": "batch", "c": "channel"}
         axes = [AxisId(axis_mapping.get(a, a)) for a in list(axes)]
-        members = {TensorId(tensor_id): Tensor(array=raw, dims=dims).transpose([AxisId(a) for a in axes])}
+        members = {
+            TensorId(tensor_id): Tensor(array=raw, dims=dims).transpose(
+                [AxisId(a) for a in axes]
+            )
+        }
         sample = Sample(members=members, stat={}, id="raw")
         sample_out = predict(model=model, inputs=sample)
 
@@ -73,8 +89,8 @@ def biio_prediction(
         }
         sample = Sample(members=members, stat={}, id="raw")
         sizes_in_rdf = {a.id: a.size for a in axes}
-        assert 'x' in sizes_in_rdf, "Model does not have 'x' axis in input tensor."
-        size_to_check = sizes_in_rdf[AxisId('x')]
+        assert "x" in sizes_in_rdf, "Model does not have 'x' axis in input tensor."
+        size_to_check = sizes_in_rdf[AxisId("x")]
         if isinstance(size_to_check, int):  # e.g. 'emotional-cricket'
             # 'emotional-cricket' has {'batch': None, 'channel': 1, 'z': 100, 'y': 128, 'x': 128}
             input_block_shape = {
@@ -84,8 +100,12 @@ def biio_prediction(
                     if not isinstance(a, str)  # for a.size/a.id type checking only
                 }
             }
-            sample_out = predict(model=model, inputs=sample, input_block_shape=input_block_shape)
-        elif isinstance(size_to_check, v0_5.ParameterizedSize):  # e.g. 'philosophical-panda'
+            sample_out = predict(
+                model=model, inputs=sample, input_block_shape=input_block_shape
+            )
+        elif isinstance(
+            size_to_check, v0_5.ParameterizedSize
+        ):  # e.g. 'philosophical-panda'
             # 'philosophical-panda' has:
             #   {'z': ParameterizedSize(min=1, step=1),
             #    'channel': 2,
@@ -93,35 +113,45 @@ def biio_prediction(
             #    'x': ParameterizedSize(min=16, step=16)}
             blocksize_parameter = {
                 (TensorId(tensor_id), a.id): (
-                    (96 - a.size.min) // a.size.step if isinstance(a.size, v0_5.ParameterizedSize) else 1
+                    (96 - a.size.min) // a.size.step
+                    if isinstance(a.size, v0_5.ParameterizedSize)
+                    else 1
                 )
                 for a in axes
                 if not isinstance(a, str)  # for a.size/a.id type checking only
             }
-            sample_out = predict(model=model, inputs=sample, blocksize_parameter=blocksize_parameter)
+            sample_out = predict(
+                model=model, inputs=sample, blocksize_parameter=blocksize_parameter
+            )
         else:
             assert_never(size_to_check)
 
     assert isinstance(sample_out, Sample)
     if len(sample_out.members) != 1:
-        logger.warning("Model has more than one output tensor. PlantSeg does not support this yet.")
+        logger.warning(
+            "Model has more than one output tensor. PlantSeg does not support this yet."
+        )
 
-    desired_axes_short = [AxisId(a) for a in ['b', 'c', 'z', 'y', 'x']]
-    desired_axes = [AxisId(a) for a in ['batch', 'channel', 'z', 'y', 'x']]
+    desired_axes_short = [AxisId(a) for a in ["b", "c", "z", "y", "x"]]
+    desired_axes = [AxisId(a) for a in ["batch", "channel", "z", "y", "x"]]
     t = {
-        i: o.transpose(desired_axes_short) if 'b' in o.dims or 'c' in o.dims else o.transpose(desired_axes)
+        i: o.transpose(desired_axes_short)
+        if "b" in o.dims or "c" in o.dims
+        else o.transpose(desired_axes)
         for i, o in sample_out.members.items()
     }
 
     named_pmaps = {}
     for key, tensor_bczyx in t.items():
         bczyx = tensor_bczyx.data.to_numpy()
-        assert bczyx.ndim == 5, f"Expected 5D BCZYX-transposed prediction from `bioimageio.core`, got {bczyx.ndim}D"
+        assert bczyx.ndim == 5, (
+            f"Expected 5D BCZYX-transposed prediction from `bioimageio.core`, got {bczyx.ndim}D"
+        )
         if bczyx.shape[0] == 1:
-            named_pmaps[f'{key}'] = bczyx[0]
+            named_pmaps[f"{key}"] = bczyx[0]
         else:
             for b, czyx in enumerate(bczyx):
-                named_pmaps[f'{key}_{b}'] = czyx
+                named_pmaps[f"{key}_{b}"] = czyx
     return named_pmaps  # list of CZYX arrays
 
 
@@ -172,15 +202,21 @@ def unet_prediction(
 
     if config_path is not None:  # Safari mode for custom models outside zoos
         logger.info("Safari prediction: Running model from custom config path.")
-        model, model_config, model_path = model_zoo.get_model_by_config_path(config_path, model_weights_path)
+        model, model_config, model_path = model_zoo.get_model_by_config_path(
+            config_path, model_weights_path
+        )
     elif model_id is not None:  # BioImage.IO zoo mode
         logger.info("BioImage.IO prediction: Running model from BioImage.IO model zoo.")
         model, model_config, model_path = model_zoo.get_model_by_id(model_id)
     elif model_name is not None:  # PlantSeg zoo mode
         logger.info("Zoo prediction: Running model from PlantSeg official zoo.")
-        model, model_config, model_path = model_zoo.get_model_by_name(model_name, model_update=model_update)
+        model, model_config, model_path = model_zoo.get_model_by_name(
+            model_name, model_update=model_update
+        )
     else:
-        raise ValueError("Either `model_name` or `model_id` or `model_path` must be provided.")
+        raise ValueError(
+            "Either `model_name` or `model_id` or `model_path` must be provided."
+        )
     state = torch.load(model_path, map_location="cpu", weights_only=True)
 
     if "model_state_dict" in state:  # Model weights format may vary between versions
@@ -192,16 +228,24 @@ def unet_prediction(
             logger.info("Computing theoretical minimum halo from model.")
             patch_halo = model_zoo.compute_3D_halo_for_pytorch3dunet(model)
         except Exception:
-            logger.warning("Could not compute halo from model. Using 0 halo size, you may experience edge artifacts.")
+            logger.warning(
+                "Could not compute halo from model. Using 0 halo size, you may experience edge artifacts."
+            )
             patch_halo = (0, 0, 0)
 
     if patch is None:
-        maximum_patch_shape = find_a_max_patch_shape(model, model_config["in_channels"], device)
-        raw_shape = raw.shape if input_layout == 'ZYX' else (1,) + raw.shape
+        maximum_patch_shape = find_a_max_patch_shape(
+            model, model_config["in_channels"], device
+        )
+        raw_shape = raw.shape if input_layout == "ZYX" else (1,) + raw.shape
         assert len(raw_shape) == 3
-        patch, patch_halo = find_patch_and_halo_shapes(raw_shape, maximum_patch_shape, patch_halo, both_sides=False)
+        patch, patch_halo = find_patch_and_halo_shapes(
+            raw_shape, maximum_patch_shape, patch_halo, both_sides=False
+        )
 
-    logger.info(f"For raw in shape {raw.shape}: set patch shape {patch}, set halo shape {patch_halo}")
+    logger.info(
+        f"For raw in shape {raw.shape}: set patch shape {patch}, set halo shape {patch_halo}"
+    )
 
     predictor = ArrayPredictor(
         model=model,
@@ -224,11 +268,20 @@ def unet_prediction(
         raw = fix_layout_to_ZYX(raw, input_layout)
         multichannel_input = False
     raw = raw.astype("float32")
-    augs = get_test_augmentations(raw)  # using full raw to compute global normalization mean and std
+    augs = get_test_augmentations(
+        raw
+    )  # using full raw to compute global normalization mean and std
     stride = get_stride_shape(patch)
-    slice_builder = SliceBuilder(raw, label_dataset=None, patch_shape=patch, stride_shape=stride)
+    slice_builder = SliceBuilder(
+        raw, label_dataset=None, patch_shape=patch, stride_shape=stride
+    )
     test_dataset = ArrayDataset(
-        raw, slice_builder, augs, halo_shape=patch_halo, multichannel=multichannel_input, verbose_logging=False
+        raw,
+        slice_builder,
+        augs,
+        halo_shape=patch_halo,
+        multichannel=multichannel_input,
+        verbose_logging=False,
     )
 
     pmaps = predictor(test_dataset)  # pmaps either (C, Z, Y, X) or (C, Y, X)

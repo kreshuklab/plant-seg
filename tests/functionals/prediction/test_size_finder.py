@@ -10,20 +10,40 @@ from plantseg.functionals.prediction.utils.size_finder import (
     find_patch_and_halo_shapes,
 )
 
-IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"  # set to true in GitHub Actions by default to skip CUDA tests
-DOWNLOAD_MODELS = os.getenv("DOWNLOAD_MODELS") == "true"  # set to false in locall testing to skip downloading models
-LARGE_VRAM_GPUS = ['NVIDIA A100', 'NVIDIA A40']  # these two are not full names because A100 has multiple models
-ALL_TESTED_GPUS = ["NVIDIA GeForce RTX 2080 Ti", "NVIDIA GeForce RTX 3090", "NVIDIA A100-PCIE-40GB", "NVIDIA A40"]
+IN_GITHUB_ACTIONS = (
+    os.getenv("GITHUB_ACTIONS") == "true"
+)  # set to true in GitHub Actions by default to skip CUDA tests
+DOWNLOAD_MODELS = (
+    os.getenv("DOWNLOAD_MODELS") == "true"
+)  # set to false in locall testing to skip downloading models
+LARGE_VRAM_GPUS = [
+    "NVIDIA A100",
+    "NVIDIA A40",
+]  # these two are not full names because A100 has multiple models
+ALL_TESTED_GPUS = [
+    "NVIDIA GeForce RTX 2080 Ti",
+    "NVIDIA GeForce RTX 3090",
+    "NVIDIA A100-PCIE-40GB",
+    "NVIDIA A40",
+]
 MAX_PATCH_SHAPES = {
-    'generic_confocal_3D_unet': {
+    "generic_confocal_3D_unet": {
         "NVIDIA GeForce RTX 2080 Ti": (208, 208, 208),
         "NVIDIA GeForce RTX 3090": (256, 256, 256),
         "NVIDIA A100-PCIE-40GB": (272, 272, 272),
         "NVIDIA A40": (272, 272, 272),
     },
-    'confocal_2D_unet_ovules_ds2x': {
-        "NVIDIA GeForce RTX 2080 Ti": (1, 1920, 1920),  # (1, 2048, 2048) if search step is 1.
-        "NVIDIA GeForce RTX 3090": (1, 2880, 2880),  # (1, 2960, 2960) if search step is 1.
+    "confocal_2D_unet_ovules_ds2x": {
+        "NVIDIA GeForce RTX 2080 Ti": (
+            1,
+            1920,
+            1920,
+        ),  # (1, 2048, 2048) if search step is 1.
+        "NVIDIA GeForce RTX 3090": (
+            1,
+            2880,
+            2880,
+        ),  # (1, 2960, 2960) if search step is 1.
         "NVIDIA A100-PCIE-40GB": (1, 3200, 3200),
         "NVIDIA A40": (1, 3200, 3200),
     },
@@ -39,20 +59,45 @@ except AssertionError:  # catch Pytorch not installed with CUDA support
 @pytest.mark.parametrize(
     "full_volume_shape, max_patch_shape, min_halo_shape, expected",
     [  # Here halo is 1-sided
-        ((1, 12000, 50000), (192, 192, 192), (44, 44, 44), ((1, 2572, 2572), (0, 44, 44))),
+        (
+            (1, 12000, 50000),
+            (192, 192, 192),
+            (44, 44, 44),
+            ((1, 2572, 2572), (0, 44, 44)),
+        ),
         ((1, 120, 500), (192, 192, 192), (44, 44, 44), ((1, 120, 500), (0, 0, 0))),
         ((95, 120, 500), (192, 192, 192), (44, 44, 44), ((95, 120, 500), (0, 0, 0))),
         ((95, 120, 5000), (192, 192, 192), (44, 44, 44), ((95, 120, 532), (0, 0, 44))),
         ((5000, 120, 95), (192, 192, 192), (44, 44, 44), ((532, 120, 95), (44, 0, 0))),
-        ((100, 1000, 1000), (192, 192, 192), (44, 44, 44), ((100, 178, 178), (0, 44, 44))),
-        ((1000, 1000, 1000), (192, 192, 192), (44, 44, 44), ((104, 104, 104), (44, 44, 44))),
+        (
+            (100, 1000, 1000),
+            (192, 192, 192),
+            (44, 44, 44),
+            ((100, 178, 178), (0, 44, 44)),
+        ),
+        (
+            (1000, 1000, 1000),
+            (192, 192, 192),
+            (44, 44, 44),
+            ((104, 104, 104), (44, 44, 44)),
+        ),
     ],
 )
-def test_find_patch_and_halo_shapes(full_volume_shape, max_patch_shape, min_halo_shape, expected):
-    result = find_patch_and_halo_shapes(full_volume_shape, max_patch_shape, min_halo_shape)
+def test_find_patch_and_halo_shapes(
+    full_volume_shape, max_patch_shape, min_halo_shape, expected
+):
+    result = find_patch_and_halo_shapes(
+        full_volume_shape, max_patch_shape, min_halo_shape
+    )
     assert result == expected
-    double_halo_shape = (min_halo_shape[0] * 2, min_halo_shape[1] * 2, min_halo_shape[2] * 2)
-    result = find_patch_and_halo_shapes(full_volume_shape, max_patch_shape, double_halo_shape, both_sides=True)
+    double_halo_shape = (
+        min_halo_shape[0] * 2,
+        min_halo_shape[1] * 2,
+        min_halo_shape[2] * 2,
+    )
+    result = find_patch_and_halo_shapes(
+        full_volume_shape, max_patch_shape, double_halo_shape, both_sides=True
+    )
     assert result == expected
 
 
@@ -73,7 +118,9 @@ def test_find_patch_shape(model_name):
     reason="Test requires a large VRAM device (e.g., NVIDIA A100 or NVIDIA A40).",
 )
 def test_find_batch_size_error_handling():
-    model, _, _ = model_zoo.get_model_by_name('confocal_3D_unet_ovules_ds3x', model_update=DOWNLOAD_MODELS)
+    model, _, _ = model_zoo.get_model_by_name(
+        "confocal_3D_unet_ovules_ds3x", model_update=DOWNLOAD_MODELS
+    )
     found_batch_size = find_batch_size(model, 1, (86, 395, 395), (0, 44, 44), "cuda:0")
     assert found_batch_size == 1
 
@@ -83,11 +130,13 @@ def test_find_batch_size_error_handling():
     reason="Test requires a large VRAM device (e.g., NVIDIA A100 or NVIDIA A40).",
 )
 def test_find_patch_shape_error_handling():
-    model, _, _ = model_zoo.get_model_by_name('PlantSeg_3Dnuc_platinum', model_update=DOWNLOAD_MODELS)
+    model, _, _ = model_zoo.get_model_by_name(
+        "PlantSeg_3Dnuc_platinum", model_update=DOWNLOAD_MODELS
+    )
     found_patch_shape = find_a_max_patch_shape(model, 1, "cuda:0")
-    if 'NVIDIA A100-PCIE-40GB' == GPU_DEVICE_NAME:
-        print('NVIDIA A100-PCIE-40GB tested')
+    if "NVIDIA A100-PCIE-40GB" == GPU_DEVICE_NAME:
+        print("NVIDIA A100-PCIE-40GB tested")
         assert found_patch_shape == (352, 352, 352)
-    if 'NVIDIA A40' == GPU_DEVICE_NAME:
-        print('NVIDIA A40 tested')
+    if "NVIDIA A40" == GPU_DEVICE_NAME:
+        print("NVIDIA A40 tested")
         assert found_patch_shape == (352, 352, 352)

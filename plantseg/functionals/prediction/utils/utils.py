@@ -15,7 +15,15 @@ def get_predict_template():
     return predict_template
 
 
-def get_array_dataset(raw, model_name, patch, stride_ratio, halo_shape, multichannel, global_normalization=True):
+def get_array_dataset(
+    raw,
+    model_name,
+    patch,
+    stride_ratio,
+    halo_shape,
+    multichannel,
+    global_normalization=True,
+):
     if model_name == "UNet2D":
         if patch[0] != 1:
             logger.warning(
@@ -31,9 +39,16 @@ def get_array_dataset(raw, model_name, patch, stride_ratio, halo_shape, multicha
         augs = get_test_augmentations(None)
 
     stride = get_stride_shape(patch, stride_ratio)
-    slice_builder = SliceBuilder(raw, label_dataset=None, patch_shape=patch, stride_shape=stride)
+    slice_builder = SliceBuilder(
+        raw, label_dataset=None, patch_shape=patch, stride_shape=stride
+    )
     return ArrayDataset(
-        raw, slice_builder, augs, halo_shape=halo_shape, multichannel=multichannel, verbose_logging=False
+        raw,
+        slice_builder,
+        augs,
+        halo_shape=halo_shape,
+        multichannel=multichannel,
+        verbose_logging=False,
     )
 
 

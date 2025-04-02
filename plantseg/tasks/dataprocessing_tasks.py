@@ -1,6 +1,11 @@
 import logging
 
-from plantseg.core.image import ImageDimensionality, ImageLayout, PlantSegImage, SemanticType
+from plantseg.core.image import (
+    ImageDimensionality,
+    ImageLayout,
+    PlantSegImage,
+    SemanticType,
+)
 from plantseg.functionals.dataprocessing import (
     ImagePairOperation,
     fix_over_under_segmentation_from_nuclei,
@@ -82,7 +87,9 @@ def _cropping(data, crop_slices):
 
 
 @task_tracker
-def image_cropping_task(image: PlantSegImage, rectangle=None, crop_z: tuple[int, int] = (0, 100)) -> PlantSegImage:
+def image_cropping_task(
+    image: PlantSegImage, rectangle=None, crop_z: tuple[int, int] = (0, 100)
+) -> PlantSegImage:
     """
     Crop the image based on the given rectangle and z-slices.
 
@@ -112,7 +119,9 @@ def image_cropping_task(image: PlantSegImage, rectangle=None, crop_z: tuple[int,
 
 
 @task_tracker
-def set_voxel_size_task(image: PlantSegImage, voxel_size: tuple[float, float, float]) -> PlantSegImage:
+def set_voxel_size_task(
+    image: PlantSegImage, voxel_size: tuple[float, float, float]
+) -> PlantSegImage:
     """Set the voxel size of an image.
 
     Args:
@@ -131,7 +140,9 @@ def set_voxel_size_task(image: PlantSegImage, voxel_size: tuple[float, float, fl
 
 
 @task_tracker
-def image_rescale_to_shape_task(image: PlantSegImage, new_shape: tuple[int, ...], order: int = 0) -> PlantSegImage:
+def image_rescale_to_shape_task(
+    image: PlantSegImage, new_shape: tuple[int, ...], order: int = 0
+) -> PlantSegImage:
     """Rescale an image to a new shape.
 
     Args:
@@ -143,10 +154,18 @@ def image_rescale_to_shape_task(image: PlantSegImage, new_shape: tuple[int, ...]
         scaling_factor = (new_shape[1] / image.shape[0], new_shape[2] / image.shape[1])
         spatial_scaling_factor = (1.0, scaling_factor[0], scaling_factor[1])
     elif image.image_layout == ImageLayout.ZYX:
-        scaling_factor = (new_shape[0] / image.shape[0], new_shape[1] / image.shape[1], new_shape[2] / image.shape[2])
+        scaling_factor = (
+            new_shape[0] / image.shape[0],
+            new_shape[1] / image.shape[1],
+            new_shape[2] / image.shape[2],
+        )
         spatial_scaling_factor = scaling_factor
     elif image.image_layout == ImageLayout.CYX:
-        scaling_factor = (1.0, new_shape[1] / image.shape[1], new_shape[2] / image.shape[2])
+        scaling_factor = (
+            1.0,
+            new_shape[1] / image.shape[1],
+            new_shape[2] / image.shape[2],
+        )
         spatial_scaling_factor = (1.0, scaling_factor[1], scaling_factor[2])
     elif image.image_layout == ImageLayout.CZYX:
         scaling_factor = (
@@ -163,7 +182,11 @@ def image_rescale_to_shape_task(image: PlantSegImage, new_shape: tuple[int, ...]
             new_shape[1] / image.shape[2],
             new_shape[2] / image.shape[3],
         )
-        spatial_scaling_factor = (scaling_factor[0], scaling_factor[2], scaling_factor[3])
+        spatial_scaling_factor = (
+            scaling_factor[0],
+            scaling_factor[2],
+            scaling_factor[3],
+        )
 
     out_data = image_rescale(image.get_data(), scaling_factor, order=order)
 
@@ -172,12 +195,16 @@ def image_rescale_to_shape_task(image: PlantSegImage, new_shape: tuple[int, ...]
     else:
         out_voxel_size = VoxelSize()
 
-    new_image = image.derive_new(out_data, name=f"{image.name}_reshaped", voxel_size=out_voxel_size)
+    new_image = image.derive_new(
+        out_data, name=f"{image.name}_reshaped", voxel_size=out_voxel_size
+    )
     return new_image
 
 
 @task_tracker
-def image_rescale_to_voxel_size_task(image: PlantSegImage, new_voxel_size: VoxelSize, order: int = 0) -> PlantSegImage:
+def image_rescale_to_voxel_size_task(
+    image: PlantSegImage, new_voxel_size: VoxelSize, order: int = 0
+) -> PlantSegImage:
     """Rescale an image to a new voxel size.
 
     If the voxel size is not defined in the input image, use the set voxel size task to set the voxel size.
@@ -202,7 +229,9 @@ def image_rescale_to_voxel_size_task(image: PlantSegImage, new_voxel_size: Voxel
         scaling_factor = (spatial_scaling_factor[0], 1.0, *spatial_scaling_factor[1:])
 
     out_data = image_rescale(image.get_data(), scaling_factor, order=order)
-    new_image = image.derive_new(out_data, name=f"{image.name}_rescaled", voxel_size=new_voxel_size)
+    new_image = image.derive_new(
+        out_data, name=f"{image.name}_rescaled", voxel_size=new_voxel_size
+    )
     return new_image
 
 
@@ -219,12 +248,16 @@ def remove_false_positives_by_foreground_probability_task(
 
     """
     if segmentation.shape != foreground.shape:
-        raise ValueError("Segmentation and foreground probability must have the same shape.")
+        raise ValueError(
+            "Segmentation and foreground probability must have the same shape."
+        )
 
     out_data = remove_false_positives_by_foreground_probability(
         segmentation.get_data(), foreground.get_data(), threshold
     )
-    new_image = segmentation.derive_new(out_data, name=f"{segmentation.name}_fg_filtered")
+    new_image = segmentation.derive_new(
+        out_data, name=f"{segmentation.name}_fg_filtered"
+    )
     return new_image
 
 
@@ -266,7 +299,9 @@ def fix_over_under_segmentation_from_nuclei_task(
 
 
 @task_tracker
-def set_biggest_instance_to_zero_task(image: PlantSegImage, instance_could_be_zero: bool = False) -> PlantSegImage:
+def set_biggest_instance_to_zero_task(
+    image: PlantSegImage, instance_could_be_zero: bool = False
+) -> PlantSegImage:
     """
     Task to set the largest segment in a segmentation image to zero.
 
@@ -277,17 +312,26 @@ def set_biggest_instance_to_zero_task(image: PlantSegImage, instance_could_be_ze
     Returns:
         PlantSegImage: New segmentation image with largest instance set to 0.
     """
-    if not (image.semantic_type == SemanticType.SEGMENTATION or image.semantic_type == SemanticType.LABEL):
+    if not (
+        image.semantic_type == SemanticType.SEGMENTATION
+        or image.semantic_type == SemanticType.LABEL
+    ):
         raise ValueError("Input image must be a segmentation or mask image.")
     data = image.get_data()
-    logger.info(f"Processing {image.name} with shape {data.shape} and max {data.max()}, min {data.min()}.")
-    new_data = set_biggest_instance_to_zero(data, instance_could_be_zero=instance_could_be_zero)
+    logger.info(
+        f"Processing {image.name} with shape {data.shape} and max {data.max()}, min {data.min()}."
+    )
+    new_data = set_biggest_instance_to_zero(
+        data, instance_could_be_zero=instance_could_be_zero
+    )
     new_image = image.derive_new(new_data, name=f"{image.name}_bg0")
     return new_image
 
 
 @task_tracker
-def relabel_segmentation_task(image: PlantSegImage, background: int | None = None) -> PlantSegImage:
+def relabel_segmentation_task(
+    image: PlantSegImage, background: int | None = None
+) -> PlantSegImage:
     """
     Task to relabel a segmentation image contiguously, ensuring non-touching segments with the same ID are relabeled.
 
@@ -297,7 +341,10 @@ def relabel_segmentation_task(image: PlantSegImage, background: int | None = Non
     Returns:
         PlantSegImage: New segmentation image with relabeled instances.
     """
-    if not (image.semantic_type == SemanticType.SEGMENTATION or image.semantic_type == SemanticType.LABEL):
+    if not (
+        image.semantic_type == SemanticType.SEGMENTATION
+        or image.semantic_type == SemanticType.LABEL
+    ):
         raise ValueError("Input image must be a segmentation or mask image.")
     data = image.get_data()
     new_data = relabel_segmentation(data, background=background)
@@ -336,5 +383,7 @@ def image_pair_operation_task(
         clip_output=clip_output,
         normalize_output=normalize_output,
     )
-    new_image = image1.derive_new(result, name=f"{image1.name}_{operation}_{image2.name}")
+    new_image = image1.derive_new(
+        result, name=f"{image1.name}_{operation}_{image2.name}"
+    )
     return new_image
