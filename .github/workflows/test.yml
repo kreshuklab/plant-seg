@@ -18,7 +18,7 @@ jobs:
 
       # Set up Qt libraries (required for PyQt applications)
       - name: Set Up Qt Libraries
-        uses: tlambert03/setup-qt-libs@v1
+        uses: jurplel/install-qt-action@v4
 
       # Start X virtual framebuffer for GUI testing
       - name: Start Xvfb

@@ -16,17 +16,81 @@ on:
           - pre_n
 
 jobs:
-  release:
+  test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Conda requires a login shell in order to work properly
+        shell: bash -l {0}
+    env:
+      DISPLAY: ":99.0"
+
     steps:
-      - name: Checkout the code
+      - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+
+      # Start X virtual framebuffer for GUI testing
+      - name: Start Xvfb
+        run: |
+          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
+          --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+
+      - name: Set Up Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: 3.11
+          miniforge-version: latest
+          mamba-version: "*"
+          channels: conda-forge
+          environment-file: "environment-dev.yaml"
+          activate-environment: "plant-seg-dev"
+          conda-remove-defaults: true
+
+      - name: List Conda Environments
+        run: conda info --envs
+
+      - name: Run Tests with Pytest
+        run: |
+          conda activate plant-seg-dev
+          pytest -s --cov --cov-report=xml
+          conda deactivate
+
+  release:
+    needs: test
+    # runs-on: ubuntu-latest
+    runs-on: self-hosted
+    defaults:
+      run:
+        # Conda requires a login shell in order to work properly
+        shell: bash -l {0}
+    env:
+      DISPLAY: ":99.0"
+      CONDA_OVERRIDE_CUDA: "12.4"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: 3.11
+          miniforge-version: latest
+          mamba-version: "*"
+          channels: conda-forge
+          conda-remove-defaults: true
+
+      - name: List Conda Environments
+        run: conda info --envs
 
       - name: Bump version
         id: bump
         uses: callowayproject/bump-my-version@master
         with:
-          args: ${{ inputs.bump-type }}
+          args: "--verbose ${{ inputs.bump-type }}"
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check version
@@ -36,10 +100,40 @@ jobs:
 
       - name: Release
         uses: softprops/action-gh-release@v2.2.1
-        # if: startsWith(github.ref, 'refs/tags/')
         with:
           generate_release_notes: true
           tag_name: ${{ steps.bump.outputs.current-version }}
           name: ${{ steps.bump.outputs.current-version }}
           token: ${{ secrets.GITHUB_TOKEN }}
           make_latest: true
+
+      - name: conda build
+        run: |
+          conda create -n builder conda-build
+          conda activate builder
+          conda build -c nvidia conda-recipe/
+          conda deactivate
+
+      - name: create package
+        run: |
+          conda create -n constructor constructor menuinst
+          conda activate constructor
+          constructor --output-dir installer constructor/
+          conda deactivate
+
+      - name: publish to heibox
+        run: |
+          for to_upload in installer/*.sh; do
+            echo "$to_upload"
+            uploadurl=$(curl --request GET \
+              --url 'https://heibox.uni-heidelberg.de/api/v2.1/via-repo-token/upload-link/?path=%2F&from=api&replace=1' \
+              --header 'accept: application/json' \
+              --header 'authorization: Bearer ${{ secrets.SEAFILE_API_TOKEN }}')
+            echo "${uploadurl}"
+            curl --request POST --url "${uploadurl//\"/}" \
+              --header 'accept: application/json' \
+              --header 'content-type: multipart/form-data' \
+              --form file="@${to_upload}" \
+              --form replace=1 \
+              --form parent_dir=/
+          done

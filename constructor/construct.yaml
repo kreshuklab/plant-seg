@@ -1,0 +1,21 @@
+name: PlantSeg
+version: "2.0.0b3"
+channels:
+  # - file:///home/kriedmiller/software/miniforge3/conda-bld # for local
+  - file:///home/ubuntu_runner/miniconda3/envs/builder/conda-bld # for selfhosted gh actiona
+  # - file:///home/runner/miniconda3/envs/builder/conda-bld # for github-action
+  - conda-forge
+specs:
+  - plantseg=2.0.0b3
+  - console_shortcut # [win]
+virtual_specs:
+  - __cuda
+exclude:
+  - readline
+license_file: ../gpl.txt
+welcome_image: ../docs/logos/logo.png
+icon_image: ../Menu/logo.png
+register_python: false
+initialize_conda: true
+menu_packages:
+  - plantseg

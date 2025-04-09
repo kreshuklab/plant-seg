@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "$id": "https://schemas.conda.io/menuinst-1.schema.json",
+  "menu_name": "plantseg",
+  "menu_items": [
+    {
+      "name": "PlantSeg",
+      "description": "Launch PlantSeg Napari GUI",
+      "command": [
+        "plantseg",
+        "--napari"
+      ],
+      "activate": true,
+      "terminal": true,
+      "platforms": {
+        "linux": {
+          "icon": "{{ PREFIX }}/Menu/logo.png"
+        },
+        "osx": {},
+        "win": {}
+      }
+    }
+  ]
+}

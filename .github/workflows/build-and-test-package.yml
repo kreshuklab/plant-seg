@@ -1,6 +1,6 @@
 name: Conda Build and Test
 
-on: [push]
+on: workflow_dispatch
 
 jobs:
   build-and-test-linux:
