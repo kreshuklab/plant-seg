@@ -8,6 +8,7 @@ channels:
   # - defaults
 dependencies:
   - python
+  - pip
   # Neural Network and GPU
   - cudnn=9
   - pytorch
@@ -22,14 +23,15 @@ dependencies:
   - python-graphviz
   - scikit-image
   - bioimageio.core>=0.6.5,<=0.7.0
-  - xarray<2025.3.0  # 2025.3.0 cause problem plant-seg/issues/396
+  - xarray<2025.3.0 # 2025.3.0 cause problem plant-seg/issues/396
   # GUI
-  - pyqt
+  - qtpy
+  - pyside2
   - napari
   # Other
   - requests
   - pyyaml
-  - pydantic>2,<2.10  # 2.10 cause problem spec-bioimage-io/issues/663
+  - pydantic>2,<2.10 # 2.10 cause problem spec-bioimage-io/issues/663
   # Test
   - pytest
   - pytest-cov
