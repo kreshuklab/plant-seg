@@ -7,6 +7,10 @@ permissions:
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Conda requires a login shell in order to work properly
+        shell: bash -l {0}
     env:
       DISPLAY: ":99.0"
 
@@ -33,12 +37,6 @@ jobs:
           environment-file: "environment-dev.yaml"
           activate-environment: "plant-seg-dev"
           conda-remove-defaults: true
-
-      - name: Build Docks
-        run: |
-          conda activate plant-seg-dev
-          pytest -s --cov --cov-report=xml
-          conda deactivate
 
       # Install MkDocs and deploy the documentation to GitHub Pages
       - name: Install MkDocs and Deploy
