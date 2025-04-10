@@ -8,7 +8,7 @@ dependencies:
   - python>=3.11
   - pip
   # Neural Network and GPU
-  - pytorch-gpu
+  - pytorch
   # Bioimage and CV
   - tifffile
   - h5py
