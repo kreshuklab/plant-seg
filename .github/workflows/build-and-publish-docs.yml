@@ -7,15 +7,21 @@ permissions:
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Conda requires a login shell in order to work properly
+        shell: bash -l {0}
     env:
       DISPLAY: ":99.0"
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v4
+        uses: tlambert03/setup-qt-libs@v1
 
       # Start X virtual framebuffer for GUI testing
       - name: Start Xvfb
@@ -34,17 +40,11 @@ jobs:
           activate-environment: "plant-seg-dev"
           conda-remove-defaults: true
 
-      - name: Build Docks
-        run: |
-          conda activate plant-seg-dev
-          pytest -s --cov --cov-report=xml
-          conda deactivate
-
       # Install MkDocs and deploy the documentation to GitHub Pages
       - name: Install MkDocs and Deploy
         shell: bash -l {0}
         run: |
-          conda activate plant-seg
+          conda activate plant-seg-dev
           pip install mkdocs-material \
                       mkdocs-git-revision-date-localized-plugin \
                       mkdocs-git-committers-plugin-2 \
