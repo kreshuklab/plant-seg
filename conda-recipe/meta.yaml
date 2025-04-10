@@ -19,7 +19,7 @@ build:
 
 requirements:
   build:
-    - python
+    - python>=3.11
     - pip
     - setuptools
 
