@@ -1,14 +1,18 @@
 package:
   name: plantseg
-  version: {{ RELEASE_VERSION }}  # Do not change this line, not even adding space
+  version: "2.0.0b3"
 
 source:
   path: ..
 
 build:
   noarch: python
-  script: "pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
   number: 1
+  script:
+    - "pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
+    - "mkdir -p {{ PREFIX }}/Menu"
+    - "cp {{ RECIPE_DIR }}/../Menu/plant-seg.json {{ PREFIX }}/Menu/{{ PKG_NAME }}_menu.json"
+    - "cp {{ RECIPE_DIR }}/../Menu/logo.png {{ PREFIX }}/Menu/logo.png"
 
   entry_points:
     - plantseg = plantseg.run_plantseg:main
@@ -20,8 +24,9 @@ requirements:
     - setuptools
 
   run:
-    - python >=3.9
-    - pytorch >=1.7.0
+    - python>=3.10
+    - pip
+    - pytorch-gpu
     - tifffile
     - h5py
     - zarr
@@ -30,12 +35,14 @@ requirements:
     - python-graphviz
     - scikit-image
     - bioimageio.core >=0.6.5,<=0.7.0
-    - xarray<2025.3.0  # 2025.3.0 cause problem plant-seg/issues/396
-    - napari
+    - xarray<2025.3.0 # 2025.3.0 cause problem plant-seg/issues/396
+    - qtpy
     - pyqt
+    - napari
     - requests
     - pyyaml
-    - pydantic >2,<2.10  # 2.10 cause problem spec-bioimage-io/issues/663
+    - pydantic >2,<2.10 # 2.10 cause problem spec-bioimage-io/issues/663
+    - xarray <2025.3.0
 
 test:
   imports:
