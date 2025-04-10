@@ -8,8 +8,6 @@ channels:
 specs:
   - plantseg=2.0.0b3
   - console_shortcut # [win]
-virtual_specs:
-  - __cuda
 exclude:
   - readline
 license_file: ../gpl.txt
