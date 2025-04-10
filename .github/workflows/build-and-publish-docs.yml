@@ -1,29 +1,21 @@
 name: Docs Build and Publish
-on:
-  push:
-    branches:
-      - master
-      - qy/pin-xarray-bioimageio-core
+on: workflow_dispatch
 
 permissions:
   contents: write
 
 jobs:
   deploy-docs:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     env:
       DISPLAY: ":99.0"
 
     steps:
-      # Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-            fetch-depth: 0
 
-      # Set up Qt libraries (required for PyQt applications)
-      - name: Set Up Qt Libraries
-        uses: tlambert03/setup-qt-libs@v1
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
 
       # Start X virtual framebuffer for GUI testing
       - name: Start Xvfb
@@ -31,68 +23,22 @@ jobs:
           /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
           --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
 
-      # Set the documentation release version
-      - name: Set Documentation Version
-        run: echo "RELEASE_VERSION=$(date +%Y%m%d%H%M%S)+DOC_RELEASE" >> $GITHUB_ENV
-
-      # Print the documentation version name (for debugging purposes)
-      - name: Print Documentation Version
-        run: echo $RELEASE_VERSION
-
-      # Configure Git credentials for deployment
-      - name: Configure Git Credentials
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      # Set up Miniconda
-      - name: Set Up Miniconda
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Set Up Miniforge
+        uses: conda-incubator/setup-miniconda@v3
         with:
-          auto-activate-base: true
-          activate-environment: ""
-          channels: local,conda-forge,defaults
-          channel-priority: false
+          python-version: 3.11
+          miniforge-version: latest
+          mamba-version: "*"
+          channels: conda-forge
+          environment-file: "environment-dev.yaml"
+          activate-environment: "plant-seg-dev"
+          conda-remove-defaults: true
 
-      # Display available Conda environments (for debugging purposes)
-      - name: List Conda Environments
-        shell: bash -l {0}
-        run: conda info --envs
-
-      # Disable `anaconda_telemetry` to avoid errors (issue 379)
-      - name: Configure Conda
+      - name: Build Docks
         run: |
-          echo "anaconda_telemetry: false" > ~/.condarc
-
-      # Build the PlantSeg Conda package (for screenshots in documentation)
-      - name: Build PlantSeg Package
-        shell: bash -l {0}
-        run: |
-          conda install -q conda-build conda-verify
-          conda build -c conda-forge conda-recipe
-
-      # Create a Conda environment for PlantSeg
-      - name: Create PlantSeg Environment
-        run: |
-          conda create -n plant-seg -c local -c conda-forge pyqt plantseg
-
-      # Activate the PlantSeg environment
-      - name: Activate PlantSeg Environment
-        shell: bash -l {0}
-        run: conda activate plant-seg
-
-      # Set a cache ID based on the current UTC week number
-      - name: Set Cache ID
-        run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
-
-      # Cache MkDocs build artifacts
-      - name: Cache MkDocs Artifacts
-        uses: actions/cache@v4
-        with:
-          key: mkdocs-material-${{ env.cache_id }}
-          path: .cache
-          restore-keys: |
-            mkdocs-material-
+          conda activate plant-seg-dev
+          pytest -s --cov --cov-report=xml
+          conda deactivate
 
       # Install MkDocs and deploy the documentation to GitHub Pages
       - name: Install MkDocs and Deploy
