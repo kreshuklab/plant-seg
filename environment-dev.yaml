@@ -1,19 +1,14 @@
 name: plant-seg-dev
 channels:
-  - pytorch
-  - nvidia
   - conda-forge
   # `defaults` is optional, unless e.g. `conda-forge` has no cudnn 9.* when `defaults` has.
   # `defaults` of Anaconda is not accessible for many non-profit institutes such as EMBL.
   # - defaults
 dependencies:
-  - python
+  - python>=3.11
   - pip
   # Neural Network and GPU
-  - cudnn=9
-  - pytorch
-  - torchvision
-  - pytorch-cuda=12.1
+  - pytorch-gpu
   # Bioimage and CV
   - tifffile
   - h5py
@@ -26,7 +21,7 @@ dependencies:
   - xarray<2025.3.0 # 2025.3.0 cause problem plant-seg/issues/396
   # GUI
   - qtpy
-  - pyside2
+  - pyqt
   - napari
   # Other
   - requests
