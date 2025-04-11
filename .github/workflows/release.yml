@@ -63,7 +63,7 @@ jobs:
     # runs-on: ubuntu-latest
     strategy:
       matrix:
-        # os: ["ubuntu-latest", "windows-latest"]
+        # os: ["ubuntu", "windows"]
         os: ["windows"]
     # runs-on: self-hosted
     runs-on: [self-hosted, "${{ matrix.os }}"]
@@ -71,7 +71,8 @@ jobs:
     defaults:
       run:
         # Conda requires a login shell in order to work properly
-        shell: bash -el {0}
+        shell: ${{ matrix.os == 'windows' && 'powershell' || 'bash -el {0}' }}
+
     env:
       DISPLAY: ":99.0"
       CONDA_OVERRIDE_CUDA: "12.4"
@@ -85,14 +86,13 @@ jobs:
         with:
           python-version: 3.11
           miniforge-version: latest
-          # mamba-version: "*"
+          mamba-version: "*"
           channels: conda-forge
           conda-remove-defaults: true
           activate-environment: "dummyenv"
 
       - name: List Conda Environments
         run: |
-          mamba info --envs
           conda info --envs
 
       - name: Bump version
