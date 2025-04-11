@@ -85,9 +85,11 @@ jobs:
         with:
           python-version: 3.11
           miniforge-version: latest
-          # mamba-version: "*"
+          mamba-version: "*"
           channels: conda-forge
           conda-remove-defaults: true
+          auto-activate-base: true
+          activate-environment: ""
 
       - name: List Conda Environments
         run: conda info --envs
