@@ -91,7 +91,9 @@ jobs:
           activate-environment: "dummyenv"
 
       - name: List Conda Environments
-        run: conda info --envs
+        run: |
+          mamba info --envs
+          conda info --envs
 
       - name: Bump version
         id: bump
