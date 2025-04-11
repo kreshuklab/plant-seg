@@ -71,7 +71,7 @@ jobs:
     defaults:
       run:
         # Conda requires a login shell in order to work properly
-        shell: bash -l {0}
+        shell: bash -el {0}
     env:
       DISPLAY: ":99.0"
       CONDA_OVERRIDE_CUDA: "12.4"
@@ -85,7 +85,7 @@ jobs:
         with:
           python-version: 3.11
           miniforge-version: latest
-          mamba-version: "*"
+          # mamba-version: "*"
           channels: conda-forge
           conda-remove-defaults: true
           activate-environment: "dummyenv"
