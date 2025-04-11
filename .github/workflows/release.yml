@@ -88,8 +88,7 @@ jobs:
           mamba-version: "*"
           channels: conda-forge
           conda-remove-defaults: true
-          auto-activate-base: true
-          activate-environment: ""
+          activate-environment: "dummyenv"
 
       - name: List Conda Environments
         run: conda info --envs
