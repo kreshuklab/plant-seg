@@ -1,5 +1,5 @@
 name: PlantSeg
-version: "2.0.0b4"
+version: "2.0.0b5"
 channels:
   # - file:///home/kriedmiller/software/miniforge3/conda-bld # for local
   - file:///home/ubuntu_runner/miniconda3/envs/builder/conda-bld # [linux]
@@ -7,7 +7,7 @@ channels:
   # - file:///home/runner/miniconda3/envs/builder/conda-bld # for github-action
   - conda-forge
 specs:
-  - plantseg=2.0.0b4
+  - plantseg=2.0.0b5
 exclude:
   - readline
 license_file: ../gpl.txt
