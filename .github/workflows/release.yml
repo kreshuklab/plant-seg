@@ -131,6 +131,7 @@ jobs:
           conda deactivate
 
       - name: publish to heibox
+        shell: bash -el {0}
         run: |
           for to_upload in installer/*.sh; do
             echo "$to_upload"

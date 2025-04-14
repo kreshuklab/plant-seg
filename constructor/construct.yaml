@@ -3,6 +3,7 @@ version: "2.0.0b4"
 channels:
   # - file:///home/kriedmiller/software/miniforge3/conda-bld # for local
   - file:///home/ubuntu_runner/miniconda3/envs/builder/conda-bld # [linux]
+  - file:\\C:\Users\runner\miniconda3\envs\builder\conda-bld # [win]
   # - file:///home/runner/miniconda3/envs/builder/conda-bld # for github-action
   - conda-forge
 specs:
