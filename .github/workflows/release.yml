@@ -57,9 +57,33 @@ jobs:
   #         conda activate plant-seg-dev
   #         pytest -s --cov --cov-report=xml
   #         conda deactivate
+  # release:
+  #   needs: test
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Bump version
+  #       id: bump
+  #       uses: callowayproject/bump-my-version@master
+  #       with:
+  #         args: "--verbose ${{ inputs.bump-type }}"
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #
+  #     - name: Check version
+  #       if: steps.bump.outputs.bumped == 'true'
+  #       run: |
+  #         echo "Version was bumped from ${{ steps.bump.outputs.previous-version }} to ${{ steps.bump.outputs.current-version }}!"
+  #
+  #     - name: Release
+  #       uses: softprops/action-gh-release@v2.2.1
+  #       with:
+  #         generate_release_notes: true
+  #         tag_name: ${{ steps.bump.outputs.current-version }}
+  #         name: ${{ steps.bump.outputs.current-version }}
+  #         token: ${{ secrets.GITHUB_TOKEN }}
+  #         make_latest: true
 
-  release:
-    # needs: test
+  build_installer:
+    # needs: release
     # runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -94,27 +118,6 @@ jobs:
       - name: List Conda Environments
         run: |
           conda info --envs
-
-      - name: Bump version
-        id: bump
-        uses: callowayproject/bump-my-version@master
-        with:
-          args: "--verbose ${{ inputs.bump-type }}"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check version
-        if: steps.bump.outputs.bumped == 'true'
-        run: |
-          echo "Version was bumped from ${{ steps.bump.outputs.previous-version }} to ${{ steps.bump.outputs.current-version }}!"
-
-      - name: Release
-        uses: softprops/action-gh-release@v2.2.1
-        with:
-          generate_release_notes: true
-          tag_name: ${{ steps.bump.outputs.current-version }}
-          name: ${{ steps.bump.outputs.current-version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          make_latest: true
 
       - name: conda build
         run: |

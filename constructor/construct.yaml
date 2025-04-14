@@ -3,13 +3,13 @@ version: "2.0.0b6"
 channels:
   # - file:///home/kriedmiller/software/miniforge3/conda-bld # for local
   - file:///home/ubuntu_runner/miniconda3/envs/builder/conda-bld # [linux]
-  - file:\\C:\Users\runner\miniconda3\envs\builder\conda-bld # [win]
+  - file:///C:/Users/runner/miniconda3/envs/builder/conda-bld # [win]
   # - file:///home/runner/miniconda3/envs/builder/conda-bld # for github-action
   - conda-forge
 specs:
   - plantseg=2.0.0b6
 exclude:
-  - readline
+  - readline # [not win]
 license_file: ../gpl.txt
 welcome_image: ../docs/logos/logo.png
 icon_image: ../Menu/logo.png
