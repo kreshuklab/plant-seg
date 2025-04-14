@@ -7,7 +7,6 @@ channels:
   - conda-forge
 specs:
   - plantseg=2.0.0b4
-  - console_shortcut # [win]
 exclude:
   - readline
 license_file: ../gpl.txt
