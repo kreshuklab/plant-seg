@@ -10,9 +10,12 @@ build:
   number: 1
   script:
     - "pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
-    - "mkdir -p {{ PREFIX }}/Menu"
-    - "cp {{ RECIPE_DIR }}/../Menu/plant-seg.json {{ PREFIX }}/Menu/{{ PKG_NAME }}_menu.json"
-    - "cp {{ RECIPE_DIR }}/../Menu/logo.png {{ PREFIX }}/Menu/logo.png"
+    - "mkdir -p {{ PREFIX }}/Menu" # [not win]
+    - "cp {{ RECIPE_DIR }}/../Menu/plant-seg.json {{ PREFIX }}/Menu/{{ PKG_NAME }}_menu.json" # [not win]
+    - "cp {{ RECIPE_DIR }}/../Menu/logo.png {{ PREFIX }}/Menu/logo.png" # [not win]
+    - 'mkdir -p {{ PREFIX }}\Menu' # [win]
+    - 'cp {{ RECIPE_DIR }}\..\Menu/plant-seg.json {{ PREFIX }}\Menu\{{ PKG_NAME }}_menu.json' # [win]
+    - 'cp {{ RECIPE_DIR }}\..\Menu\logo.png {{ PREFIX }}\Menu\logo.png' # [win]
 
   entry_points:
     - plantseg = plantseg.run_plantseg:main
