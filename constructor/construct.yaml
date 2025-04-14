@@ -1,12 +1,12 @@
 name: PlantSeg
-version: "2.0.0b3"
+version: "2.0.0b4"
 channels:
   # - file:///home/kriedmiller/software/miniforge3/conda-bld # for local
   - file:///home/ubuntu_runner/miniconda3/envs/builder/conda-bld # [linux]
   # - file:///home/runner/miniconda3/envs/builder/conda-bld # for github-action
   - conda-forge
 specs:
-  - plantseg=2.0.0b3
+  - plantseg=2.0.0b4
   - console_shortcut # [win]
 exclude:
   - readline
