@@ -5,7 +5,7 @@ channels:
 specs:
   - python==3.12
   - conda
-post_install: win_install.bat
+post_install: win_installer.bat
 # tar czf .\win_build.gz -C C:\Users\runner\miniconda3\envs\builder\ conda-bld\*
 extra_files:
   - win_build.gz: "win_build.gz"
