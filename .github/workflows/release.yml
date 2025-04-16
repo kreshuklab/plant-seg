@@ -134,7 +134,7 @@ jobs:
         run: |
           conda create -n constructor constructor menuinst
           conda activate constructor
-          constructor --output-dir installer constructor/
+          constructor --output-dir installer constructor_win/
           conda deactivate
 
       - name: publish to heibox
