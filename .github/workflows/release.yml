@@ -123,8 +123,12 @@ jobs:
         run: |
           conda create -n builder conda-build
           conda activate builder
-          conda build -c nvidia conda-recipe/
+          conda build conda-recipe/ --output-folder conda_bld
           conda deactivate
+
+      - name: tar build
+        run: |
+          tar czf .\constructor_win\win_build.gz conda_bld\*
 
       - name: create package
         run: |

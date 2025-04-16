@@ -22,13 +22,13 @@ build:
 
 requirements:
   build:
-    - python=3.11
+    - python>=3.11
     - setuptools
 
   run:
-    - python =3.10
+    - python>=3.11
     - pip
-    - pytorch-gpu=2.6
+    - pytorch-gpu
     - tifffile
     - h5py
     - zarr
