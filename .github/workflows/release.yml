@@ -128,7 +128,7 @@ jobs:
 
       - name: tar build
         run: |
-          tar czf .\constructor_win\win_build.gz conda_bld\*
+          tar czf ./constructor_win/win_build.gz conda_bld/*
 
       - name: create package
         run: |
