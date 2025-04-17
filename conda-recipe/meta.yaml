@@ -28,7 +28,7 @@ requirements:
   run:
     - python>=3.11
     - pip
-    - pytorch
+    - pytorch-gpu
     - tifffile
     - h5py
     - zarr
