@@ -99,7 +99,7 @@ jobs:
 
     env:
       DISPLAY: ":99.0"
-      CONDA_OVERRIDE_CUDA: "12.4"
+      # CONDA_OVERRIDE_CUDA: "12.4"
 
     steps:
       - name: Checkout Repository
@@ -132,25 +132,32 @@ jobs:
 
       - name: create package
         run: |
-          conda create -n constructor constructor menuinst
+          conda create -n constructor constructor menuinst requests
           conda activate constructor
           constructor --output-dir installer constructor_win/
           conda deactivate
 
-      - name: publish to heibox
-        shell: bash -el {0}
+      - name: publish to heibox using python uploader
         run: |
-          for to_upload in installer/*.sh; do
-            echo "$to_upload"
-            uploadurl=$(curl --request GET \
-              --url 'https://heibox.uni-heidelberg.de/api/v2.1/via-repo-token/upload-link/?path=%2F&from=api&replace=1' \
-              --header 'accept: application/json' \
-              --header 'authorization: Bearer ${{ secrets.SEAFILE_API_TOKEN }}')
-            echo "${uploadurl}"
-            curl --request POST --url "${uploadurl//\"/}" \
-              --header 'accept: application/json' \
-              --header 'content-type: multipart/form-data' \
-              --form file="@${to_upload}" \
-              --form replace=1 \
-              --form parent_dir=/
-          done
+          conda activate constructor
+          python constructor_win/uploader.py ${{ secrets.SEAFILE_API_TOKEN }}
+          conda deactivate
+
+      # - name: publish to heibox
+      #   shell: bash -el {0}
+      #   run: |
+      #     conda activate base
+      #     for to_upload in ./installer/*; do
+      #       echo "$to_upload"
+      #       uploadurl=$(curl --request GET \
+      #         --url 'https://heibox.uni-heidelberg.de/api/v2.1/via-repo-token/upload-link/?path=%2F&from=api&replace=1' \
+      #         --header 'accept: application/json' \
+      #         --header 'authorization: Bearer ${{ secrets.SEAFILE_API_TOKEN }}')
+      #       echo "${uploadurl}"
+      #       curl --request POST --url "${uploadurl//\"/}" \
+      #         --header 'accept: application/json' \
+      #         --header 'content-type: multipart/form-data' \
+      #         --form file="@${to_upload}" \
+      #         --form replace=1 \
+      #         --form parent_dir=/
+      #     done

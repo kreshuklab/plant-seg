@@ -5,4 +5,4 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 
 conda create -y -n plantseg python=3.12
 conda activate plantseg
-conda install -c conda-bld plantseg
+conda install -c "%PREFIX%\conda_bld"" plantseg
