@@ -1,14 +1,13 @@
 call "%PREFIX%\Scripts\activate.bat"
 cd "%PREFIX%"
-set CONDA_OVERRIDE_CUDA="12.4"
 tar xf win_build.gz
-if %errorlevel% neq 0 exit /b %errorlevel%
-
+echo "unzipped" >> log_installation
 conda create -y -n plantseg python=3.12 menuinst
-conda activate plantseg > log_activating
-echo 'Activated, now installing Plantseg..'
+echo "created env" >> log_installation
+conda activate plantseg
+echo 'Activated, now installing Plantseg..' >> log_installation
 conda install -v -c "%PREFIX%\conda_bld" -c conda-forge plantseg > log_installing
-echo 'Installation finished!'
+echo 'Installation finished!' >> log_installation
 touch 'plantseg_installed'
 conda info
 conda list

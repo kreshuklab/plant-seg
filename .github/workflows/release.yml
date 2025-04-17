@@ -99,7 +99,7 @@ jobs:
 
     env:
       DISPLAY: ":99.0"
-      CONDA_OVERRIDE_CUDA: "12.4"
+      # CONDA_OVERRIDE_CUDA: "12.4"
 
     steps:
       - name: Checkout Repository
