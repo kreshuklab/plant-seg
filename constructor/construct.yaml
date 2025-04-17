@@ -1,19 +1,19 @@
 name: PlantSeg
 version: "2.0.0b6"
 channels:
-  # - file:///home/kriedmiller/software/miniforge3/conda-bld # for local
-  - file:///home/ubuntu_runner/miniconda3/envs/builder/conda-bld # [linux]
-  - file:///C:/Users/runner/miniconda3/envs/builder/conda-bld # [win]
-  # - file:///home/runner/miniconda3/envs/builder/conda-bld # for github-action
   - conda-forge
 specs:
-  - plantseg=2.0.0b6
+  - python=3.12
+  - conda
+  - menuinst
 exclude:
-  - readline # [not win]
+  - readline # [unix]
+post_install: win_installer.bat # [win]
+post_install: unix_installer.sh # [unix]
+extra_files:
+  - build.gz: "build.gz"
 license_file: ../gpl.txt
 welcome_image: ../docs/logos/logo.png
 icon_image: ../Menu/logo.png
 register_python: false
 initialize_conda: true
-menu_packages:
-  - plantseg

@@ -88,18 +88,20 @@ jobs:
     strategy:
       matrix:
         # os: ["ubuntu", "windows"]
-        os: ["windows"]
+        # os: ["windows"]
+        os: ["ubuntu-latest", "windows-latest"]
     # runs-on: self-hosted
-    runs-on: [self-hosted, "${{ matrix.os }}"]
+    # runs-on: [self-hosted, "${{ matrix.os }}"]
+    runs-on: ["${{ matrix.os }}"]
 
     defaults:
       run:
         # Conda requires a login shell in order to work properly
         shell: ${{ matrix.os == 'windows' && 'powershell' || 'bash -el {0}' }}
 
-    env:
-      DISPLAY: ":99.0"
-      # CONDA_OVERRIDE_CUDA: "12.4"
+    # env:
+    #   DISPLAY: ":99.0"
+    # CONDA_OVERRIDE_CUDA: "12.4"
 
     steps:
       - name: Checkout Repository
@@ -108,7 +110,7 @@ jobs:
       - name: Set Up Miniforge
         uses: conda-incubator/setup-miniconda@v3
         with:
-          python-version: 3.11
+          python-version: 3.12
           miniforge-version: latest
           mamba-version: "*"
           channels: conda-forge
@@ -128,36 +130,17 @@ jobs:
 
       - name: tar build
         run: |
-          tar czf ./constructor_win/win_build.gz conda_bld/*
+          tar czf ./constructor/build.gz conda_bld/*
 
       - name: create package
         run: |
           conda create -n constructor constructor menuinst requests
           conda activate constructor
-          constructor --output-dir installer constructor_win/
+          constructor --output-dir installer constructor/
           conda deactivate
 
       - name: publish to heibox using python uploader
         run: |
           conda activate constructor
-          python constructor_win/uploader.py ${{ secrets.SEAFILE_API_TOKEN }}
+          python constructor/uploader.py ${{ secrets.SEAFILE_API_TOKEN }}
           conda deactivate
-
-      # - name: publish to heibox
-      #   shell: bash -el {0}
-      #   run: |
-      #     conda activate base
-      #     for to_upload in ./installer/*; do
-      #       echo "$to_upload"
-      #       uploadurl=$(curl --request GET \
-      #         --url 'https://heibox.uni-heidelberg.de/api/v2.1/via-repo-token/upload-link/?path=%2F&from=api&replace=1' \
-      #         --header 'accept: application/json' \
-      #         --header 'authorization: Bearer ${{ secrets.SEAFILE_API_TOKEN }}')
-      #       echo "${uploadurl}"
-      #       curl --request POST --url "${uploadurl//\"/}" \
-      #         --header 'accept: application/json' \
-      #         --header 'content-type: multipart/form-data' \
-      #         --form file="@${to_upload}" \
-      #         --form replace=1 \
-      #         --form parent_dir=/
-      #     done
