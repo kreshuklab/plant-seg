@@ -5,9 +5,9 @@ tar xf win_build.gz
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 conda create -y -n plantseg python=3.12 menuinst
-conda activate plantseg
+conda activate plantseg > log_activating
 echo 'Activated, now installing Plantseg..'
-conda install -v -c "%PREFIX%\conda_bld" -c conda-forge plantseg
+conda install -v -c "%PREFIX%\conda_bld" -c conda-forge plantseg > log_installing
 echo 'Installation finished!'
 touch 'plantseg_installed'
 conda info
