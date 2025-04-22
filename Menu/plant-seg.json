@@ -12,10 +12,9 @@
       ],
       "activate": true,
       "terminal": true,
+      "icon": "{{ PREFIX }}/Menu/icon.png",
       "platforms": {
-        "linux": {
-          "icon": "{{ PREFIX }}/Menu/logo.png"
-        },
+        "linux": {},
         "osx": {},
         "win": {}
       }

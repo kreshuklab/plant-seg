@@ -12,10 +12,14 @@ build:
     - "pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
     - "mkdir -p {{ PREFIX }}/Menu" # [not win]
     - "cp {{ RECIPE_DIR }}/../Menu/plant-seg.json {{ PREFIX }}/Menu/{{ PKG_NAME }}_menu.json" # [not win]
-    - "cp {{ RECIPE_DIR }}/../Menu/logo.png {{ PREFIX }}/Menu/logo.png" # [not win]
+    - "cp {{ RECIPE_DIR }}/../Menu/icon.png {{ PREFIX }}/Menu/icon.png" # [not win]
+    - "cp {{ RECIPE_DIR }}/../Menu/logo_horizontal.png {{ PREFIX }}/Menu/logo_horizontal.png" # [not win]
+    - "cp {{ RECIPE_DIR }}/../Menu/logo_vertical.png {{ PREFIX }}/Menu/logo_vertical.png" # [not win]
     - 'mkdir -p {{ PREFIX }}\Menu' # [win]
     - 'cp {{ RECIPE_DIR }}\..\Menu/plant-seg.json {{ PREFIX }}\Menu\{{ PKG_NAME }}_menu.json' # [win]
-    - 'cp {{ RECIPE_DIR }}\..\Menu\logo.png {{ PREFIX }}\Menu\logo.png' # [win]
+    - 'cp {{ RECIPE_DIR }}\..\Menu\icon.png {{ PREFIX }}\Menu\icon.png' # [win]
+    - 'cp {{ RECIPE_DIR }}\..\Menu\logo_horizontal.png {{ PREFIX }}\Menu\logo_horizontal.png' # [win]
+    - 'cp {{ RECIPE_DIR }}\..\Menu\logo_vertical.png {{ PREFIX }}\Menu\logo_vertical.png' # [win]
 
   entry_points:
     - plantseg = plantseg.run_plantseg:main
