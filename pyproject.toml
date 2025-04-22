@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "plantseg"
-version = "2.0.0b7"
+version = "2.0.0b8"
 authors = [
   { name = "Qin Yu", email = "qin.yu@embl.de" },
   { name = "Lorenzo Cerrone", email = "lorenzo.cerrone@uzh.ch" },
@@ -60,7 +60,7 @@ datas = "datas" # pyinstaller
 extend-select = ["I"]
 
 [tool.bumpversion]
-current_version = "2.0.0b7"
+current_version = "2.0.0b8"
 parse = """(?x)
     (?P<major>[0-9]+)               # Major version
     \\.(?P<minor>[0-9]+)            # Minor version
