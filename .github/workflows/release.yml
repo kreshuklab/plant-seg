@@ -58,20 +58,6 @@ jobs:
       #     pytest -s --cov --cov-report=xml
       #     conda deactivate
 
-      - name: conda build
-        run: |
-          conda create -n builder conda-build
-          conda activate builder
-          conda build conda-recipe/ --output-folder conda_bld
-          conda deactivate
-
-      - name: tar build
-        run: |
-          tar czf ./constructor/build.gz conda_bld/*
-          ls
-          echo "### constructor: ###"
-          ls ./constructor
-
       - name: Bump version
         id: bump
         uses: callowayproject/bump-my-version@master
@@ -92,15 +78,28 @@ jobs:
           name: ${{ steps.bump.outputs.current-version }}
           token: ${{ secrets.GITHUB_TOKEN }}
           make_latest: true
-          files: ./constructor/build.gz
-          fail_on_unmatched_files: true
+
+      - name: conda build
+        run: |
+          conda create -n builder conda-build
+          conda activate builder
+          conda build conda-recipe/ --output-folder conda_bld
+          conda deactivate
+
+      - name: tar build
+        run: |
+          tar czf ./constructor/build.gz conda_bld/*
+          ls
+          echo "### ls constructor: ###"
+          ls ./constructor
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-artifact
-          path: ./constructor/build.gz
+          path: constructor/build.gz
           overwrite: true
+          if-no-files-found: error
 
   build_installer:
     needs: test-and-build
