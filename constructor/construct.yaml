@@ -12,7 +12,7 @@ post_install: win_installer.bat # [win]
 post_install: unix_installer.sh # [unix]
 extra_files:
   - build.gz: "build.gz"
-license_file: ../gpl.txt
+license_file: ../LICENSE
 welcome_image: ../docs/logos/logo.png
 icon_image: ../Menu/logo.png
 register_python: false

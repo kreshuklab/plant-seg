@@ -16,80 +16,97 @@ on:
           - pre_n
 
 jobs:
-  # test:
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       # Conda requires a login shell in order to work properly
-  #       shell: bash -l {0}
-  #   env:
-  #     DISPLAY: ":99.0"
-  #
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Install Qt
-  #       uses: tlambert03/setup-qt-libs@v1
-  #
-  #     # Start X virtual framebuffer for GUI testing
-  #     - name: Start Xvfb
-  #       run: |
-  #         /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
-  #         --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
-  #
-  #     - name: Set Up Miniforge
-  #       uses: conda-incubator/setup-miniconda@v3
-  #       with:
-  #         python-version: 3.11
-  #         miniforge-version: latest
-  #         mamba-version: "*"
-  #         channels: conda-forge
-  #         environment-file: "environment-dev.yaml"
-  #         activate-environment: "plant-seg-dev"
-  #         conda-remove-defaults: true
-  #
-  #     - name: List Conda Environments
-  #       run: conda info --envs
-  #
-  #     - name: Run Tests with Pytest
-  #       run: |
-  #         conda activate plant-seg-dev
-  #         pytest -s --cov --cov-report=xml
-  #         conda deactivate
-  # release:
-  #   needs: test
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Bump version
-  #       id: bump
-  #       uses: callowayproject/bump-my-version@master
-  #       with:
-  #         args: "--verbose ${{ inputs.bump-type }}"
-  #         github-token: ${{ secrets.RELEASE_BUMP_MY_VERSION_PAT }}
-  #
-  #     - name: Check version
-  #       if: steps.bump.outputs.bumped == 'true'
-  #       run: |
-  #         echo "Version was bumped from ${{ steps.bump.outputs.previous-version }} to ${{ steps.bump.outputs.current-version }}!"
-  #
-  #     - name: Release
-  #       uses: softprops/action-gh-release@v2.2.1
-  #       with:
-  #         generate_release_notes: true
-  #         tag_name: ${{ steps.bump.outputs.current-version }}
-  #         name: ${{ steps.bump.outputs.current-version }}
-  #         token: ${{ secrets.GITHUB_TOKEN }}
-  #         make_latest: true
+  test-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Conda requires a login shell in order to work properly
+        shell: bash -l {0}
+    env:
+      DISPLAY: ":99.0"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: tlambert03/setup-qt-libs@v1
+
+      # Start X virtual framebuffer for GUI testing
+      - name: Start Xvfb
+        run: |
+          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
+          --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
+
+      - name: Set Up Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: 3.11
+          miniforge-version: latest
+          mamba-version: "*"
+          channels: conda-forge
+          environment-file: "environment-dev.yaml"
+          activate-environment: "plant-seg-dev"
+          conda-remove-defaults: true
+
+      - name: List Conda Environments
+        run: conda info --envs
+
+      - name: Run Tests with Pytest
+        run: |
+          conda activate plant-seg-dev
+          pytest -s --cov --cov-report=xml
+          conda deactivate
+
+      - name: conda build
+        run: |
+          conda create -n builder conda-build
+          conda activate builder
+          conda build conda-recipe/ --output-folder conda_bld
+          conda deactivate
+
+      - name: tar build
+        run: |
+          tar czf ./constructor/build.gz conda_bld/*
+
+      - name: Bump version
+        id: bump
+        uses: callowayproject/bump-my-version@master
+        with:
+          args: "--verbose ${{ inputs.bump-type }}"
+          github-token: ${{ secrets.RELEASE_BUMP_MY_VERSION_PAT }}
+
+      - name: Check version
+        if: steps.bump.outputs.bumped == 'true'
+        run: |
+          echo "Version was bumped from ${{ steps.bump.outputs.previous-version }} to ${{ steps.bump.outputs.current-version }}!"
+
+      - name: Release
+        uses: softprops/action-gh-release@v2.2.1
+        with:
+          generate_release_notes: true
+          tag_name: ${{ steps.bump.outputs.current-version }}
+          name: ${{ steps.bump.outputs.current-version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          make_latest: true
+          files: ./constructor/build.gz
+          fail_on_unmatched_files: true
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: ./constructor/build.gz
+          overwrite: true
 
   build_installer:
-    # needs: release
+    needs: test-and-build
     # runs-on: ubuntu-latest
     strategy:
       matrix:
         # os: ["ubuntu", "windows"]
         # os: ["windows"]
-        os: ["ubuntu-latest", "windows-latest"]
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
     # runs-on: self-hosted
     # runs-on: [self-hosted, "${{ matrix.os }}"]
     runs-on: ["${{ matrix.os }}"]
@@ -107,6 +124,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+          path: ./constructor
+      - name: Display downloaded files
+        run: ls ./constructor
+
       - name: Set Up Miniforge
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -120,17 +144,6 @@ jobs:
       - name: List Conda Environments
         run: |
           conda info --envs
-
-      - name: conda build
-        run: |
-          conda create -n builder conda-build
-          conda activate builder
-          conda build conda-recipe/ --output-folder conda_bld
-          conda deactivate
-
-      - name: tar build
-        run: |
-          tar czf ./constructor/build.gz conda_bld/*
 
       - name: create package
         run: |
