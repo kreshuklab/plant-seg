@@ -29,6 +29,7 @@ def run_viewer():
     # Show data tab by default
     viewer.window._dock_widgets["Input/Output"].show()
     viewer.window._dock_widgets["Input/Output"].raise_()
+    viewer.window._qt_viewer.set_welcome_visible(False)
 
     log("Plantseg is ready!", thread="Run viewer", level="info")
     napari.run()
