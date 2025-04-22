@@ -1,4 +1,5 @@
 import napari
+from qtpy import QtWidgets
 
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.containers import (
@@ -29,7 +30,17 @@ def run_viewer():
     # Show data tab by default
     viewer.window._dock_widgets["Input/Output"].show()
     viewer.window._dock_widgets["Input/Output"].raise_()
-    viewer.window._qt_viewer.set_welcome_visible(False)
+    # viewer.window._qt_viewer.set_welcome_visible(False)
+    welcome_widget = viewer.window._qt_viewer._welcome_widget
+
+    for i, child in enumerate(welcome_widget.findChildren(QtWidgets.QWidget)):
+        if isinstance(child, QtWidgets.QLabel):
+            if i == 3:
+                child.setText(
+                    "Welcome to PlantSeg!\n\nTo load an image use the menu on the right"
+                )
+            else:
+                child.setText("")
 
     log("Plantseg is ready!", thread="Run viewer", level="info")
     napari.run()
