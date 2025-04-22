@@ -152,3 +152,11 @@ jobs:
           conda activate constructor
           python constructor/uploader.py ${{ secrets.SEAFILE_API_TOKEN }}
           conda deactivate
+
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-artifact-{{ matrix.os }}
+          path: constructor/PlantSeg*
+          overwrite: true
+          if-no-files-found: error
