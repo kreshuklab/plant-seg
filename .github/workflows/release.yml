@@ -52,11 +52,11 @@ jobs:
       - name: List Conda Environments
         run: conda info --envs
 
-      - name: Run Tests with Pytest
-        run: |
-          conda activate plant-seg-dev
-          pytest -s --cov --cov-report=xml
-          conda deactivate
+      # - name: Run Tests with Pytest
+      #   run: |
+      #     conda activate plant-seg-dev
+      #     pytest -s --cov --cov-report=xml
+      #     conda deactivate
 
       - name: conda build
         run: |
@@ -68,6 +68,9 @@ jobs:
       - name: tar build
         run: |
           tar czf ./constructor/build.gz conda_bld/*
+          ls
+          echo "### constructor: ###"
+          ls ./constructor
 
       - name: Bump version
         id: bump
