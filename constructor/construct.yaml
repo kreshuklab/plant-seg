@@ -17,4 +17,4 @@ welcome_image: ../Menu/logo_horizontal.png # [unix]
 welcome_image: ../Menu/logo_vertical.png # [win]
 icon_image: ../Menu/icon.png
 register_python: false
-initialize_conda: true
+initialize_conda: false

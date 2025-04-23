@@ -16,13 +16,14 @@ theme:
     # Palette toggle for light mode
     - scheme: default
       primary: green
+      accent: light-green
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
 
     # Palette toggle for dark mode
     - scheme: slate
-      # primary: teal
+      primary: green
       accent: light-green
       toggle:
         icon: material/brightness-4
@@ -64,6 +65,8 @@ markdown_extensions:
   - pymdownx.snippets:
       base_path: docs/snippets
       check_paths: true
+  - toc:
+      permalink: true
 
 plugins:
   - search
@@ -118,15 +121,15 @@ nav:
   - API:
       - chapters/python_api/index.md
       - tasks:
-        - plantseg.tasks.io_tasks: chapters/python_api/tasks/io_tasks.md
-        - plantseg.tasks.dataprocessing_tasks: chapters/python_api/tasks/dataprocessing_tasks.md
-        - plantseg.tasks.segmentation_tasks: chapters/python_api/tasks/segmentation_tasks.md
-        - plantseg.tasks.prediction_tasks: chapters/python_api/tasks/prediction_tasks.md
+          - plantseg.tasks.io_tasks: chapters/python_api/tasks/io_tasks.md
+          - plantseg.tasks.dataprocessing_tasks: chapters/python_api/tasks/dataprocessing_tasks.md
+          - plantseg.tasks.segmentation_tasks: chapters/python_api/tasks/segmentation_tasks.md
+          - plantseg.tasks.prediction_tasks: chapters/python_api/tasks/prediction_tasks.md
       - functionals:
-        - plantseg.io: chapters/python_api/functionals/io.md
-        - plantseg.functionals.dataprocessing: chapters/python_api/functionals/data_processing.md
-        - plantseg.functionals.prediction: chapters/python_api/functionals/cnn_prediction.md
-        - plantseg.functionals.segmentation: chapters/python_api/functionals/segmentation.md
+          - plantseg.io: chapters/python_api/functionals/io.md
+          - plantseg.functionals.dataprocessing: chapters/python_api/functionals/data_processing.md
+          - plantseg.functionals.prediction: chapters/python_api/functionals/cnn_prediction.md
+          - plantseg.functionals.segmentation: chapters/python_api/functionals/segmentation.md
 
   - PlantSeg v1:
       - chapters/plantseg_legacy/installation.md

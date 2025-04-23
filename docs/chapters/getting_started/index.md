@@ -5,13 +5,15 @@ PlantSeg can be used in three different ways: interactively (using the Napari vi
 ## Interactive PlantSeg with Napari Viewer
 
 PlantSeg app can be started from the terminal.
-First, activate the newly created conda environment with:
+After [installing PlantSeg](/plant-seg/chapters/getting_started/installation) using the installer, there should be a menu entry for to launch PlantSeg.
+
+Alternatively, launch PlantSeg in the terminal. First activate your environment (by default this is the installation directory, change the command if needed) with:
 
 ```bash
-mamba activate plant-seg
+conda activate ~/plantseg
 ```
 
-then, start the plantseg in napari
+then, start PlantSeg with the napari GUI:
 
 ```bash
 plantseg --napari
@@ -23,13 +25,13 @@ A more in depth guide can be found in our [documentation (GUI)](../plantseg_inte
 
 PlantSeg can be configured using `YAML` config files.
 
-First, activate the newly created conda environment with:
+First, activate the newly created conda environment (by default this is the installation directory, change the command if needed) with:
 
 ```bash
-mamba activate plant-seg
+conda activate ~/plantseg
 ```
 
-then, one can just start the pipeline with
+then, start the pipeline with:
 
 ```bash
 plantseg --config CONFIG_PATH
