@@ -1,96 +1,44 @@
 # Installation
 
-This is the installation guide for the latest PlantSeg. Please check the installation guide for PlantSeg v1 at [PlantSeg Legacy Installation](../plantseg_legacy/installation.md).
+This is the installation guide for the latest PlantSeg.
+Please check the installation guide for PlantSeg v1 at [PlantSeg Legacy Installation](../plantseg_legacy/installation.md).
 
-## Prerequisites for Conda package
+## Download
 
-* Linux, Windows, macOS (not all features are available on macOS)
-* (Optional) Nvidia GPU with official Nvidia drivers installed for GPU acceleration
+Download the installer from [heibox](https://heibox.uni-heidelberg.de/d/72b4bd3ba5f14409bfee/) and choose according to your platform.
 
-## Install Mamba
+[:material-download: Download](https://heibox.uni-heidelberg.de/d/72b4bd3ba5f14409bfee/){ .md-button .md-button--primary target="_blank"}
 
-The easiest way to install PlantSeg is by using the [conda (Anaconda)](https://www.anaconda.com/) or
-[mamba (Miniforge)](https://mamba.readthedocs.io/en/latest/index.html) package manager. We recommend using `mamba` because it is faster and usually more consistent than `conda`.
+## Installation
 
-=== "Linux"
+The installer comes complete with its own python installation. During the installation further dependencies need to be downloaded.
 
-    To download Miniforge open a terminal and type:
+!!! warning "First Start"
 
+    The first start can be quite slow, as the machine learning models need to be downloaded.
+
+=== "Linux and MacOs"
+
+    Make the installer script executable, then run it.
     ```bash
-    curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
-    bash Miniforge3-$(uname)-$(uname -m).sh
+    chmod +x PlantSeg*.sh
     ```
 
-    Then install by typing:
+===  "Windows"
+
+    Execute the installer. As the installer is not signed you might need to confirm the download and that you want to run the installer.
+
+=== "Conda"
+
+    If you want to install PlantSeg without the installer, you need to have conda and git installed. (We recommend Microforge to get conda, see [installing mamba](../contributing/#install-mamba))
 
     ```bash
-    bash Miniforge3-$(uname)-$(uname -m).sh
+    git clone https://github.com/kreshuklab/plant-seg.git
+    cd plant-seg
+    conda env create environment.yaml
+    conda activate plant-seg
+    plantseg --napari
     ```
-
-    and follow the installation instructions.
-    Please refer to the [Miniforge repo](https://github.com/conda-forge/miniforge) for more information, troubleshooting and uninstallation instructions.
-    The miniforge installation file `Miniforge3-*.sh` can be deleted now.
-
-=== "Windows/macOS"
-    The first step required to use the pipeline is installing mamba. The installation can be done by downloading the installer from the [Miniforge repo](https://github.com/conda-forge/miniforge). There you can find the download links for the latest version of Miniforge, troubleshooting and uninstallation instructions.
-
-## Install PlantSeg using Mamba
-
-PlantSeg can be installed directly by executing in the terminal (or PowerShell on Windows). For `conda` users, the command is identical, just replace `mamba` with `conda`.
-
-=== "Linux"
-
-    * NVIDIA GPU version, CUDA=12.x
-
-        ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 plant-seg --no-channel-priority
-        ```
-
-    * NVIDIA GPU version, CUDA=11.x
-
-        ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 plant-seg --no-channel-priority
-        ```
-
-    * CPU version
-
-        ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly plant-seg --no-channel-priority
-        ```
-
-=== "Windows"
-
-    * NVIDIA GPU version, CUDA=12.x
-
-        ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 nifty=1.2.1=*_4 plant-seg --no-channel-priority
-        ```
-
-    * NVIDIA GPU version, CUDA=11.x
-
-        ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=11.8 nifty=1.2.1=*_4 plant-seg --no-channel-priority
-        ```
-
-    * CPU version
-
-        ```bash
-        mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly nifty=1.2.1=*_4 plant-seg --no-channel-priority
-        ```
-
-=== "macOS"
-
-    * Apple silicon version
-
-        ```bash
-        mamba create -n plant-seg -c pytorch -c conda-forge python=3.11 pytorch::pytorch plant-seg --no-channel-priority
-        ```
-
-If you used older versions of PlantSeg, please delete the old config files in `~/.plantseg_models/configs/` after installing new PlantSeg.
-
-The above command will create new conda environment `plant-seg` together with all required dependencies.
-
-Please refer to the [PyTorch](https://pytorch.org/get-started/locally/) website for more information on the available versions of PyTorch and the required CUDA version. The GPU version of Pytorch will also work on CPU only machines but has a much larger installation on disk.
 
 ## Optional dependencies
 
