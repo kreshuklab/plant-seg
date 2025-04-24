@@ -118,6 +118,11 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+      - name: Checkout new release
+        run: |
+          git fetch
+          git checkout master
+          cat plantseg/__version__.py
 
       - uses: actions/download-artifact@v4
         with:
