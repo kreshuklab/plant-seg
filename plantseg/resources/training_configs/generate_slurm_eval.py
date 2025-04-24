@@ -1,15 +1,15 @@
 import os
 
-BASE_DIR = '/g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/'
+BASE_DIR = "/g/kreshuk/wolny/workspace/plant-seg/plantseg/resources/training_configs/"
 
 GT_PATHS = {
-    'root': '/g/kreshuk/wolny/Datasets/LateralRoot/Test',
-    'ovules': '/g/kreshuk/wolny/Datasets/Ovules/test/Lorenzo/ds2',
+    "root": "/g/kreshuk/wolny/Datasets/LateralRoot/Test",
+    "ovules": "/g/kreshuk/wolny/Datasets/Ovules/test/Lorenzo/ds2",
 }
 
 
 def generate_script(net_path, dataset):
-    predictions_path = os.path.join(net_path, 'predictions')
+    predictions_path = os.path.join(net_path, "predictions")
     return f"""#!/bin/bash
 
 #SBATCH -A kreshuk                              
@@ -38,13 +38,13 @@ def _get_net_paths(base_dir, dataset):
 
 
 if __name__ == "__main__":
-    dataset = 'root'
+    dataset = "root"
     i = 1
-    base_dir = './grid_search'
+    base_dir = "./grid_search"
     for net_path in _get_net_paths(base_dir, dataset):
         slurm_script = generate_script(net_path, dataset)
-        slurm_dir = os.path.join(base_dir, 'slurm')
+        slurm_dir = os.path.join(base_dir, "slurm")
         os.makedirs(slurm_dir, exist_ok=True)
-        with open(os.path.join(slurm_dir, f'eval_{dataset}_{i}.sh'), 'w') as f:
+        with open(os.path.join(slurm_dir, f"eval_{dataset}_{i}.sh"), "w") as f:
             f.write(slurm_script)
         i += 1

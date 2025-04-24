@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.functionals.dataprocessing import fix_layout
@@ -20,6 +21,7 @@ def unet_prediction_task(
     disable_tqdm: bool = False,
     config_path: Path | None = None,
     model_weights_path: Path | None = None,
+    _tracker: Optional["PBar_Tracker"] = None,
 ) -> list[PlantSegImage]:
     """
     Apply a trained U-Net model to a PlantSegImage object.
@@ -50,6 +52,7 @@ def unet_prediction_task(
         disable_tqdm=disable_tqdm,
         config_path=config_path,
         model_weights_path=model_weights_path,
+        tracker=_tracker,
     )
     assert pmaps.ndim == 4, f"Expected 4D CZXY prediction, got {pmaps.ndim}D"
 
@@ -57,7 +60,9 @@ def unet_prediction_task(
 
     for i, pmap in enumerate(pmaps):
         # Input layout is always ZYX this loop
-        pmap = fix_layout(pmap, input_layout=ImageLayout.ZYX.value, output_layout=input_layout.value)
+        pmap = fix_layout(
+            pmap, input_layout=ImageLayout.ZYX.value, output_layout=input_layout.value
+        )
         new_images.append(
             image.derive_new(
                 pmap,
@@ -75,6 +80,7 @@ def biio_prediction_task(
     image: PlantSegImage,
     model_id: str,
     suffix: str = "_prediction",
+    _tracker: Optional["PBar_Tracker"] = None,
 ) -> list[PlantSegImage]:
     data = image.get_data()
     input_layout = image.image_layout.value
@@ -93,7 +99,7 @@ def biio_prediction_task(
                 pmap,
                 name=f"{image.name}_{suffix}_{name}",
                 semantic_type=SemanticType.PREDICTION,
-                image_layout='CZYX',
+                image_layout="CZYX",
             )
         )
     return new_images

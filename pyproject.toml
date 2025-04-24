@@ -1,16 +1,63 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plantseg"
+version = "2.0.0b3"
+authors = [
+  { name = "Qin Yu", email = "qin.yu@embl.de" },
+  { name = "Lorenzo Cerrone", email = "lorenzo.cerrone@uzh.ch" },
+  { name = "Adrian Wolny" },
+]
+maintainers = [
+  { name = "Kai Riedmiller", email = "kai.riedmiller@iwr.uni-heidelberg.de" },
+]
+description = "Image segmentation software in 2D and 3D"
+readme = "README.md"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+]
+requires-python = ">=3.11"
+
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "ruff",
+  "pytest",
+  "pytest-qt",
+  "pytest-mock",
+  "pytest-cov",
+  "requests-mock",
+  "pre-commit",
+  "bump-my-version",
+]
+docs = [
+  "mkdocs-material",
+  "mkdocs-autorefs",
+  "mkdocs-git-revision-date-localized-plugin",
+  "mkdocs-git-committers-plugin-2",
+  "mkdocstrings-python",
+]
+
+[project.urls]
+Homepage = "https://kreshuklab.github.io/plant-seg/"
+
+[project.scripts]
+plantseg = "plantseg.run_plantseg:main"
+
+
+# Tools
+
 [tool.typos.default.extend-words]
 nd = "nd"       # N-dimensional (ND)
 ome = "ome"     # Open Microscopy Environment (OME)
 datas = "datas" # pyinstaller
 
-[tool.ruff]
-line-length = 120
-
 [tool.ruff.lint]
 extend-select = ["I"]
-
-[tool.ruff.format]
-quote-style = "preserve"
 
 [tool.bumpversion]
 current_version = "2.0.0b3"
@@ -24,8 +71,8 @@ parse = """(?x)
     )?
 """
 serialize = [
-    "{major}.{minor}.{patch}{pre_label}{pre_n}", # Pre-release format: 2.0.0a0
-    "{major}.{minor}.{patch}",                   # Stable version format: 2.0.0
+  "{major}.{minor}.{patch}{pre_label}{pre_n}", # Pre-release format: 2.0.0a0
+  "{major}.{minor}.{patch}",                   # Stable version format: 2.0.0
 ]
 search = "{current_version}"
 replace = "{new_version}"
@@ -36,6 +83,10 @@ commit = true
 allow_dirty = false
 commit_args = "--no-verify"
 message = "ci(bump-my-version): {current_version} → {new_version}"
+setup_hooks = [
+  "git config --global user.email \"bump-my-version@github.actions\"",
+  "git config --global user.name \"bump-my-version\"",
+]
 
 [tool.bumpversion.parts.pre_label]
 optional_value = "stable"
@@ -43,3 +94,9 @@ values = ["a", "b", "rc", "stable"]
 
 [[tool.bumpversion.files]]
 filename = "plantseg/__version__.py"
+
+[[tool.bumpversion.files]]
+filename = "constructor/construct.yaml"
+
+[[tool.bumpversion.files]]
+filename = "conda-recipe/meta.yaml"

@@ -73,7 +73,7 @@ def _get_bboxes(segmentation, labels_idx):
 
 
 def get_bboxes(segmentation, slack=(1, 3, 3)):
-    segmentation = segmentation.astype('int64')
+    segmentation = segmentation.astype("int64")
     labels_idx = np.unique(segmentation)
     bboxes = _get_bboxes(segmentation, labels_idx)
 

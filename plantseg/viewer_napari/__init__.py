@@ -10,12 +10,23 @@ logger_viewer_napari.addHandler(napari_handler)
 logger_viewer_napari.propagate = False
 
 
-def log(message: str, thread: str, level: str = 'info', logger: logging.Logger = logger_viewer_napari):
+def log(
+    message: str,
+    thread: str,
+    level: str = "info",
+    logger: logging.Logger = logger_viewer_napari,
+):
     """Wrapper function for logging into Napari GUI.
 
     For historical reasons, the `thread` argument is used to identify the widget that is logging.
     """
-    logger.log(logging.getLevelName(level.upper()), message, extra={'widget_name': thread})
+    logger.log(
+        logging.getLevelName(level.upper()), message, extra={"widget_name": thread}
+    )
 
 
-log(message="Napari logger configured. Napari logger name: {__name__}", thread="Napari GUI Logger", level="info")
+log(
+    message="Napari logger configured. Napari logger name: {__name__}",
+    thread="Napari GUI Logger",
+    level="info",
+)

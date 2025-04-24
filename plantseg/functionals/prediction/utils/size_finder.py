@@ -51,7 +51,9 @@ def find_patch_and_halo_shapes(
     """
     shape_volume = np.array(full_volume_shape)
     shape_patch_max = np.array(max_patch_shape)
-    shape_halo_min = np.array(min_halo_shape) // 2 if both_sides else np.array(min_halo_shape)
+    shape_halo_min = (
+        np.array(min_halo_shape) // 2 if both_sides else np.array(min_halo_shape)
+    )
 
     n_voxels_patch = np.prod(shape_patch_max)
     n_voxels_sample = np.prod(shape_volume)
@@ -66,7 +68,9 @@ def find_patch_and_halo_shapes(
         adjusted_patch_shape = np.minimum(shape_volume, shape_patch_max)
         if count_shrink == 2:
             remaining_dim = np.flatnonzero(~dim_shrink)
-            adjusted_patch_shape[remaining_dim] = n_voxels_patch // np.prod(shape_volume[dim_shrink])
+            adjusted_patch_shape[remaining_dim] = n_voxels_patch // np.prod(
+                shape_volume[dim_shrink]
+            )
         elif count_shrink == 1:
             remaining_dims = np.flatnonzero(~dim_shrink)
             max_area = n_voxels_patch // shape_volume[dim_shrink]
@@ -113,10 +117,14 @@ def find_a_max_patch_shape(
                     low = mid + 1  # Try larger patches
                 except RuntimeError as e:
                     if "out of memory" in str(e):
-                        logger.info(f"Encountered '{e}' at patch shape {patch_shape}, reducing it.")
+                        logger.info(
+                            f"Encountered '{e}' at patch shape {patch_shape}, reducing it."
+                        )
                         high = mid - 1  # Try smaller patches
                     else:
-                        logger.warning(f"Encountered '{e}' at patch shape {patch_shape}, unexpected but continuing.")
+                        logger.warning(
+                            f"Encountered '{e}' at patch shape {patch_shape}, unexpected but continuing."
+                        )
                         high = mid - 1  # Try smaller patches
                 finally:
                     del x
@@ -144,7 +152,11 @@ def find_a_max_patch_shape(
     del model
     torch.cuda.empty_cache()
 
-    return (1, 16 * best_n, 16 * best_n) if nn_dim == 2 else (16 * best_n, 16 * best_n, 16 * best_n)
+    return (
+        (1, 16 * best_n, 16 * best_n)
+        if nn_dim == 2
+        else (16 * best_n, 16 * best_n, 16 * best_n)
+    )
 
 
 def find_batch_size(
@@ -178,11 +190,15 @@ def find_batch_size(
     with torch.no_grad():
         for batch_size in [1, 2, 4, 8, 16, 32, 64, 128]:
             try:
-                x = torch.randn((batch_size, in_channels) + actual_patch_shape).to(device)
+                x = torch.randn((batch_size, in_channels) + actual_patch_shape).to(
+                    device
+                )
                 _ = model(x)
             except RuntimeError as e:
                 if "out of memory" in str(e):
-                    logger.info(f"Encountered '{e}' at batch size {batch_size}, halving it.")
+                    logger.info(
+                        f"Encountered '{e}' at batch size {batch_size}, halving it."
+                    )
                     batch_size //= 2
                     break
                 else:

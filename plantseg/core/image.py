@@ -159,7 +159,9 @@ class ImageProperties(BaseModel):
             raise ValueError(f"Image type {self.image_type} not recognized")
 
 
-def scale_to_voxelsize(scale: tuple[float, ...], layout: ImageLayout, unit: str = 'um') -> VoxelSize:
+def scale_to_voxelsize(
+    scale: tuple[float, ...], layout: ImageLayout, unit: str = "um"
+) -> VoxelSize:
     if layout == ImageLayout.YX:
         assert len(scale) == 2, f"Scale should have 2 elements for layout {layout}"
         return VoxelSize(voxels_size=(1.0, scale[0], scale[1]), unit=unit)
@@ -177,7 +179,9 @@ def scale_to_voxelsize(scale: tuple[float, ...], layout: ImageLayout, unit: str 
         return VoxelSize(voxels_size=(scale[1], scale[2], scale[3]), unit=unit)
 
     elif layout == ImageLayout.ZCYX:
-        raise ValueError(f"Image layout {layout} not supported, should have been converted to CZYX")
+        raise ValueError(
+            f"Image layout {layout} not supported, should have been converted to CZYX"
+        )
 
     else:
         raise ValueError(f"Image layout {layout} not recognized")
@@ -226,7 +230,9 @@ class PlantSegImage:
             if key in property_dict:
                 property_dict[key] = value
             else:
-                raise ValueError(f"Property {key} not recognized, should be one of {property_dict.keys()}")
+                raise ValueError(
+                    f"Property {key} not recognized, should be one of {property_dict.keys()}"
+                )
 
         new_properties = ImageProperties(**property_dict)
         return PlantSegImage(data, new_properties)
@@ -285,7 +291,9 @@ class PlantSegImage:
         )
 
         if image_type != properties.image_type:
-            raise ValueError(f"Image type {image_type} does not match semantic type {properties.semantic_type}")
+            raise ValueError(
+                f"Image type {image_type} does not match semantic type {properties.semantic_type}"
+            )
 
         ps_image = cls(layer.data, properties)  # type: ignore
         ps_image._id = id
@@ -319,7 +327,9 @@ class PlantSegImage:
 
         return LayerDataTuple(layer_data_tuple)
 
-    def to_h5(self, path: Path | str, key: str | None, mode: Literal["a", "w", "w-"] = "a") -> None:
+    def to_h5(
+        self, path: Path | str, key: str | None, mode: Literal["a", "w", "w-"] = "a"
+    ) -> None:
         """Save the image with all metadata to an h5 file.
 
         Args:
@@ -332,7 +342,9 @@ class PlantSegImage:
             path = Path(path)
 
         if path.suffix.lower() not in H5_EXTENSIONS:
-            raise ValueError(f"File format {path.suffix} not supported, should be one of {H5_EXTENSIONS}")
+            raise ValueError(
+                f"File format {path.suffix} not supported, should be one of {H5_EXTENSIONS}"
+            )
 
         key = key if key is not None else self.name
 
@@ -393,31 +405,43 @@ class PlantSegImage:
 
         return data
 
-    def _check_shape(self, data: np.ndarray, properties: ImageProperties) -> tuple[np.ndarray, ImageProperties]:
+    def _check_shape(
+        self, data: np.ndarray, properties: ImageProperties
+    ) -> tuple[np.ndarray, ImageProperties]:
         if self.image_layout == ImageLayout.ZYX:
             if data.shape[0] == 1:
-                logger.warning("Image layout is ZYX but data has only one z slice, casting to YX")
+                logger.warning(
+                    "Image layout is ZYX but data has only one z slice, casting to YX"
+                )
                 properties.image_layout = ImageLayout.YX
                 return data[0], properties
 
         elif self.image_layout == ImageLayout.CZYX:
             if data.shape[0] == 1 and data.shape[1] == 1:
-                logger.warning("Image layout is CZYX but data has only one z slice and one channel, casting to YX")
+                logger.warning(
+                    "Image layout is CZYX but data has only one z slice and one channel, casting to YX"
+                )
                 properties.image_layout = ImageLayout.YX
                 return data[0, 0], properties
 
             elif data.shape[0] == 1 and data.shape[1] > 1:
-                logger.warning("Image layout is CZYX but data has only one channel, casting to ZYX")
+                logger.warning(
+                    "Image layout is CZYX but data has only one channel, casting to ZYX"
+                )
                 properties.image_layout = ImageLayout.ZYX
                 return data[0], properties
 
             elif data.shape[0] > 1 and data.shape[1] == 1:
-                logger.warning("Image layout is CZYX but data has only one z slice, casting to CYX")
+                logger.warning(
+                    "Image layout is CZYX but data has only one z slice, casting to CYX"
+                )
                 properties.image_layout = ImageLayout.CYX
                 return data[:, 0], properties
 
         elif self.image_layout == ImageLayout.ZCYX:
-            logger.warning("Image layout is ZCYX but should have been converted to CZYX. PlantSeg is doing this now.")
+            logger.warning(
+                "Image layout is ZCYX but should have been converted to CZYX. PlantSeg is doing this now."
+            )
             properties.image_layout = ImageLayout.CZYX
             data = np.moveaxis(data, 0, 1)
             return self._check_shape(data, properties)
@@ -427,7 +451,9 @@ class PlantSegImage:
     def _check_labels_have_no_channels(self) -> None:
         if self.image_type == ImageType.LABEL:
             if self.channel_axis is not None:
-                raise ValueError(f"Label images should not have channel axis, but found layout {self.image_layout}")
+                raise ValueError(
+                    f"Label images should not have channel axis, but found layout {self.image_layout}"
+                )
 
     @property
     def requires_scaling(self) -> bool:
@@ -436,7 +462,9 @@ class PlantSegImage:
             return True
         return False
 
-    def _get_data_channel_layout(self, channel: int | None = None, normalize_01: bool = True) -> np.ndarray:
+    def _get_data_channel_layout(
+        self, channel: int | None = None, normalize_01: bool = True
+    ) -> np.ndarray:
         """Get the data if the layout is multichannel."""
         if channel is None:
             data = self._data
@@ -466,7 +494,9 @@ class PlantSegImage:
             data = dp.normalize_01(data)
         return data
 
-    def get_data(self, channel: int | None = None, normalize_01: bool = True) -> np.ndarray:
+    def get_data(
+        self, channel: int | None = None, normalize_01: bool = True
+    ) -> np.ndarray:
         """Returns the data of the image.
 
         Args:
@@ -496,7 +526,9 @@ class PlantSegImage:
         elif self.image_layout == ImageLayout.CZYX:
             return (1.0, self.voxel_size.z, self.voxel_size.x, self.voxel_size.y)
         elif self.image_layout == ImageLayout.ZCYX:
-            raise ValueError(f"Image layout {self.image_layout} not supported, should have been converted to CZYX")
+            raise ValueError(
+                f"Image layout {self.image_layout} not supported, should have been converted to CZYX"
+            )
         else:
             raise ValueError(f"Image layout {self.image_layout} not recognized")
 
@@ -639,13 +671,19 @@ def _image_postprocessing(
         elif export_dtype in ["float32", "float64"]:
             data = data.astype(export_dtype)
         else:
-            raise ValueError(f"Data type {export_dtype} not recognized, should be uint8, uint16, float32 or float64")
+            raise ValueError(
+                f"Data type {export_dtype} not recognized, should be uint8, uint16, float32 or float64"
+            )
     elif image.image_type == ImageType.LABEL:
         if export_dtype in ["float32", "float64"]:
-            raise ValueError(f"Data type {export_dtype} not recognized for label image, should be uint8 or uint16")
+            raise ValueError(
+                f"Data type {export_dtype} not recognized for label image, should be uint8 or uint16"
+            )
         data = data.astype(export_dtype)
     else:
-        raise ValueError(f"Image type {image.image_type} not recognized, should be image or label")
+        raise ValueError(
+            f"Image type {image.image_type} not recognized, should be image or label"
+        )
 
     return data, new_voxel_size
 
@@ -673,7 +711,9 @@ def save_image(
         data_type (str): data type to save the image.
     """
 
-    data, voxel_size = _image_postprocessing(image, scale_to_origin=scale_to_origin, export_dtype=data_type)
+    data, voxel_size = _image_postprocessing(
+        image, scale_to_origin=scale_to_origin, export_dtype=data_type
+    )
 
     directory = Path(export_directory)
     directory.mkdir(parents=True, exist_ok=True)
@@ -685,7 +725,12 @@ def save_image(
 
     if export_format == "tiff":
         file_path_name = directory / f"{name_pattern}.tiff"
-        create_tiff(path=file_path_name, stack=data, voxel_size=voxel_size, layout=image.image_layout.value)
+        create_tiff(
+            path=file_path_name,
+            stack=data,
+            voxel_size=voxel_size,
+            layout=image.image_layout.value,
+        )
 
     elif export_format == "zarr":
         if key is None or key == "":
@@ -707,4 +752,6 @@ def save_image(
         create_h5(path=file_path_name, stack=data, voxel_size=voxel_size, key=key)
 
     else:
-        raise ValueError(f"Export format {export_format} not recognized, should be tiff, h5 or zarr")
+        raise ValueError(
+            f"Export format {export_format} not recognized, should be tiff, h5 or zarr"
+        )

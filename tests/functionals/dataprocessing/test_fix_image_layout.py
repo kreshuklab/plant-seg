@@ -3,10 +3,6 @@ import pytest
 
 from plantseg.functionals.dataprocessing import (
     fix_layout,
-    fix_layout_to_CYX,
-    fix_layout_to_CZYX,
-    fix_layout_to_YX,
-    fix_layout_to_ZYX,
 )
 
 

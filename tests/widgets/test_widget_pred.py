@@ -3,9 +3,17 @@ import pytest
 from magicgui import magicgui
 from napari.types import LayerDataTuple
 
-from plantseg.core.image import ImageLayout, ImageProperties, PlantSegImage, SemanticType
+from plantseg.core.image import (
+    ImageLayout,
+    ImageProperties,
+    PlantSegImage,
+    SemanticType,
+)
 from plantseg.io.voxelsize import VoxelSize
-from plantseg.viewer_napari.widgets.prediction import UNetPredictionMode, widget_unet_prediction
+from plantseg.viewer_napari.widgets.prediction import (
+    UNetPredictionMode,
+    widget_unet_prediction,
+)
 
 
 @pytest.fixture
@@ -32,13 +40,13 @@ def test_widget_unet_prediction_advanced(qtbot, make_napari_viewer_proxy, sample
     viewer = make_napari_viewer_proxy()
     widget_add_image(sample_image)
 
-    model_name = 'confocal_2D_unet_ovules_ds2x'
+    model_name = "confocal_2D_unet_ovules_ds2x"
     count_layers = len(viewer.layers)
     widget_unet_prediction(
         image=viewer.layers[sample_image.name],
         mode=UNetPredictionMode.PLANTSEG,
         model_name=model_name,
-        device='cpu',
+        device="cpu",
         advanced=True,
         patch_size=(1, 96, 96),
         patch_halo=(0, 16, 16),
@@ -52,11 +60,17 @@ def test_widget_unet_prediction_advanced(qtbot, make_napari_viewer_proxy, sample
 
 
 def test_widget_unet_prediction_advanced_default(qtbot):
-    assert widget_unet_prediction.patch_size.value[0] != 1, "Patch size should not be 1 by default"
+    assert widget_unet_prediction.patch_size.value[0] != 1, (
+        "Patch size should not be 1 by default"
+    )
 
-    model_name = 'confocal_2D_unet_ovules_ds2x'
+    model_name = "confocal_2D_unet_ovules_ds2x"
     widget_unet_prediction.model_name.value = model_name
     widget_unet_prediction.advanced.value = True
-    qtbot.waitUntil(lambda: widget_unet_prediction.patch_size.value[0] != 128, timeout=30000)
+    qtbot.waitUntil(
+        lambda: widget_unet_prediction.patch_size.value[0] != 128, timeout=30000
+    )
 
-    assert widget_unet_prediction.patch_size.value[0] == 1, "Patch size should be 1 for 2D UNet"
+    assert widget_unet_prediction.patch_size.value[0] == 1, (
+        "Patch size should be 1 for 2D UNet"
+    )

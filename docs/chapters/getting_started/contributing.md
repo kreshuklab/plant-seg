@@ -7,7 +7,7 @@ PlantSeg is an open-source project, and we welcome contributions from the commun
 To set up the development environment, run:
 
 ```bash
-mamba env create -f environment-dev.yml
+mamba env create -f environment-dev.yaml
 conda activate plant-seg-dev
 ```
 
@@ -23,7 +23,7 @@ Please refer to [Python API](../python_api/index.md).
 
 ## Coding Style
 
-PlantSeg uses _Ruff_ for linting and formatting. _Ruff_ is compatible with _Black_ for formatting. Ensure you have _Black_ set as the formatter with a line length of 120.
+PlantSeg uses _Ruff_ for linting and formatting. _Ruff_ is compatible with _Black_ for formatting.
 
 ## Before Submitting a Pull Request
 

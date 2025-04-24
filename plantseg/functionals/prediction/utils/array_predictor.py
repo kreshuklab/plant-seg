@@ -11,7 +11,11 @@ from plantseg.functionals.prediction.utils.array_dataset import (
     default_prediction_collate,
     remove_padding,
 )
-from plantseg.functionals.prediction.utils.size_finder import _is_2d_model, find_batch_size, will_CUDA_OOM
+from plantseg.functionals.prediction.utils.size_finder import (
+    _is_2d_model,
+    find_batch_size,
+    will_CUDA_OOM,
+)
 from plantseg.training.embeddings import embeddings_to_affinities
 
 logger = logging.getLogger(__name__)
@@ -50,6 +54,7 @@ class ArrayPredictor:
         verbose_logging (bool): Flag to enable detailed logging.
         disable_tqdm (bool): Flag to disable tqdm progress bars during prediction.
         is_embedding (bool): Flag to determine if the output should be treated as embeddings.
+        tracker (Optional[PBar_Tracker]): Relais progress bar information from task to widget.
     """
 
     def __init__(
@@ -65,17 +70,27 @@ class ArrayPredictor:
         is_embedding: bool = False,
         verbose_logging: bool = False,
         disable_tqdm: bool = False,
+        tracker=None,
     ):
         self.device = device
+        self.tracker = tracker
 
         if single_batch_mode:  # then check if OOM happens at batch size 1
             self.batch_size = 1
-            if device != "cpu" and will_CUDA_OOM(model, in_channels, patch, patch_halo, self.batch_size, device):
-                raise RuntimeError("OOM error will happen. Please reduce the patch size/halo.")
+            if device != "cpu" and will_CUDA_OOM(
+                model, in_channels, patch, patch_halo, self.batch_size, device
+            ):
+                raise RuntimeError(
+                    "OOM error will happen. Please reduce the patch size/halo."
+                )
         else:  # find the max batch size without causing OOM, may be [0, 1, 2, 4, 8, 16, 32, 64, 128]
-            self.batch_size = find_batch_size(model, in_channels, patch, patch_halo, device)
+            self.batch_size = find_batch_size(
+                model, in_channels, patch, patch_halo, device
+            )
             if self.batch_size < 1:
-                raise RuntimeError("Could not determine a feasible batch size for the given model and patch size/halo.")
+                raise RuntimeError(
+                    "Could not determine a feasible batch size for the given model and patch size/halo."
+                )
 
         logger.info(f"Using batch size of {self.batch_size} for prediction")
 
@@ -97,7 +112,9 @@ class ArrayPredictor:
         self.is_embedding = is_embedding
 
     def __call__(self, test_dataset: Dataset) -> np.ndarray:
-        assert isinstance(test_dataset, ArrayDataset), "Dataset must be an instance of ArrayDataset"
+        assert isinstance(test_dataset, ArrayDataset), (
+            "Dataset must be an instance of ArrayDataset"
+        )
         assert self.patch_halo == test_dataset.halo_shape, (
             f"Predictor halo shape {self.patch_halo} does not match dataset halo shape {test_dataset.halo_shape}"
         )
@@ -128,7 +145,9 @@ class ArrayPredictor:
         prediction_maps_shape = (out_channels,) + volume_shape
 
         if self.verbose_logging:
-            logger.info(f"The shape of the output prediction maps (CDHW): {prediction_maps_shape}")
+            logger.info(
+                f"The shape of the output prediction maps (CDHW): {prediction_maps_shape}"
+            )
             logger.info(f"Using patch_halo: {self.patch_halo}")
             # allocate prediction and normalization arrays
             logger.info("Allocating prediction and normalization arrays...")
@@ -143,10 +162,15 @@ class ArrayPredictor:
         # It is necessary for batchnorm/dropout layers if present as well as final Sigmoid/Softmax to be applied
         self.model.eval()
         # Run prediction on the entire input dataset
-
+        if self.tracker is not None:
+            self.tracker.total = len(test_loader)
         with torch.no_grad():
             for input_, indices in tqdm.tqdm(test_loader, disable=self.disable_tqdm):
-                input_ = input_.to(self.device)  # input is padded with halo in dataset __getitem__
+                if self.tracker is not None:
+                    self.tracker.progress += 1
+                input_ = input_.to(
+                    self.device
+                )  # input is padded with halo in dataset __getitem__
                 # forward pass
                 if is_2d_model:
                     # remove the singleton z-dimension from the input
@@ -163,7 +187,9 @@ class ArrayPredictor:
                     else:
                         offsets = [[-1, 0, 0], [0, -1, 0], [0, 0, -1]]
                     # convert embeddings to affinities
-                    prediction = embeddings_to_affinities(prediction, offsets, delta=0.5)
+                    prediction = embeddings_to_affinities(
+                        prediction, offsets, delta=0.5
+                    )
                     # average across channels and invert (i.e. 1-affinities)
                     prediction = 1 - prediction.mean(dim=1)
                 # removing halo from the prediction

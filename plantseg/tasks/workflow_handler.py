@@ -40,7 +40,9 @@ class Infos(BaseModel):
     """
 
     description: str = "No description provided"
-    creation_date: str = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d-%H:%M:%S"))
+    creation_date: str = Field(
+        default_factory=lambda: datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    )
     version: str = __version__
     inputs_schema: dict[str, RunTimeInputSchema] = Field(default_factory=dict)
     instructions: str = (
@@ -215,7 +217,9 @@ class WorkflowHandler:
             node_type (NodeType): The type of the node in the workflow (ROOT, LEAF, NODE)
 
         """
-        assert func.__name__ in self._funcs.list_funcs(), f"Function {func.__name__} not registered"
+        assert func.__name__ in self._funcs.list_funcs(), (
+            f"Function {func.__name__} not registered"
+        )
 
         task = Task(
             func=func.__name__,
@@ -226,7 +230,13 @@ class WorkflowHandler:
         )
         self._dag.list_tasks.append(task)
 
-    def add_input(self, name: str, value: Any, value_schema: RunTimeInputSchema, func_name: str | None = None):
+    def add_input(
+        self,
+        name: str,
+        value: Any,
+        value_schema: RunTimeInputSchema,
+        func_name: str | None = None,
+    ):
         def _unique_input(name, id: int = 0):
             new_name = f"{name}_{id}"
             if new_name not in self._dag.list_inputs:
@@ -309,9 +319,14 @@ def task_tracker(
         workflow_handler.register_func(func)
 
         def wrapper(*args, **kwargs):
-            assert len(args) == 0, "Workflow functions should not have positional arguments"
+            assert len(args) == 0, (
+                "Workflow functions should not have positional arguments"
+            )
             func_signature = signature(func)
-            parameters = {param: func_signature.parameters[param].default for param in func_signature.parameters}
+            parameters = {
+                param: func_signature.parameters[param].default
+                for param in func_signature.parameters
+            }
 
             images_inputs = {}
 
@@ -346,7 +361,9 @@ def task_tracker(
                 list_outputs = []
                 for i, img in enumerate(out_image):
                     if not isinstance(img, PlantSegImage):
-                        raise ValueError(f"Output {i} is not an Image object, but {type(img)}")
+                        raise ValueError(
+                            f"Output {i} is not an Image object, but {type(img)}"
+                        )
                     list_outputs.append(img.unique_name)
             else:
                 raise ValueError(

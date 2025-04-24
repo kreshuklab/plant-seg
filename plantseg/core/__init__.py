@@ -1,3 +1,3 @@
 from plantseg.core.image import ImageProperties, PlantSegImage
 
-__all__ = ['PlantSegImage', 'ImageProperties']
+__all__ = ["PlantSegImage", "ImageProperties"]

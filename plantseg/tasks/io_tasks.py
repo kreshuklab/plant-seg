@@ -52,7 +52,8 @@ def import_image_task(
     is_leaf=True,
     list_inputs={
         "export_directory": RunTimeInputSchema(
-            description="Output directory path where the image will be saved", required=True
+            description="Output directory path where the image will be saved",
+            required=True,
         ),
         "name_pattern": RunTimeInputSchema(
             description="Output file name pattern. Can contain the special {image_name} or {file_name} tokens ",

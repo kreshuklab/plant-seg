@@ -12,8 +12,8 @@ from magicgui.widgets import Container
 
 
 class FilePickMode(Enum):
-    File = 'File'
-    Directory = 'Directory'
+    File = "File"
+    Directory = "Directory"
 
     @classmethod
     def to_choices(cls) -> list[str]:
@@ -23,26 +23,26 @@ class FilePickMode(Enum):
 @magicgui(
     call_button=False,
     file_pick_mode={
-        'label': 'Input Mode',
-        'tooltip': 'Select the workflow to run',
-        'choices': FilePickMode.to_choices(),
+        "label": "Input Mode",
+        "tooltip": "Select the workflow to run",
+        "choices": FilePickMode.to_choices(),
     },
     file={
-        'label': 'File',
-        'mode': 'r',
-        'layout': 'vertical',
-        'tooltip': 'Select the file to process one by one',
+        "label": "File",
+        "mode": "r",
+        "layout": "vertical",
+        "tooltip": "Select the file to process one by one",
     },
     directory={
-        'label': 'Directory',
-        'mode': 'd',
-        'tooltip': 'Process all files in the directory',
+        "label": "Directory",
+        "mode": "d",
+        "tooltip": "Process all files in the directory",
     },
 )
 def widget_input_model(
     file_pick_mode: str = FilePickMode.File.value,
-    file: Path = Path('.').absolute(),
-    directory: Path = Path('.').absolute(),
+    file: Path = Path(".").absolute(),
+    directory: Path = Path(".").absolute(),
 ):
     pass
 
@@ -72,4 +72,6 @@ def widget_setup_workflow_config():
     pass
 
 
-widget_plantseg_classic = Container(widgets=[widget_input_model, widget_setup_workflow_config], labels=False)
+widget_plantseg_classic = Container(
+    widgets=[widget_input_model, widget_setup_workflow_config], labels=False
+)

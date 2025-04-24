@@ -28,4 +28,6 @@ def test_widget_open_file(qtbot, make_napari_viewer_proxy, path_h5):
     assert viewer.layers[0].name == "test_raw"
     assert viewer.layers[0].data.shape == shape
     assert viewer.layers[0].data.dtype == data.dtype
-    np.testing.assert_array_equal(viewer.layers[0].scale, (voxel_size.z, voxel_size.y, voxel_size.x))
+    np.testing.assert_array_equal(
+        viewer.layers[0].scale, (voxel_size.z, voxel_size.y, voxel_size.x)
+    )

@@ -66,7 +66,9 @@ class SerialRunner:
         all_remaining_required_inputs = set()
         for task in dag.list_tasks:
             required_inputs = set(task.images_inputs.values())
-            all_remaining_required_inputs = all_remaining_required_inputs.union(required_inputs)
+            all_remaining_required_inputs = all_remaining_required_inputs.union(
+                required_inputs
+            )
 
         list_key_to_delete = []
         for var in var_space.keys():
@@ -104,7 +106,9 @@ class SerialRunner:
             # Find next task to run
             next_task = self.find_next_task(dag, set(var_space.keys()))
             if next_task is None:
-                raise ValueError("No task to run next, the computation graph might be corrupted")
+                raise ValueError(
+                    "No task to run next, the computation graph might be corrupted"
+                )
 
             # Run the task
             var_space = self.run_task(next_task, var_space)
@@ -113,5 +117,7 @@ class SerialRunner:
             var_space = self.clean_var_space(dag, var_space)
 
         if var_space:
-            raise ValueError("Some variables are still in the var_space, the computation graph might be corrupted")
+            raise ValueError(
+                "Some variables are still in the var_space, the computation graph might be corrupted"
+            )
         return True

@@ -7,6 +7,9 @@ To build a headless workflow, you can:
 The headless workflow configured can be run using the `run_headless_workflow` function.
 """
 
-from plantseg.headless.headless import run_headles_workflow_from_config, run_headless_workflow
+from plantseg.headless.headless import (
+    run_headles_workflow_from_config,
+    run_headless_workflow,
+)
 
 __all__ = ["run_headles_workflow_from_config", "run_headless_workflow"]

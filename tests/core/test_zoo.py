@@ -11,10 +11,10 @@ IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 
 # test some modes (3D and 2D)
 MODEL_NAMES = [
-    'confocal_2D_unet_ovules_ds2x',
-    'generic_confocal_3D_unet',
-    'lightsheet_2D_unet_root_ds1x',
-    'generic_light_sheet_3D_unet',
+    "confocal_2D_unet_ovules_ds2x",
+    "generic_confocal_3D_unet",
+    "lightsheet_2D_unet_root_ds1x",
+    "generic_light_sheet_3D_unet",
 ]
 
 
@@ -22,11 +22,16 @@ class TestPlantSegModelZoo:
     """Test the PlantSeg model zoo"""
 
     @pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason="CUDA is not available")
-    @pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Github workflows do not allow model download for security reason")
+    @pytest.mark.skipif(
+        IN_GITHUB_ACTIONS,
+        reason="Github workflows do not allow model download for security reason",
+    )
     @pytest.mark.parametrize("model_name", MODEL_NAMES)
     def test_model_output_normalisation(self, model_name):
-        model, _, model_path = model_zoo.get_model_by_name(model_name, model_update=True)
-        state = torch.load(model_path, map_location='cpu', weights_only=True)
+        model, _, model_path = model_zoo.get_model_by_name(
+            model_name, model_update=True
+        )
+        state = torch.load(model_path, map_location="cpu", weights_only=True)
         model.load_state_dict(state)
         model.eval()
         if isinstance(model, UNet2D):
@@ -39,8 +44,8 @@ class TestPlantSegModelZoo:
 
 
 MODEL_IDS = [  # These two models has halo 44 on each side
-    'efficient-chipmunk',  # Qin Yu's 3D nuclear segmentation model.
-    'pioneering-rhino',  # Adrian's 2D cell-wall segmentation model.
+    "efficient-chipmunk",  # Qin Yu's 3D nuclear segmentation model.
+    "pioneering-rhino",  # Adrian's 2D cell-wall segmentation model.
 ]
 
 
@@ -53,9 +58,11 @@ class TestBioImageIOModelZoo:
     def test_get_model_by_id(self, model_id):
         """Try to load a model from the BioImage.IO model zoo by ID."""
         model, _, model_path = model_zoo.get_model_by_id(model_id)
-        state = torch.load(model_path, map_location='cpu', weights_only=True)
-        if 'model_state_dict' in state:  # Model weights format may vary between versions
-            state = state['model_state_dict']
+        state = torch.load(model_path, map_location="cpu", weights_only=True)
+        if (
+            "model_state_dict" in state
+        ):  # Model weights format may vary between versions
+            state = state["model_state_dict"]
         model.load_state_dict(state)
 
     @pytest.mark.parametrize("model_id", MODEL_IDS)

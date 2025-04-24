@@ -11,7 +11,9 @@ from plantseg.functionals.prediction.utils.slice_builder import SliceBuilder
 logger = logging.getLogger(__name__)
 
 
-def mirror_pad(image: np.ndarray, padding_shape: tuple[int, int, int], multichannel: bool) -> np.ndarray:
+def mirror_pad(
+    image: np.ndarray, padding_shape: tuple[int, int, int], multichannel: bool
+) -> np.ndarray:
     """
     Pad the image with a mirror reflection of itself.
 
@@ -45,8 +47,12 @@ def mirror_pad(image: np.ndarray, padding_shape: tuple[int, int, int], multichan
     if all(p == 0 for p in padding_shape):
         return image
 
-    if image.shape[0] == 1 and padding_shape[0] != 0:  # handle 1YX cases where padding is ZYX
-        raise ValueError("Cannot pad a single-channel image (1YX) along the channel dimension")
+    if (
+        image.shape[0] == 1 and padding_shape[0] != 0
+    ):  # handle 1YX cases where padding is ZYX
+        raise ValueError(
+            "Cannot pad a single-channel image (1YX) along the channel dimension"
+        )
 
     pad_width = [(p, p) for p in padding_shape]
 
@@ -55,7 +61,9 @@ def mirror_pad(image: np.ndarray, padding_shape: tuple[int, int, int], multichan
             if padding_shape[0] != 0:  # given 3D (CYX) padding shape, C has to be 0
                 raise ValueError("Cannot pad a 2D multichannel image (CYX) along C")
         if len(image.shape) == 4:  # CZYX image
-            pad_width = [(0, 0)] + pad_width  # given 3D (ZYX) padding shape, has to add 0 C padding
+            pad_width = [
+                (0, 0)
+            ] + pad_width  # given 3D (ZYX) padding shape, has to add 0 C padding
 
     return np.pad(image, pad_width, mode="reflect")
 
@@ -129,7 +137,8 @@ class ArrayDataset(Dataset):
         )
 
         raw_idx_padded = tuple(
-            slice(index.start, index.stop + 2 * halo, None) for index, halo in zip(raw_idx, halo_shape)
+            slice(index.start, index.stop + 2 * halo, None)
+            for index, halo in zip(raw_idx, halo_shape)
         )
         raw_patch = self.raw_padded[raw_idx_padded]
         raw_patch_transformed = self.augs(raw_patch)

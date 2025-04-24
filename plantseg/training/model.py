@@ -9,7 +9,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def create_conv(in_channels, out_channels, kernel_size, order, num_groups, padding, is3d):
+def create_conv(
+    in_channels, out_channels, kernel_size, order, num_groups, padding, is3d
+):
     """
     Create a list of modules with together constitute a single conv layer with non-linearity
     and optional batchnorm/groupnorm.
@@ -30,28 +32,34 @@ def create_conv(in_channels, out_channels, kernel_size, order, num_groups, paddi
     Return:
         list of tuple (name, module)
     """
-    assert 'c' in order, "Conv layer MUST be present"
-    assert order[0] not in 'rle', 'Non-linearity cannot be the first operation in the layer'
+    assert "c" in order, "Conv layer MUST be present"
+    assert order[0] not in "rle", (
+        "Non-linearity cannot be the first operation in the layer"
+    )
 
     modules = []
     for i, char in enumerate(order):
-        if char == 'r':
-            modules.append(('ReLU', nn.ReLU(inplace=True)))
-        elif char == 'l':
-            modules.append(('LeakyReLU', nn.LeakyReLU(inplace=True)))
-        elif char == 'e':
-            modules.append(('ELU', nn.ELU(inplace=True)))
-        elif char == 'c':
+        if char == "r":
+            modules.append(("ReLU", nn.ReLU(inplace=True)))
+        elif char == "l":
+            modules.append(("LeakyReLU", nn.LeakyReLU(inplace=True)))
+        elif char == "e":
+            modules.append(("ELU", nn.ELU(inplace=True)))
+        elif char == "c":
             # add learnable bias only in the absence of batchnorm/groupnorm
-            bias = not ('g' in order or 'b' in order)
+            bias = not ("g" in order or "b" in order)
             if is3d:
-                conv = nn.Conv3d(in_channels, out_channels, kernel_size, padding=padding, bias=bias)
+                conv = nn.Conv3d(
+                    in_channels, out_channels, kernel_size, padding=padding, bias=bias
+                )
             else:
-                conv = nn.Conv2d(in_channels, out_channels, kernel_size, padding=padding, bias=bias)
+                conv = nn.Conv2d(
+                    in_channels, out_channels, kernel_size, padding=padding, bias=bias
+                )
 
-            modules.append(('conv', conv))
-        elif char == 'g':
-            is_before_conv = i < order.index('c')
+            modules.append(("conv", conv))
+        elif char == "g":
+            is_before_conv = i < order.index("c")
             if is_before_conv:
                 num_channels = in_channels
             else:
@@ -62,22 +70,29 @@ def create_conv(in_channels, out_channels, kernel_size, order, num_groups, paddi
                 num_groups = 1
 
             assert num_channels % num_groups == 0, (
-                f'Expected number of channels in input to be divisible by num_groups. num_channels={num_channels}, num_groups={num_groups}'
+                f"Expected number of channels in input to be divisible by num_groups. num_channels={num_channels}, num_groups={num_groups}"
             )
-            modules.append(('groupnorm', nn.GroupNorm(num_groups=num_groups, num_channels=num_channels)))
-        elif char == 'b':
-            is_before_conv = i < order.index('c')
+            modules.append(
+                (
+                    "groupnorm",
+                    nn.GroupNorm(num_groups=num_groups, num_channels=num_channels),
+                )
+            )
+        elif char == "b":
+            is_before_conv = i < order.index("c")
             if is3d:
                 bn = nn.BatchNorm3d
             else:
                 bn = nn.BatchNorm2d
 
             if is_before_conv:
-                modules.append(('batchnorm', bn(in_channels)))
+                modules.append(("batchnorm", bn(in_channels)))
             else:
-                modules.append(('batchnorm', bn(out_channels)))
+                modules.append(("batchnorm", bn(out_channels)))
         else:
-            raise ValueError(f"Unsupported layer type '{char}'. MUST be one of ['b', 'g', 'r', 'l', 'e', 'c']")
+            raise ValueError(
+                f"Unsupported layer type '{char}'. MUST be one of ['b', 'g', 'r', 'l', 'e', 'c']"
+            )
 
     return modules
 
@@ -101,10 +116,21 @@ class SingleConv(nn.Sequential):
         is3d (bool): if True use Conv3d, otherwise use Conv2d
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size=3, order='gcr', num_groups=8, padding=1, is3d=True):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size=3,
+        order="gcr",
+        num_groups=8,
+        padding=1,
+        is3d=True,
+    ):
         super(SingleConv, self).__init__()
 
-        for name, module in create_conv(in_channels, out_channels, kernel_size, order, num_groups, padding, is3d):
+        for name, module in create_conv(
+            in_channels, out_channels, kernel_size, order, num_groups, padding, is3d
+        ):
             self.add_module(name, module)
 
 
@@ -133,7 +159,15 @@ class DoubleConv(nn.Sequential):
     """
 
     def __init__(
-        self, in_channels, out_channels, encoder, kernel_size=3, order='gcr', num_groups=8, padding=1, is3d=True
+        self,
+        in_channels,
+        out_channels,
+        encoder,
+        kernel_size=3,
+        order="gcr",
+        num_groups=8,
+        padding=1,
+        is3d=True,
     ):
         super(DoubleConv, self).__init__()
         if encoder:
@@ -150,16 +184,28 @@ class DoubleConv(nn.Sequential):
 
         # conv1
         self.add_module(
-            'SingleConv1',
+            "SingleConv1",
             SingleConv(
-                conv1_in_channels, conv1_out_channels, kernel_size, order, num_groups, padding=padding, is3d=is3d
+                conv1_in_channels,
+                conv1_out_channels,
+                kernel_size,
+                order,
+                num_groups,
+                padding=padding,
+                is3d=is3d,
             ),
         )
         # conv2
         self.add_module(
-            'SingleConv2',
+            "SingleConv2",
             SingleConv(
-                conv2_in_channels, conv2_out_channels, kernel_size, order, num_groups, padding=padding, is3d=is3d
+                conv2_in_channels,
+                conv2_out_channels,
+                kernel_size,
+                order,
+                num_groups,
+                padding=padding,
+                is3d=is3d,
             ),
         )
 
@@ -193,16 +239,16 @@ class Encoder(nn.Module):
         conv_kernel_size=3,
         apply_pooling=True,
         pool_kernel_size=2,
-        pool_type='max',
-        conv_layer_order='gcr',
+        pool_type="max",
+        conv_layer_order="gcr",
         num_groups=8,
         padding=1,
         is3d=True,
     ):
         super(Encoder, self).__init__()
-        assert pool_type in ['max', 'avg']
+        assert pool_type in ["max", "avg"]
         if apply_pooling:
-            if pool_type == 'max':
+            if pool_type == "max":
                 if is3d:
                     self.pooling = nn.MaxPool3d(kernel_size=pool_kernel_size)
                 else:
@@ -259,9 +305,9 @@ class Decoder(nn.Module):
         out_channels,
         conv_kernel_size=3,
         scale_factor=(2, 2, 2),
-        conv_layer_order='gcr',
+        conv_layer_order="gcr",
         num_groups=8,
-        mode='nearest',
+        mode="nearest",
         padding=1,
         upsample=True,
         is3d=True,
@@ -305,7 +351,14 @@ class Decoder(nn.Module):
 
 
 def create_encoders(
-    in_channels, f_maps, conv_kernel_size, conv_padding, layer_order, num_groups, pool_kernel_size, is3d
+    in_channels,
+    f_maps,
+    conv_kernel_size,
+    conv_padding,
+    layer_order,
+    num_groups,
+    pool_kernel_size,
+    is3d,
 ):
     # create encoder path consisting of Encoder modules. Depth of the encoder is equal to `len(f_maps)`
     encoders = []
@@ -339,7 +392,9 @@ def create_encoders(
     return nn.ModuleList(encoders)
 
 
-def create_decoders(f_maps, conv_kernel_size, conv_padding, layer_order, num_groups, is3d):
+def create_decoders(
+    f_maps, conv_kernel_size, conv_padding, layer_order, num_groups, is3d
+):
     # create decoder path consisting of the Decoder modules. The length of the decoder list is equal to `len(f_maps) - 1`
     decoders = []
     reversed_f_maps = list(reversed(f_maps))
@@ -385,7 +440,7 @@ class InterpolateUpsampling(AbstractUpsampling):
             used only if transposed_conv is False
     """
 
-    def __init__(self, mode='nearest'):
+    def __init__(self, mode="nearest"):
         upsample = partial(self._interpolate, mode=mode)
         super().__init__(upsample)
 
@@ -438,7 +493,7 @@ class AbstractUNet(nn.Module):
         out_channels,
         final_sigmoid,
         f_maps=64,
-        layer_order='gcr',
+        layer_order="gcr",
         num_groups=8,
         num_levels=4,
         is_segmentation=True,
@@ -454,16 +509,27 @@ class AbstractUNet(nn.Module):
 
         assert isinstance(f_maps, list) or isinstance(f_maps, tuple)
         assert len(f_maps) > 1, "Required at least 2 levels in the U-Net"
-        if 'g' in layer_order:
-            assert num_groups is not None, "num_groups must be specified if GroupNorm is used"
+        if "g" in layer_order:
+            assert num_groups is not None, (
+                "num_groups must be specified if GroupNorm is used"
+            )
 
         # create encoder path
         self.encoders = create_encoders(
-            in_channels, f_maps, conv_kernel_size, conv_padding, layer_order, num_groups, pool_kernel_size, is3d
+            in_channels,
+            f_maps,
+            conv_kernel_size,
+            conv_padding,
+            layer_order,
+            num_groups,
+            pool_kernel_size,
+            is3d,
         )
 
         # create decoder path
-        self.decoders = create_decoders(f_maps, conv_kernel_size, conv_padding, layer_order, num_groups, is3d)
+        self.decoders = create_decoders(
+            f_maps, conv_kernel_size, conv_padding, layer_order, num_groups, is3d
+        )
 
         # in the last layer a 1×1 convolution reduces the number of output channels to the number of labels
         if is3d:
@@ -522,7 +588,7 @@ class UNet3D(AbstractUNet):
         out_channels,
         final_sigmoid=True,
         f_maps=64,
-        layer_order='gcr',
+        layer_order="gcr",
         num_groups=8,
         num_levels=4,
         is_segmentation=True,
@@ -555,7 +621,7 @@ class UNet2D(AbstractUNet):
         out_channels,
         final_sigmoid=True,
         f_maps=64,
-        layer_order='gcr',
+        layer_order="gcr",
         num_groups=8,
         num_levels=4,
         is_segmentation=True,
@@ -592,10 +658,20 @@ class SpocoNet(nn.Module):
 
     @classmethod
     def from_unet_params(
-        cls, in_channels: int, out_channels: int, f_maps: list[int], layer_order='bcr', m=0.999, init_equal=True
+        cls,
+        in_channels: int,
+        out_channels: int,
+        f_maps: list[int],
+        layer_order="bcr",
+        m=0.999,
+        init_equal=True,
     ) -> Self:
-        net_f = UNet2D(in_channels, out_channels, f_maps=f_maps, layer_order=layer_order)
-        net_g = UNet2D(in_channels, out_channels, f_maps=f_maps, layer_order=layer_order)
+        net_f = UNet2D(
+            in_channels, out_channels, f_maps=f_maps, layer_order=layer_order
+        )
+        net_g = UNet2D(
+            in_channels, out_channels, f_maps=f_maps, layer_order=layer_order
+        )
         return cls(net_f, net_g, m, init_equal)
 
     def _initialize_identical_weights(self):
@@ -627,9 +703,21 @@ def number_of_features_per_level(init_channel_number, num_levels):
     return [init_channel_number * 2**k for k in range(num_levels)]
 
 
-def get_spoco(in_channels: int, out_channels: int, f_maps: list[int], layer_order='bcr') -> SpocoNet:
-    net_f = UNet2D(in_channels=in_channels, out_channels=out_channels, f_maps=f_maps, layer_order=layer_order)
+def get_spoco(
+    in_channels: int, out_channels: int, f_maps: list[int], layer_order="bcr"
+) -> SpocoNet:
+    net_f = UNet2D(
+        in_channels=in_channels,
+        out_channels=out_channels,
+        f_maps=f_maps,
+        layer_order=layer_order,
+    )
 
-    net_g = UNet2D(in_channels=in_channels, out_channels=out_channels, f_maps=f_maps, layer_order=layer_order)
+    net_g = UNet2D(
+        in_channels=in_channels,
+        out_channels=out_channels,
+        f_maps=f_maps,
+        layer_order=layer_order,
+    )
 
     return SpocoNet(net_f, net_g)

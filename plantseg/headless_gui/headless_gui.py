@@ -1,7 +1,4 @@
-from enum import Enum
-
 from magicgui import magicgui
-from magicgui.experimental import guiclass
 from magicgui.widgets import Container
 
 # from plantseg.headless.headless import run_headless_workflow_from_path
@@ -15,9 +12,9 @@ all_workflows = {
 @magicgui(
     auto_call=True,
     name={
-        'label': 'Mode',
-        'tooltip': 'Select the workflow to run',
-        'choices': list(all_workflows.keys()),
+        "label": "Mode",
+        "tooltip": "Select the workflow to run",
+        "choices": list(all_workflows.keys()),
     },
 )
 def workflow_selector(name: str = list(all_workflows.keys())[0]):
@@ -28,6 +25,8 @@ def workflow_selector(name: str = list(all_workflows.keys())[0]):
 
 
 if __name__ == "__main__":
-    gui_container = Container(widgets=[workflow_selector, *all_workflows.values()], labels=False)
+    gui_container = Container(
+        widgets=[workflow_selector, *all_workflows.values()], labels=False
+    )
     workflow_selector()
     gui_container.show(run=True)

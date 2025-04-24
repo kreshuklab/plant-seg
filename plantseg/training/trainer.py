@@ -100,7 +100,9 @@ class UNetTrainer:
             # save checkpoint
             self._save_checkpoint(is_best)
 
-        logger.info(f"Reached maximum number of epochs: {self.max_num_epochs}. Finishing training...")
+        logger.info(
+            f"Reached maximum number of epochs: {self.max_num_epochs}. Finishing training..."
+        )
 
     def train_epoch(self):
         """Trains the model for 1 epoch.
@@ -127,7 +129,9 @@ class UNetTrainer:
             if self.num_iterations % self.log_after_iters == 0:
                 # log stats, params and images
                 logger.info(f"Train Loss: {train_losses.avg}.")
-                self.writer.add_scalar("Loss/train", train_losses.avg, self.num_iterations)
+                self.writer.add_scalar(
+                    "Loss/train", train_losses.avg, self.num_iterations
+                )
 
                 if self.should_stop():
                     return True
@@ -142,7 +146,9 @@ class UNetTrainer:
         some predefined threshold (1e-6 in our case)
         """
         if self.max_num_iterations < self.num_iterations:
-            logger.info(f"Maximum number of iterations {self.max_num_iterations} exceeded.")
+            logger.info(
+                f"Maximum number of iterations {self.max_num_iterations} exceeded."
+            )
             return True
 
         min_lr = 1e-6
@@ -165,7 +171,9 @@ class UNetTrainer:
 
             return val_losses.avg
 
-    def _forward_pass(self, _input: torch.Tensor, target: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def _forward_pass(
+        self, _input: torch.Tensor, target: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         if isinstance(self.model, UNet2D):
             # remove the singleton z-dimension from the input
             _input = torch.squeeze(_input, dim=-3)
@@ -192,7 +200,9 @@ class UNetTrainer:
         torch.save(state_dict, last_file_path)
         if is_best:
             logger.info("Saving best checkpoint")
-            best_file_path = os.path.join(self.checkpoint_dir, "best_checkpoint.pytorch")
+            best_file_path = os.path.join(
+                self.checkpoint_dir, "best_checkpoint.pytorch"
+            )
             shutil.copyfile(last_file_path, best_file_path)
 
     @staticmethod

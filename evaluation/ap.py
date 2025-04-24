@@ -47,7 +47,9 @@ class AveragePrecision:
             true_positives = set()
 
             for pred_label in predicted_instances:
-                target_label = self._find_overlapping_target(pred_label, predicted, target, min_iou)
+                target_label = self._find_overlapping_target(
+                    pred_label, predicted, target, min_iou
+                )
                 if target_label is not None:
                     # update TP, FP and FN
                     if target_label == self.ignore_index:
@@ -142,5 +144,7 @@ def ap(segmentation, ground_truth, ignore_index=0, min_instance_size=10000):
     Returns:
         Average Precision between segmentation and ground_truth
     """
-    ap = AveragePrecision(ignore_index=ignore_index, min_instance_size=min_instance_size)
+    ap = AveragePrecision(
+        ignore_index=ignore_index, min_instance_size=min_instance_size
+    )
     return ap(segmentation, ground_truth)

@@ -9,7 +9,9 @@ from plantseg.utils import check_version, clean_models, load_config
 
 def create_parser():
     """Create and return the argument parser for the CLI."""
-    arg_parser = argparse.ArgumentParser(description="PlantSeg: Plant cell/nucler instance segmentation software")
+    arg_parser = argparse.ArgumentParser(
+        description="PlantSeg: Plant cell/nucler instance segmentation software"
+    )
     arg_parser.add_argument(
         "--config",
         type=Path,
@@ -77,7 +79,9 @@ def main():
     elif args.train:
         launch_training(args.train)
     else:
-        raise ValueError("Not enough arguments. Run `plantseg -h` to see the available options.")
+        raise ValueError(
+            "Not enough arguments. Run `plantseg -h` to see the available options."
+        )
 
 
 if __name__ == "__main__":
