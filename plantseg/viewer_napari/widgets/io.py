@@ -256,6 +256,7 @@ def widget_export_image(
     scale_to_origin: bool = True,
     data_type: str = "uint16",
 ) -> None:
+    """Export layers in various formats."""
     timer = time.time()
     log("export_image_task started", thread="Export stacks", level="info")
 
