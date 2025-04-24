@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../../../images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../../../../assets/stylesheets/palette.06af60db.min.css">
@@ -71,7 +71,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -128,7 +128,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -138,7 +138,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -1840,9 +1840,9 @@
   
 
 
-<h1 id="data-processing">Data Processing</h1>
+<h1 id="data-processing">Data Processing<a class="headerlink" href="#data-processing" title="Permanent link">&para;</a></h1>
 <p>Basic data processing functions are provided in the <code>dataprocessing</code> module. These functions are used to preprocess data before training a model, or to post-process the output of a model.</p>
-<h2 id="generic-functions">Generic Functions</h2>
+<h2 id="generic-functions">Generic Functions<a class="headerlink" href="#generic-functions" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -1851,7 +1851,7 @@
 <h3 id="plantseg.functionals.dataprocessing.dataprocessing.normalize_01" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">normalize_01</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.dataprocessing.dataprocessing.normalize_01" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -1931,7 +1931,7 @@
 <h3 id="plantseg.functionals.dataprocessing.dataprocessing.scale_image_to_voxelsize" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">scale_image_to_voxelsize</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">input_voxel_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">output_voxel_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.dataprocessing.dataprocessing.scale_image_to_voxelsize" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2043,7 +2043,7 @@
 <h3 id="plantseg.functionals.dataprocessing.dataprocessing.image_rescale" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">image_rescale</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">factor</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.dataprocessing.dataprocessing.image_rescale" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2141,7 +2141,7 @@
 <h3 id="plantseg.functionals.dataprocessing.dataprocessing.image_median" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">image_median</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">radius</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.dataprocessing.dataprocessing.image_median" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2251,7 +2251,7 @@
 <h3 id="plantseg.functionals.dataprocessing.dataprocessing.image_gaussian_smoothing" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">image_gaussian_smoothing</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.dataprocessing.dataprocessing.image_gaussian_smoothing" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2335,7 +2335,7 @@
 <h3 id="plantseg.functionals.dataprocessing.dataprocessing.image_crop" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">image_crop</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">crop_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.dataprocessing.dataprocessing.image_crop" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2431,7 +2431,7 @@
 <h3 id="plantseg.functionals.dataprocessing.dataprocessing.process_images" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">process_images</span><span class="p">(</span><span class="n">image1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">image2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">operation</span><span class="p">:</span> <span class="n">ImagePairOperation</span><span class="p">,</span> <span class="n">normalize_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">clip_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">normalize_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.dataprocessing.dataprocessing.process_images" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2609,7 +2609,7 @@
             </details>
     </div>
 
-</div><h2 id="segmentation-functions">Segmentation Functions</h2>
+</div><h2 id="segmentation-functions">Segmentation Functions<a class="headerlink" href="#segmentation-functions" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -2618,7 +2618,7 @@
 <h3 id="plantseg.functionals.dataprocessing.labelprocessing.relabel_segmentation" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">labelprocessing</span><span class="o">.</span><span class="n">relabel_segmentation</span><span class="p">(</span><span class="n">segmentation_image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">background</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.dataprocessing.labelprocessing.relabel_segmentation" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2745,7 +2745,7 @@ To be noted that measure.label is different from ndimage.label.</p>
 <h3 id="plantseg.functionals.dataprocessing.labelprocessing.set_background_to_value" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">labelprocessing</span><span class="o">.</span><span class="n">set_background_to_value</span><span class="p">(</span><span class="n">segmentation_image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.dataprocessing.labelprocessing.set_background_to_value" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2821,7 +2821,7 @@ To be noted that measure.label is different from ndimage.label.</p>
             </details>
     </div>
 
-</div><h2 id="advanced-functions">Advanced Functions</h2>
+</div><h2 id="advanced-functions">Advanced Functions<a class="headerlink" href="#advanced-functions" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -2830,7 +2830,7 @@ To be noted that measure.label is different from ndimage.label.</p>
 <h3 id="plantseg.functionals.dataprocessing.advanced_dataprocessing.fix_over_under_segmentation_from_nuclei" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">advanced_dataprocessing</span><span class="o">.</span><span class="n">fix_over_under_segmentation_from_nuclei</span><span class="p">(</span><span class="n">cell_seg</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nuclei_seg</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold_merge</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">threshold_split</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">quantile_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">quantile_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">boundary</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.dataprocessing.advanced_dataprocessing.fix_over_under_segmentation_from_nuclei" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -3060,7 +3060,7 @@ indicate cell boundaries and help refine splitting. If None, all regions are tre
 <h3 id="plantseg.functionals.dataprocessing.advanced_dataprocessing.remove_false_positives_by_foreground_probability" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">dataprocessing</span><span class="o">.</span><span class="n">advanced_dataprocessing</span><span class="o">.</span><span class="n">remove_false_positives_by_foreground_probability</span><span class="p">(</span><span class="n">segmentation</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">foreground</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.dataprocessing.advanced_dataprocessing.remove_false_positives_by_foreground_probability" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">

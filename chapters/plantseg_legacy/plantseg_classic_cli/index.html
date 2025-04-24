@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../../images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
@@ -69,7 +69,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -126,7 +126,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -136,7 +136,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -1580,16 +1580,16 @@
   
 
 
-<h1 id="plantseg-classic-cli">PlantSeg Classic CLI</h1>
+<h1 id="plantseg-classic-cli">PlantSeg Classic CLI<a class="headerlink" href="#plantseg-classic-cli" title="Permanent link">&para;</a></h1>
 <div class="admonition failure">
 <p class="admonition-title">Deprecated</p>
 <p>This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or install PlantSeg v1.</p>
 </div>
-<h2 id="guide-to-custom-configuration-file">Guide to Custom Configuration File</h2>
+<h2 id="guide-to-custom-configuration-file">Guide to Custom Configuration File<a class="headerlink" href="#guide-to-custom-configuration-file" title="Permanent link">&para;</a></h2>
 <p>The configuration file defines all the operations in our pipeline together with the data to be processed.
 Please refer to <a href="https://github.com/kreshuklab/plant-seg/blob/master/examples/config.yaml">config.yaml</a> for a sample pipeline configuration and a detailed explanation
 of all parameters.</p>
-<h2 id="main-keyssteps">Main Keys/Steps</h2>
+<h2 id="main-keyssteps">Main Keys/Steps<a class="headerlink" href="#main-keyssteps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>path</code> attribute: is used to define either the file to process or the directory containing the data.</li>
 <li><code>preprocessing</code> attribute: contains a simple set of possible operations one would need to run on their data before calling the neural network.
@@ -1601,13 +1601,13 @@ Detailed instructions can be found at <a href="https://kreshuklab.github.io/plan
 <li><code>segmentation</code> attribute: contains all parameters needed to run the partitioning algorithm (i.e., final Segmentation).
 Detailed instructions can be found at <a href="https://kreshuklab.github.io/plant-seg/chapters/plantseg_classic_gui/segmentation/">Classic GUI (Segmentation)</a>.</li>
 </ul>
-<h2 id="additional-information">Additional information</h2>
+<h2 id="additional-information">Additional information<a class="headerlink" href="#additional-information" title="Permanent link">&para;</a></h2>
 <p>The PlantSeg-related files (models, configs) will be placed inside your home directory under <code>~/.plantseg_models</code>.</p>
 <p>Our pipeline uses the PyTorch library for CNN prediction. PlantSeg can be run on systems without GPU, however
 for maximum performance, we recommend that the application is run on a machine with a high-performance GPU for deep learning.
 If the <code>CUDA_VISIBLE_DEVICES</code> environment variable is not specified, the prediction task will be distributed on all available GPUs.
 E.g. run: <code>CUDA_VISIBLE_DEVICES=0 plantseg --config CONFIG_PATH</code> to restrict prediction to a given GPU.</p>
-<h2 id="configuration-file-example">configuration file example</h2>
+<h2 id="configuration-file-example">configuration file example<a class="headerlink" href="#configuration-file-example" title="Permanent link">&para;</a></h2>
 <p>This modality of using PlantSeg is particularly suited for high throughput processing and for running
 PlantSeg on a remote server.
 To use PlantSeg from command line mode, you will need to create a configuration file using a standard text editor
@@ -1697,7 +1697,7 @@ To use PlantSeg from command line mode, you will need to create a configuration 
 <span class="w">  </span><span class="nt">order</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 </code></pre></div>
 <p>This configuration can be found at <a href="https://github.com/kreshuklab/plant-seg/blob/master/examples/config.yaml">config.yaml</a>.</p>
-<h2 id="pipeline-usage-command-line">Pipeline Usage (command line)</h2>
+<h2 id="pipeline-usage-command-line">Pipeline Usage (command line)<a class="headerlink" href="#pipeline-usage-command-line" title="Permanent link">&para;</a></h2>
 <p>To start PlantSeg from the command line. First, activate the newly created conda environment with:</p>
 <div class="highlight"><pre><span></span><code>conda<span class="w"> </span>activate<span class="w"> </span>plant-seg
 </code></pre></div>
@@ -1705,12 +1705,12 @@ To use PlantSeg from command line mode, you will need to create a configuration 
 <div class="highlight"><pre><span></span><code>plantseg<span class="w"> </span>--config<span class="w"> </span>CONFIG_PATH
 </code></pre></div>
 <p>where <code>CONFIG_PATH</code> is the path to a YAML configuration file.</p>
-<h2 id="data-parallelism">Data Parallelism</h2>
+<h2 id="data-parallelism">Data Parallelism<a class="headerlink" href="#data-parallelism" title="Permanent link">&para;</a></h2>
 <p>In the headless mode (i.e. when invoked with <code>plantseg --config CONFIG_PATH</code>) the prediction step will run on all the GPUs using <a href="https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html">DataParallel</a>.
 If prediction on all available GPUs is not desirable, restrict the number of GPUs using <code>CUDA_VISIBLE_DEVICES</code>, e.g.</p>
 <div class="highlight"><pre><span></span><code><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span>,1<span class="w"> </span>plantseg<span class="w"> </span>--config<span class="w"> </span>CONFIG_PATH
 </code></pre></div>
-<h2 id="results">Results</h2>
+<h2 id="results">Results<a class="headerlink" href="#results" title="Permanent link">&para;</a></h2>
 <p>The results are stored together with the source input files inside a nested directory structure.
 As an example, if we want to run PlantSeg inside a directory with two stacks, we will obtain the following
 outputs:</p>
@@ -1741,7 +1741,7 @@ outputs:</p>
 to test different segmentation algorithms/parameter combinations minimizing the memory overhead on the disk.
 For the sake of reproducibility, every file is associated with a configuration file ".yaml" that saves all parameters used
 to produce the result.</p>
-<h2 id="liftedmulticut-segmentation">LiftedMulticut segmentation</h2>
+<h2 id="liftedmulticut-segmentation">LiftedMulticut segmentation<a class="headerlink" href="#liftedmulticut-segmentation" title="Permanent link">&para;</a></h2>
 <p>As reported in our <a href="https://elifesciences.org/articles/57613">paper</a>, if one has a nuclei signal imaged together with
 the boundary signal, we could leverage the fact that one cell contains only one nucleus and use the <code>LiftedMultict</code>
 segmentation strategy and obtain improved segmentation.

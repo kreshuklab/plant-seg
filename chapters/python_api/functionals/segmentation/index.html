@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../../../images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../../../../assets/stylesheets/palette.06af60db.min.css">
@@ -71,7 +71,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -128,7 +128,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -138,7 +138,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -1858,9 +1858,9 @@
   
 
 
-<h1 id="plantseg-segmentation">PlantSeg Segmentation</h1>
+<h1 id="plantseg-segmentation">PlantSeg Segmentation<a class="headerlink" href="#plantseg-segmentation" title="Permanent link">&para;</a></h1>
 <p>The PlantSeg segmentation module implements all segmentation routine in plantseg.</p>
-<h2 id="dt-watershed">DT Watershed</h2>
+<h2 id="dt-watershed">DT Watershed<a class="headerlink" href="#dt-watershed" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -1869,7 +1869,7 @@
 <h3 id="plantseg.functionals.segmentation.dt_watershed" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">dt_watershed</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma_seeds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">stacked</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">sigma_weights</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">min_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">pixel_pitch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">apply_nonmax_suppression</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.segmentation.dt_watershed" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2201,7 +2201,7 @@ are included. Must have the same shape as 'boundary_pmaps'. Defaults to None.</p
             </details>
     </div>
 
-</div><h2 id="gasp">GASP</h2>
+</div><h2 id="gasp">GASP<a class="headerlink" href="#gasp" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -2210,7 +2210,7 @@ are included. Must have the same shape as 'boundary_pmaps'. Defaults to None.</p
 <h3 id="plantseg.functionals.segmentation.gasp" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">gasp</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gasp_linkage_criteria</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;average&#39;</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.segmentation.gasp" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2442,7 +2442,7 @@ are included. Must have the same shape as 'boundary_pmaps'. Defaults to None.</p
             </details>
     </div>
 
-</div><h2 id="multicut">Multicut</h2>
+</div><h2 id="multicut">Multicut<a class="headerlink" href="#multicut" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -2451,7 +2451,7 @@ are included. Must have the same shape as 'boundary_pmaps'. Defaults to None.</p
 <h3 id="plantseg.functionals.segmentation.multicut" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">multicut</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.segmentation.multicut" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2598,7 +2598,7 @@ under-segmentation. While a high-value bias the segmentation towards the over-se
             </details>
     </div>
 
-</div><h2 id="mutex-watershed">Mutex Watershed</h2>
+</div><h2 id="mutex-watershed">Mutex Watershed<a class="headerlink" href="#mutex-watershed" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -2607,7 +2607,7 @@ under-segmentation. While a high-value bias the segmentation towards the over-se
 <h3 id="plantseg.functionals.segmentation.mutex_ws" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">mutex_ws</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.segmentation.mutex_ws" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2702,7 +2702,7 @@ under-segmentation. While a high-value bias the segmentation towards the over-se
             </details>
     </div>
 
-</div><h2 id="lifted-multicut">Lifted Multicut</h2>
+</div><h2 id="lifted-multicut">Lifted Multicut<a class="headerlink" href="#lifted-multicut" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -2711,7 +2711,7 @@ under-segmentation. While a high-value bias the segmentation towards the over-se
 <h3 id="plantseg.functionals.segmentation.segmentation.lifted_multicut_from_nuclei_pmaps" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">lifted_multicut_from_nuclei_pmaps</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nuclei_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.segmentation.segmentation.lifted_multicut_from_nuclei_pmaps" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2913,7 +2913,7 @@ under-segmentation. While a high-value bias the segmentation towards the over-se
 <h3 id="plantseg.functionals.segmentation.lifted_multicut_from_nuclei_segmentation" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">lifted_multicut_from_nuclei_segmentation</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nuclei_seg</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.segmentation.lifted_multicut_from_nuclei_segmentation" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -3092,7 +3092,7 @@ under-segmentation. While a high-value bias the segmentation towards the over-se
             </details>
     </div>
 
-</div><h2 id="simple-itk-watershed">Simple ITK Watershed</h2>
+</div><h2 id="simple-itk-watershed">Simple ITK Watershed<a class="headerlink" href="#simple-itk-watershed" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -3101,7 +3101,7 @@ under-segmentation. While a high-value bias the segmentation towards the over-se
 <h3 id="plantseg.functionals.segmentation.simple_itk_watershed" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">functionals</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">simple_itk_watershed</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.functionals.segmentation.simple_itk_watershed" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">

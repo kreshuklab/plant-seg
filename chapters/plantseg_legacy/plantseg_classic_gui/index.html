@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../../images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
@@ -71,7 +71,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -128,7 +128,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -138,7 +138,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -1555,7 +1555,7 @@
   
 
 
-<h1 id="plantseg-from-gui">PlantSeg from GUI</h1>
+<h1 id="plantseg-from-gui">PlantSeg from GUI<a class="headerlink" href="#plantseg-from-gui" title="Permanent link">&para;</a></h1>
 <div class="admonition failure">
 <p class="admonition-title">Deprecated</p>
 <p>This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or install PlantSeg v1.</p>
@@ -1565,11 +1565,11 @@ Currently the GUI does not allow to visualize or interact with the data.
 We recommend using <a href="https://www.mpipz.mpg.de/MorphoGraphX">MorphographX</a> or
 <a href="https://fiji.sc/">Fiji</a> in order to assert the success and quality of the pipeline results.</p>
 <p><img alt="alt text" src="https://github.com/kreshuklab/plant-seg/raw/assets/images/plantseg_overview.png" /></p>
-<h2 id="file-browser-widget">File Browser Widget</h2>
+<h2 id="file-browser-widget">File Browser Widget<a class="headerlink" href="#file-browser-widget" title="Permanent link">&para;</a></h2>
 <p>The file browser can be used to select the input files for the pipeline.
 PlantSeg can run on a single file (button A) or in batch mode for all files inside a directory (button B).
 If a directory is selected PlantSeg will run on all compatible files inside the directory.</p>
-<h2 id="main-pipeline-configurator">Main Pipeline Configurator</h2>
+<h2 id="main-pipeline-configurator">Main Pipeline Configurator<a class="headerlink" href="#main-pipeline-configurator" title="Permanent link">&para;</a></h2>
 <p>The central panel of PlantSeg (C) is the core of the pipeline configuration.
 It can be used for customizing and tuning the pipeline accordingly to the data at hand.
 Detailed information for each stage can be found at:</p>
@@ -1580,13 +1580,13 @@ Detailed information for each stage can be found at:</p>
 </ul>
 <p>Any of the above widgets can be run singularly or in sequence (left to right). The order of execution can not be
 modified.</p>
-<h2 id="run">Run</h2>
+<h2 id="run">Run<a class="headerlink" href="#run" title="Permanent link">&para;</a></h2>
 <p>The last panel has two main functions.
 Running the pipeline (D), once the run button is pressed the
 pipeline starts. The button is inactive until the process is finished.
 Adding a custom model (E). Custom trained model can be done by using the dedicated popup. Training a new model can be
 done following the instruction at <a href="https://github.com/wolny/pytorch-3dunet">pytorch-3dunet</a>.</p>
-<h2 id="results">Results</h2>
+<h2 id="results">Results<a class="headerlink" href="#results" title="Permanent link">&para;</a></h2>
 <p>The results are stored together with the source input files inside a nested directory structure.
 As example, if we want to run PlantSeg inside a directory with 2 stacks, we will obtain the following
 outputs:</p>
@@ -1617,7 +1617,7 @@ outputs:</p>
 to test different combination of segmentation algorithms/parameters minimizing the memory overhead on the disk.
 For sake of reproducibility, every file is associated with a configuration file ".yaml" that saves all parameters used
 to produce the result.</p>
-<h2 id="start-plantseg-gui">Start PlantSeg GUI</h2>
+<h2 id="start-plantseg-gui">Start PlantSeg GUI<a class="headerlink" href="#start-plantseg-gui" title="Permanent link">&para;</a></h2>
 <p>In order to start the PlantSeg app in GUI mode:
 First, activate the newly created conda environment with:</p>
 <div class="highlight"><pre><span></span><code>conda<span class="w"> </span>activate<span class="w"> </span>plant-seg

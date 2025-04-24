@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../../images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
@@ -71,7 +71,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -128,7 +128,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -138,7 +138,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -1598,12 +1598,12 @@
   
 
 
-<h1 id="manual-proofreading">Manual Proofreading</h1>
-<h2 id="widget-proofreading-with-manual-split-and-merge">Widget: Proofreading with Manual Split and Merge</h2>
+<h1 id="manual-proofreading">Manual Proofreading<a class="headerlink" href="#manual-proofreading" title="Permanent link">&para;</a></h1>
+<h2 id="widget-proofreading-with-manual-split-and-merge">Widget: Proofreading with Manual Split and Merge<a class="headerlink" href="#widget-proofreading-with-manual-split-and-merge" title="Permanent link">&para;</a></h2>
 <p>Once the segmentation is done, or a label image is loaded along with a boundary image, the user can start the proofreading process. In the proofreading widget, set the "Mode" to "Layer" if you are going to correct a loaded image, or set the "Mode" to "File" if you already had a proofreading session exported as a file. For "Segmentation", select the image layer that you want to correct, then click "Initialise" to start the proofreading process.</p>
 <p>After a few second of initialisation, the initialised proofreading widget will be displayed, and two new layers will be added to the Napari viewer, "Scribbles" and "Correct Labels". Click "Scribbles" first, and you may draw on this layer with the "paint brush" tool - you can press <code>2</code> or <code>P</code> key to activate the brush tool or find it on the "layer controls" panel of the Napari viewer. The scribbles drawn on this layer will be used to split or merge the segmentation: strokes with the same color will merge the instance(s) in the segmentation layer, and strokes with different colors will split the instance(s) in the segmentation layer. After drawing the scribbles, click "Split / Merge" or press <code>n</code> to apply the scribbles to the segmentation layer. If you want to undo the last split or merge operation, click "Undo Last Action".</p>
 <p>When you are done or want to stop the proofreading session, you may save the current state of the proofreading session by clicking "Save current proofreading snapshot" into a snapshot file, which can be loaded into the proofreading widget later in another session of PlantSeg.</p>
-<h3 id="keybinding">Keybinding</h3>
+<h3 id="keybinding">Keybinding<a class="headerlink" href="#keybinding" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>s</code>: Save stack</li>
 <li><code>n</code>: Merge or split from seeds</li>

@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../../../images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../../../../assets/stylesheets/palette.06af60db.min.css">
@@ -71,7 +71,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -128,7 +128,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -138,7 +138,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -1900,9 +1900,9 @@
   
 
 
-<h1 id="inputoutput">Input/Output</h1>
+<h1 id="inputoutput">Input/Output<a class="headerlink" href="#inputoutput" title="Permanent link">&para;</a></h1>
 <p>All the input/output operations are handled by the <code>plantseg.io</code> module. This module provides functions to read and write data in different formats. The supported formats are <code>tiff</code>, <code>h5</code>, and <code>zarr</code>, <code>jpeg</code>, <code>png</code>.</p>
-<h2 id="reading">Reading</h2>
+<h2 id="reading">Reading<a class="headerlink" href="#reading" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -1911,7 +1911,7 @@
 <h3 id="plantseg.io.smart_load" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">smart_load</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">load_tiff</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
 
-</h3>
+<a href="#plantseg.io.smart_load" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2053,7 +2053,7 @@ If the format is not supported, a default loader can be provided (default: load_
             </details>
     </div>
 
-</div><h2 id="writing">Writing</h2>
+</div><h2 id="writing">Writing<a class="headerlink" href="#writing" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -2062,7 +2062,7 @@ If the format is not supported, a default loader can be provided (default: load_
 <h3 id="plantseg.io.create_tiff" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">create_tiff</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">voxel_size</span><span class="p">:</span> <span class="n">VoxelSize</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;ZYX&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
-</h3>
+<a href="#plantseg.io.create_tiff" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2244,7 +2244,7 @@ If the format is not supported, a default loader can be provided (default: load_
 <h3 id="plantseg.io.create_h5" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">create_h5</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">voxel_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VoxelSize</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
-</h3>
+<a href="#plantseg.io.create_h5" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2378,7 +2378,7 @@ If the format is not supported, a default loader can be provided (default: load_
 <h3 id="plantseg.io.create_zarr" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">create_zarr</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">voxel_size</span><span class="p">:</span> <span class="n">VoxelSize</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
-</h3>
+<a href="#plantseg.io.create_zarr" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2494,7 +2494,7 @@ If the format is not supported, a default loader can be provided (default: load_
             </details>
     </div>
 
-</div><h2 id="tiff-utilities">Tiff Utilities</h2>
+</div><h2 id="tiff-utilities">Tiff Utilities<a class="headerlink" href="#tiff-utilities" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -2503,7 +2503,7 @@ If the format is not supported, a default loader can be provided (default: load_
 <h3 id="plantseg.io.tiff.read_tiff_voxel_size" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">tiff</span><span class="o">.</span><span class="n">read_tiff_voxel_size</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VoxelSize</span></code>
 
-</h3>
+<a href="#plantseg.io.tiff.read_tiff_voxel_size" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2581,7 +2581,7 @@ If the format is not supported, a default loader can be provided (default: load_
             </details>
     </div>
 
-</div><h2 id="h5-utilities">H5 Utilities</h2>
+</div><h2 id="h5-utilities">H5 Utilities<a class="headerlink" href="#h5-utilities" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -2590,7 +2590,7 @@ If the format is not supported, a default loader can be provided (default: load_
 <h3 id="plantseg.io.h5.list_h5_keys" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">h5</span><span class="o">.</span><span class="n">list_h5_keys</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></code>
 
-</h3>
+<a href="#plantseg.io.h5.list_h5_keys" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2688,7 +2688,7 @@ If the format is not supported, a default loader can be provided (default: load_
 <h3 id="plantseg.io.h5.del_h5_key" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">h5</span><span class="o">.</span><span class="n">del_h5_key</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
-</h3>
+<a href="#plantseg.io.h5.del_h5_key" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2770,7 +2770,7 @@ If the format is not supported, a default loader can be provided (default: load_
 <h3 id="plantseg.io.h5.rename_h5_key" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">h5</span><span class="o">.</span><span class="n">rename_h5_key</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">old_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">new_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r+&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
-</h3>
+<a href="#plantseg.io.h5.rename_h5_key" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2856,7 +2856,7 @@ If the format is not supported, a default loader can be provided (default: load_
             </details>
     </div>
 
-</div><h2 id="zarr-utilities">Zarr Utilities</h2>
+</div><h2 id="zarr-utilities">Zarr Utilities<a class="headerlink" href="#zarr-utilities" title="Permanent link">&para;</a></h2>
 
 
 <div class="doc doc-object doc-function">
@@ -2865,7 +2865,7 @@ If the format is not supported, a default loader can be provided (default: load_
 <h3 id="plantseg.io.zarr.list_zarr_keys" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">zarr</span><span class="o">.</span><span class="n">list_zarr_keys</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></code>
 
-</h3>
+<a href="#plantseg.io.zarr.list_zarr_keys" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -2961,7 +2961,7 @@ If the format is not supported, a default loader can be provided (default: load_
 <h3 id="plantseg.io.zarr.del_zarr_key" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">zarr</span><span class="o">.</span><span class="n">del_zarr_key</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
-</h3>
+<a href="#plantseg.io.zarr.del_zarr_key" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
@@ -3039,7 +3039,7 @@ If the format is not supported, a default loader can be provided (default: load_
 <h3 id="plantseg.io.zarr.rename_zarr_key" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">zarr</span><span class="o">.</span><span class="n">rename_zarr_key</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">old_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">new_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;r+&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
 
-</h3>
+<a href="#plantseg.io.zarr.rename_zarr_key" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">

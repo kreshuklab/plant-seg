@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
@@ -71,7 +71,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -128,7 +128,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -138,7 +138,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -1535,29 +1535,30 @@
   
 
 
-<h1 id="quick-start">Quick Start</h1>
+<h1 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h1>
 <p>PlantSeg can be used in three different ways: interactively (using the Napari viewer), as a command line, or with a GUI. The following sections will guide you through the installation and usage of PlantSeg in each of these modes.</p>
-<h2 id="interactive-plantseg-with-napari-viewer">Interactive PlantSeg with Napari Viewer</h2>
+<h2 id="interactive-plantseg-with-napari-viewer">Interactive PlantSeg with Napari Viewer<a class="headerlink" href="#interactive-plantseg-with-napari-viewer" title="Permanent link">&para;</a></h2>
 <p>PlantSeg app can be started from the terminal.
-First, activate the newly created conda environment with:</p>
-<div class="highlight"><pre><span></span><code>mamba<span class="w"> </span>activate<span class="w"> </span>plant-seg
+After <a href="/plant-seg/chapters/getting_started/installation">installing PlantSeg</a> using the installer, there should be a menu entry for to launch PlantSeg.</p>
+<p>Alternatively, launch PlantSeg in the terminal. First activate your environment (by default this is the installation directory, change the command if needed) with:</p>
+<div class="highlight"><pre><span></span><code>conda<span class="w"> </span>activate<span class="w"> </span>~/plantseg
 </code></pre></div>
-<p>then, start the plantseg in napari</p>
+<p>then, start PlantSeg with the napari GUI:</p>
 <div class="highlight"><pre><span></span><code>plantseg<span class="w"> </span>--napari
 </code></pre></div>
 <p>A more in depth guide can be found in our <a href="../plantseg_interactive_napari/">documentation (GUI)</a>.</p>
-<h2 id="command-line-plantseg">Command Line PlantSeg</h2>
+<h2 id="command-line-plantseg">Command Line PlantSeg<a class="headerlink" href="#command-line-plantseg" title="Permanent link">&para;</a></h2>
 <p>PlantSeg can be configured using <code>YAML</code> config files.</p>
-<p>First, activate the newly created conda environment with:</p>
-<div class="highlight"><pre><span></span><code>mamba<span class="w"> </span>activate<span class="w"> </span>plant-seg
+<p>First, activate the newly created conda environment (by default this is the installation directory, change the command if needed) with:</p>
+<div class="highlight"><pre><span></span><code>conda<span class="w"> </span>activate<span class="w"> </span>~/plantseg
 </code></pre></div>
-<p>then, one can just start the pipeline with</p>
+<p>then, start the pipeline with:</p>
 <div class="highlight"><pre><span></span><code>plantseg<span class="w"> </span>--config<span class="w"> </span>CONFIG_PATH
 </code></pre></div>
 <p>where <code>CONFIG_PATH</code> is the path to the <code>YAML</code> configuration file. See <a href="https://github.com/kreshuklab/plant-seg/blob/master/examples/config.yaml">config.yaml</a> for a sample configuration
 file and our <a href="../plantseg_legacy/plantseg_classic_cli/">documentation (CLI)</a> for a
 detailed description of the parameters.</p>
-<h2 id="plantseg-with-legacy-gui">PlantSeg with Legacy GUI</h2>
+<h2 id="plantseg-with-legacy-gui">PlantSeg with Legacy GUI<a class="headerlink" href="#plantseg-with-legacy-gui" title="Permanent link">&para;</a></h2>
 <div class="admonition failure">
 <p class="admonition-title">Deprecated</p>
 <p>This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or <a href="../plantseg_legacy/installation/">install PlantSeg v1</a>.</p>
@@ -1592,7 +1593,7 @@ First, activate the newly created conda environment with:</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">November 25, 2024</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">April 24, 2025</span>
   </span>
 
     
@@ -1620,6 +1621,16 @@ First, activate the newly created conda environment with:</p>
     
     <nav>
       
+        <a href="https://github.com/KRiedmiller" class="md-author" title="@KRiedmiller">
+          
+          <img src="https://avatars.githubusercontent.com/u/42350211?v=4&size=72" alt="KRiedmiller">
+        </a>
+      
+        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
+          
+          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
+        </a>
+      
         <a href="https://github.com/qin-yu" class="md-author" title="@qin-yu">
           
           <img src="https://avatars.githubusercontent.com/u/17722010?v=4&size=72" alt="qin-yu">
@@ -1628,11 +1639,6 @@ First, activate the newly created conda environment with:</p>
         <a href="https://github.com/lorenzocerrone" class="md-author" title="@lorenzocerrone">
           
           <img src="https://avatars.githubusercontent.com/u/23013839?v=4&size=72" alt="lorenzocerrone">
-        </a>
-      
-        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
-          
-          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
         </a>
       
       

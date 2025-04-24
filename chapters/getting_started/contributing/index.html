@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../../images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.2afb09e1.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
@@ -71,7 +71,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -128,7 +128,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -138,7 +138,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -464,6 +464,15 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#install-mamba" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install Mamba
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#getting-started" class="md-nav__link">
@@ -1592,6 +1601,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#install-mamba" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install Mamba
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#getting-started" class="md-nav__link">
     <span class="md-ellipsis">
       Getting Started
@@ -1670,26 +1688,49 @@
   
 
 
-<h1 id="contribute-to-plantseg">Contribute to PlantSeg</h1>
+<h1 id="contribute-to-plantseg">Contribute to PlantSeg<a class="headerlink" href="#contribute-to-plantseg" title="Permanent link">&para;</a></h1>
 <p>PlantSeg is an open-source project, and we welcome contributions from the community. There are many ways to contribute, such as writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests, or writing code that can be incorporated into PlantSeg itself.</p>
-<h2 id="getting-started">Getting Started</h2>
+<h2 id="install-mamba">Install Mamba<a class="headerlink" href="#install-mamba" title="Permanent link">&para;</a></h2>
+<p>The easiest way to install PlantSeg is by using
+<a href="https://mamba.readthedocs.io/en/latest/index.html">mamba (Miniforge)</a> package manager.
+If you don't have conda already, install it:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Linux</label><label for="__tabbed_1_2">Windows/macOS</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>To download Miniforge open a terminal and type:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span><span class="s2">&quot;https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-</span><span class="k">$(</span>uname<span class="k">)</span><span class="s2">-</span><span class="k">$(</span>uname<span class="w"> </span>-m<span class="k">)</span><span class="s2">.sh&quot;</span>
+bash<span class="w"> </span>Miniforge3-<span class="k">$(</span>uname<span class="k">)</span>-<span class="k">$(</span>uname<span class="w"> </span>-m<span class="k">)</span>.sh
+</code></pre></div>
+<p>Then install by typing:</p>
+<div class="highlight"><pre><span></span><code>bash<span class="w"> </span>Miniforge3-<span class="k">$(</span>uname<span class="k">)</span>-<span class="k">$(</span>uname<span class="w"> </span>-m<span class="k">)</span>.sh
+</code></pre></div>
+<p>and follow the installation instructions.
+Please refer to the <a href="https://github.com/conda-forge/miniforge">Miniforge repo</a> for more information, troubleshooting and uninstallation instructions.
+The miniforge installation file <code>Miniforge3-*.sh</code> can be deleted now.</p>
+</div>
+<div class="tabbed-block">
+<p>The first step required to use the pipeline is installing mamba. The installation can be done by downloading the installer from the <a href="https://github.com/conda-forge/miniforge">Miniforge repo</a>. There you can find the download links for the latest version of Miniforge, troubleshooting and uninstallation instructions.</p>
+</div>
+</div>
+</div>
+<h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
 <p>To set up the development environment, run:</p>
-<div class="highlight"><pre><span></span><code>mamba<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment-dev.yaml
+<div class="highlight"><pre><span></span><code>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment-dev.yaml
 conda<span class="w"> </span>activate<span class="w"> </span>plant-seg-dev
 </code></pre></div>
-<p>To install PlantSeg in development mode, run:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>--no-deps
-</code></pre></div>
-<h2 id="hierarchical-design-of-plantseg">Hierarchical Design of PlantSeg</h2>
+<p>This installs PlantSeg using <code>pip --editable .</code> and all dependencies using conda. (Some dependencies are only available through conda-forge)</p>
+<h2 id="hierarchical-design-of-plantseg">Hierarchical Design of PlantSeg<a class="headerlink" href="#hierarchical-design-of-plantseg" title="Permanent link">&para;</a></h2>
 <p>Please refer to <a href="../../python_api/">Python API</a>.</p>
-<h2 id="coding-style">Coding Style</h2>
+<h2 id="coding-style">Coding Style<a class="headerlink" href="#coding-style" title="Permanent link">&para;</a></h2>
 <p>PlantSeg uses <em>Ruff</em> for linting and formatting. <em>Ruff</em> is compatible with <em>Black</em> for formatting.</p>
-<h2 id="before-submitting-a-pull-request">Before Submitting a Pull Request</h2>
-<h3 id="run-tests-with-pytest">Run Tests with <code>pytest</code></h3>
+<p>To ensure proper formatting and commit messages, pre-commit is used.
+This runs on PRs automatically, to run it locally check out <a href="https://pre-commit.com/#quick-start">Pre-commit</a>.</p>
+<h2 id="before-submitting-a-pull-request">Before Submitting a Pull Request<a class="headerlink" href="#before-submitting-a-pull-request" title="Permanent link">&para;</a></h2>
+<h3 id="run-tests-with-pytest">Run Tests with <code>pytest</code><a class="headerlink" href="#run-tests-with-pytest" title="Permanent link">&para;</a></h3>
 <p>Ensure that <code>pytest</code> is installed in your conda environment. To run the tests, simply use:</p>
 <div class="highlight"><pre><span></span><code>pytest
 </code></pre></div>
-<h3 id="check-syntax-with-pre-commit">Check Syntax with <code>pre-commit</code></h3>
+<h3 id="check-syntax-with-pre-commit">Check Syntax with <code>pre-commit</code><a class="headerlink" href="#check-syntax-with-pre-commit" title="Permanent link">&para;</a></h3>
 <p>The PlantSeg repository uses pre-commit hooks to ensure the code is correctly formatted and free of linting issues. While not mandatory, it is encouraged to check your code before committing by running:</p>
 <div class="highlight"><pre><span></span><code>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
 </code></pre></div>
@@ -1717,7 +1758,7 @@ conda<span class="w"> </span>activate<span class="w"> </span>plant-seg-dev
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">April 2, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">April 24, 2025</span>
   </span>
 
     
