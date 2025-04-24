@@ -87,7 +87,8 @@ def find_a_max_patch_shape(
     device: str,
     # ) -> tuple[int, int, int] | tuple[int, int]:
 ) -> tuple[int, int, int]:
-    """Determine the maximum feasible patch shape for a given model based on available GPU memory using binary search.
+    """Determine the maximum feasible patch shape for a given model based on
+    available GPU memory using binary search.
 
     1. This is merely a good quick guess. However, an exact maximum size causes problems.
     2. If isotropic shape, then the `best_n` is 128 for 2080 Ti, 186 for 3090,
@@ -110,6 +111,7 @@ def find_a_max_patch_shape(
             while low <= high:
                 mid = (low + high) // 2
                 patch_shape = (16 * mid,) * nn_dim
+                x = None
                 try:
                     x = torch.randn((1, in_channels) + patch_shape).to(device)
                     _ = model(x)
@@ -118,12 +120,14 @@ def find_a_max_patch_shape(
                 except RuntimeError as e:
                     if "out of memory" in str(e):
                         logger.info(
-                            f"Encountered '{e}' at patch shape {patch_shape}, reducing it."
+                            f"Encountered '{e}' at patch shape {patch_shape}, "
+                            "reducing it."
                         )
                         high = mid - 1  # Try smaller patches
                     else:
                         logger.warning(
-                            f"Encountered '{e}' at patch shape {patch_shape}, unexpected but continuing."
+                            f"Encountered '{e}' at patch shape {patch_shape}, "
+                            "unexpected but continuing."
                         )
                         high = mid - 1  # Try smaller patches
                 finally:
@@ -136,6 +140,7 @@ def find_a_max_patch_shape(
         with torch.no_grad():
             while best_n > 16:
                 patch_shape = (16 * best_n,) * nn_dim
+                x = None
                 try:
                     x = torch.randn((1, in_channels) + patch_shape).to(device)
                     _ = model(x)
@@ -189,6 +194,7 @@ def find_batch_size(
     model.eval()
     with torch.no_grad():
         for batch_size in [1, 2, 4, 8, 16, 32, 64, 128]:
+            x = None
             try:
                 x = torch.randn((batch_size, in_channels) + actual_patch_shape).to(
                     device
@@ -203,7 +209,8 @@ def find_batch_size(
                     break
                 else:
                     logger.warning(
-                        f"Encountered '{e}' at batch size {batch_size}, unexpected but continuing with halved batch size."
+                        f"Encountered '{e}' at batch size {batch_size}, "
+                        "unexpected but continuing with halved batch size."
                     )
                     batch_size //= 2
                     break
@@ -212,8 +219,8 @@ def find_batch_size(
                 torch.cuda.empty_cache()
     if batch_size == 0:
         raise RuntimeError(
-            f"Could not determine a feasible batch size for patch size {patch_shape} and halo {patch_halo}. "
-            "Please reduce the patch size."
+            f"Could not determine a feasible batch size for patch size "
+            f"{patch_shape} and halo {patch_halo}. Please reduce the patch size."
         )
     del model
     torch.cuda.empty_cache()
@@ -228,7 +235,8 @@ def will_CUDA_OOM(
     batch_size: int,
     device: str,
 ) -> bool:
-    """Determine if a given batch size will cause an out-of-memory (OOM) error on the specified device.
+    """Determine if a given batch size will cause an out-of-memory (OOM)
+    error on the specified device.
 
     Args:
         model (nn.Module): The model to be used for prediction.
@@ -264,7 +272,8 @@ def will_CUDA_OOM(
         if "out of memory" in str(e):
             OOM_error = True
             logger.info(
-                f"Using patch shape {patch_shape}, halo {patch_halo}, and batch size {batch_size} will cause OOM."
+                f"Using patch shape {patch_shape}, halo {patch_halo}, "
+                f"and batch size {batch_size} will cause OOM."
             )
         else:
             raise  # Re-raise if it's not an OOM error
