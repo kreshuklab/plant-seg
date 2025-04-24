@@ -16,7 +16,7 @@ on:
           - pre_n
 
 jobs:
-  test:
+  test-and-build:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -58,40 +58,12 @@ jobs:
           pytest -s --cov --cov-report=xml
           conda deactivate
 
-  release:
-    needs: test
-    # runs-on: ubuntu-latest
-    runs-on: self-hosted
-    defaults:
-      run:
-        # Conda requires a login shell in order to work properly
-        shell: bash -l {0}
-    env:
-      DISPLAY: ":99.0"
-      CONDA_OVERRIDE_CUDA: "12.4"
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set Up Miniforge
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          python-version: 3.11
-          miniforge-version: latest
-          mamba-version: "*"
-          channels: conda-forge
-          conda-remove-defaults: true
-
-      - name: List Conda Environments
-        run: conda info --envs
-
       - name: Bump version
         id: bump
         uses: callowayproject/bump-my-version@master
         with:
           args: "--verbose ${{ inputs.bump-type }}"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.RELEASE_BUMP_MY_VERSION_PAT }}
 
       - name: Check version
         if: steps.bump.outputs.bumped == 'true'
@@ -111,29 +83,80 @@ jobs:
         run: |
           conda create -n builder conda-build
           conda activate builder
-          conda build -c nvidia conda-recipe/
+          conda build conda-recipe/ --output-folder conda_bld
           conda deactivate
+
+      - name: tar build
+        run: |
+          tar czf ./constructor/build.gz conda_bld/*
+          ls
+          echo "### ls constructor: ###"
+          ls ./constructor
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: plantseg-conda-build
+          path: constructor/build.gz
+          overwrite: true
+          if-no-files-found: error
+
+  build_installer:
+    needs: test-and-build
+    strategy:
+      matrix:
+        # os: ["ubuntu", "windows"]
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+    # runs-on: [self-hosted, "${{ matrix.os }}"]
+    runs-on: ["${{ matrix.os }}"]
+
+    defaults:
+      run:
+        # Conda requires a login shell in order to work properly
+        shell: ${{ matrix.os == 'windows' && 'powershell' || 'bash -el {0}' }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: plantseg-conda-build
+          path: ./constructor
+      - name: Display downloaded files
+        run: ls ./constructor
+
+      - name: Set Up Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: 3.12
+          miniforge-version: latest
+          mamba-version: "*"
+          channels: conda-forge
+          conda-remove-defaults: true
+          activate-environment: "dummyenv"
+
+      - name: List Conda Environments
+        run: |
+          conda info --envs
 
       - name: create package
         run: |
-          conda create -n constructor constructor menuinst
+          conda create -n constructor constructor menuinst requests
           conda activate constructor
           constructor --output-dir installer constructor/
           conda deactivate
 
-      - name: publish to heibox
+      - name: publish to heibox using python uploader
         run: |
-          for to_upload in installer/*.sh; do
-            echo "$to_upload"
-            uploadurl=$(curl --request GET \
-              --url 'https://heibox.uni-heidelberg.de/api/v2.1/via-repo-token/upload-link/?path=%2F&from=api&replace=1' \
-              --header 'accept: application/json' \
-              --header 'authorization: Bearer ${{ secrets.SEAFILE_API_TOKEN }}')
-            echo "${uploadurl}"
-            curl --request POST --url "${uploadurl//\"/}" \
-              --header 'accept: application/json' \
-              --header 'content-type: multipart/form-data' \
-              --form file="@${to_upload}" \
-              --form replace=1 \
-              --form parent_dir=/
-          done
+          conda activate constructor
+          python constructor/uploader.py ${{ secrets.SEAFILE_API_TOKEN }}
+          conda deactivate
+
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "plantseg-installer-${{ matrix.os }}"
+          path: installer/PlantSeg*
+          overwrite: true
+          if-no-files-found: error

@@ -1,10 +1,9 @@
 name: plant-seg
 channels:
-  - pytorch
-  - nvidia
   - conda-forge
 dependencies:
   - python
+  - pip
   # Neural Network
   - pytorch
   # Bioimage and CV
@@ -16,11 +15,14 @@ dependencies:
   - python-graphviz
   - scikit-image
   - bioimageio.core>=0.6.5,<=0.7.0
-  - xarray<2025.3.0  # 2025.3.0 cause problem plant-seg/issues/396
+  - xarray<2025.3.0 # 2025.3.0 cause problem plant-seg/issues/396
   # GUI
+  - qtpy
   - pyqt
   - napari
   # Other
   - requests
   - pyyaml
-  - pydantic>2,<2.10  # 2.10 cause problem spec-bioimage-io/issues/663
+  - pydantic>2,<2.10 # 2.10 cause problem spec-bioimage-io/issues/663
+  - pip:
+      - -e .

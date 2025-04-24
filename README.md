@@ -30,33 +30,32 @@ For detailed usage checkout our [**documentation** 📖](https://kreshuklab.gith
 
 ## Installation
 
-Please go to the [documentation](https://kreshuklab.github.io/plant-seg/chapters/getting_started/installation/) for more detailed instructions. In short, we recommend using `mamba` to install PlantSeg, which is currently supported on Linux and Windows.
+The easiest way to get PlantSeg is using the installer. [**Download it here**](https://heibox.uni-heidelberg.de/d/72b4bd3ba5f14409bfee/)
 
-* GPU version, CUDA=12.x (replace `12.1` with `11.8` for CUDA=11.x)
+The installer comes with python and conda.
+Please go to the [documentation](https://kreshuklab.github.io/plant-seg/chapters/getting_started/installation/) for more detailed instructions.
 
-    ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch pytorch-cuda=12.1 plant-seg --no-channel-priority
-    ```
+For development, we recommend to clone the repo and install using:
 
-* CPU version
+```bash
+conda env create -f environment-dev.yaml
+```
 
-    ```bash
-    mamba create -n plant-seg -c pytorch -c nvidia -c conda-forge pytorch cpuonly plant-seg --no-channel-priority
-    ```
-
-The above command will create new conda environment `plant-seg` together with all required dependencies.
+The above command will create new conda environment `plant-seg-dev` together with all required dependencies.
 
 ## Repository Index
 
 The PlantSeg repository is organised as follows:
 
 * **plantseg**: Contains the source code of PlantSeg.
-* **conda-reicpe**: Contains all necessary code and configuration to create the anaconda package.
 * **docs**: Contains the documentation of PlantSeg.
-* **evaluation**: Contains all script required to reproduce the quantitative evaluation in
-[Wolny et al.](https://doi.org/10.7554/eLife.57613).
 * **examples**: Contains the files required to test PlantSeg.
 * **tests**: Contains automated tests that ensures the PlantSeg functionality are not compromised during an update.
+* **evaluation**: Contains all script required to reproduce the quantitative evaluation in
+[Wolny et al.](https://doi.org/10.7554/eLife.57613).
+* **conda-reicpe**: Contains all necessary code and configuration to create the anaconda package.
+* **constructor**: Contains scripts for the installer creation.
+* **Menu**: Contains scripts for OS Menu entries
 
 ## Citation
 

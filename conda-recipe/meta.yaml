@@ -10,9 +10,16 @@ build:
   number: 1
   script:
     - "pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
-    - "mkdir -p {{ PREFIX }}/Menu"
-    - "cp {{ RECIPE_DIR }}/../Menu/plant-seg.json {{ PREFIX }}/Menu/{{ PKG_NAME }}_menu.json"
-    - "cp {{ RECIPE_DIR }}/../Menu/logo.png {{ PREFIX }}/Menu/logo.png"
+    - "mkdir -p {{ PREFIX }}/Menu" # [not win]
+    - "cp {{ RECIPE_DIR }}/../Menu/plant-seg.json {{ PREFIX }}/Menu/{{ PKG_NAME }}_menu.json" # [not win]
+    - "cp {{ RECIPE_DIR }}/../Menu/icon.png {{ PREFIX }}/Menu/icon.png" # [not win]
+    - "cp {{ RECIPE_DIR }}/../Menu/logo_horizontal.png {{ PREFIX }}/Menu/logo_horizontal.png" # [not win]
+    - "cp {{ RECIPE_DIR }}/../Menu/logo_vertical.png {{ PREFIX }}/Menu/logo_vertical.png" # [not win]
+    - 'mkdir -p {{ PREFIX }}\Menu' # [win]
+    - 'cp {{ RECIPE_DIR }}\..\Menu/plant-seg.json {{ PREFIX }}\Menu\{{ PKG_NAME }}_menu.json' # [win]
+    - 'cp {{ RECIPE_DIR }}\..\Menu\icon.png {{ PREFIX }}\Menu\icon.png' # [win]
+    - 'cp {{ RECIPE_DIR }}\..\Menu\logo_horizontal.png {{ PREFIX }}\Menu\logo_horizontal.png' # [win]
+    - 'cp {{ RECIPE_DIR }}\..\Menu\logo_vertical.png {{ PREFIX }}\Menu\logo_vertical.png' # [win]
 
   entry_points:
     - plantseg = plantseg.run_plantseg:main
@@ -20,13 +27,12 @@ build:
 requirements:
   build:
     - python>=3.11
-    - pip
     - setuptools
 
   run:
     - python>=3.11
     - pip
-    - pytorch-gpu
+    - pytorch
     - tifffile
     - h5py
     - zarr
