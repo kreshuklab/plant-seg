@@ -13,6 +13,10 @@ Download the installer from [heibox](https://heibox.uni-heidelberg.de/d/72b4bd3b
 
 The installer comes complete with its own python installation. During the installation further dependencies need to be downloaded.
 
+!!! warning "First Start"
+
+    The first start can be quite slow, as the machine learning models need to be downloaded.
+
 === "Linux and MacOs"
 
     Make the installer script executable, then run it.
