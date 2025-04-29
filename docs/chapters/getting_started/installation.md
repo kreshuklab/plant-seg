@@ -49,7 +49,7 @@ The installer comes complete with its own python installation. During the instal
     ```bash
     git clone https://github.com/kreshuklab/plant-seg.git
     cd plant-seg
-    conda env create environment.yaml
+    conda env create -f environment.yaml
     conda activate plant-seg
     plantseg --napari
     ```
