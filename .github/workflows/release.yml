@@ -78,6 +78,7 @@ jobs:
           name: ${{ steps.bump.outputs.current-version }}
           token: ${{ secrets.GITHUB_TOKEN }}
           make_latest: true
+          prerelease: ${{ startsWith( inputs.bump-type , 'pre' ) }}
 
       - name: conda build
         run: |
