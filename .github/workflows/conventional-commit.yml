@@ -1,0 +1,24 @@
+name: "PR Title: Conventional Commit Lint"
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  lint_pr_title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # Install commitlint and the conventional config
+      - name: Install Commitlint
+        run: |
+          npm install --no-save @commitlint/{cli,config-conventional}
+
+      # Lint the PR title against Conventional Commits
+      - name: Lint PR Title
+        run: |
+          npx commitlint \
+            --config node_modules/@commitlint/config-conventional \
+            --env GITHUB_HEAD_REF \
+            --edit "${{ github.event.pull_request.title }}"
