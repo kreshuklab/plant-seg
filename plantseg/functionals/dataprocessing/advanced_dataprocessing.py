@@ -351,41 +351,41 @@ def remove_false_positives_by_foreground_probability(
     segmentation: np.ndarray,
     foreground: np.ndarray,
     threshold: float,
-) -> np.ndarray:
+) -> tuple[np.ndarray, np.ndarray]:
     """
-    Removes false positive regions in a segmentation based on a foreground probability map.
+    Splits an instance segmentation into two based on a foreground probability threshold.
 
-    1. Labels are not preserved.
-    2. If the mean(an instance * its own probability region) < threshold, it is removed.
+    1. Relabels the input segmentation sequentially (preserving 0 as background).
+    2. Computes the mean foreground probability for each region.
+    3. Assigns regions with mean >= threshold to the `kept` map; the rest to the `removed` map.
+    4. Relabels both outputs sequentially for compact labeling.
 
     Args:
-        segmentation (np.ndarray): Segmentation array where each unique non-zero value indicates a distinct region.
-        foreground (np.ndarray): Foreground probability map of the same shape as `segmentation`.
-        threshold (float): Probability threshold below which regions are considered false positives.
+        segmentation (np.ndarray): 2D or 3D segmentation array; each non-zero integer is a distinct region.
+        foreground (np.ndarray): Same shape as `segmentation`, values in [0, 1] representing per-pixel probabilities.
+        threshold (float): Regions with mean probability below this are considered false positives.
 
     Returns:
-        np.ndarray: Segmentation array with false positives removed.
+        kept (np.ndarray): Segmentation of regions with mean probability >= threshold, relabeled sequentially.
+        removed (np.ndarray): Segmentation of regions with mean probability < threshold, relabeled sequentially.
     """
-    # TODO: make a channel for removed regions for easier inspection
     # TODO: use `relabel_sequential` to recover the original labels
 
     if segmentation.shape != foreground.shape:
         raise ValueError("Segmentation and probability map must have the same shape.")
-    if foreground.max() > 1:
+    if foreground.min() < 0 or foreground.max() > 1:
         raise ValueError("Foreground must be a probability map with values in [0, 1].")
 
     instances, _, _ = relabel_sequential(
         segmentation
     )  # The label 0 is assumed to denote the bg and is never remapped.
-    regions = regionprops(instances)  # Labels with value 0 are ignored.
 
-    pixel_count = np.zeros(len(regions) + 1)
-    pixel_value = np.zeros(len(regions) + 1)
-    pixel_count[0] = (
-        1  # Avoid division by zero: pixel_count[0] and pixel_value[0] are fixed throughout.
-    )
+    kept = np.zeros_like(instances, dtype=instances.dtype)
+    removed = np.zeros_like(instances, dtype=instances.dtype)
 
-    for region in tqdm.tqdm(regions):
+    # Measure and split
+    regions = regionprops(instances)
+    for region in tqdm.tqdm(regions, desc="Splitting regions"):
         bbox = region.bbox
         if instances.ndim == 3:
             slices = (
@@ -394,17 +394,22 @@ def remove_false_positives_by_foreground_probability(
                 slice(bbox[2], bbox[5]),
             )
         else:
-            slices = (slice(bbox[0], bbox[2]), slice(bbox[1], bbox[3]))
+            slices = (
+                slice(bbox[0], bbox[2]),
+                slice(bbox[1], bbox[3]),
+            )
 
-        region_mask = instances[slices] == region.label
-        prob = foreground[slices]
+        mask = instances[slices] == region.label
+        prob = foreground[slices][mask]
+        mean_prob = prob.mean() if prob.size > 0 else 0.0
 
-        pixel_count[region.label] = region.area
-        pixel_value[region.label] = (region_mask * prob).sum()
+        if mean_prob >= threshold:
+            kept[slices][mask] = region.label
+        else:
+            removed[slices][mask] = region.label
 
-    likelihood = pixel_value / pixel_count
-    to_remove = likelihood < threshold
+    # Relabel outputs so labels are compact
+    kept, _, _ = relabel_sequential(kept)
+    removed, _, _ = relabel_sequential(removed)
 
-    instances[np.isin(instances, np.nonzero(to_remove)[0])] = 0
-    instances, _, _ = relabel_sequential(instances)
-    return instances
+    return kept, removed

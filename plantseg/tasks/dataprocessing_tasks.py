@@ -238,7 +238,7 @@ def image_rescale_to_voxel_size_task(
 @task_tracker
 def remove_false_positives_by_foreground_probability_task(
     segmentation: PlantSegImage, foreground: PlantSegImage, threshold: float
-) -> PlantSegImage:
+) -> list[PlantSegImage]:
     """Remove false positives from a segmentation based on the foreground probability.
 
     Args:
@@ -252,13 +252,18 @@ def remove_false_positives_by_foreground_probability_task(
             "Segmentation and foreground probability must have the same shape."
         )
 
-    out_data = remove_false_positives_by_foreground_probability(
+    kept, removed = remove_false_positives_by_foreground_probability(
         segmentation.get_data(), foreground.get_data(), threshold
     )
-    new_image = segmentation.derive_new(
-        out_data, name=f"{segmentation.name}_fg_filtered"
+    image_kept = segmentation.derive_new(
+        kept,
+        name=f"{segmentation.name}_fg_filtered",
     )
-    return new_image
+    image_removed = segmentation.derive_new(
+        removed,
+        name=f"{segmentation.name}_false_positives",
+    )
+    return [image_kept, image_removed]
 
 
 @task_tracker

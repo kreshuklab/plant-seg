@@ -7,6 +7,7 @@ build/
 
 # Dev
 settings.json
+.vscode/
 
 # Docs
 .cache/
