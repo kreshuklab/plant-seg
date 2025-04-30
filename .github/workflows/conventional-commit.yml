@@ -20,7 +20,7 @@ jobs:
         run: |
           # dump the PR title into a file
           echo "${{ github.event.pull_request.title }}" > pr_title.txt
-          # lint that file
+          # lint that file (I guess there is no way to just feed a string)
           npx commitlint \
-            --config node_modules/@commitlint/config-conventional \
+            --config @commitlint/config-conventional \
             --edit pr_title.txt
