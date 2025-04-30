@@ -13,18 +13,20 @@ def test_remove_false_positives_by_foreground_probability():
     prob[2:8, 2:8, 2:8] += 0.4
     prob[3:7, 3:7, 3:7] += 0.4
 
-    seg_new = remove_false_positives_by_foreground_probability(
+    kept, _ = remove_false_positives_by_foreground_probability(
         seg, prob, np.mean(prob[2:8, 2:8, 2:8] * 0.99)
     )
-    assert np.sum(seg_new == 1) == 216
-    assert np.sum(seg_new == 2) == 0
-    assert np.sum(seg_new == 0) == 1000 - 216
+    assert np.sum(kept == 1) == 216
+    assert np.sum(kept == 2) == 0
+    assert np.sum(kept == 0) == 1000 - 216
 
-    seg_new = remove_false_positives_by_foreground_probability(
+    kept, removed = remove_false_positives_by_foreground_probability(
         seg, prob, np.mean(prob[2:8, 2:8, 2:8] * 1.01)
     )
-    assert np.sum(seg_new == 1) == 0
-    assert np.sum(seg_new == 0) == 1000
+    assert np.sum(kept == 1) == 0
+    assert np.sum(kept == 0) == 1000
+    assert np.sum(removed == 1) == 784
+    assert np.sum(removed == 2) == 216
 
 
 def test_fix_over_under_segmentation_from_nuclei(complex_test_data):
