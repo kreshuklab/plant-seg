@@ -17,15 +17,11 @@ VOXEL_SIZE = (0.235, 0.15, 0.15)
 KEY_ZARR = "volumes/new"
 
 IS_CUDA_AVAILABLE = torch.cuda.is_available()
-CELLPOSE_TEST_IMAGE_RGB_3D = "http://www.cellpose.org/static/data/rgb_3D.tif"
 
 
 @pytest.fixture
-def raw_zcyx_75x2x75x75(tmpdir) -> np.ndarray:
-    path_rgb_3d_75x2x75x75 = Path(
-        pooch.retrieve(CELLPOSE_TEST_IMAGE_RGB_3D, path=tmpdir, known_hash=None)
-    )
-    return smart_load(path_rgb_3d_75x2x75x75)
+def raw_zcyx_75x2x75x75() -> np.ndarray:
+    return smart_load(TEST_FILES / "rgb_3D.tif")
 
 
 @pytest.fixture
