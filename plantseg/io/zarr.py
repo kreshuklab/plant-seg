@@ -157,7 +157,9 @@ def create_zarr(
         raise ValueError("Key cannot be empty.")
 
     zarr_file = zarr.open_group(path, mode)
-    zarr_file.create_dataset(key, data=stack, compression="gzip", overwrite=True)
+    assert isinstance(zarr_file, zarr.Group), f"Invalid Zarr file: {path}"
+    zarr_file.create_array(name=key, shape=stack.shape, dtype=stack.dtype)
+    zarr_file[key][:] = stack
     zarr_file[key].attrs["element_size_um"] = voxel_size.voxels_size
 
 
