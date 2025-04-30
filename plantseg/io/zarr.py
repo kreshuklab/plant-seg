@@ -12,8 +12,12 @@ from pathlib import Path
 
 import numpy as np
 import zarr
+from packaging.version import parse as parse_version
 
 from plantseg.io.voxelsize import VoxelSize
+
+ZARR_VERSION = parse_version(zarr.__version__)
+IS_ZARR_V3 = ZARR_VERSION >= parse_version("3.0.0")
 
 ZARR_EXTENSIONS = [".zarr"]
 ZARR_KEYS = ["raw", "prediction", "segmentation"]
@@ -147,17 +151,21 @@ def create_zarr(
         key (str): The internal key of the desired dataset.
         voxel_size (VoxelSize): The voxel size of the dataset.
         mode (str): The mode to open the Zarr file ['w', 'a'].
-
     """
+    if not key:
+        raise ValueError("Key cannot be None or empty.")
 
-    if key is None:
-        raise ValueError("Key cannot be None.")
+    zarr_file = zarr.open_group(str(path), mode)
 
-    if key == "":
-        raise ValueError("Key cannot be empty.")
+    if IS_ZARR_V3:
+        # v3 requires explicit `create_array`, and write manually
+        assert isinstance(zarr_file, zarr.Group), f"Invalid Zarr file: {path}"
+        zarr_file.create_array(name=key, shape=stack.shape, dtype=stack.dtype)
+        zarr_file[key][:] = stack
+    else:
+        # v2 allows `create_dataset` with `overwrite`
+        zarr_file.create_dataset(key, data=stack, compression="gzip", overwrite=True)
 
-    zarr_file = zarr.open_group(path, mode)
-    zarr_file.create_dataset(key, data=stack, compression="gzip", overwrite=True)
     zarr_file[key].attrs["element_size_um"] = voxel_size.voxels_size
 
 
