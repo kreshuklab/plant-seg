@@ -20,5 +20,4 @@ jobs:
         run: |
           npx commitlint \
             --config node_modules/@commitlint/config-conventional \
-            --env GITHUB_HEAD_REF \
-            --edit "${{ github.event.pull_request.title }}"
+            --text "${{ github.event.pull_request.title }}"
