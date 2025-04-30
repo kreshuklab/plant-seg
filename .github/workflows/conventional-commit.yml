@@ -16,8 +16,11 @@ jobs:
           npm install --no-save @commitlint/{cli,config-conventional}
 
       # Lint the PR title against Conventional Commits
-      - name: Lint PR Title
+      - name: Lint PR title
         run: |
+          # dump the PR title into a file
+          echo "${{ github.event.pull_request.title }}" > pr_title.txt
+          # lint that file
           npx commitlint \
             --config node_modules/@commitlint/config-conventional \
-            --text "${{ github.event.pull_request.title }}"
+            --edit pr_title.txt
