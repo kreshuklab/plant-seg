@@ -12,7 +12,7 @@ dependencies:
   # Bioimage and CV
   - tifffile
   - h5py
-  - zarr
+  - zarr>=3
   - vigra
   - python-elf
   - python-graphviz
