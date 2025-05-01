@@ -40,15 +40,14 @@ requirements:
     - python-elf
     - python-graphviz
     - scikit-image
-    - bioimageio.core >=0.6.5,<=0.7.0
-    - xarray<2025.3.0 # 2025.3.0 cause problem plant-seg/issues/396
+    - bioimageio.core>=0.8.0
+    - xarray
     - qtpy
     - pyqt
     - napari
     - requests
     - pyyaml
-    - pydantic >2,<2.10 # 2.10 cause problem spec-bioimage-io/issues/663
-    - xarray <2025.3.0
+    - pydantic>2
 
 test:
   imports:
