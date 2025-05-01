@@ -41,7 +41,6 @@ requirements:
     - python-graphviz
     - scikit-image
     - bioimageio.core>=0.8.0
-    - xarray
     - qtpy
     - pyqt
     - napari
