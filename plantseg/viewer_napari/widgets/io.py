@@ -513,3 +513,17 @@ def _on_layer_changed(layer):
         f"Layout: {ps_image.image_layout.value}"
     )
     widget_infos.value = str_info
+
+
+def on_layer_rename_io():
+    def update():
+        log(
+            "Updating layer names",
+            thread="io",
+            level="debug",
+        )
+        widget_export_image.image.reset_choices()
+        widget_set_voxel_size.layer.reset_choices()
+        widget_show_info.layer.reset_choices()
+
+    return update

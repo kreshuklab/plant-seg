@@ -468,3 +468,15 @@ def _on_custom_output_type_change(output_type: str):
         widget_add_custom_model.custom_output_type.show()
     else:
         widget_add_custom_model.custom_output_type.hide()
+
+
+def on_layer_rename_prediction():
+    def update():
+        log(
+            "Updating layer names",
+            thread="prediction",
+            level="debug",
+        )
+        widget_unet_prediction.image.reset_choices()
+
+    return update

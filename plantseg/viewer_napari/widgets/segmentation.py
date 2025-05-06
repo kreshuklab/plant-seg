@@ -252,3 +252,16 @@ def _on_image_changed(image: Image):
                 )
             else:
                 initialised_widget_dt_ws = True
+
+
+def on_layer_rename_segmentation():
+    def update():
+        log(
+            "Updating layer names",
+            thread="segmentation",
+            level="debug",
+        )
+        widget_agglomeration.image.reset_choices()
+        widget_dt_ws.image.reset_choices()
+
+    return update
