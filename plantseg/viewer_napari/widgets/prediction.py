@@ -471,6 +471,8 @@ def _on_custom_output_type_change(output_type: str):
 
 
 def on_layer_rename_prediction():
+    """Updates layer drop-down menus"""
+
     def update():
         log(
             "Updating layer names",

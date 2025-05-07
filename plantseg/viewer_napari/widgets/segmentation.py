@@ -255,6 +255,8 @@ def _on_image_changed(image: Image):
 
 
 def on_layer_rename_segmentation():
+    """Updates layer drop-down menus"""
+
     def update():
         log(
             "Updating layer names",

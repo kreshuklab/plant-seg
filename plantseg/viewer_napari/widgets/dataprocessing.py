@@ -742,6 +742,8 @@ def widget_image_pair_operations(
 
 
 def on_layer_rename_dataprocessing():
+    """Updates layer drop-down menus"""
+
     def update():
         log(
             "Updating layer names",

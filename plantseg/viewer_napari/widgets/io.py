@@ -516,6 +516,8 @@ def _on_layer_changed(layer):
 
 
 def on_layer_rename_io():
+    """Updates layer drop-down menus"""
+
     def update():
         log(
             "Updating layer names",
