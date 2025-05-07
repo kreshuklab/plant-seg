@@ -739,3 +739,22 @@ def widget_image_pair_operations(
         },
         widgets_to_update=[],
     )
+
+
+def on_layer_rename_dataprocessing():
+    """Updates layer drop-down menus"""
+
+    def update():
+        log(
+            "Updating layer names",
+            thread="dataprocessing",
+            level="debug",
+        )
+        widget_image_pair_operations.image1.reset_choices()
+        widget_image_pair_operations.image2.reset_choices()
+        widget_remove_false_positives_by_foreground.foreground.reset_choices()
+        widget_rescaling.image.reset_choices()
+        widget_cropping.image.reset_choices()
+        widget_gaussian_smoothing.image.reset_choices()
+
+    return update

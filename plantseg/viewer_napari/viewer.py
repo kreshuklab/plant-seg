@@ -9,7 +9,11 @@ from plantseg.viewer_napari.containers import (
     get_proofreading_tab,
     get_segmentation_tab,
 )
+from plantseg.viewer_napari.widgets.dataprocessing import on_layer_rename_dataprocessing
+from plantseg.viewer_napari.widgets.io import on_layer_rename_io
+from plantseg.viewer_napari.widgets.prediction import on_layer_rename_prediction
 from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybindings
+from plantseg.viewer_napari.widgets.segmentation import on_layer_rename_segmentation
 
 
 def run_viewer():
@@ -26,6 +30,12 @@ def run_viewer():
     ]:
         this_widget = viewer.window.add_dock_widget(_containers, name=name, tabify=True)
         this_widget.setFixedWidth(666)
+
+    # update layer drop-down menus on layer selection
+    viewer.layers.selection.events.active.connect(on_layer_rename_prediction())
+    viewer.layers.selection.events.active.connect(on_layer_rename_io())
+    viewer.layers.selection.events.active.connect(on_layer_rename_dataprocessing())
+    viewer.layers.selection.events.active.connect(on_layer_rename_segmentation())
 
     # Show data tab by default
     viewer.window._dock_widgets["Input/Output"].show()
