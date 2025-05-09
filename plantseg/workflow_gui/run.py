@@ -1,11 +1,13 @@
-from typing import Optional
 from pathlib import Path
-from magicgui import magicgui
-import yaml
-from plantseg.workflow_gui.widgets import Workflow_widgets, logger
+from typing import Optional
 
-import rich.traceback
 import psygnal
+import rich.traceback
+import yaml
+from magicgui import magicgui
+from magicgui.widgets import Container
+
+from plantseg.workflow_gui.widgets import Workflow_widgets, logger
 
 rich.traceback.install(
     show_locals=True,
@@ -15,15 +17,16 @@ rich.traceback.install(
 
 class Workflow_gui(Workflow_widgets):
     def __init__(self, config_path: Optional[Path] = None):
-        super().__init__(config_path)
-
-        # setup containers
-        self.bottom_buttons.append(self.exit)
+        super().__init__()
+        self.config_path = config_path
 
         # setup initial state
-        if self.config is None:
+        if not isinstance(self.config_path, Path):
             logger.debug("No config, showing loader..")
             self.show_loader()
+        else:
+            logger.debug("Config provided")
+            self.loader(self.config_path)
 
         self.main_window.show(run=True)
 
@@ -31,7 +34,14 @@ class Workflow_gui(Workflow_widgets):
         logger.debug("Changing to loader view")
         self.content.clear()
         self.content.append(self.loader_w)
-        self.loader_w.show()
+
+        self.bottom_buttons.clear()
+        self.bottom_buttons.extend((self.exit,))
+
+        [w.show() for w in self.content]
+        [w.show() for w in self.bottom_buttons]
+
+        self.main_window.native.resize(self.main_window.native.minimumSizeHint())
 
     def show_config(self):
         try:
@@ -40,9 +50,15 @@ class Workflow_gui(Workflow_widgets):
             logger.error(f"Workflow not valid, please choose a valid workflow!\n{e}")
             return
 
+        self.bottom_buttons.clear()
+        self.bottom_buttons.extend((self.change_config, self.exit))
+
         logger.debug("Changing to config view")
         self.content.clear()
         self.fill_config_c()
+
+        [w.show() for w in self.content]
+        [w.show() for w in self.bottom_buttons]
 
     def validate_config(self):
         if not isinstance(self.config, dict):
@@ -69,4 +85,5 @@ class Workflow_gui(Workflow_widgets):
 if __name__ == "__main__":
     logger.setLevel("DEBUG")
     config = Path("examples/headless_workflow.yaml")
+    # config = None
     Workflow_gui(config)
