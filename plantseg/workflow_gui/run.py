@@ -11,7 +11,7 @@ from plantseg.workflow_gui.widgets import Workflow_widgets, logger
 
 rich.traceback.install(
     show_locals=True,
-    suppress=["psygnal", "magicgui"],
+    suppress=[psygnal],
 )
 
 
@@ -36,7 +36,7 @@ class Workflow_gui(Workflow_widgets):
         self.content.append(self.loader_w)
 
         self.bottom_buttons.clear()
-        self.bottom_buttons.extend((self.exit,))
+        self.bottom_buttons.append(self.exit)
 
         [w.show() for w in self.content]
         [w.show() for w in self.bottom_buttons]
@@ -85,5 +85,6 @@ class Workflow_gui(Workflow_widgets):
 if __name__ == "__main__":
     logger.setLevel("DEBUG")
     config = Path("examples/headless_workflow.yaml")
+    # config = Path("examples/multi.yaml")
     # config = None
     Workflow_gui(config)
