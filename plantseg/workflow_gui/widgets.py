@@ -1,10 +1,10 @@
 import logging
+import pprint
 from abc import abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, cast
 
 import yaml
-from magicgui import magic_factory, magicgui, widgets
+from magicgui import magic_factory, magicgui
 from magicgui.widgets import (
     ComboBox,
     Container,
@@ -14,7 +14,6 @@ from magicgui.widgets import (
     MainWindow,
     PushButton,
 )
-from qtpy.QtWidgets import QLabel, QSlider, QWidget
 
 logger = logging.getLogger(__name__)
 
@@ -72,167 +71,22 @@ class Workflow_widgets:
         logger.debug("Filling contents section")
         input_c = Container(layout="vertical", labels=False)
         self.fill_input_c(input_c)
-        self.content.append(input_c)
+        self.content.append(input_c)  # pyright: ignore
 
         tasks_c = Container(layout="vertical", labels=False)
         self.fill_tasks_c(tasks_c)
-        self.content.append(tasks_c)
+        self.content.append(tasks_c)  # pyright: ignore
 
-    def fill_tasks_c(self, cont: Container, node: Optional[dict] = None, depth=0):
+    def fill_tasks_c(self, cont):
         """Fills tasks section of config container with all tasks trees"""
 
-        if node is None:
-            # Header, start building tree recursively
-            cont.append(Label(value="Tasks:\n"))
-            cont.append(Container(layout="horizontal"))
-            cont = cont[-1]
+        task_tree = Task_tree(self.config["list_tasks"], self.config)
+        tasks_container = task_tree.build_container()
 
-            for task in self.config["list_tasks"]:
-                if task["node_type"] == "root":
-                    t_container = Container(
-                        layout="vertical",
-                        labels=True,
-                        scrollable=True,
-                    )
-                    t_container.margins = (0, 0, 0, 0)
-                    logger.debug(f"Building task tree for root {task['images_inputs']}")
-                    logger.debug(t_container.margins)
-                    self.fill_tasks_c(node=task, cont=t_container)
-                    cont.append(t_container)
+        cont.append(Label(value="Tasks:\n"))
+        cont.append(tasks_container)
 
-                    print(t_container.native.children())
-                    children = t_container.native.children()
-                    colors = [255 for _ in range(len(children))]
-                    i = [0 for _ in range(len(children))]
-                    while children:
-                        ch = children.pop(0)
-                        c = colors.pop(0)
-                        j = i.pop(0)
-                        if getattr(ch, "setStyleSheet", False):
-                            if len(ch.children()) < 2:
-                                continue
-                            print(" " * j, ch, len(ch.children()))
-                            ch.setStyleSheet(f"background-color: rgb({c}, {c}, {c})")
-                            new_chs = ch.children()
-                            colors.extend([c - 20 for _ in range(len(new_chs))])
-                            i.extend([0 for _ in range(len(new_chs))])
-                            children.extend(new_chs)
-
-        # @@@ Different control widgets @@@
-        else:
-            label = " ".join(f"{node['func']}".split("_")[:-1])
-
-            if node["func"] == "import_image_task":
-                w = ComboBox(
-                    label=label,
-                    value=node["images_inputs"]["input_path"],
-                    choices=list(
-                        filter(
-                            lambda s: s.startswith("input"),
-                            self.config["inputs"][0],
-                        )
-                    ),
-                )
-                # cont.append(Label(value=label))
-                cont.append(w)
-                self.changing_fields["tasks"][node["id"]] = lambda: {
-                    "images_inputs": {"input_path": w.value}
-                }
-
-            elif node["func"] == "gaussian_smoothing_task":
-                w = FloatSlider(
-                    label=label,
-                    value=node["parameters"]["sigma"],
-                    min=0.1,
-                    max=10,
-                )
-                # cont.append(Label(value=label))
-                cont.append(w)
-                self.changing_fields["tasks"][node["id"]] = lambda: {
-                    "parameters": {"sigma": w.value}
-                }
-
-            elif node["func"] == "export_image_task":
-                w = ComboBox(
-                    label=label,
-                    value=node["images_inputs"]["export_directory"],
-                    choices=list(
-                        filter(
-                            lambda s: s.startswith("export"),
-                            self.config["inputs"][0],
-                        )
-                    ),
-                )
-                cont.append(w)
-                self.changing_fields["tasks"][node["id"]] = lambda: {
-                    "images_inputs": {"export_directory": w.value}
-                }
-
-            elif node["func"] == "unet_prediction_task":
-                # model_name
-                # device
-                unet_cont = Container(label=label)
-                unet_cont.append(
-                    LineEdit(
-                        label="Model:",
-                        value=node["parameters"]["model_name"],
-                    )
-                )
-                self.changing_fields["tasks"][node["id"]] = lambda: {
-                    "parameters": {"model_name": unet_cont[-1].value}
-                }
-                unet_cont.append(
-                    LineEdit(
-                        label="Device:",
-                        value=node["parameters"]["device"],
-                    )
-                )
-                self.changing_fields["tasks"][node["id"]] = lambda: {
-                    "parameters": {"device": unet_cont[-1].value}
-                }
-                cont.append(unet_cont)
-
-            else:
-                # catch-all
-                m = (
-                    " ".join(f"{node['func']}".split("_")[:-1])
-                    + f"\n{node.get('parameters')}"
-                )
-                cont.append(Label(label="smth", value=m))
-
-            # append next task:
-            if len(node["outputs"]) == 0:
-                return
-            else:
-                # If multiple outputs make multiple subcontainers.
-                # Otherwise use parent container.
-                task_containers = {}
-                if len(node["outputs"]) > 1:
-                    for out in node["outputs"]:
-                        task_containers[out] = Container(
-                            layout="vertical",
-                        )
-                        task_containers[out].margins = (0, 0, 0, 0)
-                    cont.append(
-                        Container(
-                            widgets=task_containers.values(),
-                            layout="horizontal",
-                            labels=False,
-                        )
-                    )
-                    cont[-1].margins = (0, 0, 0, 0)
-                else:
-                    task_containers[node["outputs"][0]] = cont
-
-                # c = 255 - (depth * 20)
-                # cont[-1].native.setStyleSheet(f"background-color: rgb({c}, {c}, {c})")
-
-            for task in self.config["list_tasks"]:
-                for out in node["outputs"]:
-                    if out in task["images_inputs"].values():
-                        self.fill_tasks_c(
-                            node=task, cont=task_containers[out], depth=depth + 1
-                        )
+        self.changing_fields["tasks"] = task_tree.changing_fields
 
     def fill_input_c(self, cont: Container):
         """Fills the input section of the config container"""
@@ -325,14 +179,25 @@ class Workflow_widgets:
         output = self.config.copy()
         for field, w in self.changing_fields["inputs"].items():
             output["inputs"][0][field] = w()
-
-        logger.debug(f"Output: {output['inputs'][0]}")
+        logger.debug(f"IO part: {output['inputs'][0]}")
 
         for id, w in self.changing_fields["tasks"].items():
             for i, task in enumerate(output["list_tasks"]):
                 if task["id"] == id:
                     update = w()
-                    output["list_tasks"][i].update(update)
+                    print("Task: ", task)
+                    pprint.pp(update)
+
+                    for k, v in update.items():
+                        if isinstance(v, dict):
+                            assert not isinstance(list(v.values())[0], dict), (
+                                "Nested too deep"
+                            )
+                            output["list_tasks"][i][k].update(v)
+                        else:
+                            output["list_tasks"][i].update(update)
+
+        logger.debug(pprint.pformat(f"Tasks part: {output['list_tasks']}"))
 
         with open(path, "w") as f:
             f.write(yaml.safe_dump(output))
@@ -351,3 +216,202 @@ class Workflow_widgets:
     @abstractmethod
     def show_loader(self):
         pass
+
+
+class Task_node:
+    def __init__(self, node: dict):
+        self.parents = set()
+        self.children = set()
+        self.changing_fields = {}
+
+        self.node_type: str
+        self.func: str
+        self.images_inputs: dict[str, str]
+        self.outputs: list[str]
+        self.parameters: dict
+        self.id: str
+
+        for k, v in node.items():
+            setattr(self, k, v)
+
+    def add_parent(self, parent_id: str):
+        self.parents.add(parent_id)
+
+    def add_child(self, child_id: str):
+        self.children.add(child_id)
+
+    def get_node_widget(self, config: dict):
+        label = " ".join(f"{self.func}".split("_")[:-1])
+
+        if self.func == "import_image_task":
+            w = ComboBox(
+                label=label,
+                value=self.images_inputs["input_path"],
+                choices=list(
+                    filter(
+                        lambda s: s.startswith("input"),
+                        config["inputs"][0],
+                    )
+                ),
+            )
+            # cont.append(Label(value=label))
+            self.changing_fields[self.id] = lambda: {
+                "images_inputs": {"input_path": w.value}
+            }
+            return Container(widgets=[w])
+
+        elif self.func == "gaussian_smoothing_task":
+            w = FloatSlider(
+                label=label,
+                value=self.parameters["sigma"],
+                min=0.1,
+                max=10,
+            )
+            self.changing_fields[self.id] = lambda: {"parameters": {"sigma": w.value}}
+            return Container(widgets=[w])
+
+        elif self.func == "export_image_task":
+            export_cont = Container(label=label)
+            export_cont.append(
+                ComboBox(  # pyright: ignore
+                    label="Export slot",
+                    value=self.images_inputs["export_directory"],
+                    choices=list(
+                        filter(
+                            lambda s: s.startswith("export"),
+                            config["inputs"][0],
+                        )
+                    ),
+                )
+            )
+            export_cont.append(
+                ComboBox(  # pyright: ignore
+                    label="Name slot",
+                    value=self.images_inputs["name_pattern"],
+                    choices=list(
+                        filter(
+                            lambda s: s.startswith("name"),
+                            config["inputs"][0],
+                        )
+                    ),
+                )
+            )
+            self.changing_fields[self.id] = lambda: {
+                "images_inputs": {
+                    "export_directory": export_cont[0].value,
+                    "name_pattern": export_cont[1].value,
+                }
+            }
+            return Container(widgets=[export_cont])
+
+        elif self.func == "unet_prediction_task":
+            unet_cont = Container(label=label)
+            unet_cont.append(
+                LineEdit(  # pyright: ignore
+                    label="Model:",
+                    value=self.parameters["model_name"],
+                ),
+            )
+            self.changing_fields[self.id] = lambda: {
+                "parameters": {"model_name": unet_cont[-1].value}
+            }
+            unet_cont.append(
+                LineEdit(  # pyright: ignore
+                    label="Device:",
+                    value=self.parameters["device"],
+                ),
+            )
+            self.changing_fields[self.id] = lambda: {
+                "parameters": {"device": unet_cont[-1].value}
+            }
+            return Container(widgets=[unet_cont])
+
+        else:
+            # catch-all
+            m = (
+                " ".join(f"{self.func}".split("_")[:-1])
+                + "\n"
+                + pprint.pformat(getattr(self, "parameters"))
+            )
+            return Container(widgets=[Label(label="smth", value=m)])
+
+
+class Task_tree:
+    def __init__(self, task_list: list[dict], config: dict):
+        self.task_list = task_list
+        self.config = config
+        self.nodes = []
+        self.roots = []
+        self.leaves = []
+        self.tree_ids = []
+        self.changing_fields = {}
+
+        for task in task_list:
+            node = Task_node(task)
+            self.nodes.append(node)
+            if node.node_type == "root":
+                self.roots.append(node)
+            elif node.node_type == "leaf":
+                self.leaves.append(node)
+
+        for node in self.nodes:
+            for output in node.outputs:
+                for task in task_list:
+                    if output in task["images_inputs"].values():
+                        node.add_child(task["id"])
+
+            for input in node.images_inputs.values():
+                for task in task_list:
+                    if input in task["outputs"]:
+                        node.add_parent(task["id"])
+
+        self._id_dict = {node.id: node for node in self.nodes}
+
+    def from_id(self, id):
+        return self._id_dict[id]
+
+    def build_container(self):
+        logger.debug("### Building new task tree widget ###")
+        self.tree_ids = []
+        super_cont = Container(layout="horizontal", labels=False)
+        super_cont.margins = (0, 0, 0, 0)
+        for node in self.roots:
+            cont = Container(layout="vertical", labels=False)
+            cont.margins = (0, 0, 0, 0)
+            self._add_node_top_down(cont, node)
+            super_cont.append(cont)  # pyright: ignore
+        logger.debug("### Done building new task tree widget ###")
+        return super_cont
+
+    def _add_node_top_down(self, cont: Container, node: Task_node):
+        logger.debug(f"Adding {node.func}")
+        w = node.get_node_widget(self.config)
+        self.tree_ids.append(node.id)
+        self.changing_fields.update(node.changing_fields)
+        cont.append(w)
+        if len(node.children) == 0:
+            return
+        elif len(node.children) == 1:
+            child = node.children.pop()
+            if child in self.tree_ids:
+                logger.debug(f"Ignoring a child {self.from_id(child).func}")
+                # avoid duplicates
+                # cont.append(Label(value="Duplicate step skipped!"))
+                return
+            self._add_node_top_down(cont, self.from_id(child))
+        else:
+            super_cont = Container(layout="horizontal", labels=True)
+            super_cont.margins = (0, 0, 0, 0)
+            for child in node.children:
+                if child in self.tree_ids:
+                    logger.debug(f"Ignoring a child {self.from_id(child).func}")
+                    # avoid duplicates
+                    # w = Label(value="Duplicate step skipped!")
+                    # w.native.setStyleSheet("background-color: rgb(100,100,100)")
+                    # super_cont.append(w)
+                    continue
+                sub_cont = Container(layout="vertical", labels=False)
+                super_cont.append(sub_cont)  # pyright: ignore
+                self._add_node_top_down(sub_cont, self.from_id(child))
+            cont.append(super_cont)
+        return
