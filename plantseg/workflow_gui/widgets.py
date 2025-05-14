@@ -3,16 +3,20 @@ import pprint
 from abc import abstractmethod
 from pathlib import Path
 
+import qdarktheme
 import yaml
 from magicgui import magic_factory, magicgui
 from magicgui.widgets import (
     ComboBox,
     Container,
     FloatSlider,
+    FloatSpinBox,
     Label,
     LineEdit,
     MainWindow,
     PushButton,
+    RadioButtons,
+    SpinBox,
 )
 
 logger = logging.getLogger(__name__)
@@ -21,13 +25,27 @@ logger = logging.getLogger(__name__)
 class Workflow_widgets:
     def __init__(self):
         self.main_window = MainWindow(layout="vertical", labels=False)
-        # self.main_window.create_menu_item(
-        #     menu_name="File", item_name="Exit", callback=self.exit
-        # )
+        self.main_window.create_menu_item(
+            menu_name="Theme", item_name="Switch", callback=self.toggle_theme
+        )
+        self.theme = "dark"
+        self.theme_color = "#4cae4f"
+        qdarktheme.setup_theme(self.theme, custom_colors={"primary": self.theme_color})
+        qdarktheme.enable_hi_dpi()
         self.content = Container(layout="horizontal", labels=False)
         self.bottom_buttons = Container(layout="horizontal", labels=False)
         self.main_window.extend([self.content, self.bottom_buttons])
         self.changing_fields = {"tasks": {}, "inputs": {}}
+        pprint.pp(
+            list(filter(lambda s: "window" in s, self.main_window.native.__dir__()))
+        )
+
+    def toggle_theme(self):
+        if self.theme == "dark":
+            self.theme = "light"
+        else:
+            self.theme = "dark"
+        qdarktheme.setup_theme(self.theme, custom_colors={"primary": self.theme_color})
 
     @magicgui(call_button="Exit")
     def exit(self):
@@ -139,7 +157,6 @@ class Workflow_widgets:
 
         save_b = PushButton(text="Save to..")
         self.save.path.value = self.config_path
-
         save_b.changed.connect(self.save.show)
 
         controls_c = Container(
@@ -147,7 +164,13 @@ class Workflow_widgets:
             layout="horizontal",
         )
 
+        p_formatted = str(self.config_path)
+        if len(p_formatted) > 50:
+            p_formatted = "[..]" + str(self.config_path)[::-1][50::-1]
+        info = Label(value=f"Currently editing:\n{p_formatted}")
+
         [w.show() for w in controls_c]
+        cont.append(info)
         cont.append(controls_c)
 
     @magic_factory(call_button=False)
@@ -190,9 +213,6 @@ class Workflow_widgets:
 
                     for k, v in update.items():
                         if isinstance(v, dict):
-                            assert not isinstance(list(v.values())[0], dict), (
-                                "Nested too deep"
-                            )
                             output["list_tasks"][i][k].update(v)
                         else:
                             output["list_tasks"][i].update(update)
@@ -243,6 +263,7 @@ class Task_node:
     def get_node_widget(self, config: dict):
         label = " ".join(f"{self.func}".split("_")[:-1])
 
+        # @@@@@@ IO tasks @@@@@@
         if self.func == "import_image_task":
             w = ComboBox(
                 label=label,
@@ -258,16 +279,6 @@ class Task_node:
             self.changing_fields[self.id] = lambda: {
                 "images_inputs": {"input_path": w.value}
             }
-            return Container(widgets=[w])
-
-        elif self.func == "gaussian_smoothing_task":
-            w = FloatSlider(
-                label=label,
-                value=self.parameters["sigma"],
-                min=0.1,
-                max=10,
-            )
-            self.changing_fields[self.id] = lambda: {"parameters": {"sigma": w.value}}
             return Container(widgets=[w])
 
         elif self.func == "export_image_task":
@@ -304,6 +315,94 @@ class Task_node:
             }
             return Container(widgets=[export_cont])
 
+        # @@@@@@ Preprocessing @@@@@@
+        elif self.func == "gaussian_smoothing_task":
+            w = FloatSlider(
+                label=label,
+                value=self.parameters["sigma"],
+                min=0.1,
+                max=10,
+            )
+            self.changing_fields[self.id] = lambda: {"parameters": {"sigma": w.value}}
+            return Container(widgets=[w])
+
+        elif self.func == "set_voxel_size_task":
+            x, y, z = (
+                FloatSpinBox(value=self.parameters["voxel_size"][0]),
+                FloatSpinBox(value=self.parameters["voxel_size"][1]),
+                FloatSpinBox(value=self.parameters["voxel_size"][2]),
+            )
+            w = Container(
+                label=label,
+                layout="horizontal",
+                labels=False,
+                widgets=(x, y, z),
+            )
+            self.changing_fields[self.id] = lambda: {
+                "parameters": {
+                    "voxel_size": [x.value, y.value, z.value],
+                }
+            }
+
+            return Container(widgets=[w])
+
+        elif self.func == "image_rescale_to_shape_task":
+            x, y, z = (
+                SpinBox(value=self.parameters["new_shape"][0]),
+                SpinBox(value=self.parameters["new_shape"][1]),
+                SpinBox(value=self.parameters["new_shape"][2]),
+            )
+            w = Container(
+                label=label,
+                layout="horizontal",
+                labels=False,
+                widgets=(x, y, z),
+            )
+            self.changing_fields[self.id] = lambda: {
+                "parameters": {
+                    "new_shape": [x.value, y.value, z.value],
+                }
+            }
+
+            return Container(widgets=[w])
+
+        elif self.func == "image_rescale_to_voxel_size_task":
+            x, y, z, unit = (
+                FloatSpinBox(value=self.parameters["new_voxel_size"]["voxels_size"][0]),
+                FloatSpinBox(value=self.parameters["new_voxel_size"]["voxels_size"][1]),
+                FloatSpinBox(value=self.parameters["new_voxel_size"]["voxels_size"][2]),
+                LineEdit(value=self.parameters["new_voxel_size"]["unit"]),
+            )
+            w = Container(
+                label=label,
+                layout="horizontal",
+                labels=False,
+                widgets=(x, y, z, unit),
+            )
+            self.changing_fields[self.id] = lambda: {
+                "parameters": {
+                    "new_voxel_size": {
+                        "unit": unit.value,
+                        "voxels_size": [x.value, y.value, z.value],
+                    }
+                }
+            }
+            return Container(widgets=[w])
+
+        elif self.func == "remove_false_positives_by_foreground_probability_task":
+            w = FloatSlider(
+                label="Remove false-positives\nthreshold",
+                value=self.parameters["threshold"],
+                min=0.0,
+                max=1.0,
+            )
+
+            self.changing_fields[self.id] = lambda: {
+                "parameters": {"threshold": w.value}
+            }
+            return Container(widgets=[w])
+
+        # @@@@@@ Segmentation @@@@@@
         elif self.func == "unet_prediction_task":
             unet_cont = Container(label=label)
             unet_cont.append(
@@ -312,9 +411,6 @@ class Task_node:
                     value=self.parameters["model_name"],
                 ),
             )
-            self.changing_fields[self.id] = lambda: {
-                "parameters": {"model_name": unet_cont[-1].value}
-            }
             unet_cont.append(
                 LineEdit(  # pyright: ignore
                     label="Device:",
@@ -322,18 +418,98 @@ class Task_node:
                 ),
             )
             self.changing_fields[self.id] = lambda: {
-                "parameters": {"device": unet_cont[-1].value}
+                "parameters": {
+                    "device": unet_cont[0].value,
+                    "model_name": unet_cont[1].value,
+                }
             }
             return Container(widgets=[unet_cont])
 
+        elif self.func == "biio_prediction_task":
+            biio_cont = Container(label=label)
+            biio_cont.append(
+                LineEdit(  # pyright: ignore
+                    label="Model:",
+                    value=self.parameters["model_id"],
+                ),
+            )
+            self.changing_fields[self.id] = lambda: {
+                "parameters": {"model_id": biio_cont[-1].value}
+            }
+            return Container(widgets=[biio_cont])
+
+        elif self.func == "dt_watershed_task":
+            the = FloatSlider(
+                label="Threshold",
+                value=self.parameters["threshold"],
+                min=0.0,
+                max=1.0,
+            )
+            minsize = FloatSlider(
+                label="Min size",
+                value=self.parameters["min_size"],
+                min=1,
+                max=1000,
+            )
+            cont = Container(
+                widgets=[Label(value=label), the, minsize], layout="vertical"
+            )
+
+            self.changing_fields[self.id] = lambda: {
+                "parameters": {"threshold": the.value, "min_size": minsize.value}
+            }
+            return Container(widgets=[cont])
+
+        elif self.func == "clustering_segmentation_task":
+            beta = FloatSlider(
+                label="Beta",
+                value=self.parameters["beta"],
+                min=0.0,
+                max=1.0,
+            )
+            minsize = FloatSlider(
+                label="Min size",
+                value=self.parameters["post_min_size"],
+                min=1,
+                max=1000,
+            )
+            mode = RadioButtons(
+                label="Mode",
+                value=self.parameters["mode"],
+                choices=["gasp", "multicut", "mutex_ws"],
+            )
+            cont = Container(
+                widgets=[Label(value=label), beta, minsize, mode],
+                labels=True,
+                layout="vertical",
+            )
+
+            self.changing_fields[self.id] = lambda: {
+                "parameters": {
+                    "beta": beta.value,
+                    "post_min_size": minsize.value,
+                    "mode": mode.value,
+                }
+            }
+            return Container(widgets=[cont])
+
+        elif self.func == "set_biggest_instance_to_zero_task":
+            return Container(widgets=[Label(value="Set biggest instance to zero")])
+
+        # @@@@@@ Catch-all @@@@@@
         else:
-            # catch-all
             m = (
                 " ".join(f"{self.func}".split("_")[:-1])
                 + "\n"
                 + pprint.pformat(getattr(self, "parameters"))
             )
-            return Container(widgets=[Label(label="smth", value=m)])
+            return Container(
+                widgets=[
+                    Label(
+                        value=pprint.pformat(getattr(self, "parameters")), label=label
+                    )
+                ]
+            )
 
 
 class Task_tree:
@@ -378,17 +554,20 @@ class Task_tree:
         for node in self.roots:
             cont = Container(layout="vertical", labels=False)
             cont.margins = (0, 0, 0, 0)
-            self._add_node_top_down(cont, node)
+            self._add_node_top_down(cont, node, nest=(len(self.nodes) > 10))
             super_cont.append(cont)  # pyright: ignore
         logger.debug("### Done building new task tree widget ###")
         return super_cont
 
-    def _add_node_top_down(self, cont: Container, node: Task_node):
+    def _add_node_top_down(self, cont: Container, node: Task_node, nest=False):
         logger.debug(f"Adding {node.func}")
         w = node.get_node_widget(self.config)
+        w.margins = (0, 0, 0, 0)
+        cont.append(w)
+
         self.tree_ids.append(node.id)
         self.changing_fields.update(node.changing_fields)
-        cont.append(w)
+
         if len(node.children) == 0:
             return
         elif len(node.children) == 1:
@@ -398,10 +577,9 @@ class Task_tree:
                 # avoid duplicates
                 # cont.append(Label(value="Duplicate step skipped!"))
                 return
-            self._add_node_top_down(cont, self.from_id(child))
+            self._add_node_top_down(cont, self.from_id(child), nest)
         else:
             super_cont = Container(layout="horizontal", labels=True)
-            super_cont.margins = (0, 0, 0, 0)
             for child in node.children:
                 if child in self.tree_ids:
                     logger.debug(f"Ignoring a child {self.from_id(child).func}")
@@ -410,8 +588,13 @@ class Task_tree:
                     # w.native.setStyleSheet("background-color: rgb(100,100,100)")
                     # super_cont.append(w)
                     continue
-                sub_cont = Container(layout="vertical", labels=False)
-                super_cont.append(sub_cont)  # pyright: ignore
-                self._add_node_top_down(sub_cont, self.from_id(child))
+                if nest:
+                    sub_cont = Container(layout="vertical", labels=False)
+                    sub_cont.margins = (0, 0, 0, 0)
+                    super_cont.append(sub_cont)  # pyright: ignore
+                    self._add_node_top_down(sub_cont, self.from_id(child))
+                else:
+                    self._add_node_top_down(cont, self.from_id(child))
+
             cont.append(super_cont)
         return

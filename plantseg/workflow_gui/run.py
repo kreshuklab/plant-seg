@@ -2,11 +2,11 @@ from pathlib import Path
 from typing import Optional
 
 import psygnal
+import qdarktheme
 import rich.traceback
-import yaml
-from magicgui import magicgui
-from magicgui.widgets import Container
+from qtpy import QtGui
 
+import plantseg
 from plantseg.workflow_gui.widgets import Workflow_widgets, logger
 
 rich.traceback.install(
@@ -28,6 +28,10 @@ class Workflow_gui(Workflow_widgets):
             logger.debug("Config provided")
             self.loader(self.config_path)
 
+        self.main_window.native.setWindowIcon(
+            QtGui.QIcon(f"{plantseg.__path__[0]}/Menu/icon.png")
+        )
+        self.main_window.native.setWindowTitle("PlantSeg Workflow Editor")
         self.main_window.show(run=True)
 
     def show_loader(self):
@@ -41,7 +45,8 @@ class Workflow_gui(Workflow_widgets):
         [w.show() for w in self.content]
         [w.show() for w in self.bottom_buttons]
 
-        self.main_window.native.resize(self.main_window.native.minimumSizeHint())
+        mwn = self.main_window.native
+        mwn.resize(mwn.minimumSizeHint().width() * 2, mwn.minimumSizeHint().height())
 
     def show_config(self):
         try:
@@ -86,5 +91,6 @@ if __name__ == "__main__":
     logger.setLevel("DEBUG")
     config = Path("examples/headless_workflow.yaml")
     # config = Path("examples/multi.yaml")
+    config = Path("examples/long.yaml")
     # config = None
     Workflow_gui(config)
