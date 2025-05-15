@@ -2,6 +2,7 @@
 
 import argparse
 from pathlib import Path
+from typing import Optional
 
 from plantseg.__version__ import __version__
 from plantseg.utils import check_version, clean_models, load_config
@@ -37,6 +38,15 @@ def create_parser():
         action="store_true",
         help='Remove all models from "~/.plantseg_models"',
     )
+    arg_parser.add_argument(
+        "--edit",
+        "-e",
+        type=Path,
+        nargs="?",
+        default=False,
+        const=None,
+        help="Lauch GUI to edit a workflow yaml file. Optionally provide a path.",
+    )
     return arg_parser.parse_args()
 
 
@@ -63,6 +73,13 @@ def launch_training(path: Path):
     unet_training(*config)
 
 
+def launch_editor(path: Optional[Path]):
+    """Launch the workflow editor"""
+    from plantseg.workflow_gui.editor import Workflow_gui
+
+    Workflow_gui(path)
+
+
 def main():
     """Main function to parse arguments and call corresponding functionality."""
     args = create_parser()
@@ -78,6 +95,8 @@ def main():
         launch_workflow_headless(args.config)
     elif args.train:
         launch_training(args.train)
+    elif args.edit or args.edit is None:
+        launch_editor(args.edit)
     else:
         raise ValueError(
             "Not enough arguments. Run `plantseg -h` to see the available options."

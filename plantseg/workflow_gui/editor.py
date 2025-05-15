@@ -15,6 +15,14 @@ rich.traceback.install(
 
 
 class Workflow_gui(Workflow_widgets):
+    """Editor for workflow yaml files.
+
+    Args:
+        config_path:
+            Optional Path to yaml input file.
+
+    """
+
     def __init__(self, config_path: Optional[Path] = None):
         super().__init__()
         self.config_path = config_path
