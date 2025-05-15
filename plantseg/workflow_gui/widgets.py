@@ -1,9 +1,9 @@
 import logging
 import pprint
+import webbrowser
 from abc import abstractmethod
 from pathlib import Path
 
-import qdarktheme
 import yaml
 from magicgui import magic_factory, magicgui
 from magicgui.widgets import (
@@ -15,37 +15,67 @@ from magicgui.widgets import (
     LineEdit,
     MainWindow,
     PushButton,
-    RadioButtons,
     SpinBox,
 )
+from qt_material import apply_stylesheet
+from qtpy import QtCore, QtWidgets
 
 logger = logging.getLogger(__name__)
 
 
 class Workflow_widgets:
     def __init__(self):
-        self.main_window = MainWindow(layout="vertical", labels=False)
+        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
+        self.main_window = MainWindow(layout="vertical", labels=False, scrollable=True)
         self.main_window.create_menu_item(
             menu_name="Theme", item_name="Switch", callback=self.toggle_theme
         )
+        self.main_window.create_menu_item(
+            menu_name="Help",
+            item_name="Documentation",
+            callback=self.show_online_docs,
+        )
         self.theme = "dark"
         self.theme_color = "#4cae4f"
-        qdarktheme.setup_theme(self.theme, custom_colors={"primary": self.theme_color})
-        qdarktheme.enable_hi_dpi()
+        apply_stylesheet(
+            QtWidgets.QApplication.instance(),
+            theme="dark_lightgreen.xml",
+            extra={
+                "primaryTextColor": "#ffffff",
+            },
+        )
         self.content = Container(layout="horizontal", labels=False)
         self.bottom_buttons = Container(layout="horizontal", labels=False)
+        self.content.margins = (10, 10, 0, 0)
+        self.bottom_buttons.margins = (10, 0, 0, 0)
         self.main_window.extend([self.content, self.bottom_buttons])
         self.changing_fields = {"tasks": {}, "inputs": {}}
-        pprint.pp(
-            list(filter(lambda s: "window" in s, self.main_window.native.__dir__()))
-        )
 
     def toggle_theme(self):
         if self.theme == "dark":
             self.theme = "light"
+            apply_stylesheet(
+                QtWidgets.QApplication.instance(),
+                theme="light_lightgreen.xml",
+                extra={
+                    # "primaryTextColor": "#ffffff",
+                },
+            )
         else:
             self.theme = "dark"
-        qdarktheme.setup_theme(self.theme, custom_colors={"primary": self.theme_color})
+            apply_stylesheet(
+                QtWidgets.QApplication.instance(),
+                theme="dark_lightgreen.xml",
+                extra={
+                    "primaryTextColor": "#ffffff",
+                },
+            )
+
+    def show_online_docs(self):
+        url = "https://kreshuklab.github.io/plant-seg/"
+        webbrowser.open(url, new=0, autoraise=True)
 
     @magicgui(call_button="Exit")
     def exit(self):
@@ -88,10 +118,12 @@ class Workflow_widgets:
 
         logger.debug("Filling contents section")
         input_c = Container(layout="vertical", labels=False)
+        input_c.margins = (0, 0, 0, 0)
         self.fill_input_c(input_c)
         self.content.append(input_c)  # pyright: ignore
 
         tasks_c = Container(layout="vertical", labels=False)
+        tasks_c.margins = (0, 0, 0, 0)
         self.fill_tasks_c(tasks_c)
         self.content.append(tasks_c)  # pyright: ignore
 
@@ -473,16 +505,18 @@ class Task_node:
                 min=1,
                 max=1000,
             )
-            mode = RadioButtons(
+            mode = ComboBox(
                 label="Mode",
                 value=self.parameters["mode"],
                 choices=["gasp", "multicut", "mutex_ws"],
             )
+            mode.margins = (0, 0, 0, 0)
             cont = Container(
-                widgets=[Label(value=label), beta, minsize, mode],
+                widgets=[Label(value="Clustering Segmentation"), beta, minsize, mode],
                 labels=True,
                 layout="vertical",
             )
+            cont.margins = (0, 0, 0, 0)
 
             self.changing_fields[self.id] = lambda: {
                 "parameters": {
@@ -554,7 +588,7 @@ class Task_tree:
         for node in self.roots:
             cont = Container(layout="vertical", labels=False)
             cont.margins = (0, 0, 0, 0)
-            self._add_node_top_down(cont, node, nest=(len(self.nodes) > 10))
+            self._add_node_top_down(cont, node, nest=(len(self.nodes) > 8))
             super_cont.append(cont)  # pyright: ignore
         logger.debug("### Done building new task tree widget ###")
         return super_cont

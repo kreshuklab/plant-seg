@@ -2,9 +2,8 @@ from pathlib import Path
 from typing import Optional
 
 import psygnal
-import qdarktheme
 import rich.traceback
-from qtpy import QtGui
+from qtpy import QtCore, QtGui, QtWidgets
 
 import plantseg
 from plantseg.workflow_gui.widgets import Workflow_widgets, logger
@@ -28,25 +27,29 @@ class Workflow_gui(Workflow_widgets):
             logger.debug("Config provided")
             self.loader(self.config_path)
 
-        self.main_window.native.setWindowIcon(
-            QtGui.QIcon(f"{plantseg.__path__[0]}/Menu/icon.png")
+        iconpath = (Path(plantseg.__path__[0]).parent) / "Menu" / "icon.png"
+        QtWidgets.QApplication.instance().setWindowIcon(
+            QtGui.QIcon(str(iconpath)),
         )
+
         self.main_window.native.setWindowTitle("PlantSeg Workflow Editor")
         self.main_window.show(run=True)
 
     def show_loader(self):
         logger.debug("Changing to loader view")
         self.content.clear()
-        self.content.append(self.loader_w)
+        self.content.append(self.loader_w)  # pyright: ignore
 
         self.bottom_buttons.clear()
-        self.bottom_buttons.append(self.exit)
+        self.bottom_buttons.append(self.exit)  # pyright: ignore
 
         [w.show() for w in self.content]
         [w.show() for w in self.bottom_buttons]
 
         mwn = self.main_window.native
-        mwn.resize(mwn.minimumSizeHint().width() * 2, mwn.minimumSizeHint().height())
+        c_size = self.content.native.sizeHint()
+        b_size = self.bottom_buttons.native.sizeHint()
+        mwn.resize(c_size + b_size + QtCore.QSize(0, 80))
 
     def show_config(self):
         try:
@@ -56,7 +59,7 @@ class Workflow_gui(Workflow_widgets):
             return
 
         self.bottom_buttons.clear()
-        self.bottom_buttons.extend((self.change_config, self.exit))
+        self.bottom_buttons.extend((self.change_config, self.exit))  # pyright: ignore
 
         logger.debug("Changing to config view")
         self.content.clear()
@@ -64,6 +67,11 @@ class Workflow_gui(Workflow_widgets):
 
         [w.show() for w in self.content]
         [w.show() for w in self.bottom_buttons]
+
+        mwn = self.main_window.native
+        c_size = self.content.native.sizeHint()
+        b_size = self.bottom_buttons.native.sizeHint()
+        mwn.resize(c_size + b_size + QtCore.QSize(0, 80))
 
     def validate_config(self):
         if not isinstance(self.config, dict):
@@ -91,6 +99,6 @@ if __name__ == "__main__":
     logger.setLevel("DEBUG")
     config = Path("examples/headless_workflow.yaml")
     # config = Path("examples/multi.yaml")
-    config = Path("examples/long.yaml")
+    # config = Path("examples/long.yaml")
     # config = None
     Workflow_gui(config)
