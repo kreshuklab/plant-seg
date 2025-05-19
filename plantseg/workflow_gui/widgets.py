@@ -25,9 +25,6 @@ logger = logging.getLogger(__name__)
 
 class Workflow_widgets:
     def __init__(self):
-        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
-        QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
-
         self.main_window = MainWindow(layout="vertical", labels=False, scrollable=True)
         self.main_window.create_menu_item(
             menu_name="Theme", item_name="Switch", callback=self.toggle_theme
@@ -40,7 +37,8 @@ class Workflow_widgets:
         self.theme = "dark"
         self.theme_color = "#4cae4f"
         apply_stylesheet(
-            QtWidgets.QApplication.instance(),
+            # QtWidgets.QApplication.instance(),
+            self.main_window.native,
             theme="dark_lightgreen.xml",
             extra={
                 "primaryTextColor": "#ffffff",
@@ -57,7 +55,7 @@ class Workflow_widgets:
         if self.theme == "dark":
             self.theme = "light"
             apply_stylesheet(
-                QtWidgets.QApplication.instance(),
+                self.main_window.native,
                 theme="light_lightgreen.xml",
                 extra={
                     # "primaryTextColor": "#ffffff",
@@ -66,7 +64,7 @@ class Workflow_widgets:
         else:
             self.theme = "dark"
             apply_stylesheet(
-                QtWidgets.QApplication.instance(),
+                self.main_window.native,
                 theme="dark_lightgreen.xml",
                 extra={
                     "primaryTextColor": "#ffffff",
@@ -79,7 +77,7 @@ class Workflow_widgets:
 
     @magicgui(call_button="Exit")
     def exit(self):
-        raise SystemExit
+        self.main_window.native.destroy()
 
     @magicgui(call_button="Load new config")
     def change_config(self):
@@ -471,7 +469,7 @@ class Task_node:
             return Container(widgets=[biio_cont])
 
         elif self.func == "dt_watershed_task":
-            the = FloatSlider(
+            thr = FloatSlider(
                 label="Threshold",
                 value=self.parameters["threshold"],
                 min=0.0,
@@ -484,11 +482,13 @@ class Task_node:
                 max=1000,
             )
             cont = Container(
-                widgets=[Label(value=label), the, minsize], layout="vertical"
+                widgets=[Label(value=label), thr, minsize],
+                layout="vertical",
             )
+            cont.margins = (0, 0, 0, 0)
 
             self.changing_fields[self.id] = lambda: {
-                "parameters": {"threshold": the.value, "min_size": minsize.value}
+                "parameters": {"threshold": thr.value, "min_size": minsize.value}
             }
             return Container(widgets=[cont])
 
@@ -510,7 +510,6 @@ class Task_node:
                 value=self.parameters["mode"],
                 choices=["gasp", "multicut", "mutex_ws"],
             )
-            mode.margins = (0, 0, 0, 0)
             cont = Container(
                 widgets=[Label(value="Clustering Segmentation"), beta, minsize, mode],
                 labels=True,
@@ -532,11 +531,6 @@ class Task_node:
 
         # @@@@@@ Catch-all @@@@@@
         else:
-            m = (
-                " ".join(f"{self.func}".split("_")[:-1])
-                + "\n"
-                + pprint.pformat(getattr(self, "parameters"))
-            )
             return Container(
                 widgets=[
                     Label(
@@ -626,9 +620,9 @@ class Task_tree:
                     sub_cont = Container(layout="vertical", labels=False)
                     sub_cont.margins = (0, 0, 0, 0)
                     super_cont.append(sub_cont)  # pyright: ignore
-                    self._add_node_top_down(sub_cont, self.from_id(child))
+                    self._add_node_top_down(sub_cont, self.from_id(child), nest=False)
                 else:
-                    self._add_node_top_down(cont, self.from_id(child))
+                    self._add_node_top_down(cont, self.from_id(child), nest=False)
 
             cont.append(super_cont)
         return

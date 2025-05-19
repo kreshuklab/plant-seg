@@ -13,6 +13,7 @@ from plantseg.viewer_napari.widgets.io import (
     widget_export_headless_workflow,
     widget_export_image,
     widget_infos,
+    widget_edit_worflow,
     widget_open_file,
     widget_set_voxel_size,
     widget_show_info,
@@ -51,6 +52,7 @@ __all__ = [
     "widget_export_headless_workflow",
     "widget_show_info",
     "widget_infos",
+    "widget_edit_worflow",
     "widget_set_voxel_size",
     # Main - Prediction
     "widget_unet_prediction",
