@@ -16,6 +16,12 @@ from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybi
 from plantseg.viewer_napari.widgets.segmentation import on_layer_rename_segmentation
 
 
+def scroll_wrap(w):
+    scrollArea = QtWidgets.QScrollArea()
+    scrollArea.setWidget(w.native)
+    return scrollArea
+
+
 def run_viewer():
     viewer = napari.Viewer(title="PlantSeg v2")
     setup_proofreading_keybindings(viewer=viewer)
@@ -28,8 +34,8 @@ def run_viewer():
         (get_postprocessing_tab(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
     ]:
-        this_widget = viewer.window.add_dock_widget(_containers, name=name, tabify=True)
-        this_widget.setFixedWidth(666)
+        _containers.native.setFixedWidth(550)
+        viewer.window.add_dock_widget(scroll_wrap(_containers), name=name, tabify=True)
 
     # update layer drop-down menus on layer selection
     viewer.layers.selection.events.active.connect(on_layer_rename_prediction())

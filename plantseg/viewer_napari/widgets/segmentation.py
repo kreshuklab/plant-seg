@@ -52,8 +52,7 @@ AGGLOMERATION_MODES = [
         "label": "Agglomeration mode",
         "choices": AGGLOMERATION_MODES,
         "tooltip": "Select which agglomeration algorithm to use.",
-        "widget_type": "RadioButtons",
-        "orientation": "horizontal",
+        "widget_type": "ComboBox",
     },
     beta={
         "label": "Under/Over segmentation factor",
