@@ -18,7 +18,6 @@ from magicgui.widgets import (
     SpinBox,
 )
 from qt_material import apply_stylesheet
-from qtpy import QtCore, QtWidgets
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +49,9 @@ class Workflow_widgets:
         self.bottom_buttons.margins = (10, 0, 0, 0)
         self.main_window.extend([self.content, self.bottom_buttons])
         self.changing_fields = {"tasks": {}, "inputs": {}}
+        self.change_config.tooltip = (
+            "Discard current changes and open a different yaml file."
+        )
 
     def toggle_theme(self):
         if self.theme == "dark":
@@ -77,7 +79,7 @@ class Workflow_widgets:
 
     @magicgui(call_button="Exit")
     def exit(self):
-        self.main_window.native.destroy()
+        self.main_window.native.close()  # native only necessary in magicgui<=0.10.0
 
     @magicgui(call_button="Load new config")
     def change_config(self):
@@ -182,10 +184,13 @@ class Workflow_widgets:
             field_tracker[io_type] = w
             w.self.bind(self)
 
-        reset_b = PushButton(text="Reset to file")
+        reset_b = PushButton(
+            text="Reset to file",
+            tooltip="Overwrite ALL settings with content from the yaml file.",
+        )
         reset_b.changed.connect(self.show_config)
 
-        save_b = PushButton(text="Save to..")
+        save_b = PushButton(text="Save to..", tooltip="Open the save dialog.")
         self.save.path.value = self.config_path
         save_b.changed.connect(self.save.show)
 
@@ -469,7 +474,7 @@ class Task_node:
             return Container(widgets=[biio_cont])
 
         elif self.func == "dt_watershed_task":
-            thr = FloatSlider(
+            the = FloatSlider(
                 label="Threshold",
                 value=self.parameters["threshold"],
                 min=0.0,
@@ -482,13 +487,13 @@ class Task_node:
                 max=1000,
             )
             cont = Container(
-                widgets=[Label(value=label), thr, minsize],
+                widgets=[Label(value=label), the, minsize],
                 layout="vertical",
             )
             cont.margins = (0, 0, 0, 0)
 
             self.changing_fields[self.id] = lambda: {
-                "parameters": {"threshold": thr.value, "min_size": minsize.value}
+                "parameters": {"threshold": the.value, "min_size": minsize.value}
             }
             return Container(widgets=[cont])
 
