@@ -10,10 +10,10 @@ from plantseg.viewer_napari.widgets.dataprocessing import (
 )
 from plantseg.viewer_napari.widgets.docs import widget_docs
 from plantseg.viewer_napari.widgets.io import (
+    widget_edit_worflow,
     widget_export_headless_workflow,
     widget_export_image,
     widget_infos,
-    widget_edit_worflow,
     widget_open_file,
     widget_set_voxel_size,
     widget_show_info,
