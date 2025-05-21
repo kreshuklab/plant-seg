@@ -113,6 +113,9 @@ nav:
       - Extra Workflows: chapters/plantseg_interactive_napari/extra.md
       - Training: chapters/plantseg_interactive_napari/unet_training.md
 
+  - Workflows:
+      - chapters/workflow_gui/index.md
+
   - Dataset and Training:
       - chapters/plantseg_models/index.md
       - Custom Datasets: chapters/plantseg_models/custom_datasets.md
