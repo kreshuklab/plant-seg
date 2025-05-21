@@ -3,4 +3,3 @@ echo "### This is the main installation of PlantSeg ###"
 cd "${PREFIX}"
 tar xf build.gz
 conda install -y -c "${PREFIX}/conda_bld" -c conda-forge plantseg
-echo "Installation finished!"
