@@ -35,8 +35,8 @@ def test_loading_dialog(gui, workflow_yaml):
     assert parsed_in == gui.config
 
 
-def test_load_save_unchanged(gui, workflow_yaml, tmpdir):
-    out_file = tmpdir / "test_workflow_out.yaml"
+def test_load_save_unchanged(gui, workflow_yaml, tmp_path):
+    out_file = tmp_path / "test_workflow_out.yaml"
     with open(workflow_yaml, "r") as f:
         parsed_in = yaml.safe_load(f)
     parsed_in["runner"] = "serial"
