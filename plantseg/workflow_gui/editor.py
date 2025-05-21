@@ -1,3 +1,4 @@
+import signal
 from pathlib import Path
 from typing import Optional
 
@@ -12,6 +13,7 @@ rich.traceback.install(
     show_locals=True,
     suppress=[psygnal],
 )
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
 class Workflow_gui(Workflow_widgets):
