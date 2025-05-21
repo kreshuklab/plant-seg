@@ -60,7 +60,7 @@ datas = "datas" # pyinstaller
 extend-exclude = [
   "tests/**",
   "plantseg/**",
-  "tests/**",
+  "examples/**",
 ]
 
 [tool.ruff.lint]
