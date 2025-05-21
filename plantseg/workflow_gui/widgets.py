@@ -15,6 +15,7 @@ from magicgui.widgets import (
     LineEdit,
     MainWindow,
     PushButton,
+    Slider,
     SpinBox,
 )
 from qt_material import apply_stylesheet
@@ -34,15 +35,7 @@ class Workflow_widgets:
             callback=self.show_online_docs,
         )
         self.theme = "dark"
-        self.theme_color = "#4cae4f"
-        apply_stylesheet(
-            # QtWidgets.QApplication.instance(),
-            self.main_window.native,
-            theme="dark_lightgreen.xml",
-            extra={
-                "primaryTextColor": "#ffffff",
-            },
-        )
+        self.apply_theme(self.main_window.native)
         self.content = Container(layout="horizontal", labels=False)
         self.bottom_buttons = Container(layout="horizontal", labels=False)
         self.content.margins = (10, 10, 0, 0)
@@ -53,25 +46,32 @@ class Workflow_widgets:
             "Discard current changes and open a different yaml file."
         )
 
+    def apply_theme(self, window):
+        """Applies the dark or light theme to the given window.
+
+        Changes Workflow_widgets.theme to 'dark' or 'light'
+        """
+        if self.theme == "dark":
+            kwargs = {
+                "theme": "dark_lightgreen.xml",
+                "extra": {
+                    "primaryTextColor": "#ffffff",
+                },
+            }
+        else:
+            kwargs = {
+                "theme": "light_lightgreen.xml",
+                "extra": {},
+            }
+        apply_stylesheet(window, **kwargs)
+
     def toggle_theme(self):
         if self.theme == "dark":
             self.theme = "light"
-            apply_stylesheet(
-                self.main_window.native,
-                theme="light_lightgreen.xml",
-                extra={
-                    # "primaryTextColor": "#ffffff",
-                },
-            )
+            self.apply_theme(self.main_window.native)
         else:
             self.theme = "dark"
-            apply_stylesheet(
-                self.main_window.native,
-                theme="dark_lightgreen.xml",
-                extra={
-                    "primaryTextColor": "#ffffff",
-                },
-            )
+            self.apply_theme(self.main_window.native)
 
     def show_online_docs(self):
         url = "https://kreshuklab.github.io/plant-seg/"
@@ -96,14 +96,15 @@ class Workflow_widgets:
         },
     )
     def loader_w(self, config_path: Path):
-        """Widget wrapper around loader"""
-        self.loader(config_path)
-
-    def loader(self, config_path: Path):
         """Loads a workflow from a yaml file"""
-        logger.info(f"Loading {config_path}")
 
-        if not (config_path.exists() and config_path.suffix in [".yaml", ".yml"]):
+        logger.info(f"Loading {config_path}")
+        if not config_path.exists():
+            logger.error("File does not exist!")
+            self.show_loader()
+            return
+
+        elif config_path.suffix not in [".yaml", ".yml"]:
             logger.error("Please provide a yaml file!")
             self.show_loader()
             return
@@ -184,18 +185,19 @@ class Workflow_widgets:
             field_tracker[io_type] = w
             w.self.bind(self)
 
-        reset_b = PushButton(
+        self.reset_b = PushButton(
             text="Reset to file",
             tooltip="Overwrite ALL settings with content from the yaml file.",
         )
-        reset_b.changed.connect(self.show_config)
+        self.reset_b.changed.connect(self.show_config)
 
-        save_b = PushButton(text="Save to..", tooltip="Open the save dialog.")
+        self.save_b = PushButton(text="Save to..", tooltip="Open the save dialog.")
         self.save.path.value = self.config_path
-        save_b.changed.connect(self.save.show)
+        self.save_b.changed.connect(self.save.show)
+        self.save_b.changed.connect(lambda: self.apply_theme(self.save.native))
 
         controls_c = Container(
-            widgets=[reset_b, save_b],
+            widgets=[self.reset_b, self.save_b],
             layout="horizontal",
         )
 
@@ -259,10 +261,6 @@ class Workflow_widgets:
             logger.debug(f"Successfully written to {path}")
 
         save.hide()  # type: ignore # noqa
-
-    def tasks_w(self, cont: Container):
-        logger.debug("Filling tasks section")
-        pass
 
     @abstractmethod
     def show_config(self):
@@ -454,8 +452,8 @@ class Task_node:
             )
             self.changing_fields[self.id] = lambda: {
                 "parameters": {
-                    "device": unet_cont[0].value,
-                    "model_name": unet_cont[1].value,
+                    "model_name": unet_cont[0].value,
+                    "device": unet_cont[1].value,
                 }
             }
             return Container(widgets=[unet_cont])
@@ -474,26 +472,26 @@ class Task_node:
             return Container(widgets=[biio_cont])
 
         elif self.func == "dt_watershed_task":
-            the = FloatSlider(
+            threshold = FloatSlider(
                 label="Threshold",
                 value=self.parameters["threshold"],
                 min=0.0,
                 max=1.0,
             )
-            minsize = FloatSlider(
+            minsize = Slider(
                 label="Min size",
                 value=self.parameters["min_size"],
                 min=1,
                 max=1000,
             )
             cont = Container(
-                widgets=[Label(value=label), the, minsize],
+                widgets=[Label(value=label), threshold, minsize],
                 layout="vertical",
             )
             cont.margins = (0, 0, 0, 0)
 
             self.changing_fields[self.id] = lambda: {
-                "parameters": {"threshold": the.value, "min_size": minsize.value}
+                "parameters": {"threshold": threshold.value, "min_size": minsize.value}
             }
             return Container(widgets=[cont])
 
@@ -504,7 +502,7 @@ class Task_node:
                 min=0.0,
                 max=1.0,
             )
-            minsize = FloatSlider(
+            minsize = Slider(
                 label="Min size",
                 value=self.parameters["post_min_size"],
                 min=1,
@@ -606,20 +604,16 @@ class Task_tree:
         elif len(node.children) == 1:
             child = node.children.pop()
             if child in self.tree_ids:
-                logger.debug(f"Ignoring a child {self.from_id(child).func}")
                 # avoid duplicates
-                # cont.append(Label(value="Duplicate step skipped!"))
+                logger.debug(f"Ignoring a child {self.from_id(child).func}")
                 return
             self._add_node_top_down(cont, self.from_id(child), nest)
         else:
             super_cont = Container(layout="horizontal", labels=True)
             for child in node.children:
                 if child in self.tree_ids:
-                    logger.debug(f"Ignoring a child {self.from_id(child).func}")
                     # avoid duplicates
-                    # w = Label(value="Duplicate step skipped!")
-                    # w.native.setStyleSheet("background-color: rgb(100,100,100)")
-                    # super_cont.append(w)
+                    logger.debug(f"Ignoring a child {self.from_id(child).func}")
                     continue
                 if nest:
                     sub_cont = Container(layout="vertical", labels=False)

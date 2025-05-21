@@ -23,9 +23,10 @@ class Workflow_gui(Workflow_widgets):
 
     """
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self, config_path: Optional[Path] = None, run=True):
         super().__init__()
         self.config_path = config_path
+        self.config: Optional[dict] = None
 
         # setup initial state
         if not isinstance(self.config_path, Path):
@@ -33,7 +34,7 @@ class Workflow_gui(Workflow_widgets):
             self.show_loader()
         else:
             logger.debug("Config provided")
-            self.loader(self.config_path)
+            self.loader_w(config_path=self.config_path)
 
         iconpath = (Path(plantseg.__path__[0]).parent) / "Menu" / "icon.png"
         QtWidgets.QApplication.instance().setWindowIcon(
@@ -41,10 +42,11 @@ class Workflow_gui(Workflow_widgets):
         )
 
         self.main_window.native.setWindowTitle("PlantSeg Workflow Editor")
-        self.main_window.show(run=True)
+        self.main_window.show(run=run)
 
     def show_loader(self):
         logger.debug("Changing to loader view")
+        self.config = None
         self.content.clear()
         self.content.append(self.loader_w)  # pyright: ignore
 
@@ -64,6 +66,7 @@ class Workflow_gui(Workflow_widgets):
             self.validate_config()
         except ValueError as e:
             logger.error(f"Workflow not valid, please choose a valid workflow!\n{e}")
+            self.show_loader()
             return
 
         self.bottom_buttons.clear()
@@ -98,7 +101,8 @@ class Workflow_gui(Workflow_widgets):
             )
         if "runner" not in self.config:
             logger.warning(
-                "The workflow configuration does not contain a 'runner' section. Using the default serial runner."
+                "The workflow configuration does not contain a 'runner' section."
+                " Using the default serial runner."
             )
             self.config["runner"] = "serial"
 

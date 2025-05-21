@@ -143,3 +143,8 @@ def complex_test_data():
     boundary_pmap[1:4, 1:4, 6:9] = 0.2
 
     return cell_seg, nuclei_seg, boundary_pmap
+
+
+@pytest.fixture
+def workflow_yaml(tmpdir: Path):
+    return Path(shutil.copy2(TEST_FILES / "test_workflow.yaml", tmpdir))
