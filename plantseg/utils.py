@@ -145,7 +145,7 @@ def check_version(
                 logger.info(result)
 
             if new_release_features:
-                feature_text_l.append("New features in this release:")
+                feature_text_l.append("New features in this release:\n")
                 feature_text_l.extend(new_release_features[:8])
         elif crr_version < latest_release_version:
             result = (
@@ -156,7 +156,7 @@ def check_version(
                 logger.warning(result)
 
             if new_release_features:
-                feature_text_l.append("New features in newest release:")
+                feature_text_l.append("New features in newest release:\n")
                 feature_text_l.extend(new_release_features[:8])
 
         elif latest_release_version < crr_version < latest_version:
@@ -168,16 +168,19 @@ def check_version(
                 logger.warning(result)
 
             if new_features:
-                feature_text_l.append("New features in newest version:")
+                feature_text_l.append("New features in newest version:\n")
                 feature_text_l.extend(new_features[:8])
 
         elif crr_version >= latest_version:
             result = (
-                f"You are using an unreleased version of PlantSeg: {current_version}."
+                f"You are using a pre-release version of PlantSeg: {current_version}"
             )
             if not silent:
                 logger.info(result)
 
+        logger.debug(
+            f"Current: {crr_version}, latest version: {latest_version}, latest release: {latest_release_version}"
+        )
         feature_text = "\n".join(feature_text_l)
         return result, feature_text
 

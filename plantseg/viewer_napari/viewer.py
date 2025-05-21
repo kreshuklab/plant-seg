@@ -1,6 +1,8 @@
 import napari
 from qtpy import QtWidgets
 
+from plantseg.__version__ import __version__
+from plantseg.utils import check_version
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.containers import (
     get_data_io_tab,
@@ -49,11 +51,16 @@ def run_viewer():
     # viewer.window._qt_viewer.set_welcome_visible(False)
     welcome_widget = viewer.window._qt_viewer._welcome_widget
 
+    v_short, v_features = check_version(current_version="1.9.0", silent=True)
+
     for i, child in enumerate(welcome_widget.findChildren(QtWidgets.QWidget)):
         if isinstance(child, QtWidgets.QLabel):
             if i == 3:
                 child.setText(
-                    "Welcome to PlantSeg!\n\nTo load an image use the menu on the right"
+                    "Welcome to PlantSeg!\n\nTo load an image use the menu on the right\n\n"
+                    + v_short
+                    + "\n\n"
+                    + v_features
                 )
             else:
                 child.setText("")

@@ -39,7 +39,9 @@ def test_check_version_new_version(mock_logger, requests_mock):
     )
     mock_logger.warning.assert_called_once_with(true_logline)
     assert logline == true_logline
-    assert features == "New features in newest release:\nfirst feature\nsecond feature"
+    assert (
+        features == "New features in newest release:\n\nfirst feature\nsecond feature"
+    )
 
 
 def test_check_version_same_version(mock_logger, requests_mock):
@@ -68,7 +70,7 @@ def test_check_version_same_version(mock_logger, requests_mock):
     true_logline = f"You are using the latest release of PlantSeg: {current_version}."
     mock_logger.info.assert_called_once_with(true_logline)
     assert logline == true_logline
-    assert features == "New features in this release:\nfirst feature\nsecond feature"
+    assert features == "New features in this release:\n\nfirst feature\nsecond feature"
 
 
 def test_check_version_old_version(mock_logger, requests_mock):
@@ -94,9 +96,7 @@ def test_check_version_old_version(mock_logger, requests_mock):
     logline, features = check_version(current_version)
 
     # Assert logger info was called with appropriate message
-    true_logline = (
-        f"You are using an unreleased version of PlantSeg: {current_version}."
-    )
+    true_logline = f"You are using a pre-release version of PlantSeg: {current_version}"
 
     mock_logger.info.assert_called_once_with(true_logline)
     assert logline == true_logline
@@ -133,7 +133,9 @@ def test_check_version_beta_version(mock_logger, requests_mock):
     )
     mock_logger.warning.assert_called_once_with(true_logline)
     assert logline == true_logline
-    assert features == "New features in newest version:\nfirst feature\nsecond feature"
+    assert (
+        features == "New features in newest version:\n\nfirst feature\nsecond feature"
+    )
 
 
 def test_check_version_new_beta_version(mock_logger, requests_mock):
