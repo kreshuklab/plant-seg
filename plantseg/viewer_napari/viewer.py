@@ -36,7 +36,7 @@ def run_viewer():
         (get_postprocessing_tab(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
     ]:
-        _containers.native.setFixedWidth(550)
+        _containers.native.setFixedSize(550, 850)
         viewer.window.add_dock_widget(scroll_wrap(_containers), name=name, tabify=True)
 
     # update layer drop-down menus on layer selection
