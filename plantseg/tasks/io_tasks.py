@@ -56,7 +56,10 @@ def import_image_task(
             required=True,
         ),
         "name_pattern": RunTimeInputSchema(
-            description="Output file name pattern. Can contain the special {image_name} or {file_name} tokens ",
+            description=(
+                "Output file name pattern. Use placeholder {image_name} for "
+                "the napari layer name or {file_name} for the input file name"
+            ),
             required=False,
         ),
     },
