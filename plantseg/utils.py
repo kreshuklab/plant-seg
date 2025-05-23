@@ -175,9 +175,11 @@ def check_version(
             result = (
                 f"You are using a pre-release version of PlantSeg: {current_version}"
             )
-            if new_features:
-                feature_text_l.append("New features in this version:\n")
-                feature_text_l.extend(new_features[:8])
+
+            if crr_version == latest_version:
+                if new_features:
+                    feature_text_l.append("New features in this version:\n")
+                    feature_text_l.extend(new_features[:8])
             if not silent:
                 logger.info(result)
 

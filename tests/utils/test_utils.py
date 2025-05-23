@@ -100,7 +100,7 @@ def test_check_version_old_version(mock_logger, requests_mock):
 
     mock_logger.info.assert_called_once_with(true_logline)
     assert logline == true_logline
-    assert features == "New features in this version:\n\nfirst feature\nsecond feature"
+    assert features == ""
 
 
 def test_check_version_beta_version(mock_logger, requests_mock):

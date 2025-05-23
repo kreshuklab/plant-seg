@@ -21,6 +21,12 @@ from plantseg.viewer_napari.widgets.segmentation import on_layer_rename_segmenta
 def scroll_wrap(w):
     scrollArea = QtWidgets.QScrollArea()
     scrollArea.setWidget(w.native)
+    scrollArea.setWidgetResizable(True)
+    pol = QtWidgets.QSizePolicy()
+    pol.setHorizontalPolicy(QtWidgets.QSizePolicy.Policy.Minimum)
+    pol.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding)
+    scrollArea.setSizePolicy(pol)
+
     return scrollArea
 
 
@@ -36,8 +42,14 @@ def run_viewer():
         (get_postprocessing_tab(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
     ]:
-        _containers.native.setFixedSize(550, 850)
-        viewer.window.add_dock_widget(scroll_wrap(_containers), name=name, tabify=True)
+        _containers.native.setMinimumWidth(550)
+        viewer.window.add_dock_widget(
+            scroll_wrap(_containers),
+            name=name,
+            tabify=True,
+        )
+        # allow content to float to top of dock
+        _containers.native.layout().addStretch()
 
     # update layer drop-down menus on layer selection
     viewer.layers.selection.events.active.connect(on_layer_rename_prediction())
