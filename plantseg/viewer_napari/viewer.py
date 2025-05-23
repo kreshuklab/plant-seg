@@ -1,5 +1,5 @@
 import napari
-from qtpy import QtWidgets
+from qtpy import QtCore, QtWidgets
 
 from plantseg.__version__ import __version__
 from plantseg.utils import check_version
@@ -76,6 +76,7 @@ def run_viewer():
                 )
             else:
                 child.setText("")
+            child.setAlignment(QtCore.Qt.AlignLeft)
 
     log("Plantseg is ready!", thread="Run viewer", level="info")
     napari.run()
