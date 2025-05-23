@@ -51,7 +51,7 @@ def run_viewer():
     # viewer.window._qt_viewer.set_welcome_visible(False)
     welcome_widget = viewer.window._qt_viewer._welcome_widget
 
-    v_short, v_features = check_version(current_version="1.9.0", silent=True)
+    v_short, v_features = check_version(current_version=__version__, silent=True)
 
     for i, child in enumerate(welcome_widget.findChildren(QtWidgets.QWidget)):
         if isinstance(child, QtWidgets.QLabel):
