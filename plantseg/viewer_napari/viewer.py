@@ -1,5 +1,5 @@
 import napari
-from qtpy import QtWidgets
+from qtpy import QtCore, QtWidgets
 
 from plantseg.__version__ import __version__
 from plantseg.utils import check_version
@@ -21,6 +21,12 @@ from plantseg.viewer_napari.widgets.segmentation import on_layer_rename_segmenta
 def scroll_wrap(w):
     scrollArea = QtWidgets.QScrollArea()
     scrollArea.setWidget(w.native)
+    scrollArea.setWidgetResizable(True)
+    pol = QtWidgets.QSizePolicy()
+    pol.setHorizontalPolicy(QtWidgets.QSizePolicy.Policy.Minimum)
+    pol.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding)
+    scrollArea.setSizePolicy(pol)
+
     return scrollArea
 
 
@@ -36,8 +42,14 @@ def run_viewer():
         (get_postprocessing_tab(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
     ]:
-        _containers.native.setFixedWidth(550)
-        viewer.window.add_dock_widget(scroll_wrap(_containers), name=name, tabify=True)
+        _containers.native.setMinimumWidth(550)
+        viewer.window.add_dock_widget(
+            scroll_wrap(_containers),
+            name=name,
+            tabify=True,
+        )
+        # allow content to float to top of dock
+        _containers.native.layout().addStretch()
 
     # update layer drop-down menus on layer selection
     viewer.layers.selection.events.active.connect(on_layer_rename_prediction())
@@ -51,7 +63,7 @@ def run_viewer():
     # viewer.window._qt_viewer.set_welcome_visible(False)
     welcome_widget = viewer.window._qt_viewer._welcome_widget
 
-    v_short, v_features = check_version(current_version="1.9.0", silent=True)
+    v_short, v_features = check_version(current_version=__version__, silent=True)
 
     for i, child in enumerate(welcome_widget.findChildren(QtWidgets.QWidget)):
         if isinstance(child, QtWidgets.QLabel):
@@ -64,6 +76,7 @@ def run_viewer():
                 )
             else:
                 child.setText("")
+            child.setAlignment(QtCore.Qt.AlignLeft)
 
     log("Plantseg is ready!", thread="Run viewer", level="info")
     napari.run()
