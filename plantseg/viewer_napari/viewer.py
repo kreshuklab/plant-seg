@@ -1,6 +1,8 @@
 import napari
-from qtpy import QtWidgets
+from qtpy import QtCore, QtWidgets
 
+from plantseg.__version__ import __version__
+from plantseg.utils import check_version
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.containers import (
     get_data_io_tab,
@@ -16,6 +18,18 @@ from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybi
 from plantseg.viewer_napari.widgets.segmentation import on_layer_rename_segmentation
 
 
+def scroll_wrap(w):
+    scrollArea = QtWidgets.QScrollArea()
+    scrollArea.setWidget(w.native)
+    scrollArea.setWidgetResizable(True)
+    pol = QtWidgets.QSizePolicy()
+    pol.setHorizontalPolicy(QtWidgets.QSizePolicy.Policy.Minimum)
+    pol.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding)
+    scrollArea.setSizePolicy(pol)
+
+    return scrollArea
+
+
 def run_viewer():
     viewer = napari.Viewer(title="PlantSeg v2")
     setup_proofreading_keybindings(viewer=viewer)
@@ -28,8 +42,14 @@ def run_viewer():
         (get_postprocessing_tab(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
     ]:
-        this_widget = viewer.window.add_dock_widget(_containers, name=name, tabify=True)
-        this_widget.setFixedWidth(666)
+        _containers.native.setMinimumWidth(550)
+        viewer.window.add_dock_widget(
+            scroll_wrap(_containers),
+            name=name,
+            tabify=True,
+        )
+        # allow content to float to top of dock
+        _containers.native.layout().addStretch()
 
     # update layer drop-down menus on layer selection
     viewer.layers.selection.events.active.connect(on_layer_rename_prediction())
@@ -43,14 +63,20 @@ def run_viewer():
     # viewer.window._qt_viewer.set_welcome_visible(False)
     welcome_widget = viewer.window._qt_viewer._welcome_widget
 
+    v_short, v_features = check_version(current_version=__version__, silent=True)
+
     for i, child in enumerate(welcome_widget.findChildren(QtWidgets.QWidget)):
         if isinstance(child, QtWidgets.QLabel):
             if i == 3:
                 child.setText(
-                    "Welcome to PlantSeg!\n\nTo load an image use the menu on the right"
+                    "Welcome to PlantSeg!\n\nTo load an image use the menu on the right\n\n"
+                    + v_short
+                    + "\n\n"
+                    + v_features
                 )
             else:
                 child.setText("")
+            child.setAlignment(QtCore.Qt.AlignLeft)
 
     log("Plantseg is ready!", thread="Run viewer", level="info")
     napari.run()

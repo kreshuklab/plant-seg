@@ -1,5 +1,6 @@
 import importlib
 import logging
+import re
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from shutil import rmtree
@@ -89,38 +90,111 @@ def clean_models() -> None:
 
 def check_version(
     current_version: str,
-    plantseg_url: str = "https://api.github.com/repos/kreshuklab/plant-seg/releases/latest",
-) -> None:
+    plantseg_url: str = "https://api.github.com/repos/kreshuklab/plant-seg/releases?per_page=100",
+    silent: bool = False,
+) -> tuple:
     """
     Check for the latest version of PlantSeg available on GitHub.
+    Parses the changelog and returns new or current features, depending on
+    whether a new version is available or not.
 
     Args:
         current_version (str): The current version of PlantSeg in use.
-        plantseg_url (str): The URL to check the latest release of PlantSeg (default is the GitHub API URL).
+        plantseg_url (str): The URL to check the latest release of PlantSeg
+            (default is the GitHub API URL).
+        silent (bool): Silences logging
 
     Returns:
-        None
+        result (str): Basic version statement
+        feature_text (str): Multiline description of new/current features
     """
     try:
+        crr_version = Version(current_version)
         response = requests.get(plantseg_url)
         response.raise_for_status()  # Raises an HTTPError if the response status code was unsuccessful
-        latest_version = response.json()["tag_name"]
 
-        current_version_obj = Version(current_version)
-        latest_version_obj = Version(latest_version)
+        latest_version = Version("0.0.0")
+        latest_release_version = Version("0.0.0")
+        latest_body = ""
+        latest_release_body = ""
+        for rel in response.json():
+            v = Version(rel["tag_name"])
+            if rel["prerelease"]:
+                if v > latest_version:
+                    latest_version = v
+                    latest_body = rel["body"]
+            else:
+                if v > latest_release_version:
+                    latest_release_version = v
+                    latest_release_body = rel["body"]
 
-        if latest_version_obj > current_version_obj:
-            logger.warning(
-                f"New version of PlantSeg available: {latest_version}. Please update to the latest version."
+        new_features = []
+        for match in re.findall(r"feat.*?: (.*?)\n", latest_body):
+            new_features.append(match.split(" by @")[0])
+
+        new_release_features = []
+        for match in re.findall(r"feat.*?: (.*?)\n", latest_release_body):
+            new_release_features.append(match.split(" by @")[0])
+
+        result = ""
+        feature_text_l = []
+
+        if crr_version == latest_release_version:
+            result = f"You are using the latest release of PlantSeg: {current_version}."
+            if not silent:
+                logger.info(result)
+
+            if new_release_features:
+                feature_text_l.append("New features in this release:\n")
+                feature_text_l.extend(new_release_features[:8])
+        elif crr_version < latest_release_version:
+            result = (
+                f"New release of PlantSeg available: {latest_release_version}.\n"
+                "Please update to the latest version."
             )
-        else:
-            logger.info(
-                f"You are using the latest version of PlantSeg: {current_version}."
+            if not silent:
+                logger.warning(result)
+
+            if new_release_features:
+                feature_text_l.append("New features in newest release:\n")
+                feature_text_l.extend(new_release_features[:8])
+
+        elif latest_release_version < crr_version < latest_version:
+            result = (
+                f"New version of PlantSeg available: {latest_version}.\n"
+                "Please update to the latest version."
             )
+            if not silent:
+                logger.warning(result)
+
+            if new_features:
+                feature_text_l.append("New features in newest version:\n")
+                feature_text_l.extend(new_features[:8])
+
+        elif crr_version >= latest_version:
+            result = (
+                f"You are using a pre-release version of PlantSeg: {current_version}"
+            )
+
+            if crr_version == latest_version:
+                if new_features:
+                    feature_text_l.append("New features in this version:\n")
+                    feature_text_l.extend(new_features[:8])
+            if not silent:
+                logger.info(result)
+
+        logger.debug(
+            f"Current: {crr_version}, latest version: {latest_version}, latest release: {latest_release_version}"
+        )
+        feature_text = "\n".join(feature_text_l)
+        return result, feature_text
+
     except requests.RequestException as e:
         logger.warning(f"Could not check for new version. Error: {e}")
+        return f"Could not check for new version. Error: {e}", ""
     except ValueError as e:
         logger.warning(f"Could not parse version information. Error: {e}")
+        return f"Could not parse version information. Error: {e}", ""
 
 
 def get_class(class_name, modules):
