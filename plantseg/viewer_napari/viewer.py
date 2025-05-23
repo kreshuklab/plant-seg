@@ -44,7 +44,9 @@ def run_viewer():
     ]:
         _containers.native.setMinimumWidth(550)
         viewer.window.add_dock_widget(
-            scroll_wrap(_containers),
+            # breaks layer-name updates #439
+            # scroll_wrap(_containers),
+            _containers,
             name=name,
             tabify=True,
         )
