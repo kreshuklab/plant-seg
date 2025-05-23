@@ -295,12 +295,16 @@ def task_tracker(
 ):
     """
     Decorator to register a function as a task in the workflow.
+    To not set a parameter in headless mode its name must start with _
 
     Args:
         func (Callable): The function that will be registered as a task.
-        is_root (bool): If True, the function is a root node in the workflow (usually a import task).
-        is_leaf (bool): If True, the function is a leaf node in the workflow (usually a writer task).
-        list_inputs (dict[str, TaskUserInput]): A dictionary of the inputs of the function. The key is the name of the parameter
+        is_root (bool): If True, the function is a root node in the workflow
+            (usually a import task).
+        is_leaf (bool): If True, the function is a leaf node in the workflow
+            (usually a writer task).
+        list_inputs (dict[str, TaskUserInput]): A dictionary of the inputs of
+            the function. The key is the name of the parameter
     """
 
     if is_root and is_leaf:
@@ -345,7 +349,9 @@ def task_tracker(
 
                 else:
                     # Replace the default value with the provided value
-                    parameters[name] = arg
+                    # _tracker for progressbars excluded
+                    if name[0] != "_":
+                        parameters[name] = arg
 
             # Execute the function
             out_image = func(*args, **kwargs)

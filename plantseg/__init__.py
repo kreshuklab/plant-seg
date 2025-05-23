@@ -4,7 +4,7 @@ import logging
 from os import getenv
 from pathlib import Path
 
-import torch  # noqa: F401; required to patch #273
+import torch  # noqa: F401 ; required to patch #273
 import yaml
 
 from plantseg.loggers import stream_handler

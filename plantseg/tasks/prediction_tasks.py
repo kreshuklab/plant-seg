@@ -35,6 +35,7 @@ def unet_prediction_task(
         single_batch_mode (bool): whether to use a single batch for prediction
         device (str): the computation device ('cpu', 'cuda', etc.)
         model_update (bool): whether to update the model to the latest version
+        _tracker: Tracker of progress bar. Not used in workflow as it starts with `_`
     """
     data = image.get_data()
     input_layout = image.image_layout
