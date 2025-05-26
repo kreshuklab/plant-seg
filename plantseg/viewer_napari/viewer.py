@@ -12,6 +12,7 @@ from plantseg.viewer_napari.containers import (
     get_segmentation_tab,
 )
 from plantseg.viewer_napari.widgets.dataprocessing import on_layer_rename_dataprocessing
+from plantseg.viewer_napari.widgets.input import IO_Tab
 from plantseg.viewer_napari.widgets.io import on_layer_rename_io
 from plantseg.viewer_napari.widgets.prediction import on_layer_rename_prediction
 from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybindings
@@ -33,10 +34,12 @@ def scroll_wrap(w):
 def run_viewer():
     viewer = napari.Viewer(title="PlantSeg v2")
     setup_proofreading_keybindings(viewer=viewer)
+    io_tab = IO_Tab()
 
     # Create and add tabs
     for _containers, name in [
         (get_data_io_tab(), "Input/Output"),
+        (io_tab.get_container(), "Input"),
         (get_preprocessing_tab(), "Preprocessing"),
         (get_segmentation_tab(), "Segmentation"),
         (get_postprocessing_tab(), "Postprocessing"),
@@ -54,6 +57,10 @@ def run_viewer():
         _containers.native.layout().addStretch()
 
     # update layer drop-down menus on layer selection
+    viewer.layers.selection.events.active.connect(
+        lambda: io_tab._on_info_layer_changed(viewer.layers.selection.active)
+    )
+
     viewer.layers.selection.events.active.connect(on_layer_rename_prediction())
     viewer.layers.selection.events.active.connect(on_layer_rename_io())
     viewer.layers.selection.events.active.connect(on_layer_rename_dataprocessing())
