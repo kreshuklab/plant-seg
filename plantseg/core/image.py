@@ -618,7 +618,7 @@ def import_image(
 
     Args:
         path (Path): Path to the image file
-        key (str): Key to load data from h5 or zarr files
+        key (Optional[str]): Key to load data from h5 or zarr files
         image_name (str): Name of the image (a unique name to identify the image)
         semantic_type (str): Semantic type of the image, should be raw, segmentation, prediction or label
         stack_layout (str): Layout of the image, should be YX, CYX, ZYX, CZYX or ZCYX
