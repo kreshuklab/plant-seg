@@ -19,44 +19,22 @@ then, start PlantSeg with the napari GUI:
 plantseg --napari
 ```
 
-A more in depth guide can be found in our [documentation (GUI)](../plantseg_interactive_napari/index.md).
+A more in depth guide can be found in our [GUI documentation](../plantseg_interactive_napari/index.md).
 
-## Command Line PlantSeg
+## Run batch workflows
 
-PlantSeg can be configured using `YAML` config files.
-
-First, activate the newly created conda environment (by default this is the installation directory, change the command if needed) with:
-
-```bash
-conda activate ~/plantseg
-```
-
-then, start the pipeline with:
+PlanSeg can perform batch jobs by running `yaml` workflow files.
+You can easily generate them interactively through the napari GUI described above.
+To edit a workflow file and set the correct paths use the editor:
 
 ```bash
-plantseg --config CONFIG_PATH
+plantseg --edit [workflow.yaml]
 ```
 
-where `CONFIG_PATH` is the path to the `YAML` configuration file. See [config.yaml](https://github.com/kreshuklab/plant-seg/blob/master/examples/config.yaml) for a sample configuration
-file and our [documentation (CLI)](../plantseg_legacy/plantseg_classic_cli/index.md) for a
-detailed description of the parameters.
-
-## PlantSeg with Legacy GUI
-
-!!! failure "Deprecated"
-    This interface is deprecated and has been removed from PlantSeg v2. Please use the Napari viewer or the command line interface instead, or [install PlantSeg v1](../plantseg_legacy/installation.md).
-
-PlantSeg app can also be started in a GUI mode, where basic user interface allows to configure and run the pipeline.
-First, activate the newly created conda environment with:
+Then you can run the workflow:
 
 ```bash
-mamba activate plant-seg
+plantseg --config workflow.yaml
 ```
 
-then, run the GUI by simply typing:
-
-```bash
-plantseg --gui
-```
-
-A more in depth guide can be found in our [documentation (Classic GUI)](../plantseg_legacy/plantseg_classic_gui/index.md).
+[Learn more about Workflows here!](../workflow_gui/index.md)

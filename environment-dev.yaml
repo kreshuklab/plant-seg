@@ -23,6 +23,7 @@ dependencies:
   - pyqt
   - napari
   # Other
+  - qt-material
   - requests
   - pyyaml
   - pydantic>2

@@ -56,6 +56,13 @@ nd = "nd"       # N-dimensional (ND)
 ome = "ome"     # Open Microscopy Environment (OME)
 datas = "datas" # pyinstaller
 
+[tool.typos.files]
+extend-exclude = [
+  "tests/**",
+  "plantseg/**",
+  "examples/**",
+]
+
 [tool.ruff.lint]
 extend-select = ["I"]
 

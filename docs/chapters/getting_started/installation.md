@@ -19,22 +19,42 @@ The installer comes complete with its own python installation. During the instal
 
 === "Linux and MacOs"
 
-    Download the Installer, make the installer script executable, then run it.
+    Download the installer, then open a terminal and run the installer:
+
     ```bash
-    chmod +x PlantSeg*.sh
+    bash PlantSeg*.sh
+    ```
+
+    On linux, you can start PlantSeg through your start menu.
+
+    To start PlantSeg in the terminal, navigate to your installation directory
+    (default `~/plantseg/`) and run `bin/plantseg --napari`.
+
+    You might want to add a link to this file to some directory on your $PATH.
+
+    Alternatively, you can activate the plantseg conda environment:  
+    (Replace [INSTALLATION DIR] with the absolute(!) path to your installation)
+
+    ```bash
+    eval "$("[INSTALLATION DIR]/bin/conda" shell.bash activate "[INSTALLATION DIR]")
+    plantseg --help
     ```
 
 ===  "Windows"
 
     Download the installer and execute it. As the installer is not signed you 
     might need to confirm the download and that you want to run the installer.
-    
-    Choose a installation path without spaces in it, as those can cause issues with conda packages.
-    
+ 
+    Choose a installation path without spaces in it, as those can cause issues
+    with conda packages.
+ 
+    Start PlanSeg through the Windows start menu.
 
 === "conda-forge"
 
-    If you want to install PlantSeg without the installer, you need to have conda and git installed. (We recommend Microforge to get conda, see [installing mamba](../contributing/#install-mamba))
+    If you want to install PlantSeg without the installer, you need to have
+    conda and git installed. (We recommend Microforge to get conda,
+    see [installing mamba](../contributing/#install-mamba))
 
     ```bash
     conda create --name plant-seg plant-seg

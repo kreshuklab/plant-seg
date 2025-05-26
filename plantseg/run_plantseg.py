@@ -2,7 +2,9 @@
 
 import argparse
 from pathlib import Path
+from typing import Optional
 
+from plantseg import logger
 from plantseg.__version__ import __version__
 from plantseg.utils import check_version, clean_models, load_config
 
@@ -14,11 +16,13 @@ def create_parser():
     )
     arg_parser.add_argument(
         "--config",
+        "-c",
         type=Path,
         help="Launch CLI from CONFIG (path to the YAML config file)",
     )
     arg_parser.add_argument(
         "--napari",
+        "-n",
         action="store_true",
         help="Launch Napari GUI",
     )
@@ -29,6 +33,7 @@ def create_parser():
     )
     arg_parser.add_argument(
         "--version",
+        "-v",
         action="store_true",
         help="Print PlantSeg version",
     )
@@ -37,12 +42,34 @@ def create_parser():
         action="store_true",
         help='Remove all models from "~/.plantseg_models"',
     )
+    arg_parser.add_argument(
+        "--edit",
+        "-e",
+        type=Path,
+        nargs="?",
+        default=False,
+        const=None,
+        help="Lauch GUI to edit a workflow yaml file. Optionally provide a path.",
+        metavar="yaml",
+    )
+    arg_parser.add_argument(
+        "--loglevel",
+        choices=["ERROR", "WARNING", "INFO", "DEBUG"],
+        help="Set the level of the logger.",
+    )
     return arg_parser.parse_args()
 
 
 def launch_napari():
     """Launch the Napari viewer."""
+    import rich.traceback
+
     from plantseg.viewer_napari.viewer import run_viewer
+
+    rich.traceback.install(
+        show_locals=True,
+        suppress=[],
+    )
 
     run_viewer()
 
@@ -63,10 +90,21 @@ def launch_training(path: Path):
     unet_training(*config)
 
 
+def launch_editor(path: Optional[Path]):
+    """Launch the workflow editor"""
+    from plantseg.workflow_gui.editor import Workflow_gui
+
+    Workflow_gui(path)
+
+
 def main():
     """Main function to parse arguments and call corresponding functionality."""
     args = create_parser()
     check_version(__version__)
+
+    if args.loglevel:
+        print(f"Setting loglevel to {args.loglevel}.")
+        logger.setLevel(args.loglevel)
 
     if args.version:
         print(__version__)
@@ -78,6 +116,8 @@ def main():
         launch_workflow_headless(args.config)
     elif args.train:
         launch_training(args.train)
+    elif args.edit or args.edit is None:
+        launch_editor(args.edit)
     else:
         raise ValueError(
             "Not enough arguments. Run `plantseg -h` to see the available options."
