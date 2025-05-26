@@ -10,28 +10,28 @@
       
       
       
-        <link rel="canonical" href="https://kreshuklab.github.io/plant-seg/chapters/getting_started/troubleshooting/">
+        <link rel="canonical" href="https://kreshuklab.github.io/plant-seg/chapters/workflow_gui/">
       
       
-        <link rel="prev" href="../contributing/">
+        <link rel="prev" href="../plantseg_interactive_napari/unet_training/">
       
       
-        <link rel="next" href="../../plantseg_interactive_napari/">
+        <link rel="next" href="../plantseg_models/">
       
       
-      <link rel="icon" href="../../../images/favicon.ico">
+      <link rel="icon" href="../../images/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
     
     
       
-        <title>Troubleshooting - PlantSeg</title>
+        <title>Working with workflows - PlantSeg</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.342714a4.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.342714a4.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -50,11 +50,11 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/_markdown_exec_pyodide.css">
+      <link rel="stylesheet" href="../../assets/_markdown_exec_pyodide.css">
     
-      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#troubleshooting" class="md-skip">
+        <a href="#working-with-workflows" class="md-skip">
           Skip to content
         </a>
       
@@ -96,9 +96,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="PlantSeg" class="md-header__button md-logo" aria-label="PlantSeg" data-md-component="logo">
+    <a href="../.." title="PlantSeg" class="md-header__button md-logo" aria-label="PlantSeg" data-md-component="logo">
       
-  <img src="../../../logos/logo_white.png" alt="logo">
+  <img src="../../logos/logo_white.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Troubleshooting
+              Working with workflows
             
           </span>
         </div>
@@ -238,9 +238,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="PlantSeg" class="md-nav__button md-logo" aria-label="PlantSeg" data-md-component="logo">
+    <a href="../.." title="PlantSeg" class="md-nav__button md-logo" aria-label="PlantSeg" data-md-component="logo">
       
-  <img src="../../../logos/logo_white.png" alt="logo">
+  <img src="../../logos/logo_white.png" alt="logo">
 
     </a>
     PlantSeg
@@ -290,7 +290,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../.." class="md-nav__link ">
+            <a href="../.." class="md-nav__link ">
               
   
   
@@ -324,8 +324,6 @@
       
   
   
-    
-  
   
   
     
@@ -350,15 +348,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../getting_started/" class="md-nav__link ">
               
   
   
@@ -377,7 +375,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Getting Started
@@ -393,7 +391,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../installation/" class="md-nav__link">
+      <a href="../getting_started/installation/" class="md-nav__link">
         
   
   
@@ -416,7 +414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/" class="md-nav__link">
+      <a href="../getting_started/contributing/" class="md-nav__link">
         
   
   
@@ -436,32 +434,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Troubleshooting
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../getting_started/troubleshooting/" class="md-nav__link">
         
   
   
@@ -472,80 +448,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#font-size-problems-in-gui" class="md-nav__link">
-    <span class="md-ellipsis">
-      Font size problems in GUI
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#problems-with-headless-and-daskdistributed" class="md-nav__link">
-    <span class="md-ellipsis">
-      Problems with --headless and dask[distributed]
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#could-not-load-library-libcudnn_ops_inferso8" class="md-nav__link">
-    <span class="md-ellipsis">
-      Could not load library libcudnn_ops_infer.so.8
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#missing-configuration-key-errors" class="md-nav__link">
-    <span class="md-ellipsis">
-      Missing configuration key errors
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cannot-import-lifted_problem_from_probabilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      Cannot import lifted_problem_from_probabilities
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#other-issues" class="md-nav__link">
-    <span class="md-ellipsis">
-      Other issues
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -602,7 +504,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../plantseg_interactive_napari/" class="md-nav__link ">
+            <a href="../plantseg_interactive_napari/" class="md-nav__link ">
               
   
   
@@ -637,7 +539,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_interactive_napari/import_export/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/import_export/" class="md-nav__link">
         
   
   
@@ -660,7 +562,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_interactive_napari/preprocessing/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/preprocessing/" class="md-nav__link">
         
   
   
@@ -683,7 +585,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_interactive_napari/unet_gasp_workflow/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/unet_gasp_workflow/" class="md-nav__link">
         
   
   
@@ -706,7 +608,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_interactive_napari/proofreading_auto/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/proofreading_auto/" class="md-nav__link">
         
   
   
@@ -729,7 +631,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_interactive_napari/proofreading_manual/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/proofreading_manual/" class="md-nav__link">
         
   
   
@@ -752,7 +654,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_interactive_napari/extra/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/extra/" class="md-nav__link">
         
   
   
@@ -775,7 +677,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_interactive_napari/unet_training/" class="md-nav__link">
+      <a href="../plantseg_interactive_napari/unet_training/" class="md-nav__link">
         
   
   
@@ -802,6 +704,8 @@
       
   
   
+    
+  
   
   
     
@@ -820,15 +724,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../workflow_gui/" class="md-nav__link ">
+            <a href="./" class="md-nav__link md-nav__link--active">
               
   
   
@@ -842,7 +746,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Workflows
@@ -892,7 +796,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../plantseg_models/" class="md-nav__link ">
+            <a href="../plantseg_models/" class="md-nav__link ">
               
   
   
@@ -927,7 +831,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_models/custom_datasets/" class="md-nav__link">
+      <a href="../plantseg_models/custom_datasets/" class="md-nav__link">
         
   
   
@@ -950,7 +854,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_models/training/" class="md-nav__link">
+      <a href="../plantseg_models/training/" class="md-nav__link">
         
   
   
@@ -1007,7 +911,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../python_api/" class="md-nav__link ">
+            <a href="../python_api/" class="md-nav__link ">
               
   
   
@@ -1092,7 +996,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/tasks/io_tasks/" class="md-nav__link">
+      <a href="../python_api/tasks/io_tasks/" class="md-nav__link">
         
   
   
@@ -1115,7 +1019,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/tasks/dataprocessing_tasks/" class="md-nav__link">
+      <a href="../python_api/tasks/dataprocessing_tasks/" class="md-nav__link">
         
   
   
@@ -1138,7 +1042,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/tasks/segmentation_tasks/" class="md-nav__link">
+      <a href="../python_api/tasks/segmentation_tasks/" class="md-nav__link">
         
   
   
@@ -1161,7 +1065,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/tasks/prediction_tasks/" class="md-nav__link">
+      <a href="../python_api/tasks/prediction_tasks/" class="md-nav__link">
         
   
   
@@ -1242,7 +1146,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/functionals/io/" class="md-nav__link">
+      <a href="../python_api/functionals/io/" class="md-nav__link">
         
   
   
@@ -1265,7 +1169,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/functionals/data_processing/" class="md-nav__link">
+      <a href="../python_api/functionals/data_processing/" class="md-nav__link">
         
   
   
@@ -1288,7 +1192,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/functionals/cnn_prediction/" class="md-nav__link">
+      <a href="../python_api/functionals/cnn_prediction/" class="md-nav__link">
         
   
   
@@ -1311,7 +1215,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../python_api/functionals/segmentation/" class="md-nav__link">
+      <a href="../python_api/functionals/segmentation/" class="md-nav__link">
         
   
   
@@ -1400,7 +1304,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_legacy/installation/" class="md-nav__link">
+      <a href="../plantseg_legacy/installation/" class="md-nav__link">
         
   
   
@@ -1449,7 +1353,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../plantseg_legacy/plantseg_classic_gui/" class="md-nav__link ">
+            <a href="../plantseg_legacy/plantseg_classic_gui/" class="md-nav__link ">
               
   
   
@@ -1484,7 +1388,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_legacy/plantseg_classic_gui/data_processing/" class="md-nav__link">
+      <a href="../plantseg_legacy/plantseg_classic_gui/data_processing/" class="md-nav__link">
         
   
   
@@ -1507,7 +1411,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_legacy/plantseg_classic_gui/cnn_prediction/" class="md-nav__link">
+      <a href="../plantseg_legacy/plantseg_classic_gui/cnn_prediction/" class="md-nav__link">
         
   
   
@@ -1530,7 +1434,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../plantseg_legacy/plantseg_classic_gui/segmentation/" class="md-nav__link">
+      <a href="../plantseg_legacy/plantseg_classic_gui/segmentation/" class="md-nav__link">
         
   
   
@@ -1581,7 +1485,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../plantseg_legacy/plantseg_classic_cli/" class="md-nav__link ">
+            <a href="../plantseg_legacy/plantseg_classic_cli/" class="md-nav__link ">
               
   
   
@@ -1646,54 +1550,51 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#font-size-problems-in-gui" class="md-nav__link">
+  <a href="#creating-a-workflow" class="md-nav__link">
     <span class="md-ellipsis">
-      Font size problems in GUI
+      Creating a workflow
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#problems-with-headless-and-daskdistributed" class="md-nav__link">
+  <a href="#editing-a-workflow" class="md-nav__link">
     <span class="md-ellipsis">
-      Problems with --headless and dask[distributed]
+      Editing a workflow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Editing a workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#inputoutput" class="md-nav__link">
+    <span class="md-ellipsis">
+      Input/Output
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#could-not-load-library-libcudnn_ops_inferso8" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#tasks" class="md-nav__link">
     <span class="md-ellipsis">
-      Could not load library libcudnn_ops_infer.so.8
+      Tasks
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#missing-configuration-key-errors" class="md-nav__link">
-    <span class="md-ellipsis">
-      Missing configuration key errors
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#cannot-import-lifted_problem_from_probabilities" class="md-nav__link">
+  <a href="#running-a-workflow" class="md-nav__link">
     <span class="md-ellipsis">
-      Cannot import lifted_problem_from_probabilities
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#other-issues" class="md-nav__link">
-    <span class="md-ellipsis">
-      Other issues
+      Running a workflow
     </span>
   </a>
   
@@ -1718,70 +1619,40 @@
   
 
 
-<h1 id="troubleshooting">Troubleshooting <!-- omit in toc --><a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h1>
-<p>This section provides solutions to common issues you might encounter while using PlantSeg. Click on a problem to jump to its specific solution.</p>
-<ul>
-<li><a href="#font-size-problems-in-gui">Font size problems in GUI</a></li>
-<li><a href="#problems-with---headless-and-daskdistributed">Problems with <code>--headless</code> and <code>dask[distributed]</code></a></li>
-<li><a href="#could-not-load-library-libcudnn_ops_inferso8">Could not load library <code>libcudnn_ops_infer.so.8</code></a></li>
-<li><a href="#missing-configuration-key-errors">Missing configuration key errors</a></li>
-<li><a href="#cannot-import-lifted_problem_from_probabilities">Cannot import <code>lifted_problem_from_probabilities</code></a></li>
-<li><a href="#other-issues">Other issues</a></li>
-</ul>
-<hr />
-<h2 id="font-size-problems-in-gui">Font size problems in GUI<a class="headerlink" href="#font-size-problems-in-gui" title="Permanent link">&para;</a></h2>
-<p>If you find the font size varies within either Napari or Legacy GUIs, or some buttons or texts are not visible, it might relate to your system's DPI settings or screen resolution. To fix this, you can try to reset the resolution of your system.</p>
-<p>Related discussions:</p>
-<ul>
-<li><a href="https://github.com/kreshuklab/plant-seg/issues/241"><code>plantseg --gui</code>, no buttons to begin the workflow #241</a></li>
-</ul>
-<p><img alt="plantseg-gui" src="https://github.com/kreshuklab/plant-seg/assets/17722010/af834274-4157-4fcc-bc58-665c3e73b197" /></p>
-<p>Other references:</p>
-<ul>
-<li><a href="https://stackoverflow.com/questions/36381225/tkinter-not-recognizing-screen-resolution-correctly">tkinter not recognizing screen resolution correctly</a></li>
-<li><a href="https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows">High DPI Desktop Application Development on Windows</a></li>
-<li><a href="https://learn.microsoft.com/en-us/windows/win32/api/shellscalingapi/nf-shellscalingapi-setprocessdpiawareness#remarks">SetProcessDpiAwareness function (shellscalingapi.h)</a></li>
-</ul>
-<hr />
-<h2 id="problems-with-headless-and-daskdistributed">Problems with <code>--headless</code> and <code>dask[distributed]</code><a class="headerlink" href="#problems-with-headless-and-daskdistributed" title="Permanent link">&para;</a></h2>
-<p>If you encounter the following error:</p>
-<div class="highlight"><pre><span></span><code>ImportError: dask.distributed is not installed.
+<h1 id="working-with-workflows">Working with workflows<a class="headerlink" href="#working-with-workflows" title="Permanent link">&para;</a></h1>
+<p>Plantseg can create and execute workflows for batch processing.
+A new workflow can be created in the napari gui, and it can be executed
+using the commandline interface.</p>
+<h2 id="creating-a-workflow">Creating a workflow<a class="headerlink" href="#creating-a-workflow" title="Permanent link">&para;</a></h2>
+<p>To create a new workflow, one must process an example image through the napari GUI.
+Once the result has been exported, a button to <code>Export Workflow</code> will appear
+in the input/output tab in napari.
+Plantseg then creates a <code>yaml</code> file to repeat the workflow for any number of files.</p>
+<p>The workflow includes input/output paths and naming schemes, so before the new
+workflow is useable, those need to be adjusted using the editor:</p>
+<h2 id="editing-a-workflow">Editing a workflow<a class="headerlink" href="#editing-a-workflow" title="Permanent link">&para;</a></h2>
+<p>Plantseg comes with an editor for the workflow yaml files.
+It can be opened through the napari gui (<code>Edit Workflow</code>),
+or from the cli:</p>
+<div class="highlight"><pre><span></span><code>plantseg<span class="w"> </span>--editor<span class="w"> </span><span class="o">[</span>workflow.yaml<span class="o">]</span>
 </code></pre></div>
-<p>Please install <code>dask[distributed]</code> to enable headless mode in PlantSeg. Run the following commands in your terminal:</p>
-<div class="highlight"><pre><span></span><code>mamba<span class="w"> </span>activate<span class="w"> </span>plant-seg
-mamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>pytorch<span class="w"> </span>-c<span class="w"> </span>nvidia<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>dask<span class="w"> </span>distributed
+<p><img alt="Workflow gui" src="https://github.com/kreshuklab/plant-seg/raw/refs/heads/assets/images/workflow_gui_overview.webp" /></p>
+<h3 id="inputoutput">Input/Output<a class="headerlink" href="#inputoutput" title="Permanent link">&para;</a></h3>
+<p>On the left, the input/output section is shown.
+You can specify a directory as <code>input_path</code> to use all images in this
+directory, or just a single image.</p>
+<p>The name_pattern defines how the exported images are named.
+You can use the placeholders <code>{file_name}</code> to reference the input file's name,
+or <code>{image_name}</code> to reference the layer name napari would have given the image.</p>
+<h3 id="tasks">Tasks<a class="headerlink" href="#tasks" title="Permanent link">&para;</a></h3>
+<p>The right side displays all tasks the workflow contains.
+Most of them expose some modifiable values.</p>
+<p>If you need to modify something else, the editor should show you the proper
+name of the field, so you can edit the file in your favorite text editor.</p>
+<h2 id="running-a-workflow">Running a workflow<a class="headerlink" href="#running-a-workflow" title="Permanent link">&para;</a></h2>
+<p>To finally run a workflow after you have modified the paths to your liking, please use the cli:</p>
+<div class="highlight"><pre><span></span><code>plantseg<span class="w"> </span>--config<span class="w"> </span>your_workflow_file.yaml
 </code></pre></div>
-<hr />
-<h2 id="could-not-load-library-libcudnn_ops_inferso8">Could not load library <code>libcudnn_ops_infer.so.8</code><a class="headerlink" href="#could-not-load-library-libcudnn_ops_inferso8" title="Permanent link">&para;</a></h2>
-<p>If you encounter this error:</p>
-<div class="highlight"><pre><span></span><code>Could not load library libcudnn_ops_infer.so.8. Error: libcudnn_ops_infer.so.8: cannot open shared object file: No such file or directory
-</code></pre></div>
-<p>Resolve this by installing <code>cudnn</code> using the following command:</p>
-<div class="highlight"><pre><span></span><code>mamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>cudnn
-</code></pre></div>
-<hr />
-<h2 id="missing-configuration-key-errors">Missing configuration key errors<a class="headerlink" href="#missing-configuration-key-errors" title="Permanent link">&para;</a></h2>
-<p>If you encounter a <code>RuntimeError</code> about a missing key, such as:</p>
-<div class="highlight"><pre><span></span><code>RuntimeError: key : &#39;crop_volume&#39; is missing, plant-seg requires &#39;crop_volume&#39; to run
-</code></pre></div>
-<p>This usually means the session configuration file is corrupted or outdated. To fix this:</p>
-<div class="highlight"><pre><span></span><code>rm<span class="w"> </span>~/.plantseg_models/configs/config_gui_last.yaml
-</code></pre></div>
-<p>Ensure your configuration file is properly formatted and includes all required keys. Example configurations can be found in the <code>examples</code> directory of this repository.</p>
-<hr />
-<h2 id="cannot-import-lifted_problem_from_probabilities">Cannot import <code>lifted_problem_from_probabilities</code><a class="headerlink" href="#cannot-import-lifted_problem_from_probabilities" title="Permanent link">&para;</a></h2>
-<p>If you receive an error related to importing from <code>elf.segmentation.features</code>, reinstall <a href="https://github.com/constantinpape/elf">elf</a>:</p>
-<div class="highlight"><pre><span></span><code>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>python-elf
-</code></pre></div>
-<hr />
-<h2 id="other-issues">Other issues<a class="headerlink" href="#other-issues" title="Permanent link">&para;</a></h2>
-<p>PlantSeg is actively developed, and sometimes model or configuration files saved in <code>~/.plantseg_models</code> may become outdated. If you encounter errors related to configuration loading:</p>
-<ol>
-<li>Close the PlantSeg application.</li>
-<li>Delete the <code>~/.plantsep_models</code> directory.</li>
-<li>Restart the application and try again.</li>
-</ol>
-<p>These steps should help resolve any issues and enhance your experience with PlantSeg.</p>
 
 
 
@@ -1804,7 +1675,7 @@ mamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> <
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">January 6, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">May 26, 2025</span>
   </span>
 
     
@@ -1814,7 +1685,7 @@ mamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> <
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">November 30, 2023</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">May 26, 2025</span>
   </span>
 
     
@@ -1832,9 +1703,9 @@ mamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> <
     
     <nav>
       
-        <a href="https://github.com/apps/pre-commit-ci" class="md-author" title="@pre-commit-ci[bot]">
+        <a href="https://github.com/KRiedmiller" class="md-author" title="@KRiedmiller">
           
-          <img src="https://avatars.githubusercontent.com/in/68672?v=4&size=72" alt="pre-commit-ci[bot]">
+          <img src="https://avatars.githubusercontent.com/u/42350211?v=4&size=72" alt="KRiedmiller">
         </a>
       
         <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
@@ -1842,23 +1713,12 @@ mamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> <
           <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
         </a>
       
-        <a href="https://github.com/qin-yu" class="md-author" title="@qin-yu">
+        <a href="https://github.com/pre-commit-ci%5Bbot%5D" class="md-author" title="@pre-commit-ci[bot]">
           
-          <img src="https://avatars.githubusercontent.com/u/17722010?v=4&size=72" alt="qin-yu">
-        </a>
-      
-        <a href="https://github.com/lorenzocerrone" class="md-author" title="@lorenzocerrone">
-          
-          <img src="https://avatars.githubusercontent.com/u/23013839?v=4&size=72" alt="lorenzocerrone">
+          <img src="https://avatars.githubusercontent.com/in/68672?v=4&size=72" alt="GitHub user">
         </a>
       
       
-      
-        
-          <a href="https://github.com/kreshuklab/plant-seg/blob/main/docs/chapters/getting_started/troubleshooting.md" class="md-author md-author--more">
-            +1
-          </a>
-        
       
     </nav>
   </span>
@@ -1887,7 +1747,7 @@ mamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> <
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../contributing/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Contributing">
+          <a href="../plantseg_interactive_napari/unet_training/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Training">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1897,20 +1757,20 @@ mamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> <
                 Previous
               </span>
               <div class="md-ellipsis">
-                Contributing
+                Training
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../plantseg_interactive_napari/" class="md-footer__link md-footer__link--next" aria-label="Next: PlantSeg Interactive - Napari">
+          <a href="../plantseg_models/" class="md-footer__link md-footer__link--next" aria-label="Next: Official Data and Models">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                PlantSeg Interactive - Napari
+                Official Data and Models
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1964,12 +1824,12 @@ mamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> <
     
     
       
-      <script id="__config" type="application/json">{"base": "../../..", "features": ["content.tooltips", "content.code.annotate", "navigation.instant", "navigation.instant.progress", "navigation.sections", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "search.suggest", "search.share"], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["content.tooltips", "content.code.annotate", "navigation.instant", "navigation.instant.progress", "navigation.sections", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "search.suggest", "search.share"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../assets/javascripts/bundle.13a4f30d.min.js"></script>
       
-        <script src="../../../assets/_markdown_exec_pyodide.js"></script>
+        <script src="../../assets/_markdown_exec_pyodide.js"></script>
       
     
   </body>
