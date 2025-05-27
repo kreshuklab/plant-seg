@@ -119,16 +119,19 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
       - name: Checkout new release
         run: |
           git fetch
           git checkout master
+          git pull
           cat plantseg/__version__.py
 
       - uses: actions/download-artifact@v4
         with:
           name: plantseg-conda-build
           path: ./constructor
+
       - name: Display downloaded files
         run: ls ./constructor
 
