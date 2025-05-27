@@ -1,11 +1,12 @@
 import time
+import webbrowser
 from enum import Enum
 from functools import partial
 from pathlib import Path
 from typing import Optional, Sequence
 
 from magicgui import magic_factory, magicgui
-from magicgui.widgets import Container, Label
+from magicgui.widgets import Container, Label, PushButton
 from napari.layers import Image, Labels, Layer
 
 from plantseg import logger
@@ -31,7 +32,7 @@ class PathMode(Enum):
         return [member.value for member in cls]
 
 
-class IO_Tab:
+class Input_Tab:
     def __init__(self):
         self.current_dataset_keys: Sequence[Optional[str]] = [None]
 
@@ -54,10 +55,7 @@ class IO_Tab:
         self.widget_set_voxel_size.self.bind(self)
         self.widget_set_voxel_size.hide()
 
-        self.widget_set_voxel_size.layer.changed.connect(
-            self._on_set_voxel_size_layer_changed
-        )
-        self.widget_set_voxel_size.called.connect(self._on_set_voxel_size_layer_done)
+        # self.widget_set_voxel_size.called.connect(self._on_set_voxel_size_layer_done)
 
         # @@@@@ Show info @@@@@
         self.widget_info = Label(
@@ -65,13 +63,25 @@ class IO_Tab:
             label="Infos",
             tooltip="Information about the selected layer.",
         )
+        self.widget_info.hide()
+
+        # @@@@@ Show details @@@@@
+        self.widget_details_layer_select = self.factory_details_layer_select()
+        self.widget_details_layer_select.self.bind(self)
+        self.widget_details_layer_select.layer.changed.connect(
+            self._on_details_layer_select_changed
+        )
+
+        self.docs = Docs_Container()
 
         # self.widget_show_info.layer.changed.connect(self._on_info_layer_changed)
 
     def get_container(self):
         return Container(
             widgets=[
+                self.docs.get_doc_container(),
                 self.widget_open_file,
+                self.widget_details_layer_select,
                 self.widget_info,
                 self.widget_set_voxel_size,
             ],
@@ -141,9 +151,11 @@ class IO_Tab:
             semantic_type = SemanticType.RAW
         elif layer_type == ImageType.LABEL.value:
             semantic_type = SemanticType.SEGMENTATION
+        else:
+            raise ValueError(f"Unknown layer type {layer_type}")
 
         widgets_to_update = [
-            self.widget_set_voxel_size.layer,
+            self.widget_details_layer_select.layer,
             # widget_unet_prediction.image,
         ]
 
@@ -228,26 +240,23 @@ class IO_Tab:
 
     @magic_factory(
         call_button="Set Voxel Size",
-        layer={
-            "label": "Select layer",
-            "tooltip": "Select the image or label to set the voxel size.",
-        },
         voxel_size={
-            "label": "Voxel size",
+            "label": "Voxel size [um]",
             "tooltip": "Set the voxel size in micrometers.",
         },
     )
     def factory_set_voxel_size(
         self,
-        layer: Layer | None = None,
         voxel_size: tuple[float, float, float] = (1.0, 1.0, 1.0),
     ) -> None:
         """Set the voxel size of the selected layer."""
+        layer = self.widget_details_layer_select.layer.value
         if layer is None:
             raise ValueError("No layer selected.")
 
         assert isinstance(layer, (Image, Labels)), (
             "Only Image and Labels layers are supported for PlantSeg voxel size."
+            f"layer was {layer}, type: {type(layer)}"
         )
         ps_image = PlantSegImage.from_napari_layer(layer)
         return schedule_task(
@@ -256,37 +265,24 @@ class IO_Tab:
                 "image": ps_image,
                 "voxel_size": voxel_size,
             },
-            widgets_to_update=[],
+            widgets_to_update=[self.widget_details_layer_select.layer],
         )
 
-    def _on_set_voxel_size_layer_changed(self, layer: Optional[Layer]):
-        logger.debug("_on_set_voxel_size_layer_changed called!")
+    def _on_details_layer_select_changed(self, layer: Optional[Layer]):
+        logger.debug(f"_on_details_layer_select_changed called for layer {layer}!")
+
         if layer is None:
-            self.widget_set_voxel_size.voxel_size.hide()
-            return
-
-        if isinstance(layer, Labels) or isinstance(layer, Image):
-            self.widget_set_voxel_size.show()
-            self.widget_set_voxel_size.voxel_size.show()
-            return
-
-        raise ValueError(
-            "Only Image and Labels layers are supported for PlantSeg voxel size."
-        )
-
-    def _on_set_voxel_size_layer_done(self):
-        logger.debug("_on_set_voxel_size_layer_done called!")
-        self.widget_set_voxel_size.voxel_size.hide()
-
-    def _on_info_layer_changed(self, layer):
-        if layer is None:
+            self.widget_set_voxel_size.hide()
+            self.widget_info.hide()
             return
 
         if not (isinstance(layer, Labels) or isinstance(layer, Image)):
             logger.debug(f"Can't show info for {layer}")
             raise ValueError("Info can only be shown for Image or Labels layers.")
-        else:
-            logger.debug(f"_on_info_layer_changed called for layer {layer}!")
+
+        self.widget_details_layer_select.show()
+        self.widget_set_voxel_size.show()
+        self.widget_info.show()
 
         ps_image = PlantSegImage.from_napari_layer(layer)
         if ps_image.has_valid_voxel_size():
@@ -301,9 +297,95 @@ class IO_Tab:
             voxel_size_formatted = "None"
 
         str_info = (
-            f"Shape: {ps_image.shape}, "
-            f"Voxel size: {voxel_size_formatted}, "
-            f"Type: {ps_image.semantic_type.value}, "
+            f"Shape: {ps_image.shape}\n"
+            f"Voxel size: {voxel_size_formatted}\n"
+            f"Type: {ps_image.semantic_type.value}\n"
             f"Layout: {ps_image.image_layout.value}"
         )
         self.widget_info.value = str_info
+
+    def _on_set_voxel_size_layer_done(self):
+        logger.debug("_on_set_voxel_size_layer_done called!")
+
+    def _on_info_layer_changed(self, layer):
+        if layer is None:
+            return
+
+        if not (isinstance(layer, Labels) or isinstance(layer, Image)):
+            logger.debug(f"Can't show info for {layer}")
+            return
+
+        logger.debug(f"_on_info_layer_changed called for layer {layer}!")
+
+        self.widget_details_layer_select.layer.value = layer
+        ps_image = PlantSegImage.from_napari_layer(layer)
+        if ps_image.has_valid_voxel_size():
+            voxel_size_formatted = "("
+            for vs in ps_image.voxel_size:
+                voxel_size_formatted += f"{vs:.2f}, "
+
+            voxel_size_formatted = (
+                voxel_size_formatted[:-2] + f") {ps_image.voxel_size.unit}"
+            )
+        else:
+            voxel_size_formatted = "None"
+
+        str_info = (
+            f"Shape: {ps_image.shape}\n"
+            f"Voxel size: {voxel_size_formatted}\n"
+            f"Type: {ps_image.semantic_type.value}\n"
+            f"Layout: {ps_image.image_layout.value}"
+        )
+        self.widget_info.value = str_info
+
+    @magic_factory(
+        call_button=False,
+        title={
+            "label": "Details:",
+            "widget_type": "EmptyWidget",
+        },
+        layer={
+            "label": "Layer",
+            "tooltip": "Select layer to show its details, and change its voxel size.",
+        },
+    )
+    def factory_details_layer_select(
+        self,
+        title: str = "",
+        layer: Image | None = None,
+    ):
+        pass
+
+
+class Docs_Container:
+    def __init__(self):
+        logger.debug("Docs init")
+        self.logo_path = (
+            Path(__file__).resolve().parent.parent.parent
+            / "resources"
+            / "logo_white.png"
+        )
+        assert self.logo_path.exists(), "Logo not found!"
+        self.docs_url = "https://kreshuklab.github.io/plant-seg/"
+
+    def get_doc_container(self) -> Container:
+        logger.debug("get_doc_container called!")
+        """Creates a container with a documentation button and a logo."""
+
+        button = PushButton(text="Open Documentation")
+        button.changed.connect(self.open_docs)
+        container = Container(
+            widgets=[button],
+            label=f'<img src="{self.logo_path}">',
+            layout="horizontal",
+            labels=False,
+        )
+        container[0].show()
+        return Container(widgets=[container], labels=True, layout="horizontal")
+
+    def open_docs(self, button):
+        logger.debug("open_docs called!")
+        """Open the documentation URL in the default web browser when the button is clicked."""
+        webbrowser.open(self.docs_url, new=0, autoraise=True)
+        logger.info(f"Docs webpage opened: {self.docs_url}")
+        return button

@@ -12,9 +12,11 @@ from plantseg.viewer_napari.containers import (
     get_segmentation_tab,
 )
 from plantseg.viewer_napari.widgets.dataprocessing import on_layer_rename_dataprocessing
-from plantseg.viewer_napari.widgets.input import IO_Tab
+from plantseg.viewer_napari.widgets.input import Input_Tab
 from plantseg.viewer_napari.widgets.io import on_layer_rename_io
+from plantseg.viewer_napari.widgets.output import Output_Tab
 from plantseg.viewer_napari.widgets.prediction import on_layer_rename_prediction
+from plantseg.viewer_napari.widgets.preprocessing import Preprocessing_Tab
 from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybindings
 from plantseg.viewer_napari.widgets.segmentation import on_layer_rename_segmentation
 
@@ -34,13 +36,16 @@ def scroll_wrap(w):
 def run_viewer():
     viewer = napari.Viewer(title="PlantSeg v2")
     setup_proofreading_keybindings(viewer=viewer)
-    io_tab = IO_Tab()
+    input_tab = Input_Tab()
+    output_tab = Output_Tab()
+    preprocessing_tab = Preprocessing_Tab()
 
     # Create and add tabs
     for _containers, name in [
-        (get_data_io_tab(), "Input/Output"),
-        (io_tab.get_container(), "Input"),
-        (get_preprocessing_tab(), "Preprocessing"),
+        (input_tab.get_container(), "Input"),
+        (output_tab.get_container(), "Output"),
+        (preprocessing_tab.get_container(), "Preprocessing"),
+        # (get_preprocessing_tab(), "Preprocessing"),
         (get_segmentation_tab(), "Segmentation"),
         (get_postprocessing_tab(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
@@ -56,9 +61,12 @@ def run_viewer():
         # allow content to float to top of dock
         _containers.native.layout().addStretch()
 
+    # update shape fields
+    viewer.layers.events.inserted.connect(preprocessing_tab._on_layer_inserted_cropping)
+
     # update layer drop-down menus on layer selection
     viewer.layers.selection.events.active.connect(
-        lambda: io_tab._on_info_layer_changed(viewer.layers.selection.active)
+        lambda: input_tab._on_info_layer_changed(viewer.layers.selection.active)
     )
 
     viewer.layers.selection.events.active.connect(on_layer_rename_prediction())
@@ -67,8 +75,8 @@ def run_viewer():
     viewer.layers.selection.events.active.connect(on_layer_rename_segmentation())
 
     # Show data tab by default
-    viewer.window._dock_widgets["Input/Output"].show()
-    viewer.window._dock_widgets["Input/Output"].raise_()
+    viewer.window._dock_widgets["Input"].show()
+    viewer.window._dock_widgets["Input"].raise_()
     # viewer.window._qt_viewer.set_welcome_visible(False)
     welcome_widget = viewer.window._qt_viewer._welcome_widget
 

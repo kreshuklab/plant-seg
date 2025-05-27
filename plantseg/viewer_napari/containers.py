@@ -57,9 +57,9 @@ def get_preprocessing_tab():
     # widget_cropping.crop_z.native.setStyleSheet(STYLE_SLIDER)  # TODO: remove comment when widget_cropping is implemented
     container = Container(
         widgets=[
-            widget_gaussian_smoothing,
-            widget_rescaling,
             widget_cropping,
+            widget_rescaling,
+            widget_gaussian_smoothing,
             widget_image_pair_operations,
         ],
         labels=False,
