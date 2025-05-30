@@ -18,7 +18,7 @@ from plantseg.viewer_napari.widgets.utils import _return_value_if_widget, schedu
 
 
 class PathMode(Enum):
-    FILE = "tiff, h5, etc.."
+    FILE = "tiff, h5, png, jpg"
     DIR = "zarr"
 
     @classmethod
@@ -34,13 +34,16 @@ class Input_Tab:
         self.widget_open_file = self.factory_open_file()
         self.widget_open_file.self.bind(self)
 
-        # self.widget_open_file.path_mode.changed.connect(self._on_path_mode_changed)
+        self.widget_open_file.path_mode.changed.connect(self._on_path_mode_changed)
         self.widget_open_file.path.changed.connect(self._on_path_changed)
         self.widget_open_file.button_key_refresh.changed.connect(
             self._on_refresh_keys_button
         )
 
-        self.widget_open_file.dataset_key.choices = self.current_dataset_keys
+        self.widget_open_file.dataset_key._default_choices = (
+            lambda _: self.current_dataset_keys
+        )
+        self.widget_open_file.dataset_key.reset_choices()
         self.widget_open_file.dataset_key.changed.connect(self._on_dataset_key_changed)
         self.widget_open_file.called.connect(self._on_done)
 
@@ -84,9 +87,16 @@ class Input_Tab:
 
     @magic_factory(
         call_button="Open File",
+        path_mode={
+            "label": "File type",
+            "choices": PathMode.to_choices(),
+            "widget_type": "RadioButtons",
+            "orientation": "horizontal",
+            "value": PathMode.FILE.value,
+        },
         path={
             "value": Path.home(),
-            "label": "File path\n(tiff, h5, zarr, png, jpg)",
+            "label": "File path\n(.tiff, .h5, .png, .jpg)",
             "mode": "r",
             "tooltip": "Select a file to be imported, the file can be a tiff, h5, png, jpg.",
         },
@@ -131,6 +141,7 @@ class Input_Tab:
     )
     def factory_open_file(
         self,
+        path_mode: bool,
         path: Path,
         dataset_key: str,
         button_key_refresh: bool,
@@ -191,7 +202,7 @@ class Input_Tab:
             self.widget_open_file.button_key_refresh.hide()
             return
 
-        self.current_dataset_keys = dataset_keys.copy()  # Update the global variable
+        self.current_dataset_keys = dataset_keys.copy()
         self.widget_open_file.dataset_key.choices = dataset_keys
         if dataset_keys == [None]:
             self.widget_open_file.dataset_key.hide()

@@ -4,6 +4,7 @@ from magicgui import magic_factory, magicgui
 from magicgui.widgets import Container
 from napari.layers import Image, Labels, Layer
 
+from plantseg import logger
 from plantseg.core.image import ImageLayout, PlantSegImage
 from plantseg.tasks.segmentation_tasks import (
     clustering_segmentation_task,
@@ -33,17 +34,23 @@ class Segmentation_Tab:
             ("MultiCut", "multicut"),
             ("LiftedMultiCut", "lmc"),
         ]
+        # @@@@@ Layer selector @@@@@
+        self.widget_layer_select = self.factory_layer_select()
+        self.widget_layer_select.self.bind(self)
+        self.widget_layer_select.layer.changed.connect(self._on_image_changed)
 
         # @@@@@ agglomeration @@@@@
         self.widget_agglomeration = self.factory_agglomeration()
         self.widget_agglomeration.self.bind(self)
-        self.widget_agglomeration.mode.choices = self.AGGLOMERATION_MODES
+        self.widget_agglomeration.mode._default_choices = self.AGGLOMERATION_MODES
+        self.widget_agglomeration.mode.reset_choices()
         self.widget_agglomeration.mode.changed.connect(self._on_mode_changed)
 
         # @@@@@ dt watershed @@@@@
         self.widget_dt_ws = self.factory_dt_ws()
         self.widget_dt_ws.self.bind(self)
-        self.widget_dt_ws.stacked.choices = self.STACKED
+        self.widget_dt_ws.stacked._default_choices = self.STACKED
+        self.widget_dt_ws.stacked.reset_choices()
 
         self.advanced_dt_ws = [
             self.widget_dt_ws.sigma_seeds,
@@ -61,13 +68,13 @@ class Segmentation_Tab:
         self.widget_dt_ws.show_advanced.changed.connect(self._on_show_advanced_changed)
 
         self.initialised_widget_dt_ws: bool = False  # Avoid throwing an error when the first image is loaded but its layout is not supported
-        self.widget_dt_ws.image.changed.connect(self._on_image_changed)
 
-        self.prediction_widgets = Prediction_Widgets()
+        self.prediction_widgets = Prediction_Widgets(self.widget_layer_select)
 
     def get_container(self):
         return Container(
             widgets=[
+                self.widget_layer_select,
                 self.prediction_widgets.widget_unet_prediction,
                 self.prediction_widgets.widget_add_custom_model,
                 self.widget_dt_ws,
@@ -77,7 +84,17 @@ class Segmentation_Tab:
         )
 
     @magic_factory(
-        call_button="Superpixels to Instance Segmentation",
+        call_button=False,
+        layer={
+            "label": "Layer",
+            "tooltip": "Select a layer to operate on.",
+        },
+    )
+    def factory_layer_select(self, layer: Image = None):
+        pass
+
+    @magic_factory(
+        call_button="3.Superpixels to Segmentation",
         image={
             "label": "Boundary image",
             "tooltip": "Raw boundary image or boundary prediction to use as input for clustering.",
@@ -161,11 +178,7 @@ class Segmentation_Tab:
             self.widget_agglomeration.nuclei.hide()
 
     @magic_factory(
-        call_button="Boundary to Superpixels",
-        image={
-            "label": "Boundary image",
-            "tooltip": "Raw boundary image or boundary prediction to use as input for Watershed.",
-        },
+        call_button="2. Boundary to Superpixels",
         stacked={
             "label": "Mode",
             "tooltip": "Define if the Watershed will run slice by slice (faster) or on the full volume (slower).",
@@ -200,8 +213,7 @@ class Segmentation_Tab:
     )
     def factory_dt_ws(
         self,
-        image: Image,
-        stacked: Optional[str] = None,
+        stacked: str,
         threshold: float = 0.5,
         min_size: int = 100,
         show_advanced: bool = False,
@@ -213,7 +225,7 @@ class Segmentation_Tab:
         apply_nonmax_suppression: bool = False,
         is_nuclei_image: bool = False,
     ) -> None:
-        ps_image = PlantSegImage.from_napari_layer(image)
+        ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
 
         return schedule_task(
             dt_watershed_task,
@@ -258,7 +270,7 @@ class Segmentation_Tab:
                 else:
                     self.initialised_widget_dt_ws = True
 
-    def on_layer_rename_segmentation(self):
+    def on_layer_rename(self):
         """Updates layer drop-down menus"""
 
         def update():
@@ -268,6 +280,6 @@ class Segmentation_Tab:
                 level="debug",
             )
             self.widget_agglomeration.image.reset_choices()
-            self.widget_dt_ws.image.reset_choices()
+            self.widget_layer_select.layer.reset_choices()
 
         return update

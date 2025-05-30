@@ -1,15 +1,18 @@
 """UNet Prediction Widget"""
 
+import inspect
+import pprint
 from enum import Enum
 from pathlib import Path
 from typing import Optional
 
 import torch.cuda
-from magicgui import magic_factory, magicgui
+from magicgui import magic_factory
 from magicgui.types import Separator, Undefined
-from magicgui.widgets import Container, ProgressBar, create_widget
+from magicgui.widgets import ComboBox, Container, ProgressBar, create_widget
 from napari.layers import Image
 
+from plantseg import logger
 from plantseg.core.image import PlantSegImage
 from plantseg.core.zoo import model_zoo
 from plantseg.tasks.prediction_tasks import biio_prediction_task, unet_prediction_task
@@ -30,7 +33,8 @@ class UNetPredictionMode(Enum):
 
 
 class Prediction_Widgets:
-    def __init__(self):
+    def __init__(self, widget_layer_select):
+        self.widget_layer_select = widget_layer_select
         # Constants
         self.ALL_CUDA_DEVICES = [f"cuda:{i}" for i in range(torch.cuda.device_count())]
         self.MPS = ["mps"] if torch.backends.mps.is_available() else []
@@ -48,35 +52,21 @@ class Prediction_Widgets:
         # @@@@@ model filter container @@@@@
         self.model_filters = Container(
             widgets=[
-                create_widget(
-                    annotation=str,
-                    name="dimensionality",
+                ComboBox(
+                    choices=[self.ALL_DIMENSIONS]
+                    + model_zoo.get_unique_dimensionalities(),
                     label="Dimensionality",
-                    widget_type="ComboBox",
-                    options={
-                        "choices": [self.ALL_DIMENSIONS]
-                        + model_zoo.get_unique_dimensionalities()
-                    },
+                    name="dimensionality",
                 ),
-                create_widget(
-                    annotation=str,
+                ComboBox(
                     name="modality",
                     label="Microscopy modality",
-                    widget_type="ComboBox",
-                    options={
-                        "choices": [self.ALL_MODALITIES]
-                        + model_zoo.get_unique_modalities()
-                    },
+                    choices=[self.ALL_MODALITIES] + model_zoo.get_unique_modalities(),
                 ),
-                create_widget(
-                    annotation=str,
+                ComboBox(
                     name="output_type",
                     label="Prediction type",
-                    widget_type="ComboBox",
-                    options={
-                        "choices": [self.ALL_TYPES]
-                        + model_zoo.get_unique_output_types()
-                    },
+                    choices=[self.ALL_TYPES] + model_zoo.get_unique_output_types(),
                 ),
             ],
             label="Model filters",
@@ -88,12 +78,20 @@ class Prediction_Widgets:
         # @@@@@ Unet Prediction @@@@@
         self.widget_unet_prediction = self.factory_unet_prediction()
         self.widget_unet_prediction.self.bind(self)
-        self.widget_unet_prediction.plantseg_filter.choices = self.BIOIMAGEIO_FILTER
+        self.widget_unet_prediction.plantseg_filter._default_choices = (
+            self.BIOIMAGEIO_FILTER
+        )
+        self.widget_unet_prediction.plantseg_filter.reset_choices()
         self.widget_unet_prediction.plantseg_filter.value = True
 
-        self.widget_unet_prediction.single_patch.choices = self.SINGLE_PATCH_MODE
-        self.widget_unet_prediction.device.choices = self.ALL_DEVICES
+        self.widget_unet_prediction.single_patch._default_choices = (
+            self.SINGLE_PATCH_MODE
+        )
+        self.widget_unet_prediction.single_patch.reset_choices()
+        self.widget_unet_prediction.device._default_choices = self.ALL_DEVICES
+        self.widget_unet_prediction.device.reset_choices()
         self.widget_unet_prediction.device.value = self.ALL_DEVICES[0]
+
         self.widget_unet_prediction.insert(3, self.model_filters)
 
         self.advanced_unet_prediction_widgets = [
@@ -136,18 +134,21 @@ class Prediction_Widgets:
         self.widget_add_custom_model.output_type.changed.connect(
             self._on_custom_output_type_change
         )
-        self.widget_add_custom_model.modality.choices = (
+        self.widget_add_custom_model.modality._default_choices = (
             model_zoo.get_unique_modalities() + [self.CUSTOM]
         )
-        self.widget_add_custom_model.output_type.choices = (
+        self.widget_add_custom_model.modality.reset_choices()
+        self.widget_add_custom_model.output_type._default_choices = (
             model_zoo.get_unique_output_types() + [self.CUSTOM]
         )
+        self.widget_add_custom_model.output_type.reset_choices()
 
         self.widget_add_custom_model_toggle = self.factory_add_custom_model_toggle()
         self.widget_add_custom_model_toggle.self.bind(self)
+        logger.debug(f"End init device: {self.widget_unet_prediction.device.value}")
 
     @magic_factory(
-        call_button="Image to Prediction",
+        call_button="1. Image to Prediction",
         mode={
             "label": "Mode",
             "tooltip": "Select the mode to run the prediction.",
@@ -155,10 +156,6 @@ class Prediction_Widgets:
             "orientation": "horizontal",
             "choices": UNetPredictionMode.to_choices(),
             "value": UNetPredictionMode.PLANTSEG,
-        },
-        image={
-            "label": "Image",
-            "tooltip": "Raw image to be processed with a neural network.",
         },
         plantseg_filter={
             "label": "Model filter",
@@ -212,7 +209,6 @@ class Prediction_Widgets:
     )
     def factory_unet_prediction(
         self,
-        image: Image,
         mode: UNetPredictionMode,
         plantseg_filter: bool,
         model_name: Optional[str],
@@ -225,7 +221,7 @@ class Prediction_Widgets:
         pbar: Optional[ProgressBar] = None,
         update_other_widgets: bool = True,
     ) -> None:
-        ps_image = PlantSegImage.from_napari_layer(image)
+        ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
 
         if mode is UNetPredictionMode.PLANTSEG:
             suffix = model_name
@@ -269,11 +265,6 @@ class Prediction_Widgets:
             raise NotImplementedError(f"Mode {mode} not implemented yet.")
 
     def update_halo(self):
-        if (
-            self.widget_unet_prediction.model_name.value is None
-            and self.widget_unet_prediction.model_id.value is None
-        ):
-            return
         if self.widget_unet_prediction.advanced.value:
             log(
                 "Refreshing halo for the selected model; this might take a while...",
@@ -282,6 +273,8 @@ class Prediction_Widgets:
             )
 
             if self.widget_unet_prediction.mode.value is UNetPredictionMode.PLANTSEG:
+                if self.widget_unet_prediction.model_name.value is None:
+                    return
                 self.widget_unet_prediction.patch_halo.value = (
                     model_zoo.compute_3D_halo_for_zoo_models(
                         self.widget_unet_prediction.model_name.value
@@ -294,6 +287,8 @@ class Prediction_Widgets:
                     self.widget_unet_prediction.patch_size[0].enabled = False
                     self.widget_unet_prediction.patch_halo[0].enabled = False
                 else:
+                    if self.widget_unet_prediction.model_id.value is None:
+                        return
                     self.widget_unet_prediction.patch_size[
                         0
                     ].value = self.widget_unet_prediction.patch_size[1].value
@@ -313,6 +308,7 @@ class Prediction_Widgets:
                 )
 
     def _on_widget_unet_prediction_advanced_changed(self, advanced):
+        logger.debug(f"_on_widget_unet_prediction_advanced_changed called: {advanced}")
         if advanced:
             self.update_halo()
             for widget in self.advanced_unet_prediction_widgets:
@@ -322,6 +318,7 @@ class Prediction_Widgets:
                 widget.hide()
 
     def _on_widget_unet_prediction_mode_change(self, mode: UNetPredictionMode):
+        logger.debug(f"_on_widget_unet_prediction_mode_change called: {mode}")
         widgets_p = [  # PlantSeg
             self.widget_unet_prediction.model_name,
             self.model_filters,
@@ -347,6 +344,9 @@ class Prediction_Widgets:
             self.update_halo()
 
     def _on_widget_unet_prediction_plantseg_filter_change(self, plantseg_filter: bool):
+        logger.debug(
+            f"_on_widget_unet_prediction_plantseg_filter_change called: {plantseg_filter}"
+        )
         if plantseg_filter:
             self.widget_unet_prediction.model_id.choices = (
                 model_zoo.get_bioimageio_zoo_plantseg_model_names()
@@ -361,6 +361,7 @@ class Prediction_Widgets:
             )
 
     def _on_any_metadata_changed(self, widget):
+        logger.debug(f"_on_any_metadata_changed called: {widget}")
         modality = widget.modality.value
         output_type = widget.output_type.value
         dimensionality = widget.dimensionality.value
@@ -376,7 +377,10 @@ class Prediction_Widgets:
             dimensionality_filter=dimensionality,
         )
 
-    def _on_model_name_changed(self, model_name: str):
+    def _on_model_name_changed(self, model_name: str | None):
+        logger.debug(f"_on_model_name_changed called: {model_name}")
+        if model_name is None:
+            return
         description = model_zoo.get_model_description(model_name)
         if description is None:
             description = "No description available for this model."
@@ -480,26 +484,15 @@ class Prediction_Widgets:
         self.widget_add_custom_model_toggle.show()
 
     def _on_custom_modality_change(self, modality: str):
+        logger.debug(f"_on_custom_modality_change called: {modality}")
         if modality == self.CUSTOM:
             self.widget_add_custom_model.custom_modality.show()
         else:
             self.widget_add_custom_model.custom_modality.hide()
 
     def _on_custom_output_type_change(self, output_type: str):
+        logger.debug(f"_on_custom_output_type_change called: {output_type}")
         if output_type == self.CUSTOM:
             self.widget_add_custom_model.custom_output_type.show()
         else:
             self.widget_add_custom_model.custom_output_type.hide()
-
-    def on_layer_rename(self):
-        """Updates layer drop-down menus"""
-
-        def update():
-            log(
-                "Updating layer names",
-                thread="prediction",
-                level="debug",
-            )
-            self.widget_unet_prediction.image.reset_choices()
-
-        return update
