@@ -71,9 +71,7 @@ def run_viewer():
     # viewer.layers.selection.events.active.connect(on_layer_rename_dataprocessing())
     # viewer.layers.selection.events.active.connect(on_layer_rename_segmentation())
 
-    viewer.layers.selection.events.active.connect(
-        segmentation_tab.prediction_widgets.on_layer_rename()
-    )
+    viewer.layers.selection.events.active.connect(segmentation_tab.on_layer_rename)
 
     # Show data tab by default
     viewer.window._dock_widgets["Input"].show()
