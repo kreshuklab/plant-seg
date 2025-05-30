@@ -5,20 +5,15 @@ from plantseg.__version__ import __version__
 from plantseg.utils import check_version
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.containers import (
-    get_data_io_tab,
     get_postprocessing_tab,
-    get_preprocessing_tab,
     get_proofreading_tab,
-    get_segmentation_tab,
 )
 from plantseg.viewer_napari.widgets.dataprocessing import on_layer_rename_dataprocessing
 from plantseg.viewer_napari.widgets.input import Input_Tab
-from plantseg.viewer_napari.widgets.io import on_layer_rename_io
 from plantseg.viewer_napari.widgets.output import Output_Tab
-from plantseg.viewer_napari.widgets.prediction import on_layer_rename_prediction
 from plantseg.viewer_napari.widgets.preprocessing import Preprocessing_Tab
 from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybindings
-from plantseg.viewer_napari.widgets.segmentation import on_layer_rename_segmentation
+from plantseg.viewer_napari.widgets.segmentation import Segmentation_Tab
 
 
 def scroll_wrap(w):
@@ -39,14 +34,16 @@ def run_viewer():
     input_tab = Input_Tab()
     output_tab = Output_Tab()
     preprocessing_tab = Preprocessing_Tab()
+    segmentation_tab = Segmentation_Tab()
 
     # Create and add tabs
     for _containers, name in [
         (input_tab.get_container(), "Input"),
         (output_tab.get_container(), "Output"),
         (preprocessing_tab.get_container(), "Preprocessing"),
+        (segmentation_tab.get_container(), "Segmentation"),
         # (get_preprocessing_tab(), "Preprocessing"),
-        (get_segmentation_tab(), "Segmentation"),
+        # (get_segmentation_tab(), "Segmentation"),
         (get_postprocessing_tab(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
     ]:
@@ -69,10 +66,14 @@ def run_viewer():
         lambda: input_tab._on_info_layer_changed(viewer.layers.selection.active)
     )
 
-    viewer.layers.selection.events.active.connect(on_layer_rename_prediction())
-    viewer.layers.selection.events.active.connect(on_layer_rename_io())
-    viewer.layers.selection.events.active.connect(on_layer_rename_dataprocessing())
-    viewer.layers.selection.events.active.connect(on_layer_rename_segmentation())
+    # viewer.layers.selection.events.active.connect(on_layer_rename_prediction())
+    # viewer.layers.selection.events.active.connect(on_layer_rename_io())
+    # viewer.layers.selection.events.active.connect(on_layer_rename_dataprocessing())
+    # viewer.layers.selection.events.active.connect(on_layer_rename_segmentation())
+
+    viewer.layers.selection.events.active.connect(
+        segmentation_tab.prediction_widgets.on_layer_rename()
+    )
 
     # Show data tab by default
     viewer.window._dock_widgets["Input"].show()
