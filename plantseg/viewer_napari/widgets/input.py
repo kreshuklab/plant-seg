@@ -1,11 +1,9 @@
-import time
 import webbrowser
 from enum import Enum
-from functools import partial
 from pathlib import Path
 from typing import Optional, Sequence
 
-from magicgui import magic_factory, magicgui
+from magicgui import magic_factory
 from magicgui.widgets import Container, Label, PushButton
 from napari.layers import Image, Labels, Layer
 
@@ -16,11 +14,7 @@ from plantseg.io.h5 import list_h5_keys
 from plantseg.io.zarr import list_zarr_keys
 from plantseg.tasks.dataprocessing_tasks import set_voxel_size_task
 from plantseg.tasks.io_tasks import export_image_task, import_image_task
-from plantseg.tasks.workflow_handler import workflow_handler
-from plantseg.viewer_napari.loggers import napari_handler
-from plantseg.viewer_napari.widgets.prediction import widget_unet_prediction
 from plantseg.viewer_napari.widgets.utils import _return_value_if_widget, schedule_task
-from plantseg.workflow_gui.editor import Workflow_gui
 
 
 class PathMode(Enum):

@@ -240,7 +240,6 @@ class Preprocessing_Tab:
 
     def _on_layer_inserted_cropping(self, event):
         logger.debug("_on_layer_inserted_cropping called!")
-        print(event.__dict__)
         if isinstance(event.value, Shapes):
             logger.debug("Shapes layer added, updating cropping.")
             self.widget_cropping.crop_roi.value = event.value
