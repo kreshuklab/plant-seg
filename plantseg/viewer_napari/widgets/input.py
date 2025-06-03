@@ -312,36 +312,16 @@ class Input_Tab:
     def _on_set_voxel_size_layer_done(self):
         logger.debug("_on_set_voxel_size_layer_done called!")
 
-    def _on_info_layer_changed(self, layer):
+    def _on_layerlist_selection(self, layer):
+        logger.debug(f"_on_layerlist_selection called for layer {layer}!")
+
         if layer is None:
             return
-
         if not (isinstance(layer, Labels) or isinstance(layer, Image)):
             logger.debug(f"Can't show info for {layer}")
             return
 
-        logger.debug(f"_on_info_layer_changed called for layer {layer}!")
-
         self.widget_details_layer_select.layer.value = layer
-        ps_image = PlantSegImage.from_napari_layer(layer)
-        if ps_image.has_valid_voxel_size():
-            voxel_size_formatted = "("
-            for vs in ps_image.voxel_size:
-                voxel_size_formatted += f"{vs:.2f}, "
-
-            voxel_size_formatted = (
-                voxel_size_formatted[:-2] + f") {ps_image.voxel_size.unit}"
-            )
-        else:
-            voxel_size_formatted = "None"
-
-        str_info = (
-            f"Shape: {ps_image.shape}\n"
-            f"Voxel size: {voxel_size_formatted}\n"
-            f"Type: {ps_image.semantic_type.value}\n"
-            f"Layout: {ps_image.image_layout.value}"
-        )
-        self.widget_info.value = str_info
 
     @magic_factory(
         call_button=False,
@@ -357,7 +337,7 @@ class Input_Tab:
     def factory_details_layer_select(
         self,
         title: str = "",
-        layer: Image | None = None,
+        layer: Layer | None = None,
     ):
         pass
 

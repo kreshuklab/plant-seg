@@ -64,7 +64,7 @@ class Preprocessing_Tab:
         self.widget_layer_select = self.factory_layer_select()
         self.widget_layer_select.self.bind(self)
         self.widget_layer_select.layer.changed.connect(self._on_cropping_image_changed)
-        self.widget_layer_select.layer.changed.connect(self._on_rescaling_image_changed)
+        self.widget_layer_select.layer.changed.connect(self._on_layer_selection)
 
         font = QtGui.QFont()
         font.setBold(True)
@@ -245,6 +245,8 @@ class Preprocessing_Tab:
             self.widget_cropping.crop_roi.value = event.value
             self.widget_cropping.show()
             self.widget_cropping_placeholder.hide()
+        else:
+            logger.debug(f"Layer added: {event.value}")
 
     def _on_cropping_image_changed(self, image: Optional[Layer]):
         logger.debug("_on_cropping_image_changed called!")
@@ -449,8 +451,8 @@ class Preprocessing_Tab:
             case _:
                 raise ValueError(f"{mode} is not implemented yet.")
 
-    def _on_rescaling_image_changed(self, image: Layer):
-        logger.debug("_on_rescaling_image_changed called!")
+    def _on_layer_selection(self, image: Layer):
+        logger.debug(f"_on_layer_selection called: {image}")
         if not (isinstance(image, Image) or isinstance(image, Labels)):
             raise ValueError("Image must be an Image or Label layer.")
 
@@ -539,7 +541,7 @@ class Preprocessing_Tab:
             widgets_to_update=[],
         )
 
-    def on_layer_rename_dataprocessing(self):
+    def update_layer_selection(self):
         """Updates layer drop-down menus"""
 
         def update():

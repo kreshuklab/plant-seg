@@ -88,6 +88,7 @@ class Prediction_Widgets:
             self.SINGLE_PATCH_MODE
         )
         self.widget_unet_prediction.single_patch.reset_choices()
+        self.widget_unet_prediction.single_patch.value = False
         self.widget_unet_prediction.device._default_choices = self.ALL_DEVICES
         self.widget_unet_prediction.device.reset_choices()
         self.widget_unet_prediction.device.value = self.ALL_DEVICES[0]
@@ -115,9 +116,6 @@ class Prediction_Widgets:
             self._on_model_name_changed
         )
 
-        # TODO: double??
-        # self.widget_unet_prediction.advanced.hide()
-        # self.widget_unet_prediction.device.hide()
         self.widget_unet_prediction.model_id.changed.connect(self._on_model_id_changed)
 
         # @@@@@ custom model @@@@@
@@ -194,7 +192,7 @@ class Prediction_Widgets:
             "tooltip": "Single patch = batch size 1 (lower GPU memory usage);\nFind Batch Size = find the biggest batch size.",
             "widget_type": "RadioButtons",
             "orientation": "horizontal",
-            "value": Undefined,
+            "choices": [True, False],
         },
         device={
             "label": "Device",
@@ -221,9 +219,19 @@ class Prediction_Widgets:
         pbar: Optional[ProgressBar] = None,
         update_other_widgets: bool = True,
     ) -> None:
+        if self.widget_layer_select.layer.value is None:
+            log("Select an input layer first!", thread="Prediction", level="WARNING")
+            return
         ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
 
         if mode is UNetPredictionMode.PLANTSEG:
+            if model_name is None:
+                log(
+                    "Choose a model first!",
+                    thread="Prediction",
+                    level="WARNING",
+                )
+                return
             suffix = model_name
             model_id = None
             widgets_to_update = []
@@ -244,6 +252,8 @@ class Prediction_Widgets:
                 widgets_to_update=widgets_to_update if update_other_widgets else [],
             )
         elif mode is UNetPredictionMode.BIOIMAGEIO:
+            if model_id is None:
+                return
             suffix = model_id
             model_name = None
             widgets_to_update = [

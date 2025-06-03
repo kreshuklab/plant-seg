@@ -1,14 +1,15 @@
 import timeit
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Optional
 
 import napari
 from magicgui.widgets import ProgressBar, Widget
+from napari.layers import Layer
 from napari.qt.threading import create_worker
 from psygnal import evented
 from psygnal.qt import start_emitting_from_queue
 
-from plantseg.core.image import PlantSegImage
+from plantseg.core.image import PlantSegImage, SemanticType
 from plantseg.viewer_napari import log
 
 
@@ -16,6 +17,25 @@ def _return_value_if_widget(x):
     if isinstance(x, Widget):
         return x.value
     return x
+
+
+def get_layers(s_type: Optional[SemanticType] = None) -> list[Layer]:
+    """Get layers of specific type, e.g. raw, lable, prediction, segmentation"""
+    log(f"get_layers called with filter: {s_type}", "utils", level="DEBUG")
+    viewer = napari.current_viewer()
+    if viewer is None:
+        return []
+
+    ll = viewer.layers
+
+    relevant_layers = []
+    if s_type is not None:
+        for layer in ll:
+            if layer._metadata.get("semantic_type", False) == s_type:
+                relevant_layers.append(layer)
+    else:
+        relevant_layers = ll
+    return relevant_layers
 
 
 def setup_layers_suggestions(out_name: str, widgets: list[Widget] | None):
@@ -152,7 +172,7 @@ def schedule_task(
         start_emitting_from_queue()
     if hide_list := task_kwargs.pop("_to_hide", None):
         for to_hide in hide_list:
-            to_hide.visible = False
+            to_hide.hide()
 
     # _progress displays spinner for all tasks, not necessary for magicgui progress bar.
     worker = create_worker(task, **task_kwargs, _progress=True)
@@ -161,10 +181,11 @@ def schedule_task(
     # Hide progress bar after task
     if pbar is not None:
         worker.returned.connect(lambda _: setattr(pbar, "visible", False))
+        worker.errored.connect(lambda _: setattr(pbar, "visible", False))
     if hide_list is not None:
-        worker.returned.connect(
-            lambda _: [setattr(w, "visible", True) for w in hide_list]
-        )
+        worker.returned.connect(lambda _: [w.show() for w in hide_list])
+        worker.errored.connect(lambda _: [w.show() for w in hide_list])
+
     worker.start()
     log(f"{task_name} started", thread="Task")
     return None
