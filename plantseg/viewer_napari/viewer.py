@@ -11,6 +11,7 @@ from plantseg.viewer_napari.containers import (
 from plantseg.viewer_napari.widgets.dataprocessing import on_layer_rename_dataprocessing
 from plantseg.viewer_napari.widgets.input import Input_Tab
 from plantseg.viewer_napari.widgets.output import Output_Tab
+from plantseg.viewer_napari.widgets.postprocessing import Postprocessing_Tab
 from plantseg.viewer_napari.widgets.preprocessing import Preprocessing_Tab
 from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybindings
 from plantseg.viewer_napari.widgets.segmentation import Segmentation_Tab
@@ -35,6 +36,7 @@ def run_viewer():
     output_tab = Output_Tab()
     preprocessing_tab = Preprocessing_Tab()
     segmentation_tab = Segmentation_Tab()
+    postprocessing_tab = Postprocessing_Tab()
 
     # Create and add tabs
     for _containers, name in [
@@ -42,9 +44,10 @@ def run_viewer():
         (output_tab.get_container(), "Output"),
         (preprocessing_tab.get_container(), "Preprocessing"),
         (segmentation_tab.get_container(), "Segmentation"),
+        (postprocessing_tab.get_container(), "Postprocessing"),
         # (get_preprocessing_tab(), "Preprocessing"),
         # (get_segmentation_tab(), "Segmentation"),
-        (get_postprocessing_tab(), "Postprocessing"),
+        # (get_postprocessing_tab(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
     ]:
         _containers.native.setMinimumWidth(550)
@@ -58,20 +61,17 @@ def run_viewer():
         # allow content to float to top of dock
         _containers.native.layout().addStretch()
 
-    # update shape fields
+    # Drop-down update for new layers
     viewer.layers.events.inserted.connect(preprocessing_tab._on_layer_inserted_cropping)
+    viewer.layers.events.inserted.connect(segmentation_tab.update_layer_selection)
 
-    # update layer drop-down menus on layer selection
+    # Drop-down update for renaming of layers
     viewer.layers.selection.events.active.connect(
-        lambda: input_tab._on_info_layer_changed(viewer.layers.selection.active)
+        lambda: input_tab._on_layerlist_selection(viewer.layers.selection.active)
     )
-
-    # viewer.layers.selection.events.active.connect(on_layer_rename_prediction())
-    # viewer.layers.selection.events.active.connect(on_layer_rename_io())
-    # viewer.layers.selection.events.active.connect(on_layer_rename_dataprocessing())
-    # viewer.layers.selection.events.active.connect(on_layer_rename_segmentation())
-
-    viewer.layers.selection.events.active.connect(segmentation_tab.on_layer_rename)
+    viewer.layers.selection.events.active.connect(
+        segmentation_tab.update_layer_selection
+    )
 
     # Show data tab by default
     viewer.window._dock_widgets["Input"].show()
