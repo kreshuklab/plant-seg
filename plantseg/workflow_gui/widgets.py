@@ -112,6 +112,7 @@ class Workflow_widgets:
 
         with open(config_path, "r") as f:
             self.config = yaml.safe_load(f)
+            logger.debug(f"LOADED:\n{self.config}")
         self.show_config()
 
     def fill_config_c(self):
@@ -401,10 +402,10 @@ class Task_node:
 
         elif self.func == "image_rescale_to_voxel_size_task":
             x, y, z, unit = (
-                FloatSpinBox(value=self.parameters["new_voxel_size"]["voxels_size"][0]),
-                FloatSpinBox(value=self.parameters["new_voxel_size"]["voxels_size"][1]),
-                FloatSpinBox(value=self.parameters["new_voxel_size"]["voxels_size"][2]),
-                LineEdit(value=self.parameters["new_voxel_size"]["unit"]),
+                FloatSpinBox(value=self.parameters["new_voxels_size"][0]),
+                FloatSpinBox(value=self.parameters["new_voxels_size"][1]),
+                FloatSpinBox(value=self.parameters["new_voxels_size"][2]),
+                LineEdit(value=self.parameters["new_unit"]),
             )
             w = Container(
                 label=label,
@@ -414,10 +415,8 @@ class Task_node:
             )
             self.changing_fields[self.id] = lambda: {
                 "parameters": {
-                    "new_voxel_size": {
-                        "unit": unit.value,
-                        "voxels_size": [x.value, y.value, z.value],
-                    }
+                    "new_unit": unit.value,
+                    "new_voxels_size": [x.value, y.value, z.value],
                 }
             }
             return Container(widgets=[w])
