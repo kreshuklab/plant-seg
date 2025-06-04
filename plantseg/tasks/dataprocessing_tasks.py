@@ -203,7 +203,10 @@ def image_rescale_to_shape_task(
 
 @task_tracker
 def image_rescale_to_voxel_size_task(
-    image: PlantSegImage, new_voxel_size: VoxelSize, order: int = 0
+    image: PlantSegImage,
+    new_voxels_size: tuple[float, float, float],
+    new_unit: str,
+    order: int = 0,
 ) -> PlantSegImage:
     """Rescale an image to a new voxel size.
 
@@ -215,6 +218,7 @@ def image_rescale_to_voxel_size_task(
         order (int): order of the interpolation
 
     """
+    new_voxel_size = VoxelSize(voxels_size=new_voxels_size, unit=new_unit)
     spatial_scaling_factor = image.voxel_size.scalefactor_from_voxelsize(new_voxel_size)
 
     if image.image_layout == ImageLayout.YX:
@@ -227,6 +231,8 @@ def image_rescale_to_voxel_size_task(
         scaling_factor = (1.0, *spatial_scaling_factor)
     elif image.image_layout == ImageLayout.ZCYX:
         scaling_factor = (spatial_scaling_factor[0], 1.0, *spatial_scaling_factor[1:])
+    else:
+        raise ValueError(f"Unknown image layout {image.image_layout}")
 
     out_data = image_rescale(image.get_data(), scaling_factor, order=order)
     new_image = image.derive_new(

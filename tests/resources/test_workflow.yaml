@@ -74,12 +74,11 @@ list_tasks:
   outputs:
   - sample_ovule_raw_set_voxel_size_smoothed_rescaled_1297c6cd-c2b7-4893-92b1-b34aaffc2c18
   parameters:
-    new_voxel_size:
-      unit: um
-      voxels_size:
-      - 0.15
-      - 0.1
-      - 0.1
+    new_unit: um
+    new_voxels_size:
+    - 0.15
+    - 0.1
+    - 0.1
     order: 0
   skip: false
 - func: unet_prediction_task
