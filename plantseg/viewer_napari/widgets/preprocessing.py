@@ -27,7 +27,7 @@ from plantseg.viewer_napari import log, logger_viewer_napari
 from plantseg.viewer_napari.widgets.proofreading import (
     widget_proofreading_initialisation,
 )
-from plantseg.viewer_napari.widgets.utils import schedule_task
+from plantseg.viewer_napari.widgets.utils import div, schedule_task
 
 
 class RescaleType(Enum):
@@ -125,10 +125,14 @@ class Preprocessing_Tab:
         return Container(
             widgets=[
                 self.widget_layer_select,
+                div(),
                 self.widget_cropping_placeholder,
                 self.widget_cropping,
+                div(),
                 self.widget_rescaling,
+                div(),
                 self.widget_gaussian_smoothing,
+                div("Image pair operations"),
                 Container(
                     widgets=[EmptyWidget(label="=========\n\nImage pair operations:")]
                 ),

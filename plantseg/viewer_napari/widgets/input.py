@@ -14,7 +14,11 @@ from plantseg.io.h5 import list_h5_keys
 from plantseg.io.zarr import list_zarr_keys
 from plantseg.tasks.dataprocessing_tasks import set_voxel_size_task
 from plantseg.tasks.io_tasks import export_image_task, import_image_task
-from plantseg.viewer_napari.widgets.utils import _return_value_if_widget, schedule_task
+from plantseg.viewer_napari.widgets.utils import (
+    _return_value_if_widget,
+    div,
+    schedule_task,
+)
 
 
 class PathMode(Enum):
@@ -77,9 +81,12 @@ class Input_Tab:
         return Container(
             widgets=[
                 self.docs.get_doc_container(),
+                div("Open File"),
                 self.widget_open_file,
+                div("Details"),
                 self.widget_details_layer_select,
                 self.widget_info,
+                div("Set voxel size"),
                 self.widget_set_voxel_size,
             ],
             labels=False,
@@ -325,10 +332,6 @@ class Input_Tab:
 
     @magic_factory(
         call_button=False,
-        title={
-            "label": "Details:",
-            "widget_type": "EmptyWidget",
-        },
         layer={
             "label": "Layer",
             "tooltip": "Select layer to show its details, and change its voxel size.",
@@ -336,7 +339,6 @@ class Input_Tab:
     )
     def factory_details_layer_select(
         self,
-        title: str = "",
         layer: Layer | None = None,
     ):
         pass
