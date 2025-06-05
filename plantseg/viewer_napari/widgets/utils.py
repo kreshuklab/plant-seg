@@ -2,12 +2,14 @@ import timeit
 from dataclasses import dataclass
 from typing import Callable, Optional
 
+from magicgui import magic_factory
 import napari
-from magicgui.widgets import ProgressBar, Widget
+from magicgui.widgets import Label, ProgressBar, Widget
 from napari.layers import Layer
 from napari.qt.threading import create_worker
 from psygnal import evented
 from psygnal.qt import start_emitting_from_queue
+from qtpy import QtCore
 
 from plantseg.core.image import PlantSegImage, SemanticType
 from plantseg.viewer_napari import log
@@ -17,6 +19,23 @@ def _return_value_if_widget(x):
     if isinstance(x, Widget):
         return x.value
     return x
+
+
+def div(text: str = ""):
+    """Returns a divider widget
+    Can put up to 60 chars headline into it.
+    """
+    if text:
+        w = Label(
+            value=(
+                "<img src=/home/kai/Bilder/div1.png>"
+                f"{text:\u00a0^62}"
+                "<img src=/home/kai/Bilder/div2.png>"
+            )
+        )
+    else:
+        w = Label(value="<img src=/home/kai/Bilder/div.png>")
+    return w
 
 
 def get_layers(s_type: Optional[SemanticType] = None) -> list[Layer]:

@@ -1,7 +1,7 @@
 from typing import Optional
 
 from magicgui import magic_factory, magicgui
-from magicgui.widgets import Container
+from magicgui.widgets import Container, Label
 from magicgui.widgets import Image as ImageW
 from napari.layers import Image, Labels, Layer
 from qtpy import QtGui
@@ -21,7 +21,7 @@ from plantseg.viewer_napari.widgets.prediction import Prediction_Widgets
 from plantseg.viewer_napari.widgets.proofreading import (
     widget_proofreading_initialisation,
 )
-from plantseg.viewer_napari.widgets.utils import get_layers, schedule_task
+from plantseg.viewer_napari.widgets.utils import div, get_layers, schedule_task
 
 
 class Segmentation_Tab:
@@ -90,9 +90,12 @@ class Segmentation_Tab:
         return Container(
             widgets=[
                 self.widget_layer_select,
+                div(),
                 self.prediction_widgets.widget_unet_prediction,
                 self.prediction_widgets.widget_add_custom_model,
+                div(),
                 self.widget_dt_ws,
+                div(),
                 self.widget_agglomeration,
             ],
             labels=False,

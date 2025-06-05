@@ -22,9 +22,11 @@ def scroll_wrap(w):
     scrollArea.setWidget(w.native)
     scrollArea.setWidgetResizable(True)
     pol = QtWidgets.QSizePolicy()
-    pol.setHorizontalPolicy(QtWidgets.QSizePolicy.Policy.Minimum)
-    pol.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding)
+    pol.setHorizontalPolicy(QtWidgets.QSizePolicy.Policy.Expanding)
+    pol.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.Minimum)
     scrollArea.setSizePolicy(pol)
+    # width of scroll area (outside)
+    scrollArea.setMinimumWidth(550)
 
     return scrollArea
 
@@ -39,7 +41,7 @@ def run_viewer():
     postprocessing_tab = Postprocessing_Tab()
 
     # Create and add tabs
-    for _containers, name in [
+    container_list = [
         (input_tab.get_container(), "Input"),
         (output_tab.get_container(), "Output"),
         (preprocessing_tab.get_container(), "Preprocessing"),
@@ -49,7 +51,9 @@ def run_viewer():
         # (get_segmentation_tab(), "Segmentation"),
         # (get_postprocessing_tab(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
-    ]:
+    ]
+    for _containers, name in container_list:
+        # width inside scroll area
         _containers.native.setMinimumWidth(550)
         viewer.window.add_dock_widget(
             # breaks layer-name updates #439
