@@ -14,9 +14,11 @@ from plantseg.io.h5 import list_h5_keys
 from plantseg.io.zarr import list_zarr_keys
 from plantseg.tasks.dataprocessing_tasks import set_voxel_size_task
 from plantseg.tasks.io_tasks import export_image_task, import_image_task
+from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.utils import (
     _return_value_if_widget,
     div,
+    get_layers,
     schedule_task,
 )
 
@@ -43,6 +45,7 @@ class Input_Tab:
         self.widget_open_file.button_key_refresh.changed.connect(
             self._on_refresh_keys_button
         )
+        self.path_changed_once = False
 
         self.widget_open_file.dataset_key._default_choices = (
             lambda _: self.current_dataset_keys
@@ -159,6 +162,9 @@ class Input_Tab:
     ) -> None:
         """Open a file and return a napari layer."""
 
+        if not self.path_changed_once:
+            log("Please select a file to load!", thread="Input")
+            return
         if layer_type == ImageType.IMAGE.value:
             semantic_type = SemanticType.RAW
         elif layer_type == ImageType.LABEL.value:
@@ -166,10 +172,7 @@ class Input_Tab:
         else:
             raise ValueError(f"Unknown layer type {layer_type}")
 
-        widgets_to_update = [
-            self.widget_details_layer_select.layer,
-            # widget_unet_prediction.image,
-        ]
+        widgets_to_update = []
 
         return schedule_task(
             import_image_task,
@@ -232,6 +235,7 @@ class Input_Tab:
 
     def _on_path_changed(self, path: Path):
         logger.debug("_on_path_changed called!")
+        self.path_changed_once = True
         self.look_up_dataset_keys(path)
 
     def _on_refresh_keys_button(self, press: bool):
@@ -322,6 +326,7 @@ class Input_Tab:
     def _on_layerlist_selection(self, layer):
         logger.debug(f"_on_layerlist_selection called for layer {layer}!")
 
+        self.widget_details_layer_select.layer.choices = get_layers()
         if layer is None:
             return
         if not (isinstance(layer, Labels) or isinstance(layer, Image)):

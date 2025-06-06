@@ -8,6 +8,7 @@ from napari.layers import Image, Labels, Layer
 from plantseg.core.image import PlantSegImage
 from plantseg.tasks.io_tasks import export_image_task
 from plantseg.viewer_napari import log
+from plantseg.viewer_napari.widgets.utils import div
 
 
 class Output_Tab:
@@ -33,6 +34,7 @@ class Output_Tab:
     def get_container(self):
         return Container(
             widgets=[
+                div("Output"),
                 self.widget_export_image,
             ],
             labels=False,

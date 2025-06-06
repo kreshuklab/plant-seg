@@ -39,7 +39,7 @@ class Segmentation_Tab:
         # @@@@@ Layer selector @@@@@
         self.widget_layer_select = self.factory_layer_select()
         self.widget_layer_select.self.bind(self)
-        self.widget_layer_select.layer.changed.connect(self._on_image_changed)
+        self.widget_layer_select.prediction.changed.connect(self._on_prediction_change)
         self.widget_layer_select.layer._default_choices = lambda _: get_layers(
             SemanticType.PREDICTION
         )
@@ -51,8 +51,7 @@ class Segmentation_Tab:
         )
         font = QtGui.QFont()
         font.setBold(True)
-        self.widget_layer_select.text.native.setFont(font)
-        self.widget_layer_select.text.label = ""
+        self.widget_layer_select.native.setFont(font)
 
         # @@@@@ agglomeration @@@@@
         self.widget_agglomeration = self.factory_agglomeration()
@@ -82,20 +81,45 @@ class Segmentation_Tab:
             widget.hide()
         self.widget_dt_ws.show_advanced.changed.connect(self._on_show_advanced_changed)
 
-        self.initialised_widget_dt_ws: bool = False  # Avoid throwing an error when the first image is loaded but its layout is not supported
+        # Avoid throwing an error when the first image is loaded but
+        # its layout is not supported
+        self.initialised_widget_dt_ws: bool = False
 
+        # @@@@@ Prediction widgets @@@@@
         self.prediction_widgets = Prediction_Widgets(self.widget_layer_select)
+
+        # @@@@@ Hide/Show buttons @@@@@
+        self.widget_show_prediction = self.factory_show_button()
+        self.widget_show_prediction.self.bind(self)
+        self.widget_show_prediction.toggle.bind(lambda _: self.toggle_visibility_1)
+        self.prediction_widgets.widget_unet_prediction.hide()
+
+        self.widget_show_watershed = self.factory_show_button()
+        self.widget_show_watershed.self.bind(self)
+        self.widget_show_watershed.toggle.bind(lambda _: self.toggle_visibility_2)
+
+        self.widget_show_agglomeration = self.factory_show_button()
+        self.widget_show_agglomeration.self.bind(self)
+        self.widget_show_agglomeration.toggle.bind(lambda _: self.toggle_visibility_3)
+
+        self.toggle_visibility_1(True)
+        self.toggle_visibility_2(False)
+        self.toggle_visibility_3(False)
 
     def get_container(self):
         return Container(
             widgets=[
+                div("Layer Selection"),
                 self.widget_layer_select,
-                div(),
+                div("1. Boundary Prediction"),
+                self.widget_show_prediction,
                 self.prediction_widgets.widget_unet_prediction,
                 self.prediction_widgets.widget_add_custom_model,
-                div(),
+                div("2. Boundary to Superpixel"),
+                self.widget_show_watershed,
                 self.widget_dt_ws,
-                div(),
+                div("3. Superpixel to Segmentation"),
+                self.widget_show_agglomeration,
                 self.widget_agglomeration,
             ],
             labels=False,
@@ -103,14 +127,6 @@ class Segmentation_Tab:
 
     @magic_factory(
         call_button=False,
-        text={
-            "value": f"{'Layer selection:':<200}",
-            "widget_type": "Label",
-            "tooltip": (
-                "Choose layers for the tasks below. Only necessary if "
-                "you work with multiple images."
-            ),
-        },
         layer={
             "label": "Input image",
             "tooltip": "Select a layer to operate on.",
@@ -131,7 +147,6 @@ class Segmentation_Tab:
     )
     def factory_layer_select(
         self,
-        text,
         layer: Image,
         prediction: Image,
         nuclei: Layer,
@@ -140,7 +155,45 @@ class Segmentation_Tab:
         pass
 
     @magic_factory(
-        call_button="2. Boundary to Superpixels",
+        call_button="Show",
+    )
+    def factory_show_button(self, toggle):
+        toggle(visible=True)
+
+    def toggle_visibility_1(self, visible: bool):
+        if visible:
+            # self.prediction_widgets.widget_add_custom_model.show()
+            self.widget_show_prediction.hide()
+            self.toggle_visibility_2(False)
+            self.toggle_visibility_3(False)
+            self.prediction_widgets.widget_unet_prediction.show()
+        else:
+            self.prediction_widgets.widget_unet_prediction.hide()
+            self.prediction_widgets.widget_add_custom_model.hide()
+            self.widget_show_prediction.show()
+
+    def toggle_visibility_2(self, visible: bool):
+        if visible:
+            self.widget_show_watershed.hide()
+            self.toggle_visibility_1(False)
+            self.toggle_visibility_3(False)
+            self.widget_dt_ws.show()
+        else:
+            self.widget_dt_ws.hide()
+            self.widget_show_watershed.show()
+
+    def toggle_visibility_3(self, visible: bool):
+        if visible:
+            self.widget_show_agglomeration.hide()
+            self.toggle_visibility_1(False)
+            self.toggle_visibility_2(False)
+            self.widget_agglomeration.show()
+        else:
+            self.widget_agglomeration.hide()
+            self.widget_show_agglomeration.show()
+
+    @magic_factory(
+        call_button="Boundary to Superpixels",
         stacked={
             "label": "Mode",
             "tooltip": "Define if the Watershed will run slice by slice (faster) or on the full volume (slower).",
@@ -156,8 +209,8 @@ class Segmentation_Tab:
             "min": 0.0,
         },
         min_size={
-            "label": "Minimum segment size",
-            "tooltip": "Minimum segment size allowed in voxels.",
+            "label": "Minimum superpixel size",
+            "tooltip": "Minimum superpixel size allowed in voxels.",
         },
         # Advanced parameters
         show_advanced={
@@ -187,7 +240,16 @@ class Segmentation_Tab:
         apply_nonmax_suppression: bool = False,
         is_nuclei_image: bool = False,
     ) -> None:
-        ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
+        if self.widget_layer_select.prediction.value is None:
+            log(
+                "Please run a boundary prediction first!",
+                thread="Segmentation",
+                level="WARNING",
+            )
+            return
+        ps_image = PlantSegImage.from_napari_layer(
+            self.widget_layer_select.prediction.value
+        )
 
         return schedule_task(
             dt_watershed_task,
@@ -207,7 +269,7 @@ class Segmentation_Tab:
         )
 
     @magic_factory(
-        call_button="3.Superpixels to Segmentation",
+        call_button="Superpixels to Segmentation",
         mode={
             "label": "Agglomeration mode",
             "tooltip": "Select which agglomeration algorithm to use.",
@@ -232,6 +294,20 @@ class Segmentation_Tab:
         beta: float = 0.6,
         minsize: int = 100,
     ) -> None:
+        if self.widget_layer_select.layer.value is None:
+            log(
+                "Please load an input image first!",
+                thread="Segmentation",
+                level="WARNING",
+            )
+            return
+        if self.widget_layer_select.superpixels.value is None:
+            log(
+                "Please run 'Boundary to Superpixels' first!",
+                thread="Segmentation",
+                level="WARNING",
+            )
+            return
         ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
         ps_labels = PlantSegImage.from_napari_layer(
             self.widget_layer_select.superpixels.value
@@ -275,6 +351,7 @@ class Segmentation_Tab:
     def _on_mode_changed(self, mode: str):
         if mode == "lmc":
             self.widget_layer_select.nuclei.show()
+            log("Check nuclei layer selection!", thread="Segmentation", level="INFO")
         else:
             self.widget_layer_select.nuclei.hide()
 
@@ -287,7 +364,7 @@ class Segmentation_Tab:
             for widget in self.advanced_dt_ws:
                 widget.hide()
 
-    def _on_image_changed(self, image: Optional[Image]):
+    def _on_prediction_change(self, image: Optional[Image]):
         if image is None:
             return
         ps_image = PlantSegImage.from_napari_layer(image)
@@ -298,23 +375,25 @@ class Segmentation_Tab:
             self.widget_dt_ws.stacked.hide()
             self.widget_dt_ws.stacked.value = False
             if ps_image.image_layout != ImageLayout.YX:
-                if self.initialised_widget_dt_ws:
-                    log(
-                        f"Unsupported image layout: {ps_image.image_layout}",
-                        thread="DT Watershed",
-                        level="error",
-                    )
-                else:
-                    self.initialised_widget_dt_ws = True
+                log(
+                    f"Unsupported image layout: {ps_image.image_layout}",
+                    thread="DT Watershed",
+                    level="error",
+                )
 
     def update_layer_selection(self, layer):
         """Updates layer drop-down menus"""
         logger.debug("Updating segmentation layer drop-downs")
-        print(f"UPDATE: {layer}, {layer.source}")
-        self.widget_layer_select.layer.choices = get_layers(SemanticType.RAW)
-        self.widget_layer_select.prediction.choices = get_layers(
-            SemanticType.PREDICTION
-        )
+        raws = get_layers(SemanticType.RAW)
+        predictions = get_layers(SemanticType.PREDICTION)
+        segmentations = get_layers(SemanticType.SEGMENTATION)
+
+        self.widget_layer_select.layer.choices = raws
+        if raws:
+            self.widget_layer_select.layer.value = raws[-1]
+        self.widget_layer_select.prediction.choices = predictions
+        if predictions:
+            self.widget_layer_select.prediction.value = predictions[-1]
         if self.widget_layer_select.prediction.choices == ():
             self.widget_layer_select.prediction.hide()
         else:

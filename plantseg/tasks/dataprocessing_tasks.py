@@ -318,7 +318,8 @@ def set_biggest_instance_to_zero_task(
 
     Args:
         image (PlantSegImage): Segmentation image to process.
-        instance_could_be_zero (bool): If True, 0 might be an instance label, add 1 to all labels before processing.
+        instance_could_be_zero (bool): If True, 0 might be an instance label,
+        add 1 to all labels before processing.
 
     Returns:
         PlantSegImage: New segmentation image with largest instance set to 0.
@@ -344,7 +345,8 @@ def relabel_segmentation_task(
     image: PlantSegImage, background: int | None = None
 ) -> PlantSegImage:
     """
-    Task to relabel a segmentation image contiguously, ensuring non-touching segments with the same ID are relabeled.
+    Task to relabel a segmentation image contiguously, ensuring non-touching
+    segments with the same ID are relabeled.
 
     Args:
         image (PlantSegImage): Segmentation image to process.

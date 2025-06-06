@@ -2,10 +2,12 @@ from enum import Enum
 from typing import Optional
 
 from magicgui import magic_factory, magicgui
-from magicgui.widgets import Container
+from magicgui.widgets import CheckBox, Container, Label, SpinBox
 from napari.layers import Image, Labels, Layer, Shapes
+from qtpy import QtGui
 
-from plantseg.core.image import ImageDimensionality, PlantSegImage
+from plantseg import logger
+from plantseg.core.image import ImageDimensionality, PlantSegImage, SemanticType
 from plantseg.core.zoo import model_zoo
 from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks.dataprocessing_tasks import (
@@ -25,17 +27,25 @@ from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.proofreading import (
     widget_proofreading_initialisation,
 )
-from plantseg.viewer_napari.widgets.utils import schedule_task
+from plantseg.viewer_napari.widgets.utils import div, get_layers, schedule_task
 
 
 class Postprocessing_Tab:
     def __init__(self):
+        # @@@@@ Layer selector @@@@@
+        self.widget_layer_select = self.factory_layer_select()
+        self.widget_layer_select.self.bind(self)
+        self.widget_layer_select.layer._default_choices = lambda _: get_layers(
+            SemanticType.SEGMENTATION
+        )
+        self.widget_layer_select.layer.changed.connect(self._on_layer_changed)
+        font = QtGui.QFont()
+        font.setBold(True)
+        self.widget_layer_select.native.setFont(font)
+
         # @@@@@ Relable @@@@@
         self.widget_relabel = self.factory_relabel()
         self.widget_relabel.self.bind(self)
-        self.widget_relabel.segmentation.changed.connect(
-            self._on_relabel_segmentation_changed
-        )
 
         # @@@@@ Set biggest instance to zero @@@@@
         self.widget_set_biggest_instance_zero = self.factory_set_biggest_instance_zero()
@@ -48,28 +58,40 @@ class Postprocessing_Tab:
         self.widget_remove_false_positives_by_foreground.self.bind(self)
 
         # @@@@@ fix segmentation by nuclei @@@@@
-        self.widget_fix_over_under_segmentation_from_nuclei = (
-            self.factory_fix_over_under_segmentation_from_nuclei()
+        self.widget_fix_segmentation_by_nuclei = (
+            self.factory_fix_segmentation_by_nuclei()
         )
-        self.widget_fix_over_under_segmentation_from_nuclei.self.bind(self)
+        self.widget_fix_segmentation_by_nuclei.self.bind(self)
 
     def get_container(self):
         return Container(
             widgets=[
+                div("Layer Selection"),
+                self.widget_layer_select,
+                div("Relabel Instances"),
                 self.widget_relabel,
+                div("Set Biggest Instance to Zero"),
                 self.widget_set_biggest_instance_zero,
+                div("Remove False-Positives by Foreground"),
                 self.widget_remove_false_positives_by_foreground,
-                self.widget_fix_over_under_segmentation_from_nuclei,
+                div("Split/Merge Instances by Nuclei"),
+                self.widget_fix_segmentation_by_nuclei,
             ],
             labels=False,
         )
 
     @magic_factory(
-        call_button="Relabel Instances",
-        segmentation={
-            "label": "Segmentation",
-            "tooltip": "Segmentation can be any label layer.",
+        call_button=False,
+        layer={
+            "label": "Segmentation Layer",
+            "tooltip": "Apply background corrections to this layer",
         },
+    )
+    def factory_layer_select(self, layer: Labels):
+        pass
+
+    @magic_factory(
+        call_button="Relabel Instances",
         background={
             "label": "Background label",
             "tooltip": "Background label will be set to 0. Default is None.",
@@ -79,19 +101,22 @@ class Postprocessing_Tab:
     )
     def factory_relabel(
         self,
-        segmentation: Labels,
         background: int | None = None,
     ) -> None:
         """Relabel an image layer."""
+        if self.widget_layer_select.layer.value is None:
+            log(
+                "No Segmentation layer found!", thread="Postprocessing", level="WARNING"
+            )
+            return
 
-        ps_image = PlantSegImage.from_napari_layer(segmentation)
+        ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
 
-        segmentation.visible = False
         widgets_to_update = [
             # widget_relabel.segmentation,
             # widget_set_biggest_instance_to_zero.segmentation,
             # widget_remove_false_positives_by_foreground.segmentation,
-            # widget_fix_over_under_segmentation_from_nuclei.segmentation_cells,
+            # widget_fix_segmentation_by_nuclei.segmentation_cells,
             # widget_proofreading_initialisation.segmentation,
         ]
         return schedule_task(
@@ -103,19 +128,14 @@ class Postprocessing_Tab:
             widgets_to_update=widgets_to_update,
         )
 
-    def _on_relabel_segmentation_changed(self, segmentation: Optional[Labels]):
+    def _on_layer_changed(self, segmentation: Optional[Labels]):
         if segmentation is None:
-            self.widget_relabel.background.hide()
-            return None
-
+            # self.widget_relabel.background.hide()
+            return
         self.widget_relabel.background.max = int(segmentation.data.max())
 
     @magic_factory(
         call_button="Set Biggest Instance to Zero",
-        segmentation={
-            "label": "Segmentation",
-            "tooltip": "Segmentation can be any label layer.",
-        },
         instance_could_be_zero={
             "label": "Treat 0 as instance",
             "tooltip": "If ticked, a proper instance segmentation with 0 as background will not be modified.",
@@ -123,19 +143,23 @@ class Postprocessing_Tab:
     )
     def factory_set_biggest_instance_zero(
         self,
-        segmentation: Labels,
         instance_could_be_zero: bool = False,
     ) -> None:
         """Set the biggest instance to zero in a label layer."""
 
-        ps_image = PlantSegImage.from_napari_layer(segmentation)
+        if self.widget_layer_select.layer.value is None:
+            log(
+                "No Segmentation layer found!", thread="Postprocessing", level="WARNING"
+            )
+            return
 
-        segmentation.visible = False
+        ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
+
         widgets_to_update = [
             # widget_relabel.segmentation,
             # widget_set_biggest_instance_to_zero.segmentation,
             # widget_remove_false_positives_by_foreground.segmentation,
-            # widget_fix_over_under_segmentation_from_nuclei.segmentation_cells,
+            # widget_fix_segmentation_by_nuclei.segmentation_cells,
             # widget_proofreading_initialisation.segmentation,
         ]
         return schedule_task(
@@ -149,10 +173,6 @@ class Postprocessing_Tab:
 
     @magic_factory(
         call_button="Remove Objects with Low Foreground Probability",
-        segmentation={
-            "label": "Segmentation",
-            "tooltip": "Segmentation layer to remove false positives.",
-        },
         foreground={
             "label": "Foreground",
             "tooltip": "Foreground probability layer.",
@@ -167,11 +187,19 @@ class Postprocessing_Tab:
         },
     )
     def factory_remove_false_positives_by_foreground(
-        self, segmentation: Labels, foreground: Image, threshold: float = 0.5
+        self, foreground: Image, threshold: float = 0.5
     ) -> None:
         """Remove false positives from a segmentation layer using a foreground probability layer."""
 
-        ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
+        if self.widget_layer_select.layer.value is None:
+            log(
+                "No Segmentation layer found!", thread="Postprocessing", level="WARNING"
+            )
+            return
+
+        ps_segmentation = PlantSegImage.from_napari_layer(
+            self.widget_layer_select.layer.value
+        )
         ps_foreground = PlantSegImage.from_napari_layer(foreground)
 
         return schedule_task(
@@ -209,7 +237,7 @@ class Postprocessing_Tab:
             "step": 0.1,
         },
     )
-    def factory_fix_over_under_segmentation_from_nuclei(
+    def factory_fix_segmentation_by_nuclei(
         self,
         segmentation_cells: Labels,
         segmentation_nuclei: Labels,
@@ -265,3 +293,23 @@ class Postprocessing_Tab:
             },
             widgets_to_update=[],
         )
+
+    def _on_layer_insertion(self, layer):
+        self.widget_layer_select.layer.choices = get_layers(SemanticType.SEGMENTATION)
+        self.widget_remove_false_positives_by_foreground.foreground.choices = (
+            get_layers(SemanticType.RAW)
+        )
+        self.widget_fix_segmentation_by_nuclei.segmentation_cells.choices = get_layers(
+            SemanticType.SEGMENTATION
+        )
+        self.widget_fix_segmentation_by_nuclei.segmentation_nuclei.choices = get_layers(
+            SemanticType.SEGMENTATION
+        )
+        self.widget_fix_segmentation_by_nuclei.boundary_pmaps.choices = get_layers(
+            SemanticType.PREDICTION
+        )
+
+        if layer not in self.widget_layer_select.layer.choices:
+            logger.debug("")
+        else:
+            self.widget_layer_select.layer.value = layer

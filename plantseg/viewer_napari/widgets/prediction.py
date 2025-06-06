@@ -146,7 +146,7 @@ class Prediction_Widgets:
         logger.debug(f"End init device: {self.widget_unet_prediction.device.value}")
 
     @magic_factory(
-        call_button="1. Image to Prediction",
+        call_button="Image to Prediction",
         mode={
             "label": "Mode",
             "tooltip": "Select the mode to run the prediction.",
@@ -220,7 +220,7 @@ class Prediction_Widgets:
         update_other_widgets: bool = True,
     ) -> None:
         if self.widget_layer_select.layer.value is None:
-            log("Select an input layer first!", thread="Prediction", level="WARNING")
+            log("Please load an image first!", thread="Prediction", level="WARNING")
             return
         ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
 
