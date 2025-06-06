@@ -27,7 +27,7 @@ from plantseg.viewer_napari import log, logger_viewer_napari
 from plantseg.viewer_napari.widgets.proofreading import (
     widget_proofreading_initialisation,
 )
-from plantseg.viewer_napari.widgets.utils import div, schedule_task
+from plantseg.viewer_napari.widgets.utils import div, get_layers, schedule_task
 
 
 class RescaleType(Enum):
@@ -124,18 +124,16 @@ class Preprocessing_Tab:
     def get_container(self):
         return Container(
             widgets=[
+                div("Layer Selection"),
                 self.widget_layer_select,
-                div(),
+                div("Crop"),
                 self.widget_cropping_placeholder,
                 self.widget_cropping,
-                div(),
+                div("Rescale"),
                 self.widget_rescaling,
-                div(),
+                div("Gaussian Smoothing"),
                 self.widget_gaussian_smoothing,
                 div("Image pair operations"),
-                Container(
-                    widgets=[EmptyWidget(label="=========\n\nImage pair operations:")]
-                ),
                 self.widget_image_pair_operations,
             ],
             labels=False,
@@ -242,8 +240,18 @@ class Preprocessing_Tab:
             widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
 
-    def _on_layer_inserted_cropping(self, event):
-        logger.debug("_on_layer_inserted_cropping called!")
+    def _on_layer_list(self, event):
+        """To be called when the layer list changes."""
+        logger.debug("_on_layer_inserted preprocessing called!")
+
+        self.widget_layer_select.layer.choices = get_layers()
+
+        if event.type != "inserted":
+            return
+        if self.widget_layer_select.layer.choices:
+            self.widget_layer_select.layer.value = (
+                self.widget_layer_select.layer.choices[-1]
+            )
         if isinstance(event.value, Shapes):
             logger.debug("Shapes layer added, updating cropping.")
             self.widget_cropping.crop_roi.value = event.value

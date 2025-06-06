@@ -1,16 +1,18 @@
 import timeit
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable, Optional
 
-from magicgui import magic_factory
 import napari
-from magicgui.widgets import Label, ProgressBar, Widget
+from magicgui import magic_factory
+from magicgui.widgets import EmptyWidget, Label, ProgressBar, Widget
 from napari.layers import Layer
 from napari.qt.threading import create_worker
 from psygnal import evented
 from psygnal.qt import start_emitting_from_queue
-from qtpy import QtCore
+from qtpy import QtCore, QtWidgets
 
+from plantseg import logger
 from plantseg.core.image import PlantSegImage, SemanticType
 from plantseg.viewer_napari import log
 
@@ -23,18 +25,31 @@ def _return_value_if_widget(x):
 
 def div(text: str = ""):
     """Returns a divider widget
-    Can put up to 60 chars headline into it.
+    Can put up to 54 chars headline into it.
     """
+    resources = Path(__file__).resolve().parent.parent.parent / "resources"
     if text:
+        if len(text) > 54:
+            logger.warning(
+                "Divider text too long, might not be displayed correctly!\n"
+                f"Text: {text}"
+            )
+        ql = QtWidgets.QLabel()
+        text_len = ql.fontMetrics().boundingRect(text).width()
+        # 520px target length, 172px div png
+        needed_ws = (520 - 172) - (text_len)
+        # length of white space ~3.5px, char length less, needs to be balanced
+        n_ws = int((needed_ws / 4.1) + (text_len * 0.13))
+
         w = Label(
             value=(
-                "<img src=/home/kai/Bilder/div1.png>"
-                f"{text:\u00a0^62}"
-                "<img src=/home/kai/Bilder/div2.png>"
+                f"<img src={resources / 'div1.png'}>"
+                f"{text:\u00a0^{n_ws}}"
+                f"<img src={resources / 'div2.png'}>"
             )
         )
     else:
-        w = Label(value="<img src=/home/kai/Bilder/div.png>")
+        w = Label(value=f"<img src={resources / 'div.png'}>")
     return w
 
 

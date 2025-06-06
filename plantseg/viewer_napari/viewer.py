@@ -66,13 +66,14 @@ def run_viewer():
         _containers.native.layout().addStretch()
 
     # Drop-down update for new layers
-    viewer.layers.events.inserted.connect(preprocessing_tab._on_layer_inserted_cropping)
+    viewer.layers.events.inserted.connect(preprocessing_tab._on_layer_list)
     viewer.layers.events.inserted.connect(segmentation_tab.update_layer_selection)
 
     # Drop-down update for renaming of layers
     viewer.layers.selection.events.active.connect(
         lambda: input_tab._on_layerlist_selection(viewer.layers.selection.active)
     )
+    viewer.layers.selection.events.active.connect(preprocessing_tab._on_layer_list)
     viewer.layers.selection.events.active.connect(
         segmentation_tab.update_layer_selection
     )
