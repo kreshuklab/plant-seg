@@ -683,7 +683,9 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
     call_button="Initialize Proofreading",
     mode={
         "label": "Mode",
-        "choices": ["Layer", "File"],
+        "choices": ["New", "Continue"],
+        "widget_type": "RadioButtons",
+        "orientation": "horizontal",
     },
     segmentation={
         "label": "Segmentation",
@@ -697,7 +699,7 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
     are_you_sure={"label": "I understand this resets everything", "visible": False},
 )
 def widget_proofreading_initialisation(
-    mode: str = "Layer",
+    mode: str = "New",
     segmentation: Labels | None = None,
     filepath: Path | None = None,
     are_you_sure: bool = False,
@@ -708,7 +710,7 @@ def widget_proofreading_initialisation(
         segmentation (Labels): The segmentation layer.
         state (Path | None): Path to a previous state file (optional).
     """
-    if mode == "Layer":
+    if mode == "New":
         if segmentation is None:
             log(
                 "No segmentation layer selected",
@@ -717,7 +719,7 @@ def widget_proofreading_initialisation(
             )
             return
         initialize_from_layer(segmentation, are_you_sure=are_you_sure)
-    elif mode == "File":
+    elif mode == "Continue":
         if filepath is None:
             log("No state file selected", thread="Proofreading tool", level="error")
             return
@@ -731,10 +733,10 @@ widget_proofreading_initialisation.filepath.hide()
 
 @widget_proofreading_initialisation.mode.changed.connect
 def _on_mode_changed(mode: str):
-    if mode == "Layer":
+    if mode == "New":
         widget_proofreading_initialisation.segmentation.show()
         widget_proofreading_initialisation.filepath.hide()
-    elif mode == "File":
+    elif mode == "Continue":
         widget_proofreading_initialisation.segmentation.hide()
         widget_proofreading_initialisation.filepath.show()
 

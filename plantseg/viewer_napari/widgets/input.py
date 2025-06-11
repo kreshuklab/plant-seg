@@ -292,9 +292,12 @@ class Input_Tab:
             self.widget_info.hide()
             return
 
-        if not (isinstance(layer, Labels) or isinstance(layer, Image)):
+        if (
+            not (isinstance(layer, Labels) or isinstance(layer, Image))
+            and layer._metadata
+        ):
             logger.debug(f"Can't show info for {layer}")
-            raise ValueError("Info can only be shown for Image or Labels layers.")
+            return
 
         self.widget_details_layer_select.show()
         self.widget_set_voxel_size.show()
@@ -323,12 +326,13 @@ class Input_Tab:
     def _on_set_voxel_size_layer_done(self):
         logger.debug("_on_set_voxel_size_layer_done called!")
 
-    def _on_layerlist_selection(self, layer):
+    def _on_layerlist_selection(self, event):
+        layer = event.value
         logger.debug(f"_on_layerlist_selection called for layer {layer}!")
+        if layer is None or event.type != "active":
+            return
 
         self.widget_details_layer_select.layer.choices = get_layers()
-        if layer is None:
-            return
         if not (isinstance(layer, Labels) or isinstance(layer, Image)):
             logger.debug(f"Can't show info for {layer}")
             return

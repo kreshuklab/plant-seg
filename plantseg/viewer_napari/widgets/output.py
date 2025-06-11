@@ -4,6 +4,7 @@ from pathlib import Path
 from magicgui import magic_factory
 from magicgui.widgets import Container
 from napari.layers import Image, Labels, Layer
+from psygnal import Signal
 
 from plantseg.core.image import PlantSegImage
 from plantseg.tasks.io_tasks import export_image_task
@@ -12,6 +13,8 @@ from plantseg.viewer_napari.widgets.utils import div
 
 
 class Output_Tab:
+    successful_export = Signal()
+
     def __init__(self):
         self.widget_export_image = self.factory_export_image()
         self.widget_export_image.self.bind(self)
@@ -88,16 +91,19 @@ class Output_Tab:
         key: str = "raw",
         scale_to_origin: bool = True,
         data_type: str = "uint16",
-    ) -> None:
+    ) -> None | bool:
         """Export layers in various formats."""
 
-        timer = time.time()
-        log("export_image_task started", thread="Export stacks", level="info")
-
         if not isinstance(image, (Image, Labels)):
-            raise ValueError(
-                "Only Image and Labels layers are supported for PlantSeg export."
+            log(
+                "Please select an Image or Labels layers to export!",
+                thread="Output",
+                level="WARNING",
             )
+            return
+
+        timer = time.time()
+        log("export_image_task started", thread="Output", level="info")
         ps_image = PlantSegImage.from_napari_layer(image)
 
         export_image_task(
@@ -112,9 +118,12 @@ class Output_Tab:
         timer = time.time() - timer
         log(
             f"export_image_task finished in {timer:.2f} seconds",
-            thread="Export stacks",
+            thread="Output",
             level="info",
         )
+        self.successful_export.emit(True)
+
+        return
 
     def _toggle_export_details_widgets(self, show: bool):
         for widget in self.export_details:

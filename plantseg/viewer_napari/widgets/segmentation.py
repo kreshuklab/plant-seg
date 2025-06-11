@@ -40,15 +40,6 @@ class Segmentation_Tab:
         self.widget_layer_select = self.factory_layer_select()
         self.widget_layer_select.self.bind(self)
         self.widget_layer_select.prediction.changed.connect(self._on_prediction_change)
-        self.widget_layer_select.layer._default_choices = lambda _: get_layers(
-            SemanticType.PREDICTION
-        )
-        self.widget_layer_select.nuclei._default_choices = lambda _: get_layers(
-            SemanticType.RAW
-        )
-        self.widget_layer_select.superpixels._default_choices = lambda _: get_layers(
-            SemanticType.SEGMENTATION
-        )
         font = QtGui.QFont()
         font.setBold(True)
         self.widget_layer_select.native.setFont(font)
@@ -161,6 +152,7 @@ class Segmentation_Tab:
         toggle(visible=True)
 
     def toggle_visibility_1(self, visible: bool):
+        """Toggles visibility of the prediction section"""
         if visible:
             # self.prediction_widgets.widget_add_custom_model.show()
             self.widget_show_prediction.hide()
@@ -173,6 +165,7 @@ class Segmentation_Tab:
             self.widget_show_prediction.show()
 
     def toggle_visibility_2(self, visible: bool):
+        """Toggles visibility of the watershed section"""
         if visible:
             self.widget_show_watershed.hide()
             self.toggle_visibility_1(False)
@@ -183,6 +176,7 @@ class Segmentation_Tab:
             self.widget_show_watershed.show()
 
     def toggle_visibility_3(self, visible: bool):
+        """Toggles visibility of the agglomeration section"""
         if visible:
             self.widget_show_agglomeration.hide()
             self.toggle_visibility_1(False)
@@ -381,35 +375,43 @@ class Segmentation_Tab:
                     level="error",
                 )
 
-    def update_layer_selection(self, layer):
+    def update_layer_selection(self, event):
         """Updates layer drop-down menus"""
-        logger.debug("Updating segmentation layer drop-downs")
+        logger.debug(
+            f"Updating segmentation layer selection: {event.value}, {event.type}"
+        )
         raws = get_layers(SemanticType.RAW)
         predictions = get_layers(SemanticType.PREDICTION)
         segmentations = get_layers(SemanticType.SEGMENTATION)
 
         self.widget_layer_select.layer.choices = raws
-        if raws:
-            self.widget_layer_select.layer.value = raws[-1]
         self.widget_layer_select.prediction.choices = predictions
-        if predictions:
-            self.widget_layer_select.prediction.value = predictions[-1]
+        self.widget_layer_select.nuclei.choices = raws
+        self.widget_layer_select.superpixels.choices = segmentations
+
+        # Hide empyt choices
         if self.widget_layer_select.prediction.choices == ():
             self.widget_layer_select.prediction.hide()
         else:
             self.widget_layer_select.prediction.show()
 
-        # TODO: Confirm that nuclei is indeed RAW
-        self.widget_layer_select.nuclei.choices = get_layers(SemanticType.RAW)
-        if self.widget_layer_select.prediction.choices == ():
-            self.widget_layer_select.prediction.hide()
-        else:
-            self.widget_layer_select.prediction.show()
-
-        self.widget_layer_select.superpixels.choices = get_layers(
-            SemanticType.SEGMENTATION
-        )
         if self.widget_layer_select.superpixels.choices == ():
             self.widget_layer_select.superpixels.hide()
         else:
             self.widget_layer_select.superpixels.show()
+
+        # Set values to inserted
+        if event.type == "inserted":
+            if event.value._metadata.get("semantic_type", None) == SemanticType.RAW:
+                self.widget_layer_select.layer.value = event.value
+                self.widget_layer_select.nuclei.value = event.value
+            elif (
+                event.value._metadata.get("semantic_type", None)
+                == SemanticType.PREDICTION
+            ):
+                self.widget_layer_select.prediction.value = event.value
+            elif (
+                event.value._metadata.get("semantic_type", None)
+                == SemanticType.SEGMENTATION
+            ):
+                self.widget_layer_select.superpixels.value = event.value

@@ -35,9 +35,9 @@ class Postprocessing_Tab:
         # @@@@@ Layer selector @@@@@
         self.widget_layer_select = self.factory_layer_select()
         self.widget_layer_select.self.bind(self)
-        self.widget_layer_select.layer._default_choices = lambda _: get_layers(
-            SemanticType.SEGMENTATION
-        )
+        # self.widget_layer_select.layer._default_choices = lambda _: get_layers(
+        #     SemanticType.SEGMENTATION
+        # )
         self.widget_layer_select.layer.changed.connect(self._on_layer_changed)
         font = QtGui.QFont()
         font.setBold(True)
@@ -93,7 +93,7 @@ class Postprocessing_Tab:
     @magic_factory(
         call_button="Relabel Instances",
         background={
-            "label": "Background label",
+            "label": "Background Label",
             "tooltip": "Background label will be set to 0. Default is None.",
             "max": 1000,
             "min": 0,
@@ -137,7 +137,7 @@ class Postprocessing_Tab:
     @magic_factory(
         call_button="Set Biggest Instance to Zero",
         instance_could_be_zero={
-            "label": "Treat 0 as instance",
+            "label": "Treat 0 as Instance",
             "tooltip": "If ticked, a proper instance segmentation with 0 as background will not be modified.",
         },
     )
@@ -214,8 +214,8 @@ class Postprocessing_Tab:
 
     @magic_factory(
         call_button="Split/Merge Instances by Nuclei",
-        segmentation_cells={"label": "Cell instances"},
-        segmentation_nuclei={"label": "Nuclear instances"},
+        segmentation_cells={"label": "Cell Segmentation"},
+        segmentation_nuclei={"label": "Nuclear Segmentation"},
         boundary_pmaps={"label": "Boundary image"},
         threshold={
             "label": "Boundary Threshold (%)",
@@ -313,3 +313,46 @@ class Postprocessing_Tab:
             logger.debug("")
         else:
             self.widget_layer_select.layer.value = layer
+
+    def update_layer_selection(self, event):
+        logger.debug(
+            f"Updating postprocessing layer selection: {event.value}, {event.type}"
+        )
+        segmentations = get_layers(SemanticType.SEGMENTATION)
+        self.widget_layer_select.layer.choices = segmentations
+        self.widget_remove_false_positives_by_foreground.foreground.choices = (
+            get_layers(SemanticType.RAW)
+        )
+        self.widget_fix_segmentation_by_nuclei.segmentation_cells.choices = (
+            segmentations
+        )
+        self.widget_fix_segmentation_by_nuclei.segmentation_nuclei.choices = (
+            segmentations
+        )
+        self.widget_fix_segmentation_by_nuclei.boundary_pmaps.choices = get_layers(
+            SemanticType.PREDICTION
+        )
+
+        if event.type == "inserted":
+            if event.value._metadata.get("semantic_type", None) == SemanticType.RAW:
+                self.widget_remove_false_positives_by_foreground.foreground.value = (
+                    event.value
+                )
+            elif (
+                event.value._metadata.get("semantic_type", None)
+                == SemanticType.SEGMENTATION
+            ):
+                self.widget_layer_select.layer.value = event.value
+                self.widget_fix_segmentation_by_nuclei.segmentation_cells.value = (
+                    event.value
+                )
+                self.widget_fix_segmentation_by_nuclei.segmentation_nuclei.value = (
+                    event.value
+                )
+            elif (
+                event.value._metadata.get("semantic_type", None)
+                == SemanticType.PREDICTION
+            ):
+                self.widget_fix_segmentation_by_nuclei.boundary_pmaps.value = (
+                    event.value
+                )
