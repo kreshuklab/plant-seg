@@ -8,6 +8,7 @@ from plantseg.viewer_napari.containers import (
     get_postprocessing_tab,
     get_proofreading_tab,
 )
+from plantseg.viewer_napari.widgets.batch import Batch_Tab
 from plantseg.viewer_napari.widgets.dataprocessing import on_layer_rename_dataprocessing
 from plantseg.viewer_napari.widgets.input import Input_Tab
 from plantseg.viewer_napari.widgets.output import Output_Tab
@@ -39,18 +40,17 @@ def run_viewer():
     preprocessing_tab = Preprocessing_Tab()
     segmentation_tab = Segmentation_Tab()
     postprocessing_tab = Postprocessing_Tab()
+    batch_tab = Batch_Tab(output_tab)
 
     # Create and add tabs
     container_list = [
         (input_tab.get_container(), "Input"),
-        (output_tab.get_container(), "Output"),
         (preprocessing_tab.get_container(), "Preprocessing"),
         (segmentation_tab.get_container(), "Segmentation"),
         (postprocessing_tab.get_container(), "Postprocessing"),
-        # (get_preprocessing_tab(), "Preprocessing"),
-        # (get_segmentation_tab(), "Segmentation"),
-        # (get_postprocessing_tab(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
+        (output_tab.get_container(), "Output"),
+        (batch_tab.get_container(), "Batch"),
     ]
     for _containers, name in container_list:
         # width inside scroll area
@@ -66,16 +66,20 @@ def run_viewer():
         _containers.native.layout().addStretch()
 
     # Drop-down update for new layers
-    viewer.layers.events.inserted.connect(preprocessing_tab._on_layer_list)
+    viewer.layers.events.inserted.connect(preprocessing_tab.update_layer_selection)
     viewer.layers.events.inserted.connect(segmentation_tab.update_layer_selection)
+    viewer.layers.events.inserted.connect(postprocessing_tab.update_layer_selection)
 
     # Drop-down update for renaming of layers
+    viewer.layers.selection.events.active.connect(input_tab._on_layerlist_selection)
     viewer.layers.selection.events.active.connect(
-        lambda: input_tab._on_layerlist_selection(viewer.layers.selection.active)
+        preprocessing_tab.update_layer_selection
     )
-    viewer.layers.selection.events.active.connect(preprocessing_tab._on_layer_list)
     viewer.layers.selection.events.active.connect(
         segmentation_tab.update_layer_selection
+    )
+    viewer.layers.selection.events.active.connect(
+        postprocessing_tab.update_layer_selection
     )
 
     # Show data tab by default

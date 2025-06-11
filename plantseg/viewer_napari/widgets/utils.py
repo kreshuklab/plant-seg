@@ -1,7 +1,7 @@
 import timeit
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Iterable, Optional
 
 import napari
 from magicgui import magic_factory
@@ -53,7 +53,9 @@ def div(text: str = ""):
     return w
 
 
-def get_layers(s_type: Optional[SemanticType] = None) -> list[Layer]:
+def get_layers(
+    s_type: Optional[SemanticType | Iterable[SemanticType]] = None,
+) -> list[Layer]:
     """Get layers of specific type, e.g. raw, lable, prediction, segmentation"""
     log(f"get_layers called with filter: {s_type}", "utils", level="DEBUG")
     viewer = napari.current_viewer()
@@ -64,8 +66,10 @@ def get_layers(s_type: Optional[SemanticType] = None) -> list[Layer]:
 
     relevant_layers = []
     if s_type is not None:
+        if not isinstance(s_type, Iterable):
+            s_type = (s_type,)
         for layer in ll:
-            if layer._metadata.get("semantic_type", False) == s_type:
+            if layer._metadata.get("semantic_type", False) in s_type:
                 relevant_layers.append(layer)
     else:
         relevant_layers = ll

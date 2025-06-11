@@ -7,7 +7,7 @@ from napari.layers import Image, Labels, Layer, Shapes
 from qtpy import QtGui
 
 from plantseg import logger
-from plantseg.core.image import ImageDimensionality, PlantSegImage
+from plantseg.core.image import ImageDimensionality, PlantSegImage, SemanticType
 from plantseg.core.zoo import model_zoo
 from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks.dataprocessing_tasks import (
@@ -203,25 +203,38 @@ class Preprocessing_Tab:
     )
     def factory_cropping(
         self,
-        crop_roi: Shapes | None = None,
+        crop_roi: Shapes,
         crop_z: tuple[int, int] = (0, 100),
         update_other_widgets: bool = True,
     ) -> None:
         layer = self.widget_layer_select.layer.value
-        if crop_roi is not None:
-            assert len(crop_roi.shape_type) == 1, (
-                "Only one rectangle should be used for cropping"
+        if crop_roi is None:
+            log(
+                "Please create a Shapes layer first and add one rectangle!",
+                thread="Preprocessing",
+                level="WARNING",
             )
-            assert crop_roi.shape_type[0] == "rectangle", (
-                "Only a rectangle shape should be used for cropping"
+            return
+        if len(crop_roi.shape_type) > 1:
+            log(
+                "Can't use more than one rectangle for cropping!",
+                thread="Preprocessing",
+                level="WARNING",
             )
-
+            return
+        if crop_roi.shape_type and crop_roi.shape_type[0] != "rectangle":
+            log(
+                "A rectangle shape must be used for cropping",
+                thread="Preprocessing",
+                level="WARNING",
+            )
+            return
         if not isinstance(layer, (Image, Labels)):
             m = f"{type(layer)} cannot be cropped, please use Image layers or Labels layers"
             logger_viewer_napari.error(m)
-            raise ValueError(m)
+            return
 
-        if crop_roi is not None:
+        if len(crop_roi.data) > 0:
             rectangle = crop_roi.data[0].astype("int64")
         else:
             rectangle = None
@@ -240,25 +253,33 @@ class Preprocessing_Tab:
             widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
 
-    def _on_layer_list(self, event):
+    def update_layer_selection(self, event):
         """To be called when the layer list changes."""
-        logger.debug("_on_layer_inserted preprocessing called!")
+        logger.debug(
+            f"Updating preprocessing layer selection: {event.value}, {event.type}"
+        )
 
-        self.widget_layer_select.layer.choices = get_layers()
+        all_layers = get_layers(
+            [
+                SemanticType.RAW,
+                SemanticType.LABEL,
+                SemanticType.PREDICTION,
+                SemanticType.SEGMENTATION,
+            ]
+        )
+        self.widget_layer_select.layer.choices = all_layers
+        self.widget_image_pair_operations.layer1.choices = all_layers
+        self.widget_image_pair_operations.layer2.choices = all_layers
 
         if event.type != "inserted":
             return
-        if self.widget_layer_select.layer.choices:
-            self.widget_layer_select.layer.value = (
-                self.widget_layer_select.layer.choices[-1]
-            )
+        if event.value in self.widget_layer_select.layer.choices:
+            self.widget_layer_select.layer.value = event.value
         if isinstance(event.value, Shapes):
             logger.debug("Shapes layer added, updating cropping.")
             self.widget_cropping.crop_roi.value = event.value
             self.widget_cropping.show()
             self.widget_cropping_placeholder.hide()
-        else:
-            logger.debug(f"Layer added: {event.value}")
 
     def _on_cropping_image_changed(self, image: Optional[Layer]):
         logger.debug("_on_cropping_image_changed called!")
@@ -543,8 +564,8 @@ class Preprocessing_Tab:
         return schedule_task(
             image_pair_operation_task,
             task_kwargs={
-                "layer1": ps_layer1,
-                "layer2": ps_layer2,
+                "image1": ps_layer1,
+                "image2": ps_layer2,
                 "operation": operation,
                 "normalize_input": normalize_input,
                 "clip_output": clip_output,
@@ -552,16 +573,3 @@ class Preprocessing_Tab:
             },
             widgets_to_update=[],
         )
-
-    def update_layer_selection(self):
-        """Updates layer drop-down menus"""
-
-        def update():
-            logger.debug("Updating layer names on Preprocessing tab")
-            self.widget_image_pair_operations.layer1.reset_choices()
-            self.widget_image_pair_operations.layer2.reset_choices()
-            self.widget_rescaling.image.reset_choices()
-            self.widget_cropping.image.reset_choices()
-            self.widget_gaussian_smoothing.image.reset_choices()
-
-        return update

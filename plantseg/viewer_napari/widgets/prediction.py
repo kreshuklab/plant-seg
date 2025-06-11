@@ -48,6 +48,7 @@ class Prediction_Widgets:
         self.ALL_MODALITIES = "All modalities"
         self.ALL_TYPES = "All types"
         self.CUSTOM = "Custom"
+        self.ADD_MODEL = "ADD CUSTOM MODEL"
 
         # @@@@@ model filter container @@@@@
         self.model_filters = Container(
@@ -78,6 +79,10 @@ class Prediction_Widgets:
         # @@@@@ Unet Prediction @@@@@
         self.widget_unet_prediction = self.factory_unet_prediction()
         self.widget_unet_prediction.self.bind(self)
+        self.widget_unet_prediction.model_name._default_choices = (
+            lambda _: model_zoo.list_models() + [self.ADD_MODEL]
+        )
+        self.widget_unet_prediction.model_name.reset_choices()
         self.widget_unet_prediction.plantseg_filter._default_choices = (
             self.BIOIMAGEIO_FILTER
         )
@@ -122,6 +127,9 @@ class Prediction_Widgets:
         #
         self.widget_add_custom_model = self.factory_add_custom_model()
         self.widget_add_custom_model.self.bind(self)
+        self.widget_add_custom_model.cancel_button.changed.connect(
+            self.cancel_custom_model
+        )
         self.widget_add_custom_model.hide()
         self.widget_add_custom_model.custom_modality.hide()
         self.widget_add_custom_model.custom_output_type.hide()
@@ -165,7 +173,7 @@ class Prediction_Widgets:
             "label": "PlantSeg model",
             "tooltip": f"Select a pretrained PlantSeg model. "
             f"Current model description: {model_zoo.get_model_description(model_zoo.list_models()[0])}",
-            "choices": model_zoo.list_models(),
+            "choices": [None],
             "value": None,
         },
         model_id={
@@ -371,7 +379,7 @@ class Prediction_Widgets:
             )
 
     def _on_any_metadata_changed(self, widget):
-        logger.debug(f"_on_any_metadata_changed called: {widget}")
+        logger.debug("_on_any_metadata_changed called!")
         modality = widget.modality.value
         output_type = widget.output_type.value
         dimensionality = widget.dimensionality.value
@@ -385,12 +393,16 @@ class Prediction_Widgets:
             modality_filter=modality,
             output_type_filter=output_type,
             dimensionality_filter=dimensionality,
-        )
+        ) + [self.ADD_MODEL]
 
     def _on_model_name_changed(self, model_name: str | None):
         logger.debug(f"_on_model_name_changed called: {model_name}")
         if model_name is None:
             return
+        elif model_name == self.ADD_MODEL:
+            self.widget_add_custom_model_toggle()
+            return
+
         description = model_zoo.get_model_description(model_name)
         if description is None:
             description = "No description available for this model."
@@ -448,6 +460,7 @@ class Prediction_Widgets:
             "value": Undefined,
         },
         custom_output_type={"label": "Custom type", "value": Undefined},
+        cancel_button={"label": "Cancel", "widget_type": "PushButton"},
     )
     def factory_add_custom_model(
         self,
@@ -460,6 +473,7 @@ class Prediction_Widgets:
         custom_modality: str = "",
         output_type: str = "",
         custom_output_type: str = "",
+        cancel_button: bool = False,
     ) -> None:
         if modality == self.CUSTOM:
             modality = custom_modality
@@ -482,16 +496,20 @@ class Prediction_Widgets:
                 level="info",
                 thread="Add Custom Model",
             )
-            self.widget_unet_prediction.model_name.choices = model_zoo.list_models()
+            self.widget_unet_prediction.model_name.reset_choices()
         else:
             log(
                 f"Error adding new model {new_model_name} to the list of available models: {error_msg}",
                 level="error",
                 thread="Add Custom Model",
             )
+        self.cancel_custom_model()
+
+    def cancel_custom_model(self, event=None):
+        logger.debug("Cancel_custum_model called!")
         self.widget_add_custom_model.hide()
         self.widget_unet_prediction.show()
-        self.widget_add_custom_model_toggle.show()
+        # self.widget_add_custom_model_toggle.show()
 
     def _on_custom_modality_change(self, modality: str):
         logger.debug(f"_on_custom_modality_change called: {modality}")
