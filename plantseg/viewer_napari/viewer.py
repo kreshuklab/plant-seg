@@ -103,5 +103,5 @@ def run_viewer():
                 child.setText("")
             child.setAlignment(QtCore.Qt.AlignLeft)
 
-    log("Plantseg is ready!", thread="Run viewer", level="info")
+    # log("Plantseg is ready!", thread="Run viewer", level="info")
     napari.run()
