@@ -4,13 +4,12 @@ from pathlib import Path
 from typing import Callable, Iterable, Optional
 
 import napari
-from magicgui import magic_factory
-from magicgui.widgets import EmptyWidget, Label, ProgressBar, Widget
+from magicgui.widgets import Label, ProgressBar, Widget
 from napari.layers import Layer
 from napari.qt.threading import create_worker
 from psygnal import evented
 from psygnal.qt import start_emitting_from_queue
-from qtpy import QtCore, QtWidgets
+from qtpy import QtGui, QtWidgets
 
 from plantseg import logger
 from plantseg.core.image import PlantSegImage, SemanticType
@@ -50,6 +49,11 @@ def div(text: str = ""):
         )
     else:
         w = Label(value=f"<img src={resources / 'div.png'}>")
+
+    font = QtGui.QFont()
+    font.setBold(True)
+    w.native.setFont(font)
+
     return w
 
 

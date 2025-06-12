@@ -13,7 +13,7 @@ from plantseg.io import H5_EXTENSIONS, ZARR_EXTENSIONS
 from plantseg.io.h5 import list_h5_keys
 from plantseg.io.zarr import list_zarr_keys
 from plantseg.tasks.dataprocessing_tasks import set_voxel_size_task
-from plantseg.tasks.io_tasks import export_image_task, import_image_task
+from plantseg.tasks.io_tasks import import_image_task
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.utils import (
     _return_value_if_widget,
@@ -106,7 +106,7 @@ class Input_Tab:
         },
         path={
             "value": Path.home(),
-            "label": "File path\n(.tiff, .h5, .png, .jpg)",
+            "label": "File path",
             "mode": "r",
             "tooltip": "Select a file to be imported, the file can be a tiff, h5, png, jpg.",
         },
@@ -228,7 +228,7 @@ class Input_Tab:
         path_mode = _return_value_if_widget(path_mode)
         if path_mode == PathMode.FILE.value:  # file
             self.widget_open_file.path.mode = "r"
-            self.widget_open_file.path.label = "File path\n(.tiff, .h5, .png, .jpg)"
+            self.widget_open_file.path.label = "File path"
         elif path_mode == PathMode.DIR.value:  # directory case
             self.widget_open_file.path.mode = "d"
             self.widget_open_file.path.label = "Zarr path\n(.zarr)"
@@ -329,15 +329,22 @@ class Input_Tab:
     def _on_layerlist_selection(self, event):
         layer = event.value
         logger.debug(f"_on_layerlist_selection called for layer {layer}!")
-        if layer is None or event.type != "active":
+        if layer is None or not layer._metadata:
             return
+        all_layers = get_layers(
+            [
+                SemanticType.RAW,
+                SemanticType.LABEL,
+                SemanticType.PREDICTION,
+                SemanticType.SEGMENTATION,
+            ]
+        )
+        self.widget_details_layer_select.layer.choices = all_layers
 
-        self.widget_details_layer_select.layer.choices = get_layers()
-        if not (isinstance(layer, Labels) or isinstance(layer, Image)):
+        if layer in all_layers:
+            self.widget_details_layer_select.layer.value = layer
+        else:
             logger.debug(f"Can't show info for {layer}")
-            return
-
-        self.widget_details_layer_select.layer.value = layer
 
     @magic_factory(
         call_button=False,

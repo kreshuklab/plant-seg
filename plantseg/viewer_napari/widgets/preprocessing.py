@@ -1,10 +1,9 @@
 from enum import Enum
 from typing import Optional
 
-from magicgui import magic_factory, magicgui
-from magicgui.widgets import ComboBox, Container, EmptyWidget, Label
+from magicgui import magic_factory
+from magicgui.widgets import Container, Label
 from napari.layers import Image, Labels, Layer, Shapes
-from qtpy import QtGui
 
 from plantseg import logger
 from plantseg.core.image import ImageDimensionality, PlantSegImage, SemanticType
@@ -12,21 +11,14 @@ from plantseg.core.zoo import model_zoo
 from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks.dataprocessing_tasks import (
     ImagePairOperation,
-    fix_over_under_segmentation_from_nuclei_task,
     gaussian_smoothing_task,
     image_cropping_task,
     image_pair_operation_task,
     image_rescale_to_shape_task,
     image_rescale_to_voxel_size_task,
-    relabel_segmentation_task,
-    remove_false_positives_by_foreground_probability_task,
-    set_biggest_instance_to_zero_task,
     set_voxel_size_task,
 )
-from plantseg.viewer_napari import log, logger_viewer_napari
-from plantseg.viewer_napari.widgets.proofreading import (
-    widget_proofreading_initialisation,
-)
+from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.utils import div, get_layers, schedule_task
 
 
@@ -65,10 +57,6 @@ class Preprocessing_Tab:
         self.widget_layer_select.self.bind(self)
         self.widget_layer_select.layer.changed.connect(self._on_cropping_image_changed)
         self.widget_layer_select.layer.changed.connect(self._on_layer_selection)
-
-        font = QtGui.QFont()
-        font.setBold(True)
-        self.widget_layer_select.native.setFont(font)
 
         # @@@@@ Smoothing @@@@@
         self.widget_gaussian_smoothing = self.factory_gaussian_smoothing()
@@ -121,6 +109,20 @@ class Preprocessing_Tab:
         self.widget_image_pair_operations = self.factory_image_pair_operations()
         self.widget_image_pair_operations.self.bind(self)
 
+        # @@@@@ Toggle buttons @@@@@
+        self.widget_show_rescaling = self.factory_show_button()
+        self.widget_show_rescaling.self.bind(self)
+        self.widget_show_rescaling.toggle.bind(lambda _: self.toggle_visibility_1)
+
+        self.widget_show_image_operations = self.factory_show_button()
+        self.widget_show_image_operations.self.bind(self)
+        self.widget_show_image_operations.toggle.bind(
+            lambda _: self.toggle_visibility_2
+        )
+
+        self.toggle_visibility_1(True)
+        self.toggle_visibility_2(False)
+
     def get_container(self):
         return Container(
             widgets=[
@@ -130,10 +132,12 @@ class Preprocessing_Tab:
                 self.widget_cropping_placeholder,
                 self.widget_cropping,
                 div("Rescale"),
+                self.widget_show_rescaling,
                 self.widget_rescaling,
                 div("Gaussian Smoothing"),
                 self.widget_gaussian_smoothing,
                 div("Image pair operations"),
+                self.widget_show_image_operations,
                 self.widget_image_pair_operations,
             ],
             labels=False,
@@ -148,6 +152,34 @@ class Preprocessing_Tab:
     )
     def factory_layer_select(self, layer: Image):
         pass
+
+    @magic_factory(
+        call_button="Show",
+    )
+    def factory_show_button(self, toggle):
+        toggle(visible=True)
+
+    def toggle_visibility_1(self, visible: bool):
+        """Toggle visibility of rescaling section"""
+        if visible:
+            self.widget_show_rescaling.hide()
+            self.toggle_visibility_2(False)
+            self.widget_rescaling.show()
+
+        else:
+            self.widget_rescaling.hide()
+            self.widget_show_rescaling.show()
+
+    def toggle_visibility_2(self, visible: bool):
+        """Toggle visibility of image pair operations section"""
+        if visible:
+            self.widget_show_image_operations.hide()
+            self.toggle_visibility_1(False)
+            self.widget_image_pair_operations.show()
+
+        else:
+            self.widget_image_pair_operations.hide()
+            self.widget_show_image_operations.show()
 
     @magic_factory(
         call_button="Run Gaussian Smoothing",
@@ -169,6 +201,12 @@ class Preprocessing_Tab:
     ) -> None:
         """Apply Gaussian smoothing to an image layer."""
 
+        if self.widget_layer_select.layer.value is None:
+            log(
+                "Please select a layers first!",
+                thread="Preprocessing",
+                level="WARNING",
+            )
         ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
 
         widgets_to_update = []  # TODO
@@ -208,9 +246,17 @@ class Preprocessing_Tab:
         update_other_widgets: bool = True,
     ) -> None:
         layer = self.widget_layer_select.layer.value
+        if layer is None:
+            log(
+                "Please select a layer to crop first!",
+                thread="Preprocessing",
+                level="WARNING",
+            )
+            return
+
         if crop_roi is None:
             log(
-                "Please create a Shapes layer first and add one rectangle!",
+                "Please create a Shapes layer first!",
                 thread="Preprocessing",
                 level="WARNING",
             )
@@ -230,8 +276,11 @@ class Preprocessing_Tab:
             )
             return
         if not isinstance(layer, (Image, Labels)):
-            m = f"{type(layer)} cannot be cropped, please use Image layers or Labels layers"
-            logger_viewer_napari.error(m)
+            log(
+                f"{type(layer)} cannot be cropped, please use Image layers or Labels layers",
+                thread="Preprocessing",
+                level="WARNING",
+            )
             return
 
         if len(crop_roi.data) > 0:
@@ -558,6 +607,12 @@ class Preprocessing_Tab:
     ) -> None:
         """Apply an operation to two image layers."""
 
+        if layer1 is None or layer2 is None:
+            log(
+                "Please select two layers first!",
+                thread="Preprocessing",
+                level="WARNING",
+            )
         ps_layer1 = PlantSegImage.from_napari_layer(layer1)
         ps_layer2 = PlantSegImage.from_napari_layer(layer2)
 

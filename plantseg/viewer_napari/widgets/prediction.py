@@ -1,7 +1,5 @@
 """UNet Prediction Widget"""
 
-import inspect
-import pprint
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -9,17 +7,13 @@ from typing import Optional
 import torch.cuda
 from magicgui import magic_factory
 from magicgui.types import Separator, Undefined
-from magicgui.widgets import ComboBox, Container, ProgressBar, create_widget
-from napari.layers import Image
+from magicgui.widgets import ComboBox, Container, ProgressBar
 
 from plantseg import logger
 from plantseg.core.image import PlantSegImage
 from plantseg.core.zoo import model_zoo
 from plantseg.tasks.prediction_tasks import biio_prediction_task, unet_prediction_task
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.proofreading import (
-    widget_split_and_merge_from_scribbles,
-)
 from plantseg.viewer_napari.widgets.utils import schedule_task
 
 

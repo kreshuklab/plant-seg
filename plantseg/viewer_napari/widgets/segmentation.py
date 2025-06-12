@@ -1,10 +1,8 @@
 from typing import Optional
 
-from magicgui import magic_factory, magicgui
-from magicgui.widgets import Container, Label
-from magicgui.widgets import Image as ImageW
+from magicgui import magic_factory
+from magicgui.widgets import Container
 from napari.layers import Image, Labels, Layer
-from qtpy import QtGui
 
 from plantseg import logger
 from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
@@ -14,9 +12,6 @@ from plantseg.tasks.segmentation_tasks import (
     lmc_segmentation_task,
 )
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.dataprocessing import (
-    widget_remove_false_positives_by_foreground,
-)
 from plantseg.viewer_napari.widgets.prediction import Prediction_Widgets
 from plantseg.viewer_napari.widgets.proofreading import (
     widget_proofreading_initialisation,
@@ -40,9 +35,6 @@ class Segmentation_Tab:
         self.widget_layer_select = self.factory_layer_select()
         self.widget_layer_select.self.bind(self)
         self.widget_layer_select.prediction.changed.connect(self._on_prediction_change)
-        font = QtGui.QFont()
-        font.setBold(True)
-        self.widget_layer_select.native.setFont(font)
 
         # @@@@@ agglomeration @@@@@
         self.widget_agglomeration = self.factory_agglomeration()

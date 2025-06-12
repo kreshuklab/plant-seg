@@ -1,32 +1,18 @@
-from enum import Enum
 from typing import Optional
 
-from magicgui import magic_factory, magicgui
-from magicgui.widgets import CheckBox, Container, Label, SpinBox
-from napari.layers import Image, Labels, Layer, Shapes
-from qtpy import QtGui
+from magicgui import magic_factory
+from magicgui.widgets import Container
+from napari.layers import Image, Labels
 
 from plantseg import logger
-from plantseg.core.image import ImageDimensionality, PlantSegImage, SemanticType
-from plantseg.core.zoo import model_zoo
-from plantseg.io.voxelsize import VoxelSize
+from plantseg.core.image import PlantSegImage, SemanticType
 from plantseg.tasks.dataprocessing_tasks import (
-    ImagePairOperation,
     fix_over_under_segmentation_from_nuclei_task,
-    gaussian_smoothing_task,
-    image_cropping_task,
-    image_pair_operation_task,
-    image_rescale_to_shape_task,
-    image_rescale_to_voxel_size_task,
     relabel_segmentation_task,
     remove_false_positives_by_foreground_probability_task,
     set_biggest_instance_to_zero_task,
-    set_voxel_size_task,
 )
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.proofreading import (
-    widget_proofreading_initialisation,
-)
 from plantseg.viewer_napari.widgets.utils import div, get_layers, schedule_task
 
 
@@ -39,9 +25,6 @@ class Postprocessing_Tab:
         #     SemanticType.SEGMENTATION
         # )
         self.widget_layer_select.layer.changed.connect(self._on_layer_changed)
-        font = QtGui.QFont()
-        font.setBold(True)
-        self.widget_layer_select.native.setFont(font)
 
         # @@@@@ Relable @@@@@
         self.widget_relabel = self.factory_relabel()
@@ -70,7 +53,7 @@ class Postprocessing_Tab:
                 self.widget_layer_select,
                 div("Relabel Instances"),
                 self.widget_relabel,
-                div("Set Biggest Instance to Zero"),
+                div("Set biggest Instance to Zero"),
                 self.widget_set_biggest_instance_zero,
                 div("Remove False-Positives by Foreground"),
                 self.widget_remove_false_positives_by_foreground,
