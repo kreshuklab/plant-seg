@@ -3,6 +3,7 @@ import pytest
 
 from plantseg.io.io import smart_load
 from plantseg.io.voxelsize import VoxelSize
+from plantseg.io.zarr import list_zarr_keys
 
 
 class TestIO:
@@ -91,6 +92,8 @@ class TestIO:
         assert np.array_equal(data, data_read2), (
             "Data read from Zarr file is not equal to the original data"
         )
+
+        assert list_zarr_keys(path_zarr) == ["raw"]
 
     def test_create_read_tiff(self, path_tiff):
         from plantseg.io.tiff import create_tiff, load_tiff, read_tiff_voxel_size

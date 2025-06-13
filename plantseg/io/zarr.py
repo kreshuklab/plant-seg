@@ -184,7 +184,7 @@ def list_zarr_keys(path: Path) -> list[str]:
         zarr_group: zarr.Group, base: Path = Path("")
     ) -> list[str]:
         _list_keys = []
-        for key, dataset in zarr_group.items():
+        for key, dataset in zarr_group.members():
             if isinstance(dataset, zarr.Group):
                 new_base = base / key
                 _list_keys.extend(_recursive_find_keys(dataset, new_base))
