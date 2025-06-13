@@ -35,8 +35,8 @@ def div(text: str = ""):
             )
         ql = QtWidgets.QLabel()
         text_len = ql.fontMetrics().boundingRect(text).width()
-        # 520px target length, 172px div png
-        needed_ws = (520 - 172) - (text_len)
+        # 490px target length, 172px div png
+        needed_ws = (490 - 172) - (text_len)
         # length of white space ~3.5px, char length less, needs to be balanced
         n_ws = int((needed_ws / 4.1) + (text_len * 0.13))
 
