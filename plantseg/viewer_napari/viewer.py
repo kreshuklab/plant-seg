@@ -54,7 +54,7 @@ def run_viewer():
     ]
     for _containers, name in container_list:
         # width inside scroll area
-        _containers.native.setMinimumWidth(550)
+        _containers.native.setFixedWidth(550)
         viewer.window.add_dock_widget(
             # breaks layer-name updates #439
             # scroll_wrap(_containers),
