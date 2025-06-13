@@ -214,9 +214,10 @@ class Input_Tab:
 
         self.current_dataset_keys = dataset_keys.copy()
         self.widget_open_file.dataset_key.choices = dataset_keys
-        if dataset_keys == [None]:
+        if dataset_keys == [None] or not dataset_keys:
             self.widget_open_file.dataset_key.hide()
             self.widget_open_file.button_key_refresh.hide()
+            return
         if self.widget_open_file.dataset_key.value not in dataset_keys:
             self.widget_open_file.dataset_key.value = dataset_keys[0]
             self.widget_open_file.new_layer_name.value = self.generate_layer_name(

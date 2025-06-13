@@ -2,13 +2,14 @@
 
 import shutil
 from pathlib import Path
+from uuid import uuid4
 
 import numpy as np
-import pooch
 import pytest
 import skimage.transform as skt
 import torch
 import yaml
+from napari.layers import Image
 
 from plantseg.io.io import smart_load
 
@@ -17,6 +18,20 @@ VOXEL_SIZE = (0.235, 0.15, 0.15)
 KEY_ZARR = "volumes/new"
 
 IS_CUDA_AVAILABLE = torch.cuda.is_available()
+
+
+@pytest.fixture
+def napari_image():
+    data = np.random.rand(10, 10, 10)
+    voxel_size = (1.0, 1.0, 1.0)
+    metadata = {
+        "semantic_type": "raw",
+        "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "image_layout": "ZYX",
+        "id": uuid4(),
+    }
+    return Image(data, metadata=metadata, name="test_image")
 
 
 @pytest.fixture
@@ -148,3 +163,13 @@ def complex_test_data():
 @pytest.fixture
 def workflow_yaml(tmpdir: Path):
     return Path(shutil.copy2(TEST_FILES / "test_workflow.yaml", tmpdir))
+
+
+@pytest.fixture
+def zarr_file_empty():
+    return TEST_FILES / "empty.zarr"
+
+
+@pytest.fixture
+def zarr_file_3d():
+    return TEST_FILES / "3d.zarr"
