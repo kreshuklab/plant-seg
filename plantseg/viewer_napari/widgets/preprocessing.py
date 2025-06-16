@@ -538,7 +538,6 @@ class Preprocessing_Tab:
         if not (isinstance(image, Image) or isinstance(image, Labels)):
             raise ValueError("Image must be an Image or Label layer.")
 
-        # TODO: Write tests for 2D images and labels, then change `.enabled` to `.hide()`
         if image.data.ndim == 2 or (image.data.ndim == 3 and image.data.shape[0] == 1):
             for widget in self.list_widget_rescaling_3d:
                 widget.hide()

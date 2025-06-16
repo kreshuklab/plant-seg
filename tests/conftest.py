@@ -9,7 +9,7 @@ import pytest
 import skimage.transform as skt
 import torch
 import yaml
-from napari.layers import Image
+from napari.layers import Image, Labels, Shapes
 
 from plantseg.io.io import smart_load
 
@@ -21,7 +21,7 @@ IS_CUDA_AVAILABLE = torch.cuda.is_available()
 
 
 @pytest.fixture
-def napari_image():
+def napari_raw():
     data = np.random.rand(10, 10, 10)
     voxel_size = (1.0, 1.0, 1.0)
     metadata = {
@@ -32,6 +32,70 @@ def napari_image():
         "id": uuid4(),
     }
     return Image(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_labels():
+    data = np.random.rand(10, 10, 10)
+    data = np.array(data, dtype=np.int8)
+    voxel_size = (1.0, 1.0, 1.0)
+    metadata = {
+        "semantic_type": "label",
+        "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "image_layout": "ZYX",
+        "id": uuid4(),
+    }
+    return Labels(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_prediction():
+    data = np.random.rand(10, 10, 10)
+    voxel_size = (1.0, 1.0, 1.0)
+    metadata = {
+        "semantic_type": "prediction",
+        "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "image_layout": "ZYX",
+        "id": uuid4(),
+    }
+    return Image(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_segmentation():
+    data = np.random.rand(10, 10, 10)
+    data = np.array(data, dtype=np.int8)
+    voxel_size = (1.0, 1.0, 1.0)
+    metadata = {
+        "semantic_type": "segmentation",
+        "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "image_layout": "ZYX",
+        "id": uuid4(),
+    }
+    return Labels(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_no_meta_image():
+    data = np.random.rand(10, 10, 10)
+    metadata = {}
+    return Image(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_no_meta_labels():
+    data = np.random.rand(10, 10, 10)
+    data = np.array(data, dtype=np.int8)
+    metadata = {}
+    return Labels(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_shapes():
+    return Shapes()
 
 
 @pytest.fixture

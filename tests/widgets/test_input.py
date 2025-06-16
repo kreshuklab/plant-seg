@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import numpy as np
 import pytest
 
 from plantseg.core.image import ImageType
@@ -77,9 +76,9 @@ def test_look_up_dataset_keys_3d(input_tab, zarr_file_3d, mocker):
     )
 
 
-def test_set_voxel_size(input_tab, napari_image, mocker):
-    input_tab.widget_details_layer_select.layer.choices = [napari_image]
-    input_tab.widget_details_layer_select.layer.value = napari_image
+def test_set_voxel_size(input_tab, napari_raw, mocker):
+    input_tab.widget_details_layer_select.layer.choices = [napari_raw]
+    input_tab.widget_details_layer_select.layer.value = napari_raw
 
     mocked_scheduler = mocker.patch(
         target="plantseg.viewer_napari.widgets.input.schedule_task",
