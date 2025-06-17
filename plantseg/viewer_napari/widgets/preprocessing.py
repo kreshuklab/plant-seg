@@ -109,6 +109,14 @@ class Preprocessing_Tab:
         self.widget_image_pair_operations = self.factory_image_pair_operations()
         self.widget_image_pair_operations.self.bind(self)
 
+        # @@@@@ Placeholder @@@@@
+        self.hidden_label = Label(
+            value="Preprocessing only supported for 2D and 3D images"
+        )
+        self.hidden_label.hide()
+        self.to_restore = []
+        self.hidden = False
+
         # @@@@@ Toggle buttons @@@@@
         self.widget_show_rescaling = self.factory_show_button()
         self.widget_show_rescaling.self.bind(self)
@@ -123,9 +131,9 @@ class Preprocessing_Tab:
         self.toggle_visibility_1(True)
         self.toggle_visibility_2(False)
 
-    def get_container(self):
-        return Container(
+        self.container = Container(
             widgets=[
+                self.hidden_label,
                 div("Layer Selection"),
                 self.widget_layer_select,
                 div("Crop"),
@@ -142,6 +150,11 @@ class Preprocessing_Tab:
             ],
             labels=False,
         )
+
+    def get_container(self):
+        # getter to keep consistency to other tabs
+        # only needed to hide hole tab (4d workaround)
+        return self.container
 
     @magic_factory(
         call_button=False,
@@ -181,6 +194,23 @@ class Preprocessing_Tab:
             self.widget_image_pair_operations.hide()
             self.widget_show_image_operations.show()
 
+    def toggle_visibility_3(self, visible: bool):
+        """Toggle visibility of everything in preprocessing"""
+        if visible and self.hidden:
+            self.hidden_label.hide()
+            for w in self.to_restore:
+                w.show()
+            self.to_restore = []
+            self.toggle_visibility_1(True)
+            self.hidden = False
+        else:
+            self.hidden = True
+            for w in self.container:
+                if w.visible:
+                    self.to_restore.append(w)
+                    w.hide()
+            self.hidden_label.show()
+
     @magic_factory(
         call_button="Run Gaussian Smoothing",
         sigma={
@@ -207,6 +237,7 @@ class Preprocessing_Tab:
                 thread="Preprocessing",
                 level="WARNING",
             )
+            return
         ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
 
         widgets_to_update = []  # TODO
@@ -326,12 +357,15 @@ class Preprocessing_Tab:
             self.widget_layer_select.layer.value = event.value
         if isinstance(event.value, Shapes):
             logger.debug("Shapes layer added, updating cropping.")
+            self.initialised_widget_cropping = True
             self.widget_cropping.crop_roi.value = event.value
             self.widget_cropping.show()
             self.widget_cropping_placeholder.hide()
 
     def _on_cropping_image_changed(self, image: Optional[Layer]):
         logger.debug("_on_cropping_image_changed called!")
+        if not self.initialised_widget_cropping:
+            return
         if image is None:
             self.widget_cropping.crop_z.hide()
             return None
@@ -346,10 +380,7 @@ class Preprocessing_Tab:
             return None
 
         if ps_image.is_multichannel:
-            if self.initialised_widget_cropping:
-                raise ValueError("Multichannel images are not supported for cropping.")
-            else:
-                self.initialised_widget_cropping = True
+            raise ValueError("Multichannel images are not supported for cropping.")
 
         self.widget_cropping.crop_z.show()
         image_shape_z = ps_image.shape[0]
@@ -420,7 +451,6 @@ class Preprocessing_Tab:
             ps_image = PlantSegImage.from_napari_layer(layer)
         else:
             raise ValueError("Image must be an Image or Label layer.")
-
         # Cover set voxel size case
         if not ps_image.has_valid_original_voxel_size():
             if mode not in [
@@ -428,9 +458,13 @@ class Preprocessing_Tab:
                 RescaleModes.TO_LAYER_SHAPE,
                 RescaleModes.TO_SHAPE,
             ]:
-                raise ValueError(
-                    "Original voxel size is missing, please set the voxel size manually."
+                log(
+                    "Original voxel size is missing, please set the voxel "
+                    "size manually.",
+                    thread="Preprocessing",
+                    level="WARNING",
                 )
+                return
 
         # TODO add list of widgets to update
         widgets_to_update = []
@@ -538,6 +572,15 @@ class Preprocessing_Tab:
         if not (isinstance(image, Image) or isinstance(image, Labels)):
             raise ValueError("Image must be an Image or Label layer.")
 
+        if len(image.data.shape) > 3:
+            logger.warning(
+                "Preprocessing not supported for 4d images",
+            )
+            self.toggle_visibility_3(False)
+            return
+        else:
+            self.toggle_visibility_3(True)
+
         if image.data.ndim == 2 or (image.data.ndim == 3 and image.data.shape[0] == 1):
             for widget in self.list_widget_rescaling_3d:
                 widget.hide()
@@ -547,6 +590,7 @@ class Preprocessing_Tab:
 
         offset = 1 if image.data.ndim == 2 else 0
         for i, (shape, scale) in enumerate(zip(image.data.shape, image.scale)):
+            # TODO: fix for 4d images
             self.widget_rescaling.out_voxel_size[i + offset].value = scale
             self.widget_rescaling.reference_shape[i + offset].value = shape
 
@@ -612,6 +656,7 @@ class Preprocessing_Tab:
                 thread="Preprocessing",
                 level="WARNING",
             )
+            return
         ps_layer1 = PlantSegImage.from_napari_layer(layer1)
         ps_layer2 = PlantSegImage.from_napari_layer(layer2)
 

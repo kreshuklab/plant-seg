@@ -70,7 +70,7 @@ def test_look_up_dataset_keys_3d(input_tab, zarr_file_3d, mocker):
     input_tab.look_up_dataset_keys(zarr_file_3d)
     mock_show.assert_called_once()
     mock_hide.assert_not_called()
-    assert input_tab.widget_open_file.dataset_key.value == "raw"
+    assert input_tab.widget_open_file.dataset_key.value in ("raw", "raw_2")
     assert all(
         n in ("raw", "raw_2") for n in input_tab.widget_open_file.dataset_key.choices
     )

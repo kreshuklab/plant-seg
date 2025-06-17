@@ -289,7 +289,7 @@ class Segmentation_Tab:
             return
         if self.widget_layer_select.superpixels.value is None:
             log(
-                "Please run 'Boundary to Superpixels' first!",
+                "Please run `Boundary to Superpixels` first!",
                 thread="Segmentation",
                 level="WARNING",
             )
@@ -306,9 +306,14 @@ class Segmentation_Tab:
         widgets_to_update = [widget_proofreading_initialisation.segmentation]
 
         if mode == "lmc":
-            assert isinstance(nuclei, (Image, Labels)), (
-                "Nuclei must be an Image or Labels layer."
-            )
+            if not isinstance(nuclei, (Image, Labels)):
+                log(
+                    "Nuclei must be an Image or Labels layer",
+                    thread="Segmentation",
+                    level="WARNING",
+                )
+                return
+
             ps_nuclei = PlantSegImage.from_napari_layer(nuclei)
             return schedule_task(
                 lmc_segmentation_task,
