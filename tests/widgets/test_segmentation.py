@@ -233,3 +233,83 @@ def test_agglomeration_lmc_missing(
         thread="Segmentation",
         level="WARNING",
     )
+
+
+def test_on_mode_changed(segmentation_tab, mocker):
+    mocked_show = mocker.patch.object(
+        segmentation_tab.widget_layer_select.nuclei, "show"
+    )
+    mocked_hide = mocker.patch.object(
+        segmentation_tab.widget_layer_select.nuclei, "hide"
+    )
+
+    segmentation_tab.widget_agglomeration.mode.value = (
+        segmentation_tab.AGGLOMERATION_MODES[0][1]
+    )
+    mocked_show.assert_not_called()
+    mocked_hide.assert_not_called()
+    mocked_show.reset_mock()
+    mocked_hide.reset_mock()
+
+    segmentation_tab.widget_agglomeration.mode.value = (
+        segmentation_tab.AGGLOMERATION_MODES[1][1]
+    )
+    mocked_show.assert_not_called()
+    mocked_hide.assert_called_once()
+    mocked_show.reset_mock()
+    mocked_hide.reset_mock()
+    segmentation_tab.widget_agglomeration.mode.value = (
+        segmentation_tab.AGGLOMERATION_MODES[2][1]
+    )
+    mocked_show.assert_not_called()
+    mocked_hide.assert_called_once()
+    mocked_show.reset_mock()
+    mocked_hide.reset_mock()
+    segmentation_tab.widget_agglomeration.mode.value = (
+        segmentation_tab.AGGLOMERATION_MODES[3][1]
+    )
+    mocked_show.assert_called_once()
+    mocked_hide.assert_not_called()
+    mocked_show.reset_mock()
+    mocked_hide.reset_mock()
+
+
+def test_on_show_advanced_changed(segmentation_tab):
+    segmentation_tab.widget_dt_ws.show_advanced.value = True
+    segmentation_tab.widget_dt_ws.show_advanced.value = False
+
+
+def test_update_layer_selection(
+    segmentation_tab,
+    mocker,
+    napari_raw,
+    napari_prediction,
+    napari_segmentation,
+    make_napari_viewer_proxy,
+):
+    viewer = make_napari_viewer_proxy()
+    viewer.add_layer(napari_raw)
+
+    sentinel = mocker.sentinel
+    sentinel.value = napari_raw
+    sentinel.type = "inserted"
+    assert segmentation_tab.widget_layer_select.layer.value is None
+    assert segmentation_tab.widget_layer_select.nuclei.value is None
+    assert segmentation_tab.widget_layer_select.prediction.value is None
+    assert segmentation_tab.widget_layer_select.superpixels.value is None
+
+    segmentation_tab.update_layer_selection(sentinel)
+    assert segmentation_tab.widget_layer_select.layer.value == sentinel.value
+    assert segmentation_tab.widget_layer_select.nuclei.value == sentinel.value
+
+    viewer.add_layer(napari_prediction)
+    sentinel.value = napari_prediction
+    sentinel.type = "inserted"
+    segmentation_tab.update_layer_selection(sentinel)
+    assert segmentation_tab.widget_layer_select.prediction.value == sentinel.value
+
+    viewer.add_layer(napari_segmentation)
+    sentinel.value = napari_segmentation
+    sentinel.type = "inserted"
+    segmentation_tab.update_layer_selection(sentinel)
+    assert segmentation_tab.widget_layer_select.superpixels.value == sentinel.value

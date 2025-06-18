@@ -7,7 +7,7 @@ from typing import Optional
 import torch.cuda
 from magicgui import magic_factory
 from magicgui.types import Separator, Undefined
-from magicgui.widgets import ComboBox, Container, ProgressBar
+from magicgui.widgets import ComboBox, Container, ProgressBar, PushButton
 
 from plantseg import logger
 from plantseg.core.image import PlantSegImage
@@ -122,7 +122,7 @@ class Prediction_Widgets:
         self.widget_add_custom_model = self.factory_add_custom_model()
         self.widget_add_custom_model.self.bind(self)
         self.widget_add_custom_model.cancel_button.changed.connect(
-            self.cancel_custom_model
+            self.hide_add_custom_model
         )
         self.widget_add_custom_model.hide()
         self.widget_add_custom_model.custom_modality.hide()
@@ -143,9 +143,8 @@ class Prediction_Widgets:
         )
         self.widget_add_custom_model.output_type.reset_choices()
 
-        self.widget_add_custom_model_toggle = self.factory_add_custom_model_toggle()
-        self.widget_add_custom_model_toggle.self.bind(self)
-        logger.debug(f"End init device: {self.widget_unet_prediction.device.value}")
+        self.widget_show_model_description = PushButton(text="Model description")
+        self.widget_show_model_description.clicked.connect(self.show_model_description)
 
     @magic_factory(
         call_button="Image to Prediction",
@@ -278,20 +277,20 @@ class Prediction_Widgets:
 
     def update_halo(self):
         if self.widget_unet_prediction.advanced.value:
-            log(
-                "Refreshing halo for the selected model; this might take a while...",
-                thread="UNet prediction",
-                level="info",
-            )
-
             if self.widget_unet_prediction.mode.value is UNetPredictionMode.PLANTSEG:
                 if self.widget_unet_prediction.model_name.value is None:
                     return
+                log(
+                    "Refreshing halo for the selected model; this might take a while...",
+                    thread="UNet prediction",
+                    level="info",
+                )
                 self.widget_unet_prediction.patch_halo.value = (
                     model_zoo.compute_3D_halo_for_zoo_models(
                         self.widget_unet_prediction.model_name.value
                     )
                 )
+                logger.debug(self.widget_unet_prediction.patch_halo.value)
                 if model_zoo.is_2D_zoo_model(
                     self.widget_unet_prediction.model_name.value
                 ):
@@ -310,9 +309,10 @@ class Prediction_Widgets:
                 self.widget_unet_prediction.mode.value is UNetPredictionMode.BIOIMAGEIO
             ):
                 log(
-                    "Automatic halo not implemented for BioImage.IO models yet because they are handled by BioImage.IO Core.",
+                    "Automatic halo not implemented for BioImage.IO models yet "
+                    "because they are handled by BioImage.IO Core.",
                     thread="BioImage.IO Core prediction",
-                    level="info",
+                    level="DEBUG",
                 )
             else:
                 raise NotImplementedError(
@@ -389,24 +389,29 @@ class Prediction_Widgets:
             dimensionality_filter=dimensionality,
         ) + [self.ADD_MODEL]
 
+    def show_model_description(self):
+        if self.description is None:
+            return
+        log(f"{self.description}", thread="prediction", level="INFO")
+
     def _on_model_name_changed(self, model_name: str | None):
         logger.debug(f"_on_model_name_changed called: {model_name}")
         if model_name is None:
             return
         elif model_name == self.ADD_MODEL:
-            self.widget_add_custom_model_toggle()
+            self.show_add_custom_model()
             return
 
-        description = model_zoo.get_model_description(model_name)
-        if description is None:
-            description = "No description available for this model."
+        self.description = model_zoo.get_model_description(model_name)
+        if self.description is None:
+            self.description = "No description available for this model."
             self.widget_unet_prediction.advanced.hide()
             self.widget_unet_prediction.device.hide()
         else:
             self.widget_unet_prediction.advanced.show()
             self.widget_unet_prediction.device.show()
         self.widget_unet_prediction.model_name.tooltip = (
-            f"Select a pretrained model. Current model description: {description}"
+            f"Select a pretrained model. Current model description: {self.description}"
         )
 
         if self.widget_unet_prediction.advanced.value:
@@ -416,11 +421,8 @@ class Prediction_Widgets:
         if self.widget_unet_prediction.advanced.value:
             self.update_halo()
 
-    # TODO: Make option in drop-down
-    @magic_factory(call_button="Add Custom Model")
-    def factory_add_custom_model_toggle(self) -> None:
+    def show_add_custom_model(self) -> None:
         self.widget_unet_prediction.hide()
-        self.widget_add_custom_model_toggle.hide()
         self.widget_add_custom_model.show()
 
     @magic_factory(
@@ -497,13 +499,12 @@ class Prediction_Widgets:
                 level="error",
                 thread="Add Custom Model",
             )
-        self.cancel_custom_model()
+        self.hide_add_custom_model()
 
-    def cancel_custom_model(self, event=None):
-        logger.debug("Cancel_custum_model called!")
+    def hide_add_custom_model(self, event=None):
+        logger.debug("hide_add_custom_model called!")
         self.widget_add_custom_model.hide()
         self.widget_unet_prediction.show()
-        # self.widget_add_custom_model_toggle.show()
 
     def _on_custom_modality_change(self, modality: str):
         logger.debug(f"_on_custom_modality_change called: {modality}")

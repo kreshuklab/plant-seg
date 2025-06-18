@@ -11,6 +11,7 @@ import torch
 import yaml
 from napari.layers import Image, Labels, Shapes
 
+from plantseg.core.image import SemanticType
 from plantseg.io.io import smart_load
 
 TEST_FILES = Path(__file__).resolve().parent / "resources"
@@ -25,7 +26,7 @@ def napari_raw():
     data = np.random.rand(10, 10, 10)
     voxel_size = (1.0, 1.0, 1.0)
     metadata = {
-        "semantic_type": "raw",
+        "semantic_type": SemanticType.RAW,
         "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
         "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
         "image_layout": "ZYX",
@@ -40,7 +41,7 @@ def napari_labels():
     data = np.array(data, dtype=np.int8)
     voxel_size = (1.0, 1.0, 1.0)
     metadata = {
-        "semantic_type": "label",
+        "semantic_type": SemanticType.LABEL,
         "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
         "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
         "image_layout": "ZYX",
@@ -54,7 +55,7 @@ def napari_prediction():
     data = np.random.rand(10, 10, 10)
     voxel_size = (1.0, 1.0, 1.0)
     metadata = {
-        "semantic_type": "prediction",
+        "semantic_type": SemanticType.PREDICTION,
         "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
         "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
         "image_layout": "ZYX",
@@ -69,7 +70,7 @@ def napari_segmentation():
     data = np.array(data, dtype=np.int8)
     voxel_size = (1.0, 1.0, 1.0)
     metadata = {
-        "semantic_type": "segmentation",
+        "semantic_type": SemanticType.SEGMENTATION,
         "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
         "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
         "image_layout": "ZYX",
