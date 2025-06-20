@@ -144,7 +144,6 @@ class Output_Tab:
             self._toggle_key(False)
             return
 
-        breakpoint()
         if isinstance(image, Labels) or isinstance(image, Image):
             self._toggle_export_details_widgets(True)
             self._toggle_key(True)
