@@ -91,6 +91,15 @@ def test_toggle_visibility_2(preprocessing_tab, mocker):
     mocked_switch_1.assert_not_called()
 
 
+def test_toggle_visibility_3(preprocessing_tab, mocker):
+    mocked_switch_1 = mocker.patch.object(preprocessing_tab, "toggle_visibility_1")
+    preprocessing_tab.toggle_visibility_3(False)
+    assert preprocessing_tab.hidden
+    preprocessing_tab.toggle_visibility_3(True)
+    mocked_switch_1.assert_called_with(True)
+    assert not preprocessing_tab.hidden
+
+
 def test_gaussian_smoothing_no_layer(preprocessing_tab, mocker):
     mocked_scheduler = mocker.patch(
         target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
@@ -347,3 +356,64 @@ def test_image_pair_operations_missing(preprocessing_tab, mocker, napari_raw):
         thread="Preprocessing",
         level="WARNING",
     )
+
+
+def test_update_layer_selection(
+    preprocessing_tab,
+    mocker,
+    napari_raw,
+    napari_prediction,
+    napari_segmentation,
+    napari_shapes,
+    make_napari_viewer_proxy,
+):
+    viewer = make_napari_viewer_proxy()
+    viewer.add_layer(napari_raw)
+    viewer.add_layer(napari_prediction)
+    viewer.add_layer(napari_segmentation)
+    viewer.add_layer(napari_shapes)
+
+    assert preprocessing_tab.widget_layer_select.layer.choices == ()
+
+    sentinel = mocker.sentinel
+    sentinel.value = napari_prediction
+    sentinel.type = "active"
+    preprocessing_tab.update_layer_selection(sentinel)
+
+    assert napari_raw in preprocessing_tab.widget_layer_select.layer.choices
+    assert napari_prediction in preprocessing_tab.widget_layer_select.layer.choices
+    assert napari_segmentation in preprocessing_tab.widget_layer_select.layer.choices
+    assert napari_shapes not in preprocessing_tab.widget_layer_select.layer.choices
+
+    sentinel.type = "inserted"
+    preprocessing_tab.update_layer_selection(sentinel)
+    assert preprocessing_tab.widget_layer_select.layer.value == napari_prediction
+
+    sentinel.value = napari_shapes
+    preprocessing_tab.widget_cropping.crop_roi.choices = (napari_shapes,)
+    preprocessing_tab.update_layer_selection(sentinel)
+
+
+def test_on_cropping_image_changed_shape(preprocessing_tab, napari_shapes):
+    preprocessing_tab.initialised_widget_cropping = True
+    with pytest.raises(AssertionError):
+        preprocessing_tab._on_cropping_image_changed(napari_shapes)
+
+
+def test_on_cropping_image_changed_none(preprocessing_tab):
+    preprocessing_tab.initialised_widget_cropping = True
+    assert preprocessing_tab._on_cropping_image_changed(None) is None
+
+
+def test_on_cropping_image_changed_2d(preprocessing_tab, mocker, napari_raw_2d):
+    preprocessing_tab.initialised_widget_cropping = True
+    mocked_hide = mocker.patch.object(preprocessing_tab.widget_cropping.crop_z, "hide")
+    assert preprocessing_tab._on_cropping_image_changed(napari_raw_2d) is None
+    mocked_hide.assert_called_once()
+
+
+def test_on_cropping_image_changed_raw(preprocessing_tab, mocker, napari_raw):
+    preprocessing_tab.initialised_widget_cropping = True
+    mocked_show = mocker.patch.object(preprocessing_tab.widget_cropping.crop_z, "show")
+    assert preprocessing_tab._on_cropping_image_changed(napari_raw) is None
+    mocked_show.assert_called_once()

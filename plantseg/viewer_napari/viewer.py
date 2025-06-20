@@ -5,11 +5,9 @@ from plantseg.__version__ import __version__
 from plantseg.utils import check_version
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.containers import (
-    get_postprocessing_tab,
     get_proofreading_tab,
 )
 from plantseg.viewer_napari.widgets.batch import Batch_Tab
-from plantseg.viewer_napari.widgets.dataprocessing import on_layer_rename_dataprocessing
 from plantseg.viewer_napari.widgets.input import Input_Tab
 from plantseg.viewer_napari.widgets.output import Output_Tab
 from plantseg.viewer_napari.widgets.postprocessing import Postprocessing_Tab
@@ -71,7 +69,7 @@ def run_viewer():
     viewer.layers.events.inserted.connect(postprocessing_tab.update_layer_selection)
 
     # Drop-down update for renaming of layers
-    viewer.layers.selection.events.active.connect(input_tab._on_layerlist_selection)
+    viewer.layers.selection.events.active.connect(input_tab.update_layer_selection)
     viewer.layers.selection.events.active.connect(
         preprocessing_tab.update_layer_selection
     )

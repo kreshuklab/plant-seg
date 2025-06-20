@@ -135,15 +135,16 @@ class Output_Tab:
     def _toggle_key(self, show: bool):
         if not show or self.widget_export_image.export_format.value == "tiff":
             self.widget_export_image.key.hide()
-            return None
+            return
         self.widget_export_image.key.show()
 
     def _on_images_changed(self, image: Image | Labels | None):
         if image is None:
             self._toggle_export_details_widgets(False)
             self._toggle_key(False)
-            return None
+            return
 
+        breakpoint()
         if isinstance(image, Labels) or isinstance(image, Image):
             self._toggle_export_details_widgets(True)
             self._toggle_key(True)
@@ -161,7 +162,7 @@ class Output_Tab:
                     level="warning",
                 )
                 self.widget_export_image.data_type.value = "uint16"
-            return None
+            return
 
         raise ValueError(
             "Only Image and Labels layers are supported for PlantSeg export."

@@ -36,6 +36,20 @@ def napari_raw():
 
 
 @pytest.fixture
+def napari_raw_2d():
+    data = np.random.rand(10, 10)
+    voxel_size = None
+    metadata = {
+        "semantic_type": SemanticType.RAW,
+        "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "image_layout": "YX",
+        "id": uuid4(),
+    }
+    return Image(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
 def napari_labels():
     data = np.random.rand(10, 10, 10)
     data = np.array(data, dtype=np.int8)
@@ -238,3 +252,8 @@ def zarr_file_empty():
 @pytest.fixture
 def zarr_file_3d():
     return TEST_FILES / "3d.zarr"
+
+
+@pytest.fixture
+def h5_file():
+    return TEST_FILES / "sample_ovule.h5"

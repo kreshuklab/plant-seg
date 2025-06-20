@@ -15,6 +15,7 @@ docs/_build/
 
 # Codecov
 .coverage
+.htmlcov
 
 # macOS
 .DS_Store

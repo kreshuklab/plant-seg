@@ -363,12 +363,12 @@ class Preprocessing_Tab:
             self.widget_cropping_placeholder.hide()
 
     def _on_cropping_image_changed(self, image: Optional[Layer]):
+        """Called upon changing widget_layer_select"""
         logger.debug("_on_cropping_image_changed called!")
         if not self.initialised_widget_cropping:
             return
         if image is None:
-            self.widget_cropping.crop_z.hide()
-            return None
+            return
 
         assert isinstance(image, (Image, Labels)), (
             f"{type(image)} cannot be cropped, please use Image layers or Labels layers"
@@ -568,6 +568,7 @@ class Preprocessing_Tab:
                 raise ValueError(f"{mode} is not implemented yet.")
 
     def _on_layer_selection(self, image: Layer):
+        """Called upon changing widget_layer_select"""
         logger.debug(f"_on_layer_selection called: {image}")
         if not (isinstance(image, Image) or isinstance(image, Labels)):
             raise ValueError("Image must be an Image or Label layer.")

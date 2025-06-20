@@ -327,9 +327,9 @@ class Input_Tab:
     def _on_set_voxel_size_layer_done(self):
         logger.debug("_on_set_voxel_size_layer_done called!")
 
-    def _on_layerlist_selection(self, event):
+    def update_layer_selection(self, event):
+        logger.debug(f"Updating input layer selection: {event.value}, {event.type}")
         layer = event.value
-        logger.debug(f"_on_layerlist_selection called for layer {layer}!")
         if layer is None or not layer._metadata:
             return
         all_layers = get_layers(

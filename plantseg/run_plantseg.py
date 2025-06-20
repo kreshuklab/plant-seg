@@ -7,7 +7,6 @@ from typing import Optional
 from plantseg import logger
 from plantseg.__version__ import __version__
 from plantseg.utils import check_version, clean_models, load_config
-from plantseg.viewer_napari import logger_viewer_napari
 
 
 def create_parser():
