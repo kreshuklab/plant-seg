@@ -1,4 +1,5 @@
 import pytest
+
 from plantseg.viewer_napari.widgets import proofreading
 
 
