@@ -179,6 +179,13 @@ def preserve_labels(layer_name: str) -> None:
         layer_name (str): The name of the layer to preserve.
     """
     viewer = get_current_viewer_wrapper()
+    if layer_name not in viewer.layers:
+        log(
+            f"Layer {layer_name} not found in viewer",
+            thread="preserve_labels",
+            level="error",
+        )
+        raise ValueError(f"Layer {layer_name} not found in viewer")
     viewer.layers[layer_name].preserve_labels = True  # type: ignore
     viewer.layers[layer_name].refresh()
 
@@ -222,11 +229,11 @@ class ProofreadingHandler:
     @contextmanager
     def lock_manager(self):
         """Context manager for locking and unlocking proofreading handler."""
-        self._lock = True
+        self._state.lock = True
         try:
             yield
         finally:
-            self._lock = False
+            self._state.lock = False
 
     def is_locked(self) -> bool:
         """Checks if the proofreading handler is locked."""
@@ -279,7 +286,7 @@ class ProofreadingHandler:
                 "Proofreading widget not initialized. Run the proofreading widget tool once first",
                 thread="Reset Scribbles",
             )
-            return None
+            return
         update_layer(
             np.zeros_like(self.segmentation), SCRIBBLES_LAYER_NAME, scale=self.scale
         )
@@ -390,7 +397,12 @@ class ProofreadingHandler:
         self._state.corrected_cells = state.corrected_cells
         self._state.bboxes = state.bboxes
 
-    def _perform_undo_redo(self, history_pop, history_append, action_name):
+    def _perform_undo_redo(
+        self,
+        history_pop: deque,
+        history_append: deque,
+        action_name: str,
+    ):
         """Generalized function to handle undo and redo actions."""
         if not history_pop:
             log(f"No more actions to {action_name}.", thread=action_name.capitalize())
@@ -429,7 +441,7 @@ class ProofreadingHandler:
                 f"Invalid file extension: {filepath.suffix}. Please use a valid HDF5 file extensions: {H5_EXTENSIONS}",
                 thread="Save State",
             )
-            return None
+            return
 
         viewer = get_current_viewer_wrapper()
 

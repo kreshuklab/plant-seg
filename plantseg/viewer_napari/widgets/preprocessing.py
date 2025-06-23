@@ -532,7 +532,8 @@ class Preprocessing_Tab:
             image_rescale_to_voxel_size_task,
             task_kwargs={
                 "image": ps_image,
-                "new_voxel_size": out_voxel_size,
+                "new_voxels_size": out_voxel_size.voxels_size,
+                "new_unit": out_voxel_size.unit,
                 "order": order,
             },
             widgets_to_update=widgets_to_update,
