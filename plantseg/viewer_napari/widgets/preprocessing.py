@@ -196,6 +196,7 @@ class Preprocessing_Tab:
 
     def toggle_visibility_3(self, visible: bool):
         """Toggle visibility of everything in preprocessing"""
+        logger.debug(f"toggle_visibility_3 called with {visible}")
         if visible and self.hidden:
             self.hidden_label.hide()
             for w in self.to_restore:
@@ -203,7 +204,7 @@ class Preprocessing_Tab:
             self.to_restore = []
             self.toggle_visibility_1(True)
             self.hidden = False
-        else:
+        elif not visible:
             self.hidden = True
             for w in self.container:
                 if w.visible:
