@@ -590,13 +590,14 @@ def widget_clean_scribble(viewer: napari.Viewer):
             "Proofreading widget not initialized. Run the proofreading widget tool once first",
             thread="Clean scribble",
         )
+        return
 
     if "Scribbles" not in viewer.layers:
         log(
             "Scribble Layer not defined. Run the proofreading widget tool once first",
             thread="Clean scribble",
         )
-        return None
+        return
 
     segmentation_handler.reset_scribbles()
 
@@ -665,7 +666,8 @@ def initialize_from_layer(segmentation: Labels, are_you_sure: bool = False) -> N
     widget_proofreading_initialisation.call_button.text = "Re-initialize Proofreading"  # type: ignore
 
     viewer = get_current_viewer_wrapper()
-    widget_proofreading_initialisation.segmentation.choices = [  # Avoid re-initializing with proofreading helper layers
+    # Avoid re-initializing with proofreading helper layers
+    widget_proofreading_initialisation.segmentation.choices = [
         layer
         for layer in viewer.layers
         if layer.name not in [SCRIBBLES_LAYER_NAME, CORRECTED_CELLS_LAYER_NAME]
@@ -737,6 +739,10 @@ def widget_proofreading_initialisation(
             return
         initialize_from_file(filepath, are_you_sure=are_you_sure)
         widget_save_state.filepath.value = filepath
+    else:
+        raise ValueError("Unknown mode")
+
+    setup_proofreading_keybindings()
 
 
 widget_proofreading_initialisation.are_you_sure.hide()
@@ -762,7 +768,7 @@ def _on_mode_changed(mode: str):
 )
 def widget_split_and_merge_from_scribbles(
     viewer: napari.Viewer,
-    image: Image,
+    image: Image | None,
 ):
     """Splits or merges segments using scribbles as seeds for corrections.
 
@@ -776,20 +782,28 @@ def widget_split_and_merge_from_scribbles(
         )
         return
 
+    if image is None:
+        log(
+            "Please select a boundary image first!",
+            thread="Proofreading tool",
+        )
+        return
+
     ps_image = PlantSegImage.from_napari_layer(image)
 
     if ps_image.semantic_type == SemanticType.RAW:
         log(
-            "Pmap/Image layer appears to be a raw image and not a boundary probability map. "
-            "For the best proofreading results, try to use a boundaries probability layer "
-            "(e.g. from the Run Prediction widget)",
+            "Pmap/Image layer appears to be a raw image and not a boundary "
+            "probability map. For the best proofreading results, try to use a "
+            "boundaries probability layer (e.g. from the Run Prediction widget)",
             thread="Proofreading tool",
             level="warning",
         )
 
     if ps_image.is_multichannel:
         log(
-            "Pmap/Image layer appears to be a multichannel image. Proofreading does not support multichannel images. ",
+            "Pmap/Image layer appears to be a multichannel image. "
+            "Proofreading does not support multichannel images. ",
             thread="Proofreading tool",
             level="error",
         )
@@ -871,7 +885,7 @@ def widget_filter_segmentation() -> None:
     worker = func()  # type: ignore
     worker.returned.connect(on_done)
     worker.start()
-    return None
+    return
 
 
 @magicgui(call_button="Undo Last Action")
@@ -919,12 +933,11 @@ def widget_save_state(
     segmentation_handler.save_state_to_disk(filepath, raw=raw, pmap=pmap)
 
 
-def setup_proofreading_keybindings(viewer: napari.Viewer):
-    """Sets up keybindings for the proofreading tool in Napari.
-
-    Args:
-        viewer (napari.Viewer): The current Napari viewer instance.
-    """
+def setup_proofreading_keybindings():
+    """Sets up keybindings for the proofreading tool in Napari."""
+    viewer = napari.current_viewer()
+    if viewer is None:
+        return
 
     @viewer.bind_key(DEFAULT_KEY_BINDING_PROOFREAD)
     def _widget_split_and_merge_from_scribbles(_viewer: napari.Viewer):

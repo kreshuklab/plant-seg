@@ -32,7 +32,7 @@ def scroll_wrap(w):
 
 def run_viewer():
     viewer = napari.Viewer(title="PlantSeg v2")
-    setup_proofreading_keybindings(viewer=viewer)
+    # setup_proofreading_keybindings(viewer=viewer)
     input_tab = Input_Tab()
     output_tab = Output_Tab()
     preprocessing_tab = Preprocessing_Tab()
