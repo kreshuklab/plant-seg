@@ -5,8 +5,7 @@ import h5py
 import numpy as np
 import pytest
 
-from plantseg.core.image import ImageProperties, PlantSegImage
-from plantseg.functionals.proofreading.split_merge_tools import split_merge_from_seeds
+from plantseg.core.image import PlantSegImage
 from plantseg.viewer_napari.widgets import proofreading
 
 
@@ -565,15 +564,20 @@ def test_on_mode_change(mocker):
 
 
 def test_widget_split_and_merge_from_scribbles_log(mocker, napari_raw):
-    mock = mocker.patch("plantseg.viewer_napari.widgets.proofreading.log")
+    mocks = mocker.patch.multiple(
+        "plantseg.viewer_napari.widgets.proofreading",
+        log=mocker.DEFAULT,
+        segmentation_handler=mocker.DEFAULT,
+    )
+    mocks["segmentation_handler"].active = False
     proofreading.widget_split_and_merge_from_scribbles(mocker.sentinel, napari_raw)
-    mock.assert_called_with(
+    mocks["log"].assert_called_with(
         "Proofreading is not initialized. Run the initialization widget first.",
         thread="Proofreading tool",
     )
-    proofreading.segmentation_handler._state.active = True
+    mocks["segmentation_handler"].active = True
     proofreading.widget_split_and_merge_from_scribbles(mocker.sentinel, None)
-    mock.assert_called_with(
+    mocks["log"].assert_called_with(
         "Please select a boundary image first!",
         thread="Proofreading tool",
     )
@@ -605,10 +609,15 @@ def test_widget_split_and_merge_from_scribbles(mocker, napari_raw):
 
 
 def test_widget_filter_segmentation_log(mocker):
-    mock = mocker.patch("plantseg.viewer_napari.widgets.proofreading.log")
+    mocks = mocker.patch.multiple(
+        "plantseg.viewer_napari.widgets.proofreading",
+        log=mocker.DEFAULT,
+        segmentation_handler=mocker.DEFAULT,
+    )
+    mocks["segmentation_handler"].active = False
     with pytest.raises(ValueError):
         proofreading.widget_filter_segmentation()
-    mock.assert_called_with(
+    mocks["log"].assert_called_with(
         "Proofreading widget not initialized. Run the proofreading widget tool once first",
         thread="Export correct labels",
         level="error",

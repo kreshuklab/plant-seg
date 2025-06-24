@@ -857,7 +857,8 @@ def widget_filter_segmentation() -> None:
     @thread_worker
     def func():
         if segmentation_handler.is_locked():
-            raise ValueError("Segmentation is locked.")
+            return
+            # raise ValueError("Segmentation is locked.")
 
         with segmentation_handler.lock_manager():
             filtered_seg = segmentation_handler.segmentation.copy()
