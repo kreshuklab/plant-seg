@@ -95,20 +95,12 @@ class Postprocessing_Tab:
 
         ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
 
-        widgets_to_update = [
-            # widget_relabel.segmentation,
-            # widget_set_biggest_instance_to_zero.segmentation,
-            # widget_remove_false_positives_by_foreground.segmentation,
-            # widget_fix_segmentation_by_nuclei.segmentation_cells,
-            # widget_proofreading_initialisation.segmentation,
-        ]
         return schedule_task(
             relabel_segmentation_task,
             task_kwargs={
                 "image": ps_image,
                 "background": background,
             },
-            widgets_to_update=widgets_to_update,
         )
 
     def _on_layer_changed(self, segmentation: Optional[Labels]):
@@ -138,20 +130,12 @@ class Postprocessing_Tab:
 
         ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
 
-        widgets_to_update = [
-            # widget_relabel.segmentation,
-            # widget_set_biggest_instance_to_zero.segmentation,
-            # widget_remove_false_positives_by_foreground.segmentation,
-            # widget_fix_segmentation_by_nuclei.segmentation_cells,
-            # widget_proofreading_initialisation.segmentation,
-        ]
         return schedule_task(
             set_biggest_instance_to_zero_task,
             task_kwargs={
                 "image": ps_image,
                 "instance_could_be_zero": instance_could_be_zero,
             },
-            widgets_to_update=widgets_to_update,
         )
 
     @magic_factory(
@@ -192,7 +176,6 @@ class Postprocessing_Tab:
                 "foreground": ps_foreground,
                 "threshold": threshold,
             },
-            widgets_to_update=[],
         )
 
     @magic_factory(
@@ -274,7 +257,6 @@ class Postprocessing_Tab:
                 "quantile_max": quantile_max,
                 "boundary": ps_pmap_cell_boundary,
             },
-            widgets_to_update=[],
         )
 
     def _on_layer_insertion(self, layer):

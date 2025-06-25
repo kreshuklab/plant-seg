@@ -235,7 +235,6 @@ class Prediction_Widgets:
                 return
             suffix = model_name
             model_id = None
-            widgets_to_update = []
             return schedule_task(
                 unet_prediction_task,
                 task_kwargs={
@@ -250,17 +249,12 @@ class Prediction_Widgets:
                     "_pbar": pbar,
                     "_to_hide": [self.widget_unet_prediction.call_button],
                 },
-                widgets_to_update=widgets_to_update if update_other_widgets else [],
             )
         elif mode is UNetPredictionMode.BIOIMAGEIO:
             if model_id is None:
                 return
             suffix = model_id
             model_name = None
-            widgets_to_update = [
-                # BioImage.IO models may output multi-channel 3D image or even multi-channel scalar in CZYX format.
-                # So PlantSeg widgets, which all take ZYX or YX, are better not to be updated.
-            ]
             return schedule_task(
                 biio_prediction_task,
                 task_kwargs={
@@ -270,7 +264,6 @@ class Prediction_Widgets:
                     "_pbar": pbar,
                     "_to_hide": [self.widget_unet_prediction.call_button],
                 },
-                widgets_to_update=widgets_to_update if update_other_widgets else [],
             )
         else:
             raise NotImplementedError(f"Mode {mode} not implemented yet.")

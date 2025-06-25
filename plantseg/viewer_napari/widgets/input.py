@@ -172,8 +172,6 @@ class Input_Tab:
         else:
             raise ValueError(f"Unknown layer type {layer_type}")
 
-        widgets_to_update = []
-
         return schedule_task(
             import_image_task,
             task_kwargs={
@@ -183,7 +181,6 @@ class Input_Tab:
                 "semantic_type": semantic_type,
                 "stack_layout": stack_layout,
             },
-            widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
 
     def generate_layer_name(self, path: Path, dataset_key: str) -> str:
@@ -282,7 +279,6 @@ class Input_Tab:
                 "image": ps_image,
                 "voxel_size": voxel_size,
             },
-            widgets_to_update=[self.widget_details_layer_select.layer],
         )
 
     def _on_details_layer_select_changed(self, layer: Optional[Layer]):

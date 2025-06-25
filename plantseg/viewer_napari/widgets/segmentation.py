@@ -251,7 +251,6 @@ class Segmentation_Tab:
                 "apply_nonmax_suppression": apply_nonmax_suppression,
                 "is_nuclei_image": is_nuclei_image,
             },
-            widgets_to_update=[],
         )
 
     @magic_factory(
@@ -301,9 +300,7 @@ class Segmentation_Tab:
         nuclei = self.widget_layer_select.nuclei.value
 
         # Hide the superpixels layer to avoid overlapping with the new segmentation
-        # superpixels.visible = False
-
-        widgets_to_update = [widget_proofreading_initialisation.segmentation]
+        self.widget_layer_select.superpixels.value.visible = False
 
         if mode == "lmc":
             if not isinstance(nuclei, (Image, Labels)):
@@ -324,7 +321,6 @@ class Segmentation_Tab:
                     "beta": beta,
                     "post_min_size": minsize,
                 },
-                widgets_to_update=widgets_to_update,
             )
 
         return schedule_task(
@@ -336,7 +332,6 @@ class Segmentation_Tab:
                 "beta": beta,
                 "post_min_size": minsize,
             },
-            widgets_to_update=widgets_to_update,
         )
 
     def _on_mode_changed(self, mode: str):

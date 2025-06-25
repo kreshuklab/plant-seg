@@ -80,29 +80,6 @@ def get_layers(
     return relevant_layers
 
 
-def setup_layers_suggestions(out_name: str, widgets: list[Widget] | None):
-    """Update the widgets with the output of the task.
-
-    Args:
-        out_name (str): The name of the output layer.
-        widgets (list[Widget] | None): List of widgets to be updated, if any.
-    """
-    viewer = napari.current_viewer()
-
-    if viewer is None:
-        return None
-
-    if widgets is None or not widgets:
-        return None
-
-    if out_name not in viewer.layers:
-        return None
-
-    out_layer = viewer.layers[out_name]
-    for widget in widgets:
-        widget.value = out_layer
-
-
 def add_ps_image_to_viewer(layer: PlantSegImage, replace: bool = False) -> None:
     """Add a PlantSegImage to the viewer.
 
@@ -151,7 +128,8 @@ def update_progressbar(pbar: ProgressBar, tracker: PBar_Tracker):
 
 
 def schedule_task(
-    task: Callable, task_kwargs: dict, widgets_to_update: list[Widget] | None = None
+    task: Callable,
+    task_kwargs: dict,
 ) -> None:
     """Schedule a task to be executed in a separate thread and update the widgets with the result.
 
@@ -159,7 +137,6 @@ def schedule_task(
         task (Callable): Function to be executed, the function should be a workflow task,
             and return a PlantSegImage or a tuple/list of PlantSegImage, or None.
         task_kwargs (dict): Keyword arguments for the function.
-        widgets_to_update (list[Widget] | None, optional): Widgets to be updated with the result. Defaults to None.
     """
 
     if hasattr(task, "__plantseg_task__"):
@@ -175,9 +152,6 @@ def schedule_task(
 
         if isinstance(task_result, PlantSegImage):
             add_ps_image_to_viewer(task_result, replace=True)
-            setup_layers_suggestions(
-                out_name=task_result.name, widgets=widgets_to_update
-            )
 
         elif isinstance(task_result, (tuple, list)):
             for ps_im in task_result:
@@ -188,9 +162,6 @@ def schedule_task(
 
             for ps_im in task_result:
                 add_ps_image_to_viewer(ps_im, replace=True)
-            setup_layers_suggestions(
-                out_name=task_result[-1].name, widgets=widgets_to_update
-            )
 
         elif task_result is None:
             return None

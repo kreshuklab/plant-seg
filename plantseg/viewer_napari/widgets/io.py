@@ -108,11 +108,6 @@ def widget_open_file(
     elif layer_type == ImageType.LABEL.value:
         semantic_type = SemanticType.SEGMENTATION
 
-    widgets_to_update = [
-        widget_set_voxel_size.layer,
-        widget_unet_prediction.image,
-    ]
-
     return schedule_task(
         import_image_task,
         task_kwargs={
@@ -122,7 +117,6 @@ def widget_open_file(
             "semantic_type": semantic_type,
             "stack_layout": stack_layout,
         },
-        widgets_to_update=widgets_to_update if update_other_widgets else [],
     )
 
 
@@ -448,7 +442,6 @@ def widget_set_voxel_size(
             "image": ps_image,
             "voxel_size": voxel_size,
         },
-        widgets_to_update=[],
     )
 
 

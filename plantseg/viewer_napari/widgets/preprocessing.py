@@ -241,15 +241,12 @@ class Preprocessing_Tab:
             return
         ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
 
-        widgets_to_update = []  # TODO
-
         return schedule_task(
             gaussian_smoothing_task,
             task_kwargs={
                 "image": ps_image,
                 "sigma": sigma,
             },
-            widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
 
     @magic_factory(
@@ -322,8 +319,6 @@ class Preprocessing_Tab:
 
         ps_image = PlantSegImage.from_napari_layer(layer)
 
-        widgets_to_update = None
-
         return schedule_task(
             image_cropping_task,
             task_kwargs={
@@ -331,7 +326,6 @@ class Preprocessing_Tab:
                 "rectangle": rectangle,
                 "crop_z": crop_z,
             },
-            widgets_to_update=widgets_to_update if update_other_widgets else [],
         )
 
     def update_layer_selection(self, event):
@@ -467,9 +461,6 @@ class Preprocessing_Tab:
                 )
                 return
 
-        # TODO add list of widgets to update
-        widgets_to_update = []
-
         if mode == RescaleModes.SET_VOXEL_SIZE:
             # Run set voxel size task
             return schedule_task(
@@ -478,7 +469,6 @@ class Preprocessing_Tab:
                     "image": ps_image,
                     "voxel_size": out_voxel_size,
                 },
-                widgets_to_update=widgets_to_update if update_other_widgets else [],
             )
 
         if mode in [RescaleModes.TO_LAYER_SHAPE, RescaleModes.TO_SHAPE]:
@@ -496,7 +486,6 @@ class Preprocessing_Tab:
                     "new_shape": output_shape,
                     "order": order,
                 },
-                widgets_to_update=widgets_to_update,
             )
 
         # Cover rescale that requires a valid voxel size
@@ -536,7 +525,6 @@ class Preprocessing_Tab:
                 "new_unit": out_voxel_size.unit,
                 "order": order,
             },
-            widgets_to_update=widgets_to_update,
         )
 
     def _rescale_update_visibility(self, mode: RescaleModes):
@@ -673,5 +661,4 @@ class Preprocessing_Tab:
                 "clip_output": clip_output,
                 "normalize_output": normalize_output,
             },
-            widgets_to_update=[],
         )
