@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 from magicgui import magic_factory
 from magicgui.widgets import Container, Label
@@ -12,7 +13,7 @@ from plantseg.workflow_gui.editor import Workflow_gui
 
 
 class Batch_Tab:
-    def __init__(self, output_tab: Output_Tab):
+    def __init__(self, output_tab: Optional[Output_Tab] = None):
         self.widget_export_workflow = self.factory_export_headless_workflow()
         self.widget_export_workflow.self.bind(self)
         self.widget_export_workflow.hide()
@@ -24,7 +25,8 @@ class Batch_Tab:
             value="Export an image before saving the workflow\nfor batch execution!"
         )
 
-        output_tab.successful_export.connect(self.toggle_export_vis)
+        if output_tab:
+            output_tab.successful_export.connect(self.toggle_export_vis)
 
     def get_container(self):
         return Container(
