@@ -50,6 +50,8 @@ jobs:
       - name: Install MkDocs and Deploy
         shell: bash -l {0}
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           conda activate plant-seg-dev
           mike deploy --push --update-aliases ${{ inputs.version }} latest
         env:
