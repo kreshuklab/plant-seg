@@ -1,0 +1,35 @@
+# Table of contents
+# Learn more at https://jupyterbook.org/customize/toc.html
+
+format: jb-book
+root: intro
+parts:
+  - caption: Getting Started
+    chapters:
+      - file: chapters/getting_started/installation
+      - file: chapters/getting_started/quick_start
+      - file: chapters/getting_started/troubleshooting
+  - caption: Interactive PlantSeg with Napari
+    chapters:
+      - file: chapters/plantseg_interactive_napari/index
+      - file: chapters/plantseg_interactive_napari/data_processing
+      - file: chapters/plantseg_interactive_napari/unet_gasp_workflow
+      - file: chapters/plantseg_interactive_napari/unet_training
+      - file: chapters/plantseg_interactive_napari/extra_pred
+      - file: chapters/plantseg_interactive_napari/extra_seg
+      - file: chapters/plantseg_interactive_napari/headless_batch_processing
+  - caption: Classic PlantSeg GUI
+    chapters:
+      - file: chapters/plantseg_classic_gui/index
+      - file: chapters/plantseg_classic_gui/data_processing
+      - file: chapters/plantseg_classic_gui/cnn_predictions
+      - file: chapters/plantseg_classic_gui/segmentation
+  - caption: Classic PlantSeg CLI
+    chapters:
+      - file: chapters/plantseg_classic_cli/index
+  - caption: PlantSeg Python API
+    chapters:
+      - file: chapters/python_api/index
+      - file: chapters/python_api/data_processing
+      - file: chapters/python_api/cnn_predictions
+      - file: chapters/python_api/segmentation
