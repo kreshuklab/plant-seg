@@ -1,0 +1,2822 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Cell instance aware segmentation in densely packed 3D volumetric images">
+      
+      
+      
+        <link rel="canonical" href="https://kreshuklab.github.io/plant-seg/1.8.0/chapters/python_api/segmentation/">
+      
+      
+        <link rel="prev" href="../cnn_predictions/">
+      
+      
+      
+      <link rel="icon" href="../../../images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>plantseg.segmentation - PlantSeg</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_markdown_exec_pyodide.css">
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#plantseg-segmentation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="PlantSeg" class="md-header__button md-logo" aria-label="PlantSeg" data-md-component="logo">
+      
+  <img src="../../../logos/logo_white.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PlantSeg
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              plantseg.segmentation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="light-green"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/kreshuklab/plant-seg" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kreshuklab/plant-seg
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="PlantSeg" class="md-nav__button md-logo" aria-label="PlantSeg" data-md-component="logo">
+      
+  <img src="../../../logos/logo_white.png" alt="logo">
+
+    </a>
+    PlantSeg
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/kreshuklab/plant-seg" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kreshuklab/plant-seg
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../.." class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+            </a>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            Overview
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting_started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../plantseg_interactive_napari/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Napari GUI
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Napari GUI
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plantseg_interactive_napari/import_export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Import/Export
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plantseg_interactive_napari/data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Processing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plantseg_interactive_napari/unet_gasp_workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Main Workflow
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plantseg_interactive_napari/extra/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Extra Workflows
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plantseg_interactive_napari/proofreading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Proofreading
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plantseg_interactive_napari/headless_batch_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Batch Processing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plantseg_interactive_napari/unet_training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Training
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../plantseg_models/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Dataset and Training
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Dataset and Training
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plantseg_models/custom_datasets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Custom Datasets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plantseg_models/training/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Training
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../plantseg_classic_gui/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Classic GUI
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Classic GUI
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plantseg_classic_gui/data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Processing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plantseg_classic_gui/cnn_predictions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Prediction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plantseg_classic_gui/segmentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Segmentation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../plantseg_classic_cli/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Classic CLI
+    
+  </span>
+  
+
+            </a>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Classic CLI
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    plantseg.io
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data_processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    plantseg.dataprocessing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cnn_predictions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    plantseg.predictions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    plantseg.segmentation
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    plantseg.segmentation
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.dt_watershed" class="md-nav__link">
+    <span class="md-ellipsis">
+      dt_watershed
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.gasp" class="md-nav__link">
+    <span class="md-ellipsis">
+      gasp
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.multicut" class="md-nav__link">
+    <span class="md-ellipsis">
+      multicut
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.mutex_ws" class="md-nav__link">
+    <span class="md-ellipsis">
+      mutex_ws
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.lifted_multicut_from_nuclei_pmaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      lifted_multicut_from_nuclei_pmaps
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.lifted_multicut_from_nuclei_segmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      lifted_multicut_from_nuclei_segmentation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.simple_itk_watershed" class="md-nav__link">
+    <span class="md-ellipsis">
+      simple_itk_watershed
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.dt_watershed" class="md-nav__link">
+    <span class="md-ellipsis">
+      dt_watershed
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.gasp" class="md-nav__link">
+    <span class="md-ellipsis">
+      gasp
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.multicut" class="md-nav__link">
+    <span class="md-ellipsis">
+      multicut
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.mutex_ws" class="md-nav__link">
+    <span class="md-ellipsis">
+      mutex_ws
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.lifted_multicut_from_nuclei_pmaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      lifted_multicut_from_nuclei_pmaps
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.lifted_multicut_from_nuclei_segmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      lifted_multicut_from_nuclei_segmentation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plantseg.segmentation.functional.segmentation.simple_itk_watershed" class="md-nav__link">
+    <span class="md-ellipsis">
+      simple_itk_watershed
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="plantseg-segmentation">PlantSeg Segmentation</h1>
+<p>The PlantSeg segmentation module implements all segmentation routine in plantseg.</p>
+<ul>
+<li><strong><em>DT Watershed</em></strong>
+</li>
+</ul>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="plantseg.segmentation.functional.segmentation.dt_watershed" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">dt_watershed</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma_seeds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">stacked</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">sigma_weights</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">min_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">pixel_pitch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">apply_nonmax_suppression</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Performs watershed segmentation using distance transforms on boundary probability maps.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>boundary_pmaps</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Input height maps, typically boundary probability maps from a CNN.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>threshold</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>0.5</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Threshold applied to boundary maps before distance transform.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>sigma_seeds</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Smoothing factor for the watershed seed map..</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>stacked</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, performs watershed slice-by-slice (2D), otherwise in 3D.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>sigma_weights</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>2.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Smoothing factor for the watershed weight map.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>min_size</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>100</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Minimal size of watershed segments.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>alpha</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Alpha blending factor used to combine the input and distance transform into the watershed weight map.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>pixel_pitch</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;typing.Optional&lt;/code&gt;" href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#tuple">tuple</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>, ...]]</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Pixel pitch to use for anisotropic distance calculation.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>apply_nonmax_suppression</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If True, applies non-maximum suppression to filter out seeds. Needs nifty.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>n_threads</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;typing.Optional&lt;/code&gt;" href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a>]</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Number of threads for parallel processing, applicable in 2D mode.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>mask</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;typing.Optional&lt;/code&gt;" href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>]</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Mask array to exclude certain regions from segmentation.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>
+          –
+          <div class="doc-md-description">
+            <p>np.ndarray: The labeled segmentation map from the watershed algorithm.</p>
+          </div>
+        </li>
+    </ul>
+
+
+            <details class="quote">
+              <summary>Source code in <code>plantseg/segmentation/functional/segmentation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">dt_watershed</span><span class="p">(</span>
+    <span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">sigma_seeds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">stacked</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">sigma_weights</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="n">min_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">pixel_pitch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">apply_nonmax_suppression</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">n_threads</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs watershed segmentation using distance transforms on boundary probability maps.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        boundary_pmaps (np.ndarray): Input height maps, typically boundary probability maps from a CNN.</span>
+<span class="sd">        threshold (float): Threshold applied to boundary maps before distance transform.</span>
+<span class="sd">        sigma_seeds (float): Smoothing factor for the watershed seed map..</span>
+<span class="sd">        stacked (bool): If True, performs watershed slice-by-slice (2D), otherwise in 3D.</span>
+<span class="sd">        sigma_weights (float): Smoothing factor for the watershed weight map.</span>
+<span class="sd">        min_size (int): Minimal size of watershed segments.</span>
+<span class="sd">        alpha (float): Alpha blending factor used to combine the input and distance transform into the watershed weight map.</span>
+<span class="sd">        pixel_pitch (Optional[tuple[int, ...]]): Pixel pitch to use for anisotropic distance calculation.</span>
+<span class="sd">        apply_nonmax_suppression (bool): If True, applies non-maximum suppression to filter out seeds. Needs nifty.</span>
+<span class="sd">        n_threads (Optional[int]): Number of threads for parallel processing, applicable in 2D mode.</span>
+<span class="sd">        mask (Optional[np.ndarray]): Mask array to exclude certain regions from segmentation.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: The labeled segmentation map from the watershed algorithm.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Prepare the keyword arguments for the watershed function</span>
+    <span class="n">boundary_pmaps</span> <span class="o">=</span> <span class="n">boundary_pmaps</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="n">ws_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="n">threshold</span><span class="p">,</span>
+        <span class="s2">&quot;sigma_seeds&quot;</span><span class="p">:</span> <span class="n">sigma_seeds</span><span class="p">,</span>
+        <span class="s2">&quot;sigma_weights&quot;</span><span class="p">:</span> <span class="n">sigma_weights</span><span class="p">,</span>
+        <span class="s2">&quot;min_size&quot;</span><span class="p">:</span> <span class="n">min_size</span><span class="p">,</span>
+        <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="n">alpha</span><span class="p">,</span>
+        <span class="s2">&quot;pixel_pitch&quot;</span><span class="p">:</span> <span class="n">pixel_pitch</span><span class="p">,</span>
+        <span class="s2">&quot;apply_nonmax_suppression&quot;</span><span class="p">:</span> <span class="n">apply_nonmax_suppression</span><span class="p">,</span>
+        <span class="s2">&quot;mask&quot;</span><span class="p">:</span> <span class="n">mask</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">stacked</span><span class="p">:</span>
+        <span class="c1"># Apply watershed in 2D, slice by slice</span>
+        <span class="n">segmentation</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stacked_watershed</span><span class="p">(</span>
+            <span class="n">boundary_pmaps</span><span class="p">,</span> <span class="n">ws_function</span><span class="o">=</span><span class="n">distance_transform_watershed</span><span class="p">,</span> <span class="n">n_threads</span><span class="o">=</span><span class="n">n_threads</span><span class="p">,</span> <span class="o">**</span><span class="n">ws_kwargs</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Apply watershed in 3D</span>
+        <span class="n">segmentation</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">distance_transform_watershed</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">,</span> <span class="o">**</span><span class="n">ws_kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">segmentation</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div><ul>
+<li><strong><em>GASP</em></strong>
+</li>
+</ul>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="plantseg.segmentation.functional.segmentation.gasp" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">gasp</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gasp_linkage_criteria</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;average&#39;</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Perform segmentation using the GASP algorithm with affinity maps.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>boundary_pmaps</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Cell boundary predictions.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>superpixels</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;typing.Optional&lt;/code&gt;" href="https://docs.python.org/3/library/typing.html#typing.Optional">Optional</a>[<a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a>]</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Superpixel segmentation. If None, GASP will be run from the pixels. Default is None.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>gasp_linkage_criteria</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;average&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Linkage criteria for GASP. Default is 'average'.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>beta</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>0.5</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Beta parameter for GASP. Small values steer towards under-segmentation, while high values bias towards over-segmentation. Default is 0.5.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>post_minsize</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>100</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Minimum size of the segments after GASP. Default is 100.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>n_threads</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>6</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Number of threads used for GASP. Default is 6.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>
+          –
+          <div class="doc-md-description">
+            <p>np.ndarray: GASP output segmentation.</p>
+          </div>
+        </li>
+    </ul>
+
+
+            <details class="quote">
+              <summary>Source code in <code>plantseg/segmentation/functional/segmentation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">gasp</span><span class="p">(</span>
+    <span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">superpixels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">gasp_linkage_criteria</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;average&#39;</span><span class="p">,</span>
+    <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform segmentation using the GASP algorithm with affinity maps.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        boundary_pmaps (np.ndarray): Cell boundary predictions.</span>
+<span class="sd">        superpixels (Optional[np.ndarray]): Superpixel segmentation. If None, GASP will be run from the pixels. Default is None.</span>
+<span class="sd">        gasp_linkage_criteria (str): Linkage criteria for GASP. Default is &#39;average&#39;.</span>
+<span class="sd">        beta (float): Beta parameter for GASP. Small values steer towards under-segmentation, while high values bias towards over-segmentation. Default is 0.5.</span>
+<span class="sd">        post_minsize (int): Minimum size of the segments after GASP. Default is 100.</span>
+<span class="sd">        n_threads (int): Number of threads used for GASP. Default is 6.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: GASP output segmentation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">superpixels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">boundary_pmaps</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">superpixels</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;Shape mismatch between boundary_pmaps and superpixels.&quot;</span>
+        <span class="k">if</span> <span class="n">superpixels</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># Ensure superpixels is 3D if provided</span>
+            <span class="n">superpixels</span> <span class="o">=</span> <span class="n">superpixels</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+    <span class="c1"># Prepare the arguments for running GASP</span>
+    <span class="n">run_GASP_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;linkage_criteria&#39;</span><span class="p">:</span> <span class="n">gasp_linkage_criteria</span><span class="p">,</span>
+        <span class="s1">&#39;add_cannot_link_constraints&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s1">&#39;use_efficient_implementations&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Interpret boundary_pmaps as affinities and prepare for GASP</span>
+    <span class="n">boundary_pmaps</span> <span class="o">=</span> <span class="n">boundary_pmaps</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="n">affinities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">boundary_pmaps</span><span class="p">]</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">offsets</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+    <span class="c1"># Shift is required to correct aligned affinities</span>
+    <span class="n">affinities</span> <span class="o">=</span> <span class="n">shift_affinities</span><span class="p">(</span><span class="n">affinities</span><span class="p">,</span> <span class="n">offsets</span><span class="o">=</span><span class="n">offsets</span><span class="p">)</span>
+
+    <span class="c1"># invert affinities</span>
+    <span class="n">affinities</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">affinities</span>
+
+    <span class="c1"># Initialize and run GASP</span>
+    <span class="n">gasp_instance</span> <span class="o">=</span> <span class="n">GaspFromAffinities</span><span class="p">(</span>
+        <span class="n">offsets</span><span class="p">,</span>
+        <span class="n">superpixel_generator</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">superpixels</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">superpixels</span><span class="p">),</span>
+        <span class="n">run_GASP_kwargs</span><span class="o">=</span><span class="n">run_GASP_kwargs</span><span class="p">,</span>
+        <span class="n">n_threads</span><span class="o">=</span><span class="n">n_threads</span><span class="p">,</span>
+        <span class="n">beta_bias</span><span class="o">=</span><span class="n">beta</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">segmentation</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gasp_instance</span><span class="p">(</span><span class="n">affinities</span><span class="p">)</span>
+
+    <span class="c1"># Apply size filtering if specified</span>
+    <span class="k">if</span> <span class="n">post_minsize</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">segmentation</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">apply_size_filter</span><span class="p">(</span><span class="n">segmentation</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;uint32&#39;</span><span class="p">),</span> <span class="n">boundary_pmaps</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">segmentation</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div><ul>
+<li><strong><em>Multicut</em></strong>
+</li>
+</ul>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="plantseg.segmentation.functional.segmentation.multicut" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">multicut</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Multicut segmentation from boundary predictions.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>boundary_pmaps</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>superpixels</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>superpixel segmentation. Must have the same shape as boundary_pmaps.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>beta</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>0.5</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>beta parameter for the Multicut. A small value will steer the segmentation towards
+under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>post_minsize</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>50</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>minimal size of the segments after Multicut. (default: 100)</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>segmentation</code></b> (              <code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>Multicut output segmentation</p>
+          </div>
+        </li>
+    </ul>
+
+
+            <details class="quote">
+              <summary>Source code in <code>plantseg/segmentation/functional/segmentation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">multicut</span><span class="p">(</span>
+    <span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Multicut segmentation from boundary predictions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        boundary_pmaps (np.ndarray): cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.</span>
+<span class="sd">        superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.</span>
+<span class="sd">        beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards</span>
+<span class="sd">            under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)</span>
+<span class="sd">        post_minsize (int): minimal size of the segments after Multicut. (default: 100)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        segmentation (np.ndarray): Multicut output segmentation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">rag</span> <span class="o">=</span> <span class="n">compute_rag</span><span class="p">(</span><span class="n">superpixels</span><span class="p">)</span>
+
+    <span class="c1"># Prob -&gt; edge costs</span>
+    <span class="n">boundary_pmaps</span> <span class="o">=</span> <span class="n">boundary_pmaps</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="n">costs</span> <span class="o">=</span> <span class="n">compute_mc_costs</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">,</span> <span class="n">rag</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="n">beta</span><span class="p">)</span>
+
+    <span class="c1"># Creating graph</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">nifty</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">undirectedGraph</span><span class="p">(</span><span class="n">rag</span><span class="o">.</span><span class="n">numberOfNodes</span><span class="p">)</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">insertEdges</span><span class="p">(</span><span class="n">rag</span><span class="o">.</span><span class="n">uvIds</span><span class="p">())</span>
+
+    <span class="c1"># Solving Multicut</span>
+    <span class="n">node_labels</span> <span class="o">=</span> <span class="n">multicut_kernighan_lin</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">costs</span><span class="p">)</span>
+    <span class="n">segmentation</span> <span class="o">=</span> <span class="n">nifty</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">node_labels</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">)</span>
+
+    <span class="c1"># run size threshold</span>
+    <span class="k">if</span> <span class="n">post_minsize</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">segmentation</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">apply_size_filter</span><span class="p">(</span><span class="n">segmentation</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;uint32&#39;</span><span class="p">),</span> <span class="n">boundary_pmaps</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">segmentation</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div><ul>
+<li><strong><em>Mutex Watershed</em></strong>
+</li>
+</ul>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="plantseg.segmentation.functional.segmentation.mutex_ws" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">mutex_ws</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Wrapper around gasp with mutex_watershed as linkage criteria.</p>
+<p>Args:magicgui
+    boundary_pmaps (np.ndarray): cell boundary predictions. 3D array of shape (Z, Y, X) with values between 0 and 1.
+    superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.
+        If None, GASP will be run from the pixels. (default: None)
+    beta (float): beta parameter for GASP. A small value will steer the segmentation towards under-segmentation.
+        While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)
+    post_minsize (int): minimal size of the segments after GASP. (default: 100)
+    n_threads (int): number of threads used for GASP. (default: 6)</p>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>segmentation</code></b> (              <code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>MutexWS output segmentation</p>
+          </div>
+        </li>
+    </ul>
+
+
+            <details class="quote">
+              <summary>Source code in <code>plantseg/segmentation/functional/segmentation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mutex_ws</span><span class="p">(</span>
+    <span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">superpixels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">n_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper around gasp with mutex_watershed as linkage criteria.</span>
+
+<span class="sd">    Args:magicgui</span>
+<span class="sd">        boundary_pmaps (np.ndarray): cell boundary predictions. 3D array of shape (Z, Y, X) with values between 0 and 1.</span>
+<span class="sd">        superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.</span>
+<span class="sd">            If None, GASP will be run from the pixels. (default: None)</span>
+<span class="sd">        beta (float): beta parameter for GASP. A small value will steer the segmentation towards under-segmentation.</span>
+<span class="sd">            While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)</span>
+<span class="sd">        post_minsize (int): minimal size of the segments after GASP. (default: 100)</span>
+<span class="sd">        n_threads (int): number of threads used for GASP. (default: 6)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        segmentation (np.ndarray): MutexWS output segmentation</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">gasp</span><span class="p">(</span>
+        <span class="n">boundary_pmaps</span><span class="o">=</span><span class="n">boundary_pmaps</span><span class="p">,</span>
+        <span class="n">superpixels</span><span class="o">=</span><span class="n">superpixels</span><span class="p">,</span>
+        <span class="n">gasp_linkage_criteria</span><span class="o">=</span><span class="s1">&#39;mutex_watershed&#39;</span><span class="p">,</span>
+        <span class="n">beta</span><span class="o">=</span><span class="n">beta</span><span class="p">,</span>
+        <span class="n">post_minsize</span><span class="o">=</span><span class="n">post_minsize</span><span class="p">,</span>
+        <span class="n">n_threads</span><span class="o">=</span><span class="n">n_threads</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div><ul>
+<li><strong><em>Lifted Multicut</em></strong>
+</li>
+</ul>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="plantseg.segmentation.functional.segmentation.lifted_multicut_from_nuclei_pmaps" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">lifted_multicut_from_nuclei_pmaps</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nuclei_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Lifted Multicut segmentation from boundary predictions and nuclei predictions.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>boundary_pmaps</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>nuclei_pmaps</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>nuclei predictions. Must have the same shape as boundary_pmaps and
+with values between 0 and 1.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>superpixels</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>superpixel segmentation. Must have the same shape as boundary_pmaps.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>beta</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>0.5</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>beta parameter for the Multicut. A small value will steer the segmentation towards</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>under-segmentation.</code></b>
+              (<code>While a high-value bias the segmentation towards the over-segmentation. (default</code>)
+          –
+          <div class="doc-md-description">
+            <p>0.5)</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>post_minsize</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>50</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>minimal size of the segments after Multicut. (default: 100)</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>segmentation</code></b> (              <code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>Multicut output segmentation</p>
+          </div>
+        </li>
+    </ul>
+
+
+            <details class="quote">
+              <summary>Source code in <code>plantseg/segmentation/functional/segmentation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lifted_multicut_from_nuclei_pmaps</span><span class="p">(</span>
+    <span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">nuclei_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">superpixels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lifted Multicut segmentation from boundary predictions and nuclei predictions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        boundary_pmaps (np.ndarray): cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.</span>
+<span class="sd">        nuclei_pmaps (np.ndarray): nuclei predictions. Must have the same shape as boundary_pmaps and</span>
+<span class="sd">            with values between 0 and 1.</span>
+<span class="sd">        superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.</span>
+<span class="sd">        beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards</span>
+<span class="sd">        under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)</span>
+<span class="sd">        post_minsize (int): minimal size of the segments after Multicut. (default: 100)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        segmentation (np.ndarray): Multicut output segmentation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># compute the region adjacency graph</span>
+    <span class="n">rag</span> <span class="o">=</span> <span class="n">compute_rag</span><span class="p">(</span><span class="n">superpixels</span><span class="p">)</span>
+
+    <span class="c1"># compute multi cut edges costs</span>
+    <span class="n">boundary_pmaps</span> <span class="o">=</span> <span class="n">boundary_pmaps</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="n">costs</span> <span class="o">=</span> <span class="n">compute_mc_costs</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">,</span> <span class="n">rag</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+
+    <span class="c1"># assert nuclei pmaps are floats</span>
+    <span class="n">nuclei_pmaps</span> <span class="o">=</span> <span class="n">nuclei_pmaps</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="n">input_maps</span> <span class="o">=</span> <span class="p">[</span><span class="n">nuclei_pmaps</span><span class="p">]</span>
+    <span class="n">assignment_threshold</span> <span class="o">=</span> <span class="mf">0.9</span>
+
+    <span class="c1"># compute lifted multicut features from boundary pmaps</span>
+    <span class="n">lifted_uvs</span><span class="p">,</span> <span class="n">lifted_costs</span> <span class="o">=</span> <span class="n">lifted_problem_from_probabilities</span><span class="p">(</span>
+        <span class="n">rag</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">,</span> <span class="n">input_maps</span><span class="p">,</span> <span class="n">assignment_threshold</span><span class="p">,</span> <span class="n">graph_depth</span><span class="o">=</span><span class="mi">4</span>
+    <span class="p">)</span>
+
+    <span class="c1"># solve the full lifted problem using the kernighan lin approximation introduced in</span>
+    <span class="c1"># http://openaccess.thecvf.com/content_iccv_2015/html/Keuper_Efficient_Decomposition_of_ICCV_2015_paper.html</span>
+    <span class="n">node_labels</span> <span class="o">=</span> <span class="n">lmc</span><span class="o">.</span><span class="n">lifted_multicut_kernighan_lin</span><span class="p">(</span><span class="n">rag</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">lifted_uvs</span><span class="p">,</span> <span class="n">lifted_costs</span><span class="p">)</span>
+    <span class="n">segmentation</span> <span class="o">=</span> <span class="n">project_node_labels_to_pixels</span><span class="p">(</span><span class="n">rag</span><span class="p">,</span> <span class="n">node_labels</span><span class="p">)</span>
+
+    <span class="c1"># run size threshold</span>
+    <span class="k">if</span> <span class="n">post_minsize</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">segmentation</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">apply_size_filter</span><span class="p">(</span><span class="n">segmentation</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;uint32&#39;</span><span class="p">),</span> <span class="n">boundary_pmaps</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">segmentation</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="plantseg.segmentation.functional.segmentation.lifted_multicut_from_nuclei_segmentation" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">lifted_multicut_from_nuclei_segmentation</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">nuclei_seg</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">superpixels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Lifted Multicut segmentation from boundary predictions and nuclei segmentation.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>boundary_pmaps</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>nuclei_seg</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Nuclei segmentation. Must have the same shape as boundary_pmaps.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>superpixels</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>superpixel segmentation. Must have the same shape as boundary_pmaps.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>beta</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>0.5</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>beta parameter for the Multicut. A small value will steer the segmentation towards</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>under-segmentation.</code></b>
+              (<code>While a high-value bias the segmentation towards the over-segmentation. (default</code>)
+          –
+          <div class="doc-md-description">
+            <p>0.5)</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>post_minsize</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>50</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>minimal size of the segments after Multicut. (default: 100)</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>segmentation</code></b> (              <code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>Multicut output segmentation</p>
+          </div>
+        </li>
+    </ul>
+
+
+            <details class="quote">
+              <summary>Source code in <code>plantseg/segmentation/functional/segmentation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">lifted_multicut_from_nuclei_segmentation</span><span class="p">(</span>
+    <span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">nuclei_seg</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">superpixels</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">post_minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lifted Multicut segmentation from boundary predictions and nuclei segmentation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        boundary_pmaps (np.ndarray): cell boundary predictions, 3D array of shape (Z, Y, X) with values between 0 and 1.</span>
+<span class="sd">        nuclei_seg (np.ndarray): Nuclei segmentation. Must have the same shape as boundary_pmaps.</span>
+<span class="sd">        superpixels (np.ndarray): superpixel segmentation. Must have the same shape as boundary_pmaps.</span>
+<span class="sd">        beta (float): beta parameter for the Multicut. A small value will steer the segmentation towards</span>
+<span class="sd">        under-segmentation. While a high-value bias the segmentation towards the over-segmentation. (default: 0.5)</span>
+<span class="sd">        post_minsize (int): minimal size of the segments after Multicut. (default: 100)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        segmentation (np.ndarray): Multicut output segmentation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># compute the region adjacency graph</span>
+    <span class="n">rag</span> <span class="o">=</span> <span class="n">compute_rag</span><span class="p">(</span><span class="n">superpixels</span><span class="p">)</span>
+
+    <span class="c1"># compute multi cut edges costs</span>
+    <span class="n">boundary_pmaps</span> <span class="o">=</span> <span class="n">boundary_pmaps</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="n">costs</span> <span class="o">=</span> <span class="n">compute_mc_costs</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">,</span> <span class="n">rag</span><span class="p">,</span> <span class="n">beta</span><span class="p">)</span>
+    <span class="n">max_cost</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">costs</span><span class="p">))</span>
+    <span class="n">lifted_uvs</span><span class="p">,</span> <span class="n">lifted_costs</span> <span class="o">=</span> <span class="n">lifted_problem_from_segmentation</span><span class="p">(</span>
+        <span class="n">rag</span><span class="p">,</span>
+        <span class="n">superpixels</span><span class="p">,</span>
+        <span class="n">nuclei_seg</span><span class="p">,</span>
+        <span class="n">overlap_threshold</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">graph_depth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">same_segment_cost</span><span class="o">=</span><span class="mi">5</span> <span class="o">*</span> <span class="n">max_cost</span><span class="p">,</span>
+        <span class="n">different_segment_cost</span><span class="o">=-</span><span class="mi">5</span> <span class="o">*</span> <span class="n">max_cost</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># solve the full lifted problem using the kernighan lin approximation introduced in</span>
+    <span class="c1"># http://openaccess.thecvf.com/content_iccv_2015/html/Keuper_Efficient_Decomposition_of_ICCV_2015_paper.html</span>
+    <span class="n">lifted_costs</span> <span class="o">=</span> <span class="n">lifted_costs</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+    <span class="n">node_labels</span> <span class="o">=</span> <span class="n">lmc</span><span class="o">.</span><span class="n">lifted_multicut_kernighan_lin</span><span class="p">(</span><span class="n">rag</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">lifted_uvs</span><span class="p">,</span> <span class="n">lifted_costs</span><span class="p">)</span>
+    <span class="n">segmentation</span> <span class="o">=</span> <span class="n">project_node_labels_to_pixels</span><span class="p">(</span><span class="n">rag</span><span class="p">,</span> <span class="n">node_labels</span><span class="p">)</span>
+
+    <span class="c1"># run size threshold</span>
+    <span class="k">if</span> <span class="n">post_minsize</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">segmentation</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">apply_size_filter</span><span class="p">(</span><span class="n">segmentation</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;uint32&#39;</span><span class="p">),</span> <span class="n">boundary_pmaps</span><span class="p">,</span> <span class="n">post_minsize</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">segmentation</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div><ul>
+<li><strong><em>Simple ITK Watershed</em></strong>
+</li>
+</ul>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="plantseg.segmentation.functional.segmentation.simple_itk_watershed" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">segmentation</span><span class="o">.</span><span class="n">simple_itk_watershed</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Simple itk watershed segmentation.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>boundary_pmaps</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>cell boundary predictions. 3D array of shape (Z, Y, X) with values between 0 and 1.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>threshold</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>0.5</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>threshold for the watershed segmentation. (default: 0.5)</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>sigma</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></code>, default:
+                  <code>1.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>sigma for the gaussian smoothing. (default: 1.0)</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>minsize</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></code>, default:
+                  <code>100</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>minimal size of the segments after segmentation. (default: 100)</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>segmentation</code></b> (              <code><a class="autorefs autorefs-external" title="&lt;code&gt;numpy.ndarray&lt;/code&gt;" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray">ndarray</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>watershed output segmentation (using SimpleITK)</p>
+          </div>
+        </li>
+    </ul>
+
+
+            <details class="quote">
+              <summary>Source code in <code>plantseg/segmentation/functional/segmentation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">simple_itk_watershed</span><span class="p">(</span>
+    <span class="n">boundary_pmaps</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">minsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple itk watershed segmentation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        boundary_pmaps (np.ndarray): cell boundary predictions. 3D array of shape (Z, Y, X) with values between 0 and 1.</span>
+<span class="sd">        threshold (float): threshold for the watershed segmentation. (default: 0.5)</span>
+<span class="sd">        sigma (float): sigma for the gaussian smoothing. (default: 1.0)</span>
+<span class="sd">        minsize (int): minimal size of the segments after segmentation. (default: 100)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        segmentation (np.ndarray): watershed output segmentation (using SimpleITK)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sitk_installed</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;please install sitk before running this process&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sigma</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># fix ws sigma length</span>
+        <span class="c1"># ws sigma cannot be shorter than pmaps dims</span>
+        <span class="n">max_sigma</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+        <span class="n">ws_sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">max_sigma</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">max_sigma</span><span class="o">.</span><span class="n">ndim</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">)</span>
+        <span class="n">boundary_pmaps</span> <span class="o">=</span> <span class="n">gaussianSmoothing</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">,</span> <span class="n">ws_sigma</span><span class="p">)</span>
+
+    <span class="c1"># Itk watershed + size filtering</span>
+    <span class="n">itk_pmaps</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">GetImageFromArray</span><span class="p">(</span><span class="n">boundary_pmaps</span><span class="p">)</span>
+    <span class="n">itk_segmentation</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">MorphologicalWatershed</span><span class="p">(</span><span class="n">itk_pmaps</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">markWatershedLine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fullyConnected</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">itk_segmentation</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">RelabelComponent</span><span class="p">(</span><span class="n">itk_segmentation</span><span class="p">,</span> <span class="n">minsize</span><span class="p">)</span>
+    <span class="n">segmentation</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">GetArrayFromImage</span><span class="p">(</span><span class="n">itk_segmentation</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">segmentation</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">May 27, 2024</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">December 15, 2023</span>
+  </span>
+
+    
+    
+    
+      
+  <span class="md-source-file__fact">
+    
+      
+  <span class="md-icon" title="Contributors">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2"/></svg>
+  </span>
+  <span>GitHub</span>
+
+    
+    <nav>
+      
+        <a href="https://github.com/lorenzocerrone" class="md-author" title="@lorenzocerrone">
+          
+          <img src="https://avatars.githubusercontent.com/u/23013839?v=4&size=72" alt="lorenzocerrone">
+        </a>
+      
+        <a href="https://github.com/qin-yu" class="md-author" title="@qin-yu">
+          
+          <img src="https://avatars.githubusercontent.com/u/17722010?v=4&size=72" alt="qin-yu">
+        </a>
+      
+        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
+          
+          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
+        </a>
+      
+      
+      
+    </nav>
+  </span>
+
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../cnn_predictions/" class="md-footer__link md-footer__link--prev" aria-label="Previous: plantseg.predictions">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                plantseg.predictions
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2019 - 2024 Lorenzo Cerrone, Adrian Wolny, Qin Yu
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/kreshuklab/plant-seg" target="_blank" rel="noopener" title="PlantSeg on GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["content.tooltips", "content.code.annotate", "navigation.instant", "navigation.instant.progress", "navigation.sections", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "search.suggest", "search.share"], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "provider": "mike"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+        <script src="../../../assets/_markdown_exec_pyodide.js"></script>
+      
+    
+  </body>
+</html>
