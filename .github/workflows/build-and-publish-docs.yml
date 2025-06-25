@@ -1,5 +1,11 @@
 name: Docs Build and Publish
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version string"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -45,12 +51,6 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate plant-seg-dev
-          pip install mkdocs-material \
-                      mkdocs-git-revision-date-localized-plugin \
-                      mkdocs-git-committers-plugin-2 \
-                      mkdocs-autorefs \
-                      mkdocstrings[python] \
-                      markdown-exec
-          mkdocs gh-deploy --force
+          mike deploy --push --update-aliases ${{ inputs.version }} latest
         env:
           MKDOCS_GIT_COMMITTERS_APIKEY: ${{ secrets.MKDOCS_GIT_COMMITTERS_APIKEY }}

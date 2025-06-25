@@ -42,6 +42,7 @@ dependencies:
   - mkdocs-git-revision-date-localized-plugin
   - mkdocs-git-committers-plugin-2
   - mkdocstrings-python
+  - mike
   - pip:
       - markdown-exec
       # PlantSeg

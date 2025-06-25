@@ -48,6 +48,7 @@ extra:
       name: PlantSeg on GitHub
   version:
     provider: mike
+    alias: true
 
 markdown_extensions:
   - abbr
