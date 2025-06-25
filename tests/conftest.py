@@ -2,14 +2,16 @@
 
 import shutil
 from pathlib import Path
+from uuid import uuid4
 
 import numpy as np
-import pooch
 import pytest
 import skimage.transform as skt
 import torch
 import yaml
+from napari.layers import Image, Labels, Shapes
 
+from plantseg.core.image import SemanticType
 from plantseg.io.io import smart_load
 
 TEST_FILES = Path(__file__).resolve().parent / "resources"
@@ -17,6 +19,98 @@ VOXEL_SIZE = (0.235, 0.15, 0.15)
 KEY_ZARR = "volumes/new"
 
 IS_CUDA_AVAILABLE = torch.cuda.is_available()
+
+
+@pytest.fixture
+def napari_raw():
+    data = np.random.rand(10, 10, 10)
+    voxel_size = (1.0, 1.0, 1.0)
+    metadata = {
+        "semantic_type": SemanticType.RAW,
+        "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "image_layout": "ZYX",
+        "id": uuid4(),
+    }
+    return Image(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_raw_2d():
+    data = np.random.rand(10, 10)
+    voxel_size = None
+    metadata = {
+        "semantic_type": SemanticType.RAW,
+        "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "image_layout": "YX",
+        "id": uuid4(),
+    }
+    return Image(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_labels():
+    data = np.random.rand(10, 10, 10)
+    data = np.array(data, dtype=np.int8)
+    voxel_size = (1.0, 1.0, 1.0)
+    metadata = {
+        "semantic_type": SemanticType.LABEL,
+        "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "image_layout": "ZYX",
+        "id": uuid4(),
+    }
+    return Labels(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_prediction():
+    data = np.random.rand(10, 10, 10)
+    voxel_size = (1.0, 1.0, 1.0)
+    metadata = {
+        "semantic_type": SemanticType.PREDICTION,
+        "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "image_layout": "ZYX",
+        "id": uuid4(),
+    }
+    return Image(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_segmentation():
+    data = np.random.rand(10, 10, 10)
+    data = np.array(data, dtype=np.int8)
+    voxel_size = (1.0, 1.0, 1.0)
+    metadata = {
+        "semantic_type": SemanticType.SEGMENTATION,
+        "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "image_layout": "ZYX",
+        "id": uuid4(),
+    }
+    return Labels(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_no_meta_image():
+    data = np.random.rand(10, 10, 10)
+    metadata = {}
+    return Image(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_no_meta_labels():
+    data = np.random.rand(10, 10, 10)
+    data = np.array(data, dtype=np.int8)
+    metadata = {}
+    return Labels(data, metadata=metadata, name="test_image")
+
+
+@pytest.fixture
+def napari_shapes():
+    return Shapes()
 
 
 @pytest.fixture
@@ -148,3 +242,18 @@ def complex_test_data():
 @pytest.fixture
 def workflow_yaml(tmpdir: Path):
     return Path(shutil.copy2(TEST_FILES / "test_workflow.yaml", tmpdir))
+
+
+@pytest.fixture
+def zarr_file_empty():
+    return TEST_FILES / "empty.zarr"
+
+
+@pytest.fixture
+def zarr_file_3d():
+    return TEST_FILES / "3d.zarr"
+
+
+@pytest.fixture
+def h5_file():
+    return TEST_FILES / "sample_ovule.h5"

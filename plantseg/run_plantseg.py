@@ -103,8 +103,8 @@ def main():
     check_version(__version__)
 
     if args.loglevel:
-        print(f"Setting loglevel to {args.loglevel}.")
         logger.setLevel(args.loglevel)
+        logger.info(f"Setting loglevel to {args.loglevel}.")
 
     if args.version:
         print(__version__)

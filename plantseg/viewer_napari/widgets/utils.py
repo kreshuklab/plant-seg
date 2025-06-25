@@ -1,14 +1,18 @@
 import timeit
 from dataclasses import dataclass
-from typing import Callable
+from pathlib import Path
+from typing import Callable, Iterable, Optional
 
 import napari
-from magicgui.widgets import ProgressBar, Widget
+from magicgui.widgets import Label, ProgressBar, Widget
+from napari.layers import Layer
 from napari.qt.threading import create_worker
 from psygnal import evented
 from psygnal.qt import start_emitting_from_queue
+from qtpy import QtGui, QtWidgets
 
-from plantseg.core.image import PlantSegImage
+from plantseg import logger
+from plantseg.core.image import PlantSegImage, SemanticType
 from plantseg.viewer_napari import log
 
 
@@ -18,27 +22,62 @@ def _return_value_if_widget(x):
     return x
 
 
-def setup_layers_suggestions(out_name: str, widgets: list[Widget] | None):
-    """Update the widgets with the output of the task.
-
-    Args:
-        out_name (str): The name of the output layer.
-        widgets (list[Widget] | None): List of widgets to be updated, if any.
+def div(text: str = ""):
+    """Returns a divider widget
+    Can put up to 54 chars headline into it.
     """
+    resources = Path(__file__).resolve().parent.parent.parent / "resources"
+    if text:
+        if len(text) > 54:
+            logger.warning(
+                "Divider text too long, might not be displayed correctly!\n"
+                f"Text: {text}"
+            )
+        ql = QtWidgets.QLabel()
+        text_len = ql.fontMetrics().boundingRect(text).width()
+        # 490px target length, 172px div png
+        needed_ws = (490 - 172) - (text_len)
+        # length of white space ~3.5px, char length less, needs to be balanced
+        n_ws = int((needed_ws / 4.1) + (text_len * 0.13))
+
+        w = Label(
+            value=(
+                f"<img src={resources / 'div1.png'}>"
+                f"{text:\u00a0^{n_ws}}"
+                f"<img src={resources / 'div2.png'}>"
+            )
+        )
+    else:
+        w = Label(value=f"<img src={resources / 'div.png'}>")
+
+    font = QtGui.QFont()
+    font.setBold(True)
+    w.native.setFont(font)
+
+    return w
+
+
+def get_layers(
+    s_type: Optional[SemanticType | Iterable[SemanticType]] = None,
+) -> list[Layer]:
+    """Get layers of specific type, e.g. raw, lable, prediction, segmentation"""
+    log(f"get_layers called with filter: {s_type}", "utils", level="DEBUG")
     viewer = napari.current_viewer()
-
     if viewer is None:
-        return None
+        return []
 
-    if widgets is None or not widgets:
-        return None
+    ll = viewer.layers
 
-    if out_name not in viewer.layers:
-        return None
-
-    out_layer = viewer.layers[out_name]
-    for widget in widgets:
-        widget.value = out_layer
+    relevant_layers = []
+    if s_type is not None:
+        if not isinstance(s_type, Iterable):
+            s_type = (s_type,)
+        for layer in ll:
+            if layer._metadata.get("semantic_type", False) in s_type:
+                relevant_layers.append(layer)
+    else:
+        relevant_layers = ll
+    return relevant_layers
 
 
 def add_ps_image_to_viewer(layer: PlantSegImage, replace: bool = False) -> None:
@@ -89,7 +128,8 @@ def update_progressbar(pbar: ProgressBar, tracker: PBar_Tracker):
 
 
 def schedule_task(
-    task: Callable, task_kwargs: dict, widgets_to_update: list[Widget] | None = None
+    task: Callable,
+    task_kwargs: dict,
 ) -> None:
     """Schedule a task to be executed in a separate thread and update the widgets with the result.
 
@@ -97,7 +137,6 @@ def schedule_task(
         task (Callable): Function to be executed, the function should be a workflow task,
             and return a PlantSegImage or a tuple/list of PlantSegImage, or None.
         task_kwargs (dict): Keyword arguments for the function.
-        widgets_to_update (list[Widget] | None, optional): Widgets to be updated with the result. Defaults to None.
     """
 
     if hasattr(task, "__plantseg_task__"):
@@ -113,9 +152,6 @@ def schedule_task(
 
         if isinstance(task_result, PlantSegImage):
             add_ps_image_to_viewer(task_result, replace=True)
-            setup_layers_suggestions(
-                out_name=task_result.name, widgets=widgets_to_update
-            )
 
         elif isinstance(task_result, (tuple, list)):
             for ps_im in task_result:
@@ -126,9 +162,6 @@ def schedule_task(
 
             for ps_im in task_result:
                 add_ps_image_to_viewer(ps_im, replace=True)
-            setup_layers_suggestions(
-                out_name=task_result[-1].name, widgets=widgets_to_update
-            )
 
         elif task_result is None:
             return None
@@ -152,7 +185,7 @@ def schedule_task(
         start_emitting_from_queue()
     if hide_list := task_kwargs.pop("_to_hide", None):
         for to_hide in hide_list:
-            to_hide.visible = False
+            to_hide.hide()
 
     # _progress displays spinner for all tasks, not necessary for magicgui progress bar.
     worker = create_worker(task, **task_kwargs, _progress=True)
@@ -161,10 +194,11 @@ def schedule_task(
     # Hide progress bar after task
     if pbar is not None:
         worker.returned.connect(lambda _: setattr(pbar, "visible", False))
+        worker.errored.connect(lambda _: setattr(pbar, "visible", False))
     if hide_list is not None:
-        worker.returned.connect(
-            lambda _: [setattr(w, "visible", True) for w in hide_list]
-        )
+        worker.returned.connect(lambda _: [w.show() for w in hide_list])
+        worker.errored.connect(lambda _: [w.show() for w in hide_list])
+
     worker.start()
     log(f"{task_name} started", thread="Task")
     return None

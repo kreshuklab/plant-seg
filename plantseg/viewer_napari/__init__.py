@@ -26,7 +26,7 @@ def log(
 
 
 log(
-    message="Napari logger configured. Napari logger name: {__name__}",
+    message=f"Napari logger configured. Napari logger name: {__name__}",
     thread="Napari GUI Logger",
     level="info",
 )

@@ -179,6 +179,13 @@ def preserve_labels(layer_name: str) -> None:
         layer_name (str): The name of the layer to preserve.
     """
     viewer = get_current_viewer_wrapper()
+    if layer_name not in viewer.layers:
+        log(
+            f"Layer {layer_name} not found in viewer",
+            thread="preserve_labels",
+            level="error",
+        )
+        raise ValueError(f"Layer {layer_name} not found in viewer")
     viewer.layers[layer_name].preserve_labels = True  # type: ignore
     viewer.layers[layer_name].refresh()
 
@@ -222,11 +229,11 @@ class ProofreadingHandler:
     @contextmanager
     def lock_manager(self):
         """Context manager for locking and unlocking proofreading handler."""
-        self._lock = True
+        self._state.lock = True
         try:
             yield
         finally:
-            self._lock = False
+            self._state.lock = False
 
     def is_locked(self) -> bool:
         """Checks if the proofreading handler is locked."""
@@ -279,7 +286,7 @@ class ProofreadingHandler:
                 "Proofreading widget not initialized. Run the proofreading widget tool once first",
                 thread="Reset Scribbles",
             )
-            return None
+            return
         update_layer(
             np.zeros_like(self.segmentation), SCRIBBLES_LAYER_NAME, scale=self.scale
         )
@@ -390,7 +397,12 @@ class ProofreadingHandler:
         self._state.corrected_cells = state.corrected_cells
         self._state.bboxes = state.bboxes
 
-    def _perform_undo_redo(self, history_pop, history_append, action_name):
+    def _perform_undo_redo(
+        self,
+        history_pop: deque,
+        history_append: deque,
+        action_name: str,
+    ):
         """Generalized function to handle undo and redo actions."""
         if not history_pop:
             log(f"No more actions to {action_name}.", thread=action_name.capitalize())
@@ -429,7 +441,7 @@ class ProofreadingHandler:
                 f"Invalid file extension: {filepath.suffix}. Please use a valid HDF5 file extensions: {H5_EXTENSIONS}",
                 thread="Save State",
             )
-            return None
+            return
 
         viewer = get_current_viewer_wrapper()
 
@@ -578,13 +590,14 @@ def widget_clean_scribble(viewer: napari.Viewer):
             "Proofreading widget not initialized. Run the proofreading widget tool once first",
             thread="Clean scribble",
         )
+        return
 
     if "Scribbles" not in viewer.layers:
         log(
             "Scribble Layer not defined. Run the proofreading widget tool once first",
             thread="Clean scribble",
         )
-        return None
+        return
 
     segmentation_handler.reset_scribbles()
 
@@ -653,7 +666,8 @@ def initialize_from_layer(segmentation: Labels, are_you_sure: bool = False) -> N
     widget_proofreading_initialisation.call_button.text = "Re-initialize Proofreading"  # type: ignore
 
     viewer = get_current_viewer_wrapper()
-    widget_proofreading_initialisation.segmentation.choices = [  # Avoid re-initializing with proofreading helper layers
+    # Avoid re-initializing with proofreading helper layers
+    widget_proofreading_initialisation.segmentation.choices = [
         layer
         for layer in viewer.layers
         if layer.name not in [SCRIBBLES_LAYER_NAME, CORRECTED_CELLS_LAYER_NAME]
@@ -683,7 +697,9 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
     call_button="Initialize Proofreading",
     mode={
         "label": "Mode",
-        "choices": ["Layer", "File"],
+        "choices": ["New", "Continue"],
+        "widget_type": "RadioButtons",
+        "orientation": "horizontal",
     },
     segmentation={
         "label": "Segmentation",
@@ -692,12 +708,13 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
     filepath={
         "label": "Resume from file",
         "mode": "r",
-        "tooltip": "Load a previous proofreading state from a pickle (*.pkl) file",
+        "filter": "*.h5",
+        "tooltip": "Load a previous proofreading state from a h5 file",
     },
     are_you_sure={"label": "I understand this resets everything", "visible": False},
 )
 def widget_proofreading_initialisation(
-    mode: str = "Layer",
+    mode: str = "New",
     segmentation: Labels | None = None,
     filepath: Path | None = None,
     are_you_sure: bool = False,
@@ -708,7 +725,7 @@ def widget_proofreading_initialisation(
         segmentation (Labels): The segmentation layer.
         state (Path | None): Path to a previous state file (optional).
     """
-    if mode == "Layer":
+    if mode == "New":
         if segmentation is None:
             log(
                 "No segmentation layer selected",
@@ -717,12 +734,16 @@ def widget_proofreading_initialisation(
             )
             return
         initialize_from_layer(segmentation, are_you_sure=are_you_sure)
-    elif mode == "File":
+    elif mode == "Continue":
         if filepath is None:
             log("No state file selected", thread="Proofreading tool", level="error")
             return
         initialize_from_file(filepath, are_you_sure=are_you_sure)
         widget_save_state.filepath.value = filepath
+    else:
+        raise ValueError("Unknown mode")
+
+    setup_proofreading_keybindings()
 
 
 widget_proofreading_initialisation.are_you_sure.hide()
@@ -731,10 +752,10 @@ widget_proofreading_initialisation.filepath.hide()
 
 @widget_proofreading_initialisation.mode.changed.connect
 def _on_mode_changed(mode: str):
-    if mode == "Layer":
+    if mode == "New":
         widget_proofreading_initialisation.segmentation.show()
         widget_proofreading_initialisation.filepath.hide()
-    elif mode == "File":
+    elif mode == "Continue":
         widget_proofreading_initialisation.segmentation.hide()
         widget_proofreading_initialisation.filepath.show()
 
@@ -748,7 +769,7 @@ def _on_mode_changed(mode: str):
 )
 def widget_split_and_merge_from_scribbles(
     viewer: napari.Viewer,
-    image: Image,
+    image: Image | None,
 ):
     """Splits or merges segments using scribbles as seeds for corrections.
 
@@ -762,20 +783,28 @@ def widget_split_and_merge_from_scribbles(
         )
         return
 
+    if image is None:
+        log(
+            "Please select a boundary image first!",
+            thread="Proofreading tool",
+        )
+        return
+
     ps_image = PlantSegImage.from_napari_layer(image)
 
     if ps_image.semantic_type == SemanticType.RAW:
         log(
-            "Pmap/Image layer appears to be a raw image and not a boundary probability map. "
-            "For the best proofreading results, try to use a boundaries probability layer "
-            "(e.g. from the Run Prediction widget)",
+            "Pmap/Image layer appears to be a raw image and not a boundary "
+            "probability map. For the best proofreading results, try to use a "
+            "boundaries probability layer (e.g. from the Run Prediction widget)",
             thread="Proofreading tool",
             level="warning",
         )
 
     if ps_image.is_multichannel:
         log(
-            "Pmap/Image layer appears to be a multichannel image. Proofreading does not support multichannel images. ",
+            "Pmap/Image layer appears to be a multichannel image. "
+            "Proofreading does not support multichannel images. ",
             thread="Proofreading tool",
             level="error",
         )
@@ -829,7 +858,8 @@ def widget_filter_segmentation() -> None:
     @thread_worker
     def func():
         if segmentation_handler.is_locked():
-            raise ValueError("Segmentation is locked.")
+            return
+            # raise ValueError("Segmentation is locked.")
 
         with segmentation_handler.lock_manager():
             filtered_seg = segmentation_handler.segmentation.copy()
@@ -857,7 +887,7 @@ def widget_filter_segmentation() -> None:
     worker = func()  # type: ignore
     worker.returned.connect(on_done)
     worker.start()
-    return None
+    return
 
 
 @magicgui(call_button="Undo Last Action")
@@ -883,6 +913,8 @@ def widget_redo():
     filepath={
         "label": "File path",
         "mode": "w",
+        "filter": "*.h5",
+        "tooltip": "Save as h5 file",
     },
     raw={
         "label": "Raw image",
@@ -905,12 +937,11 @@ def widget_save_state(
     segmentation_handler.save_state_to_disk(filepath, raw=raw, pmap=pmap)
 
 
-def setup_proofreading_keybindings(viewer: napari.Viewer):
-    """Sets up keybindings for the proofreading tool in Napari.
-
-    Args:
-        viewer (napari.Viewer): The current Napari viewer instance.
-    """
+def setup_proofreading_keybindings():
+    """Sets up keybindings for the proofreading tool in Napari."""
+    viewer = napari.current_viewer()
+    if viewer is None:
+        return
 
     @viewer.bind_key(DEFAULT_KEY_BINDING_PROOFREAD)
     def _widget_split_and_merge_from_scribbles(_viewer: napari.Viewer):
