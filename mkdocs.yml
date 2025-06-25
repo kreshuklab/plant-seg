@@ -116,7 +116,7 @@ nav:
       - Batch processing: chapters/plantseg_interactive_napari/batch.md
       - Training: chapters/plantseg_interactive_napari/unet_training.md
 
-  - Workflows:
+  - Batch Workflow:
       - chapters/workflow_gui/index.md
 
   - Dataset and Training:
