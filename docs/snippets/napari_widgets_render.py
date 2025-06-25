@@ -49,6 +49,7 @@ def get_doc_string(widget) -> str:
 
 def _render_widget(widget, theme="dark"):
     widget.show()
+    widget.native.setFixedWidth(550)
     widget.native.setStyleSheet(get_stylesheet(theme))
     geometry = widget.native.geometry()
     pixmap = QtGui.QPixmap(geometry.size())
@@ -85,9 +86,9 @@ def _format_widget(name="", images="", doc_str="", param_doc_str="") -> str:
         """
 
 
-def render_widget(widget, skip_name=True) -> str:
+def render_widget(widget, skip_name=True, skip_doc=False) -> str:
     widget_name = get_widget_title(widget) if not skip_name else ""
     widget_images = get_widget_images(widget)
-    widget_doc = get_doc_string(widget)
+    widget_doc = get_doc_string(widget) if not skip_doc else ""
     widget_par_doc = get_parameters_tooltips(widget)
     return _format_widget(widget_name, widget_images, widget_doc, widget_par_doc)

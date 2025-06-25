@@ -101,16 +101,16 @@ nav:
       - chapters/getting_started/index.md
       - Installation: chapters/getting_started/installation.md
       - Contributing: chapters/getting_started/contributing.md
-      - Troubleshooting: chapters/getting_started/troubleshooting.md
 
   - Napari GUI:
       - chapters/plantseg_interactive_napari/index.md
-      - Import/Export: chapters/plantseg_interactive_napari/import_export.md
-      - Pre-Processing: chapters/plantseg_interactive_napari/preprocessing.md
-      - Main Workflow: chapters/plantseg_interactive_napari/unet_gasp_workflow.md
-      - Post-processing: chapters/plantseg_interactive_napari/proofreading_auto.md
-      - Proofreading: chapters/plantseg_interactive_napari/proofreading_manual.md
-      - Extra Workflows: chapters/plantseg_interactive_napari/extra.md
+      - Import: chapters/plantseg_interactive_napari/import.md
+      - Preprocessing: chapters/plantseg_interactive_napari/preprocessing.md
+      - Segmentation: chapters/plantseg_interactive_napari/segmentation.md
+      - Postprocessing: chapters/plantseg_interactive_napari/postprocessing.md
+      - Proofreading: chapters/plantseg_interactive_napari/proofreading.md
+      - Output: chapters/plantseg_interactive_napari/output.md
+      - Batch processing: chapters/plantseg_interactive_napari/batch.md
       - Training: chapters/plantseg_interactive_napari/unet_training.md
 
   - Workflows:
@@ -144,3 +144,4 @@ nav:
 
       - Classic CLI:
           - chapters/plantseg_legacy/plantseg_classic_cli/index.md
+      - Troubleshooting: chapters/plantseg_legacy/troubleshooting.md
