@@ -708,7 +708,8 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
     filepath={
         "label": "Resume from file",
         "mode": "r",
-        "tooltip": "Load a previous proofreading state from a pickle (*.pkl) file",
+        "filter": "*.h5",
+        "tooltip": "Load a previous proofreading state from a h5 file",
     },
     are_you_sure={"label": "I understand this resets everything", "visible": False},
 )
@@ -912,6 +913,8 @@ def widget_redo():
     filepath={
         "label": "File path",
         "mode": "w",
+        "filter": "*.h5",
+        "tooltip": "Save as h5 file",
     },
     raw={
         "label": "Raw image",
