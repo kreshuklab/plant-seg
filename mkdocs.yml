@@ -46,6 +46,8 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/kreshuklab/plant-seg
       name: PlantSeg on GitHub
+  version:
+    provider: mike
 
 markdown_extensions:
   - abbr
