@@ -32,7 +32,7 @@ def napari_raw():
         "image_layout": "ZYX",
         "id": uuid4(),
     }
-    return Image(data, metadata=metadata, name="test_image")
+    return Image(data, metadata=metadata, name="test_image_3D")
 
 
 @pytest.fixture
@@ -46,7 +46,7 @@ def napari_raw_2d():
         "image_layout": "YX",
         "id": uuid4(),
     }
-    return Image(data, metadata=metadata, name="test_image")
+    return Image(data, metadata=metadata, name="test_image_2D")
 
 
 @pytest.fixture
@@ -61,7 +61,7 @@ def napari_labels():
         "image_layout": "ZYX",
         "id": uuid4(),
     }
-    return Labels(data, metadata=metadata, name="test_image")
+    return Labels(data, metadata=metadata, name="test_label_3D")
 
 
 @pytest.fixture
@@ -75,7 +75,7 @@ def napari_prediction():
         "image_layout": "ZYX",
         "id": uuid4(),
     }
-    return Image(data, metadata=metadata, name="test_image")
+    return Image(data, metadata=metadata, name="test_prediction_3D")
 
 
 @pytest.fixture
@@ -90,14 +90,14 @@ def napari_segmentation():
         "image_layout": "ZYX",
         "id": uuid4(),
     }
-    return Labels(data, metadata=metadata, name="test_image")
+    return Labels(data, metadata=metadata, name="test_segmentation_3D")
 
 
 @pytest.fixture
 def napari_no_meta_image():
     data = np.random.rand(10, 10, 10)
     metadata = {}
-    return Image(data, metadata=metadata, name="test_image")
+    return Image(data, metadata=metadata, name="test_image_3D_no_meta")
 
 
 @pytest.fixture
@@ -105,7 +105,7 @@ def napari_no_meta_labels():
     data = np.random.rand(10, 10, 10)
     data = np.array(data, dtype=np.int8)
     metadata = {}
-    return Labels(data, metadata=metadata, name="test_image")
+    return Labels(data, metadata=metadata, name="test_label_3D_no_meta")
 
 
 @pytest.fixture
