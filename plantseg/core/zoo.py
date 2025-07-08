@@ -444,7 +444,7 @@ class ModelZoo:
         model = self._create_model_by_config(model_config)
         model_weights_path = download(
             model_description.weights.pytorch_state_dict.source
-        ).path
+        )
 
         logger_zoo.info(f"Created {architecture} model with kwargs {model_config}.")
         logger_zoo.info(f"Loaded model from BioImage.IO Model Zoo: {model_id}")
