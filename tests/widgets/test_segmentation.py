@@ -119,7 +119,7 @@ def test_agglomeration_no_layer(segmentation_tab, mocker):
     )
 
 
-def test_agglomeration_no_superpixels(segmentation_tab, mocker, napari_raw):
+def test_agglomeration_no_superpixels(segmentation_tab, mocker, napari_prediction):
     mocked_scheduler = mocker.patch(
         target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
@@ -128,8 +128,8 @@ def test_agglomeration_no_superpixels(segmentation_tab, mocker, napari_raw):
         target="plantseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
-    segmentation_tab.widget_layer_select.layer.choices = (napari_raw,)
-    segmentation_tab.widget_layer_select.layer.value = napari_raw
+    segmentation_tab.widget_layer_select.prediction.choices = (napari_prediction,)
+    segmentation_tab.widget_layer_select.prediction.value = napari_prediction
     segmentation_tab.widget_layer_select.superpixels.choices = (None,)
     segmentation_tab.widget_layer_select.superpixels.value = None
 
@@ -142,7 +142,9 @@ def test_agglomeration_no_superpixels(segmentation_tab, mocker, napari_raw):
     )
 
 
-def test_agglomeration(segmentation_tab, mocker, napari_raw, napari_segmentation):
+def test_agglomeration(
+    segmentation_tab, mocker, napari_prediction, napari_segmentation
+):
     mocked_scheduler = mocker.patch(
         target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
@@ -151,8 +153,8 @@ def test_agglomeration(segmentation_tab, mocker, napari_raw, napari_segmentation
         target="plantseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
-    segmentation_tab.widget_layer_select.layer.choices = (napari_raw,)
-    segmentation_tab.widget_layer_select.layer.value = napari_raw
+    segmentation_tab.widget_layer_select.prediction.choices = (napari_prediction,)
+    segmentation_tab.widget_layer_select.prediction.value = napari_prediction
     segmentation_tab.widget_layer_select.superpixels.choices = (napari_segmentation,)
     segmentation_tab.widget_layer_select.superpixels.value = napari_segmentation
 
@@ -184,7 +186,9 @@ def test_agglomeration(segmentation_tab, mocker, napari_raw, napari_segmentation
     mocked_log.assert_not_called()
 
 
-def test_agglomeration_lmc(segmentation_tab, mocker, napari_raw, napari_segmentation):
+def test_agglomeration_lmc(
+    segmentation_tab, mocker, napari_raw, napari_prediction, napari_segmentation
+):
     mocked_scheduler = mocker.patch(
         target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
@@ -193,8 +197,8 @@ def test_agglomeration_lmc(segmentation_tab, mocker, napari_raw, napari_segmenta
         target="plantseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
-    segmentation_tab.widget_layer_select.layer.choices = (napari_raw,)
-    segmentation_tab.widget_layer_select.layer.value = napari_raw
+    segmentation_tab.widget_layer_select.prediction.choices = (napari_prediction,)
+    segmentation_tab.widget_layer_select.prediction.value = napari_prediction
     segmentation_tab.widget_layer_select.superpixels.choices = (napari_segmentation,)
     segmentation_tab.widget_layer_select.superpixels.value = napari_segmentation
     segmentation_tab.widget_layer_select.nuclei.choices = (napari_raw,)
@@ -208,7 +212,7 @@ def test_agglomeration_lmc(segmentation_tab, mocker, napari_raw, napari_segmenta
 
 
 def test_agglomeration_lmc_missing(
-    segmentation_tab, mocker, napari_raw, napari_segmentation
+    segmentation_tab, mocker, napari_raw, napari_prediction, napari_segmentation
 ):
     mocked_scheduler = mocker.patch(
         target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
@@ -218,8 +222,8 @@ def test_agglomeration_lmc_missing(
         target="plantseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
-    segmentation_tab.widget_layer_select.layer.choices = (napari_raw,)
-    segmentation_tab.widget_layer_select.layer.value = napari_raw
+    segmentation_tab.widget_layer_select.prediction.choices = (napari_prediction,)
+    segmentation_tab.widget_layer_select.prediction.value = napari_prediction
     segmentation_tab.widget_layer_select.superpixels.choices = (napari_segmentation,)
     segmentation_tab.widget_layer_select.superpixels.value = napari_segmentation
     segmentation_tab.widget_layer_select.nuclei.choices = (None,)
