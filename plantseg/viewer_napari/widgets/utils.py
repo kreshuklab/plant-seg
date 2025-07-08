@@ -40,10 +40,11 @@ def div(text: str = ""):
         # length of white space ~3.5px, char length less, needs to be balanced
         n_ws = int((needed_ws / 4.1) + (text_len * 0.13))
 
+        centered_text = text.center(n_ws, "\u00a0")  # wraps text in non-breaking spaces
         w = Label(
             value=(
                 f"<img src={resources / 'div1.png'}>"
-                f"{text:\u00a0^{n_ws}}"
+                f"{centered_text}"
                 f"<img src={resources / 'div2.png'}>"
             )
         )
