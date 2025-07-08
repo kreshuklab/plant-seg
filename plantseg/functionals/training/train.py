@@ -64,7 +64,7 @@ def unet_training(
     model_name: str,
     in_channels: int,
     out_channels: int,
-    feature_maps: tuple,
+    feature_maps: tuple[int, ...],
     patch_size: tuple[int, int, int],
     max_num_iters: int,
     dimensionality: str,

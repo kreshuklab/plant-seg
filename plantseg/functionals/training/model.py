@@ -489,18 +489,18 @@ class AbstractUNet(nn.Module):
 
     def __init__(
         self,
-        in_channels,
-        out_channels,
-        final_sigmoid,
-        f_maps=64,
-        layer_order="gcr",
-        num_groups=8,
-        num_levels=4,
-        is_segmentation=True,
-        conv_kernel_size=3,
-        pool_kernel_size=2,
-        conv_padding=1,
-        is3d=True,
+        in_channels: int,
+        out_channels: int,
+        final_sigmoid: bool,
+        f_maps: int | list[int] | tuple[int, ...] = 64,
+        layer_order: str = "gcr",
+        num_groups: int = 8,
+        num_levels: int = 4,
+        is_segmentation: bool = True,
+        conv_kernel_size: int = 3,
+        pool_kernel_size: int = 2,
+        conv_padding: int = 1,
+        is3d: bool = True,
     ):
         super(AbstractUNet, self).__init__()
 
@@ -584,15 +584,15 @@ class UNet3D(AbstractUNet):
 
     def __init__(
         self,
-        in_channels,
-        out_channels,
-        final_sigmoid=True,
-        f_maps=64,
-        layer_order="gcr",
-        num_groups=8,
-        num_levels=4,
-        is_segmentation=True,
-        conv_padding=1,
+        in_channels: int,
+        out_channels: int,
+        final_sigmoid: bool = True,
+        f_maps: int | list[int] | tuple[int, ...] = 64,
+        layer_order: str = "gcr",
+        num_groups: int = 8,
+        num_levels: int = 4,
+        is_segmentation: bool = True,
+        conv_padding: int = 1,
         **kwargs,
     ):
         super(UNet3D, self).__init__(
@@ -617,15 +617,15 @@ class UNet2D(AbstractUNet):
 
     def __init__(
         self,
-        in_channels,
-        out_channels,
-        final_sigmoid=True,
-        f_maps=64,
-        layer_order="gcr",
-        num_groups=8,
-        num_levels=4,
-        is_segmentation=True,
-        conv_padding=1,
+        in_channels: int,
+        out_channels: int,
+        final_sigmoid: bool = True,
+        f_maps: int | list[int] | tuple[int, ...] = 64,
+        layer_order: str = "gcr",
+        num_groups: int = 8,
+        num_levels: int = 4,
+        is_segmentation: bool = True,
+        conv_padding: int = 1,
         **kwargs,
     ):
         super(UNet2D, self).__init__(
@@ -647,7 +647,13 @@ class SpocoNet(nn.Module):
     Wrapper around the f-network and the moving average g-network.
     """
 
-    def __init__(self, net_f, net_g, m=0.999, init_equal=True):
+    def __init__(
+        self,
+        net_f: UNet2D | UNet3D,
+        net_g: UNet2D | UNet3D,
+        m: float = 0.999,
+        init_equal: bool = True,
+    ):
         super().__init__()
         self.net_f = net_f
         self.net_g = net_g
@@ -661,10 +667,10 @@ class SpocoNet(nn.Module):
         cls,
         in_channels: int,
         out_channels: int,
-        f_maps: list[int],
-        layer_order="bcr",
-        m=0.999,
-        init_equal=True,
+        f_maps: int | list[int] | tuple[int, ...],
+        layer_order: str = "bcr",
+        m: float = 0.999,
+        init_equal: bool = True,
     ) -> Self:
         net_f = UNet2D(
             in_channels, out_channels, f_maps=f_maps, layer_order=layer_order
