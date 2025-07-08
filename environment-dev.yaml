@@ -17,7 +17,8 @@ dependencies:
   - python-elf
   - python-graphviz
   - scikit-image
-  - bioimageio.core>=0.8.0
+  - bioimageio.core>=0.9.0
+  - bioimageio.spec>=0.5.4.3
   # GUI
   - qtpy
   - pyqt
