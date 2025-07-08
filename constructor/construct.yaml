@@ -1,5 +1,5 @@
 name: PlantSeg
-version: "2.0.0b9"
+version: "2.0.0b10"
 channels:
   - conda-forge
 specs:
