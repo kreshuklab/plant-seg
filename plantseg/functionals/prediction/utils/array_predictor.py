@@ -16,7 +16,7 @@ from plantseg.functionals.prediction.utils.size_finder import (
     find_batch_size,
     will_CUDA_OOM,
 )
-from plantseg.training.embeddings import embeddings_to_affinities
+from plantseg.functionals.training.embeddings import embeddings_to_affinities
 
 logger = logging.getLogger(__name__)
 

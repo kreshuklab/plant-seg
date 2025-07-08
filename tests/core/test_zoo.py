@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from plantseg.core.zoo import model_zoo
-from plantseg.training.model import UNet2D
+from plantseg.functionals.training.model import UNet2D
 from tests.conftest import IS_CUDA_AVAILABLE
 
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"

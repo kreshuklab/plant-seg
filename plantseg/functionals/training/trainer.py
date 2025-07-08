@@ -10,8 +10,8 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from plantseg.training.model import UNet2D
-from plantseg.training.utils import RunningAverage
+from plantseg.functionals.training.model import UNet2D
+from plantseg.functionals.training.utils import RunningAverage
 
 logger = logging.getLogger(__name__)
 

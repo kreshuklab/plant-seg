@@ -13,11 +13,11 @@ from plantseg import (
     PATH_HOME,
     PATH_TRAIN_TEMPLATE,
 )
-from plantseg.training.augs import Augmenter
-from plantseg.training.h5dataset import HDF5Dataset
-from plantseg.training.losses import DiceLoss
-from plantseg.training.model import UNet2D, UNet3D
-from plantseg.training.trainer import UNetTrainer
+from plantseg.functionals.training.augs import Augmenter
+from plantseg.functionals.training.h5dataset import HDF5Dataset
+from plantseg.functionals.training.losses import DiceLoss
+from plantseg.functionals.training.model import UNet2D, UNet3D
+from plantseg.functionals.training.trainer import UNetTrainer
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from plantseg.training.model import UNet2D
+from plantseg.functionals.training.model import UNet2D
 
 logger = logging.getLogger(__name__)
 
