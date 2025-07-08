@@ -112,7 +112,7 @@ def test_get_layer_data_empty(make_napari_viewer_proxy):
 def test_get_layer_data(make_napari_viewer_proxy, napari_raw):
     viewer = make_napari_viewer_proxy()
     viewer.add_layer(napari_raw)
-    assert np.all(proofreading.get_layer_data("test_image") == napari_raw.data)
+    assert np.all(proofreading.get_layer_data("test_image_3D") == napari_raw.data)
 
 
 def test_get_layer_region_data_empty(make_napari_viewer_proxy):
@@ -126,15 +126,15 @@ def test_get_layer_region_data(make_napari_viewer_proxy, napari_raw):
     viewer.add_layer(napari_raw)
     sl = (slice(0, 2), slice(0, 2), slice(0, 2))
     assert np.all(
-        proofreading.get_layer_region_data("test_image", sl) == napari_raw.data[sl]
+        proofreading.get_layer_region_data("test_image_3D", sl) == napari_raw.data[sl]
     )
 
 
 def test_preserve_labels(make_napari_viewer_proxy, napari_raw):
     viewer = make_napari_viewer_proxy()
     viewer.add_layer(napari_raw)
-    proofreading.preserve_labels("test_image")
-    assert viewer.layers["test_image"].preserve_labels
+    proofreading.preserve_labels("test_image_3D")
+    assert viewer.layers["test_image_3D"].preserve_labels
 
 
 @pytest.fixture
@@ -286,7 +286,7 @@ class TestProofreadingHandler:
         h5_path = tmp_path / "valid.h5"
         viewer = make_napari_viewer_proxy()
         viewer.add_layer(napari_segmentation)
-        proof._state.current_seg_layer_name = "test_image"
+        proof._state.current_seg_layer_name = "test_segmentation_3D"
 
         mocks = mocker.patch.multiple(
             "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
