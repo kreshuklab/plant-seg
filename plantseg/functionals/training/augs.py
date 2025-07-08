@@ -17,7 +17,6 @@ logger.info(
 )
 
 
-# copied from https://github.com/wolny/pytorch-3dunet
 class Compose(object):
     """
     Composes several transforms together.

@@ -1,6 +1,3 @@
-# Code ported from pytorch-3dunet package
-# https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/unet3d/model.py
-
 from functools import partial
 from typing import Self
 
