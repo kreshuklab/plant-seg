@@ -4,7 +4,7 @@ import h5py
 import numpy as np
 from torch.utils.data import Dataset
 
-from plantseg.prediction.utils.slice_builder import FilterSliceBuilder
+from plantseg.functionals.prediction.utils.slice_builder import FilterSliceBuilder
 
 logger = logging.getLogger(__name__)
 

@@ -4,10 +4,10 @@ import shutil
 from typing import Optional
 
 import torch
-import torch.optim as optim
 from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torch.utils.tensorboard import SummaryWriter
+from torch.optim.optimizer import Optimizer
+from torch.utils.tensorboard.writer import SummaryWriter
 from tqdm import tqdm
 
 from plantseg.functionals.training.model import UNet2D
@@ -36,8 +36,8 @@ class UNetTrainer:
     def __init__(
         self,
         model: nn.Module,
-        optimizer: optim.Optimizer,
-        lr_scheduler: optim.lr_scheduler.ReduceLROnPlateau,
+        optimizer: Optimizer,
+        lr_scheduler: ReduceLROnPlateau,
         loss_criterion: nn.Module,
         loaders: dict,
         checkpoint_dir: str,

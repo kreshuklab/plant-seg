@@ -4,6 +4,7 @@ from pathlib import Path
 import torch
 import yaml
 from torch import nn
+from torch.optim.adam import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import ConcatDataset, DataLoader
 
@@ -121,7 +122,7 @@ def unet_training(
     }
 
     # Optimizer and training environment setup
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
+    optimizer = Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
     checkpoint_dir = PATH_HOME / DIR_PLANTSEG_MODELS / model_name
     logger.info(f"Saving training files in {checkpoint_dir}")
     assert not checkpoint_dir.exists(), (
