@@ -13,9 +13,6 @@ from plantseg.tasks.segmentation_tasks import (
 )
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.prediction import Prediction_Widgets
-from plantseg.viewer_napari.widgets.proofreading import (
-    widget_proofreading_initialisation,
-)
 from plantseg.viewer_napari.widgets.utils import div, get_layers, schedule_task
 
 
@@ -279,7 +276,7 @@ class Segmentation_Tab:
         beta: float = 0.6,
         minsize: int = 100,
     ) -> None:
-        if self.widget_layer_select.layer.value is None:
+        if self.widget_layer_select.prediction.value is None:
             log(
                 "Please load an input image first!",
                 thread="Segmentation",
@@ -293,7 +290,9 @@ class Segmentation_Tab:
                 level="WARNING",
             )
             return
-        ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
+        ps_image = PlantSegImage.from_napari_layer(
+            self.widget_layer_select.prediction.value
+        )
         ps_labels = PlantSegImage.from_napari_layer(
             self.widget_layer_select.superpixels.value
         )
