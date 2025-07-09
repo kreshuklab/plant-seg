@@ -113,7 +113,7 @@ def test_agglomeration_no_layer(segmentation_tab, mocker):
     segmentation_tab.widget_agglomeration()
     mocked_scheduler.assert_not_called()
     mocked_log.assert_called_with(
-        "Please load an input image first!",
+        "Please run a prediction first!",
         thread="Segmentation",
         level="WARNING",
     )
