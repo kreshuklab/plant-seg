@@ -278,7 +278,7 @@ class Segmentation_Tab:
     ) -> None:
         if self.widget_layer_select.prediction.value is None:
             log(
-                "Please load an input image first!",
+                "Please run a prediction first!",
                 thread="Segmentation",
                 level="WARNING",
             )
@@ -377,7 +377,7 @@ class Segmentation_Tab:
 
         self.widget_layer_select.layer.choices = raws
         self.widget_layer_select.prediction.choices = predictions
-        self.widget_layer_select.nuclei.choices = raws
+        self.widget_layer_select.nuclei.choices = raws + predictions + segmentations
         self.widget_layer_select.superpixels.choices = segmentations
 
         # Hide empyt choices
