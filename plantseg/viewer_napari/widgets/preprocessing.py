@@ -222,14 +222,8 @@ class Preprocessing_Tab:
             "max": 10.0,
             "min": 0.1,
         },
-        update_other_widgets={
-            "visible": False,
-            "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
-        },
     )
-    def factory_gaussian_smoothing(
-        self, sigma: float = 1.0, update_other_widgets: bool = True
-    ) -> None:
+    def factory_gaussian_smoothing(self, sigma: float = 1.0) -> None:
         """Apply Gaussian smoothing to an image layer."""
 
         if self.widget_layer_select.layer.value is None:
@@ -423,10 +417,6 @@ class Preprocessing_Tab:
             "widget_type": "RadioButtons",
             "orientation": "horizontal",
         },
-        update_other_widgets={
-            "visible": False,
-            "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
-        },
     )
     def factory_rescaling(
         self,
@@ -437,7 +427,6 @@ class Preprocessing_Tab:
         reference_model: str = model_zoo.list_models()[0],
         reference_shape: tuple[int, int, int] = (1, 1, 1),
         order: int = 0,
-        update_other_widgets: bool = True,
     ) -> None:
         """Rescale an image or label layer."""
 

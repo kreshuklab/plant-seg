@@ -23,6 +23,16 @@ from plantseg.viewer_napari.widgets.utils import (
 )
 
 
+class InputType(Enum):
+    RAW = "Image"
+    PREDICTION = "Boundary"
+    SEGMENTATION = "Segmentation"
+
+    @classmethod
+    def to_choices(cls):
+        return [member.value for member in cls]
+
+
 class PathMode(Enum):
     FILE = "tiff, h5, png, jpg"
     DIR = "zarr"
@@ -116,12 +126,12 @@ class Input_Tab:
             "tooltip": "Define the name of the output layer, default is either image or label.",
         },
         layer_type={
-            "value": ImageType.IMAGE.value,
+            "value": InputType.RAW.value,
             "label": "Layer type",
-            "tooltip": "Select if the image is a normal image or a segmentation",
+            "tooltip": "Select the type of input you are loading.",
             "widget_type": "RadioButtons",
             "orientation": "horizontal",
-            "choices": ImageType.to_choices(),
+            "choices": InputType.to_choices(),
         },
         dataset_key={
             "label": "Key (h5/zarr only)",
@@ -143,11 +153,6 @@ class Input_Tab:
             "widget_type": "RadioButtons",
             "orientation": "horizontal",
         },
-        update_other_widgets={
-            "value": True,
-            "visible": False,
-            "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
-        },
     )
     def factory_open_file(
         self,
@@ -158,17 +163,18 @@ class Input_Tab:
         stack_layout: str,
         layer_type: str,
         new_layer_name: str,
-        update_other_widgets: bool,
     ) -> None:
         """Open a file and return a napari layer."""
 
         if not self.path_changed_once:
             log("Please select a file to load!", thread="Input")
             return
-        if layer_type == ImageType.IMAGE.value:
+        if layer_type == InputType.RAW.value:
             semantic_type = SemanticType.RAW
-        elif layer_type == ImageType.LABEL.value:
+        elif layer_type == InputType.SEGMENTATION.value:
             semantic_type = SemanticType.SEGMENTATION
+        elif layer_type == InputType.PREDICTION.value:
+            semantic_type = SemanticType.PREDICTION
         else:
             raise ValueError(f"Unknown layer type {layer_type}")
 

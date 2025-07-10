@@ -30,6 +30,55 @@ def test_widget_unet_prediction_no_layer(segmentation_tab, mocker):
     )
 
 
+def test_widget_unet_prediction_repeat_no_prediction(segmentation_tab, mocker):
+    mocked_scheduler = mocker.patch(
+        target="plantseg.viewer_napari.widgets.prediction.schedule_task",
+        autospec=True,
+    )
+    mocked_log = mocker.patch(
+        target="plantseg.viewer_napari.widgets.prediction.log",
+        autospec=True,
+    )
+
+    segmentation_tab.widget_layer_select.prediction.choices = (None,)
+    segmentation_tab.widget_layer_select.prediction.value = None
+    segmentation_tab.prediction_widgets.widget_unet_prediction.repeat.value = True
+
+    segmentation_tab.prediction_widgets.widget_unet_prediction()
+    mocked_scheduler.assert_not_called()
+    mocked_log.assert_called_with(
+        "Re-process is turned on, but no boundary map is available!\n"
+        "Please load/predict a boundary map first.",
+        thread="Prediction",
+        level="WARNING",
+    )
+
+
+def test_widget_unet_prediction_repeat(segmentation_tab, mocker, napari_prediction):
+    mocked_scheduler = mocker.patch(
+        target="plantseg.viewer_napari.widgets.prediction.schedule_task",
+        autospec=True,
+    )
+    mocked_log = mocker.patch(
+        target="plantseg.viewer_napari.widgets.prediction.log",
+        autospec=True,
+    )
+    mocked_get_layer = mocker.patch(
+        target="plantseg.viewer_napari.widgets.prediction.PlantSegImage.from_napari_layer",
+        autospec=True,
+    )
+
+    segmentation_tab.widget_layer_select.prediction.choices = (napari_prediction,)
+    segmentation_tab.widget_layer_select.prediction.value = napari_prediction
+    segmentation_tab.prediction_widgets.widget_unet_prediction.repeat.value = True
+
+    segmentation_tab.prediction_widgets.widget_unet_prediction()
+
+    mocked_get_layer.assert_called_with(napari_prediction)
+    mocked_scheduler.assert_not_called()
+    mocked_log.assert_called_once()
+
+
 def test_widget_unet_prediction_no_model(segmentation_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
         target="plantseg.viewer_napari.widgets.prediction.schedule_task",
@@ -97,6 +146,7 @@ def test_widget_unet_prediction_bioimageio(segmentation_tab, mocker, napari_raw)
 def test_update_halo(segmentation_tab):
     w_unet = segmentation_tab.prediction_widgets.widget_unet_prediction
     w_unet.advanced.value = True
+    w_unet.manual_size.value = True
     w_unet.mode.value = UNetPredictionMode.PLANTSEG
     w_unet.model_name.value = "generic_confocal_3D_unet"
     segmentation_tab.prediction_widgets.update_halo()
@@ -120,6 +170,7 @@ def test_update_halo_biio(segmentation_tab, mocker):
     )
     w_unet = segmentation_tab.prediction_widgets.widget_unet_prediction
     w_unet.advanced.value = True
+    w_unet.manual_size.value = True
     w_unet.mode.value = UNetPredictionMode.BIOIMAGEIO
 
     segmentation_tab.prediction_widgets.update_halo()
@@ -164,6 +215,8 @@ def test_on_advanced_changed(segmentation_tab, mocker):
     mocked_show.assert_called_once()
     mocked_hide.assert_not_called()
 
+    segmentation_tab.prediction_widgets.widget_unet_prediction.manual_size.value = True
+
     mocked_halo.reset_mock()
     mocked_show.reset_mock()
     mocked_hide.reset_mock()
@@ -171,6 +224,33 @@ def test_on_advanced_changed(segmentation_tab, mocker):
     segmentation_tab.prediction_widgets.widget_unet_prediction.advanced.value = False
 
     mocked_halo.assert_not_called()
+    mocked_show.assert_not_called()
+    mocked_hide.assert_called_once()
+    assert (
+        not segmentation_tab.prediction_widgets.widget_unet_prediction.manual_size.value
+    )
+
+
+def test_on_manual_size_changed(segmentation_tab, mocker):
+    mocked_show = mocker.patch.object(
+        segmentation_tab.prediction_widgets.patch_size_unet_prediction_widgets[0],
+        "show",
+    )
+    mocked_hide = mocker.patch.object(
+        segmentation_tab.prediction_widgets.patch_size_unet_prediction_widgets[0],
+        "hide",
+    )
+    segmentation_tab.prediction_widgets.widget_unet_prediction.manual_size.value = True
+    mocked_show.assert_called_once()
+    mocked_hide.assert_not_called()
+
+    segmentation_tab.prediction_widgets.widget_unet_prediction.manual_size.value = True
+
+    mocked_show.reset_mock()
+    mocked_hide.reset_mock()
+
+    segmentation_tab.prediction_widgets.widget_unet_prediction.manual_size.value = False
+
     mocked_show.assert_not_called()
     mocked_hide.assert_called_once()
 
