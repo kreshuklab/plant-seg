@@ -128,7 +128,7 @@ class Input_Tab:
         layer_type={
             "value": InputType.RAW.value,
             "label": "Layer type",
-            "tooltip": "Select if the image is a normal image or a segmentation",
+            "tooltip": "Select the type of input you are loading.",
             "widget_type": "RadioButtons",
             "orientation": "horizontal",
             "choices": InputType.to_choices(),
