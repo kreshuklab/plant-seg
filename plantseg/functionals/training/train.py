@@ -9,9 +9,8 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import ConcatDataset, DataLoader
 
 from plantseg import (
-    DIR_PLANTSEG_MODELS,
     FILE_CONFIG_TRAIN_YAML,
-    PATH_HOME,
+    PATH_PLANTSEG_MODELS,
     PATH_TRAIN_TEMPLATE,
 )
 from plantseg.functionals.training.augs import Augmenter
@@ -64,7 +63,7 @@ def unet_training(
     model_name: str,
     in_channels: int,
     out_channels: int,
-    feature_maps: tuple[int, ...],
+    feature_maps: int | list[int] | tuple[int, ...],
     patch_size: tuple[int, int, int],
     max_num_iters: int,
     dimensionality: str,
@@ -123,7 +122,7 @@ def unet_training(
 
     # Optimizer and training environment setup
     optimizer = Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
-    checkpoint_dir = PATH_HOME / DIR_PLANTSEG_MODELS / model_name
+    checkpoint_dir = PATH_PLANTSEG_MODELS / model_name
     logger.info(f"Saving training files in {checkpoint_dir}")
     assert not checkpoint_dir.exists(), (
         f"Checkpoint dir {checkpoint_dir} already exists!"
