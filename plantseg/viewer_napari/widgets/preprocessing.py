@@ -222,14 +222,8 @@ class Preprocessing_Tab:
             "max": 10.0,
             "min": 0.1,
         },
-        update_other_widgets={
-            "visible": False,
-            "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
-        },
     )
-    def factory_gaussian_smoothing(
-        self, sigma: float = 1.0, update_other_widgets: bool = True
-    ) -> None:
+    def factory_gaussian_smoothing(self, sigma: float = 1.0) -> None:
         """Apply Gaussian smoothing to an image layer."""
 
         if self.widget_layer_select.layer.value is None:

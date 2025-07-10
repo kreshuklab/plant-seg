@@ -2,8 +2,12 @@ from pathlib import Path
 
 import pytest
 
-from plantseg.core.image import ImageType
-from plantseg.viewer_napari.widgets.input import Docs_Container, Input_Tab, PathMode
+from plantseg.viewer_napari.widgets.input import (
+    Docs_Container,
+    Input_Tab,
+    InputType,
+    PathMode,
+)
 
 
 @pytest.fixture
@@ -29,9 +33,8 @@ def test_input_tab_open_file(input_tab, mocker):
         "dataset_key": "",
         "button_key_refresh": True,
         "stack_layout": "",
-        "layer_type": ImageType.IMAGE.value,
+        "layer_type": InputType.RAW.value,
         "new_layer_name": "",
-        "update_other_widgets": False,
     }
     input_tab.widget_open_file(**kwargs)
     mocked_scheduler.assert_not_called()
