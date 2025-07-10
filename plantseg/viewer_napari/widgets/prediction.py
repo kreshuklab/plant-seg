@@ -12,6 +12,7 @@ from magicgui.widgets import ComboBox, Container, ProgressBar, PushButton
 from plantseg import logger
 from plantseg.core.image import PlantSegImage
 from plantseg.core.zoo import model_zoo
+from plantseg.functionals.prediction.utils.size_finder import find_a_max_patch_shape
 from plantseg.tasks.prediction_tasks import biio_prediction_task, unet_prediction_task
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.utils import schedule_task
@@ -94,15 +95,23 @@ class Prediction_Widgets:
 
         self.widget_unet_prediction.insert(3, self.model_filters)
 
-        self.advanced_unet_prediction_widgets = [
+        self.patch_size_unet_prediction_widgets = [
             self.widget_unet_prediction.patch_size,
             self.widget_unet_prediction.patch_halo,
+        ]
+        self.advanced_unet_prediction_widgets = [
             self.widget_unet_prediction.single_patch,
+            self.widget_unet_prediction.repeat,
+            self.widget_unet_prediction.manual_size,
         ]
         [widget.hide() for widget in self.advanced_unet_prediction_widgets]
+        [widget.hide() for widget in self.patch_size_unet_prediction_widgets]
 
         self.widget_unet_prediction.advanced.changed.connect(
             self._on_widget_unet_prediction_advanced_changed
+        )
+        self.widget_unet_prediction.manual_size.changed.connect(
+            self._on_widget_unet_prediction_manual_size_changed
         )
         self.widget_unet_prediction.mode.changed.connect(
             self._on_widget_unet_prediction_mode_change
@@ -165,7 +174,7 @@ class Prediction_Widgets:
         model_name={
             "label": "PlantSeg model",
             "tooltip": f"Select a pretrained PlantSeg model. "
-            f"Current model description: {model_zoo.get_model_description(model_zoo.list_models()[0])}",
+            f"Current model description:\n{model_zoo.get_model_description(model_zoo.list_models()[0])}",
             "choices": [None],
             "value": None,
         },
@@ -179,21 +188,33 @@ class Prediction_Widgets:
             "label": "Show advanced parameters",
             "tooltip": "Change the patch shape, halo shape, and batch size.",
         },
+        manual_size={
+            "label": "Manual Patch Size",
+            "tooltip": "Change the patch shape and halo shape manually.",
+        },
         patch_size={
             "label": "Patch size",
             "tooltip": "Patch size used to process the data.",
         },
         patch_halo={
             "label": "Patch halo",
-            "tooltip": "Patch halo is extra padding for correct prediction on image borders. "
+            "tooltip": "Patch halo is extra padding for correct prediction on image borders."
             "The value is for one side of a given dimension.",
         },
         single_patch={
             "label": "Batch size",
-            "tooltip": "Single patch = batch size 1 (lower GPU memory usage);\nFind Batch Size = find the biggest batch size.",
+            "tooltip": "Single patch = batch size 1 (lower GPU memory usage)"
+            "\nFind Batch Size = find the biggest batch size.",
             "widget_type": "RadioButtons",
             "orientation": "horizontal",
             "choices": [True, False],
+        },
+        repeat={
+            "label": "Re-process prediction",
+            "tooltip": "Use the existing boundary prediction as input\n"
+            "for another iteration of the prediction process.",
+            "widget_type": "CheckBox",
+            "value": False,
         },
         device={
             "label": "Device",
@@ -201,10 +222,6 @@ class Prediction_Widgets:
             "orientation": "horizontal",
         },
         pbar={"label": "Progress", "max": 0, "min": 0, "visible": False},
-        update_other_widgets={
-            "visible": False,
-            "tooltip": "To allow toggle the update of other widgets in unit tests; invisible to users.",
-        },
     )
     def factory_unet_prediction(
         self,
@@ -214,16 +231,32 @@ class Prediction_Widgets:
         model_id: Optional[str],
         device: str,
         advanced: bool = False,
+        manual_size: bool = False,
         patch_size: tuple[int, int, int] = (128, 128, 128),
         patch_halo: tuple[int, int, int] = (0, 0, 0),
         single_patch: bool = False,
+        repeat: bool = False,
         pbar: Optional[ProgressBar] = None,
-        update_other_widgets: bool = True,
     ) -> None:
-        if self.widget_layer_select.layer.value is None:
+        if self.widget_layer_select.layer.value is None and not repeat:
             log("Please load an image first!", thread="Prediction", level="WARNING")
             return
-        ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
+        if repeat and self.widget_layer_select.prediction.value is None:
+            log(
+                "Re-process is turned on, but no boundary map is available!\n"
+                "Please load/predict a boundary map first.",
+                thread="Prediction",
+                level="WARNING",
+            )
+            return
+        if repeat:
+            ps_image = PlantSegImage.from_napari_layer(
+                self.widget_layer_select.prediction.value
+            )
+        else:
+            ps_image = PlantSegImage.from_napari_layer(
+                self.widget_layer_select.layer.value
+            )
 
         if mode is UNetPredictionMode.PLANTSEG:
             if model_name is None:
@@ -242,8 +275,8 @@ class Prediction_Widgets:
                     "model_name": model_name,
                     "model_id": model_id,
                     "suffix": suffix,
-                    "patch": patch_size if advanced else None,
-                    "patch_halo": patch_halo if advanced else None,
+                    "patch": patch_size if advanced and manual_size else None,
+                    "patch_halo": patch_halo if advanced and manual_size else None,
                     "single_batch_mode": single_patch if advanced else False,
                     "device": device,
                     "_pbar": pbar,
@@ -269,7 +302,10 @@ class Prediction_Widgets:
             raise NotImplementedError(f"Mode {mode} not implemented yet.")
 
     def update_halo(self):
-        if self.widget_unet_prediction.advanced.value:
+        if (
+            self.widget_unet_prediction.advanced.value
+            and self.widget_unet_prediction.manual_size.value
+        ):
             if self.widget_unet_prediction.mode.value is UNetPredictionMode.PLANTSEG:
                 if self.widget_unet_prediction.model_name.value is None:
                     return
@@ -278,6 +314,7 @@ class Prediction_Widgets:
                     thread="UNet prediction",
                     level="info",
                 )
+
                 self.widget_unet_prediction.patch_halo.value = (
                     model_zoo.compute_3D_halo_for_zoo_models(
                         self.widget_unet_prediction.model_name.value
@@ -319,7 +356,19 @@ class Prediction_Widgets:
             for widget in self.advanced_unet_prediction_widgets:
                 widget.show()
         else:
+            self.widget_unet_prediction.manual_size.value = False
             for widget in self.advanced_unet_prediction_widgets:
+                widget.hide()
+
+    def _on_widget_unet_prediction_manual_size_changed(self, manual_size):
+        logger.debug(
+            f"_on_widget_unet_prediction_manual_size_changed called: {manual_size}"
+        )
+        if manual_size:
+            for widget in self.patch_size_unet_prediction_widgets:
+                widget.show()
+        else:
+            for widget in self.patch_size_unet_prediction_widgets:
                 widget.hide()
 
     def _on_widget_unet_prediction_mode_change(self, mode: UNetPredictionMode):
@@ -404,7 +453,7 @@ class Prediction_Widgets:
             self.widget_unet_prediction.advanced.show()
             self.widget_unet_prediction.device.show()
         self.widget_unet_prediction.model_name.tooltip = (
-            f"Select a pretrained model. Current model description: {self.description}"
+            f"Select a pretrained model. Current model description:\n{self.description}"
         )
 
         if self.widget_unet_prediction.advanced.value:
