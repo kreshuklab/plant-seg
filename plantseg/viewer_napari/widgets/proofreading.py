@@ -3,12 +3,14 @@ from collections import deque
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from time import sleep, time
 
 import h5py
 import napari
 import numpy as np
 from magicgui import magicgui
 from napari.layers import Image, Labels
+
 from napari.qt.threading import thread_worker
 from napari.utils import CyclicLabelColormap
 from pydantic import BaseModel, Field
@@ -59,6 +61,7 @@ def get_current_viewer_wrapper() -> napari.Viewer:
             thread="Get Current Viewer",
             level="error",
         )
+        raise RuntimeError("No viewer found. Please open a viewer and try again.")
     return viewer
 
 
@@ -228,8 +231,15 @@ class ProofreadingHandler:
 
     @contextmanager
     def lock_manager(self):
-        """Context manager for locking and unlocking proofreading handler."""
+        """Blocking context manager for locking and unlocking proofreading handler."""
+        t0 = time()
+        while self._state.lock:
+            sleep(0.1)
+            if (time() - t0) < 300:
+                raise TimeoutError("Could not aquire lock!")
+
         self._state.lock = True
+
         try:
             yield
         finally:
@@ -809,11 +819,8 @@ def widget_split_and_merge_from_scribbles(
             level="error",
         )
 
-    @thread_worker
+    @thread_worker(progress=True)
     def func():
-        if segmentation_handler.is_locked():
-            return None
-
         if segmentation_handler.scribbles.sum() == 0:
             log("No scribbles found", thread="Proofreading tool")
             return None
@@ -855,12 +862,8 @@ def widget_filter_segmentation() -> None:
             "Proofreading widget not initialized. Run the proofreading widget tool once first"
         )
 
-    @thread_worker
+    @thread_worker(progress=True)
     def func():
-        if segmentation_handler.is_locked():
-            return
-            # raise ValueError("Segmentation is locked.")
-
         with segmentation_handler.lock_manager():
             filtered_seg = segmentation_handler.segmentation.copy()
             filtered_seg[segmentation_handler.corrected_cells_mask == 0] = 0
@@ -887,7 +890,6 @@ def widget_filter_segmentation() -> None:
     worker = func()  # type: ignore
     worker.returned.connect(on_done)
     worker.start()
-    return
 
 
 @magicgui(call_button="Undo Last Action")
