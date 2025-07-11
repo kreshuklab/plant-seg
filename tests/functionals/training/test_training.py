@@ -1,3 +1,5 @@
+"""Unit tests for training functionality."""
+
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -7,7 +9,7 @@ import numpy as np
 import pytest
 import yaml
 
-from plantseg import DIR_PLANTSEG_MODELS, FILE_CONFIG_TRAIN_YAML
+from plantseg import FILE_CONFIG_TRAIN_YAML
 from plantseg.functionals.training.train import (
     create_datasets,
     create_model_config,
@@ -225,8 +227,11 @@ class TestUnetTraining:
             # Test parameters
             model_name = "test_model_2d"
 
-            # Patch PATH_HOME to use temp directory
-            with patch("plantseg.functionals.training.train.PATH_HOME", Path(temp_dir)):
+            # Patch PATH_PLANTSEG_MODELS to use temp directory
+            with patch(
+                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                Path(temp_dir),
+            ):
                 unet_training(
                     dataset_dir=str(dataset_dir),
                     model_name=model_name,
@@ -275,8 +280,11 @@ class TestUnetTraining:
             # Test parameters
             model_name = "test_model_3d"
 
-            # Patch PATH_HOME to use temp directory
-            with patch("plantseg.functionals.training.train.PATH_HOME", Path(temp_dir)):
+            # Patch PATH_PLANTSEG_MODELS to use temp directory
+            with patch(
+                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                Path(temp_dir),
+            ):
                 unet_training(
                     dataset_dir=str(dataset_dir),
                     model_name=model_name,
@@ -313,11 +321,14 @@ class TestUnetTraining:
             (dataset_dir / "val").mkdir()
 
             # Create the checkpoint directory beforehand
-            checkpoint_dir = Path(temp_dir) / DIR_PLANTSEG_MODELS / "test_model"
+            checkpoint_dir = Path(temp_dir) / "test_model"
             checkpoint_dir.mkdir(parents=True)
 
-            # Patch PATH_HOME to use temp directory
-            with patch("plantseg.functionals.training.train.PATH_HOME", Path(temp_dir)):
+            # Patch PATH_PLANTSEG_MODELS to use temp directory
+            with patch(
+                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                Path(temp_dir),
+            ):
                 with pytest.raises(
                     AssertionError, match="Checkpoint dir .* already exists"
                 ):
@@ -384,8 +395,11 @@ class TestUnetTraining:
             (dataset_dir / "train").mkdir()
             (dataset_dir / "val").mkdir()
 
-            # Patch PATH_HOME to use temp directory
-            with patch("plantseg.functionals.training.train.PATH_HOME", Path(temp_dir)):
+            # Patch PATH_PLANTSEG_MODELS to use temp directory
+            with patch(
+                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                Path(temp_dir),
+            ):
                 unet_training(
                     dataset_dir=str(dataset_dir),
                     model_name="test_model_multi_gpu",
@@ -434,8 +448,11 @@ class TestUnetTraining:
             (dataset_dir / "train").mkdir()
             (dataset_dir / "val").mkdir()
 
-            # Patch PATH_HOME to use temp directory
-            with patch("plantseg.functionals.training.train.PATH_HOME", Path(temp_dir)):
+            # Patch PATH_PLANTSEG_MODELS to use temp directory
+            with patch(
+                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                Path(temp_dir),
+            ):
                 unet_training(
                     dataset_dir=str(dataset_dir),
                     model_name="test_model_lowercase",
@@ -475,8 +492,11 @@ class TestUnetTraining:
             (dataset_dir / "train").mkdir()
             (dataset_dir / "val").mkdir()
 
-            # Patch PATH_HOME to use temp directory
-            with patch("plantseg.functionals.training.train.PATH_HOME", Path(temp_dir)):
+            # Patch PATH_PLANTSEG_MODELS to use temp directory
+            with patch(
+                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                Path(temp_dir),
+            ):
                 unet_training(
                     dataset_dir=str(dataset_dir),
                     model_name="test_model_params",
