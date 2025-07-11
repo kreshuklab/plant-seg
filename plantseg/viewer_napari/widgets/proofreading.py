@@ -9,8 +9,8 @@ import h5py
 import napari
 import numpy as np
 from magicgui import magicgui
+from magicgui.widgets import Label
 from napari.layers import Image, Labels
-
 from napari.qt.threading import thread_worker
 from napari.utils import CyclicLabelColormap
 from pydantic import BaseModel, Field
@@ -845,6 +845,12 @@ def widget_split_and_merge_from_scribbles(
     worker.start()
 
 
+widget_label_extraction = Label(
+    value="Double right click in move mode to select labels.\n"
+    "Selected labels will be extracted to a new layer.",
+)
+
+
 @magicgui(call_button="Extract Corrected labels")
 def widget_filter_segmentation() -> None:
     """Extracts corrected labels from the segmentation.
@@ -890,6 +896,12 @@ def widget_filter_segmentation() -> None:
     worker = func()  # type: ignore
     worker.returned.connect(on_done)
     worker.start()
+
+
+widget_filter_segmentation.tooltip = (
+    "Double right click to select a label and add it to the mask.\n"
+    "Extract saves the masked labels on a new layer"
+)
 
 
 @magicgui(call_button="Undo Last Action")
@@ -953,17 +965,20 @@ def setup_proofreading_keybindings():
     def _widget_clean_scribble(_viewer: napari.Viewer):
         widget_clean_scribble(viewer=_viewer)
 
-    @viewer.mouse_double_click_callbacks.append
     def _add_label_to_corrected(_viewer: napari.Viewer, event):
         # Maybe it would be better to run this callback only if the layer is active
         # if _viewer.layers.selection.active.name == CORRECTED_CELLS_LAYER_NAME:
         if CORRECTED_CELLS_LAYER_NAME in _viewer.layers:
             widget_add_label_to_corrected(viewer=viewer, position=event.position)
 
+    viewer.mouse_double_click_callbacks.pop()
+    viewer.mouse_double_click_callbacks.append(_add_label_to_corrected)
+
 
 activation_list_proofreading = [
     widget_split_and_merge_from_scribbles,
     widget_clean_scribble,
+    widget_label_extraction,
     widget_filter_segmentation,
     widget_undo,
     widget_redo,
