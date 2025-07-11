@@ -29,6 +29,7 @@ from plantseg.viewer_napari.widgets.proofreading import (
     widget_clean_scribble,
     widget_filter_segmentation,
     widget_label_extraction,
+    widget_label_split_merge,
     widget_proofreading_initialisation,
     widget_redo,
     widget_save_state,

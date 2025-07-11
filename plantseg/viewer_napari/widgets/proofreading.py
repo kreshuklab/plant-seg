@@ -770,6 +770,12 @@ def _on_mode_changed(mode: str):
         widget_proofreading_initialisation.filepath.show()
 
 
+widget_label_split_merge = Label(
+    value="Mark labels by drawing onto the `scribbles` layer in different colors.\n"
+    "Labels marked with the same color will be merged, different colors will be split.",
+)
+
+
 @magicgui(
     call_button=f"Split / Merge - < {DEFAULT_KEY_BINDING_PROOFREAD} >",
     image={
@@ -846,7 +852,7 @@ def widget_split_and_merge_from_scribbles(
 
 
 widget_label_extraction = Label(
-    value="Double right click in move mode to select labels.\n"
+    value="Double click in move mode to select labels.\n"
     "Selected labels will be extracted to a new layer.",
 )
 
@@ -976,6 +982,7 @@ def setup_proofreading_keybindings():
 
 
 activation_list_proofreading = [
+    widget_label_split_merge,
     widget_split_and_merge_from_scribbles,
     widget_clean_scribble,
     widget_label_extraction,
