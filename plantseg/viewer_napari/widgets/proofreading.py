@@ -230,12 +230,12 @@ class ProofreadingHandler:
         self._scale = None
 
     @contextmanager
-    def lock_manager(self):
+    def lock_manager(self, timeout: float = 300):
         """Blocking context manager for locking and unlocking proofreading handler."""
         t0 = time()
         while self._state.lock:
             sleep(0.1)
-            if (time() - t0) < 300:
+            if (time() - t0) > timeout:
                 raise TimeoutError("Could not aquire lock!")
 
         self._state.lock = True
@@ -827,11 +827,10 @@ def widget_split_and_merge_from_scribbles(
 
     @thread_worker(progress=True)
     def func():
-        if segmentation_handler.scribbles.sum() == 0:
-            log("No scribbles found", thread="Proofreading tool")
-            return None
-
         with segmentation_handler.lock_manager():
+            if segmentation_handler.scribbles.sum() == 0:
+                log("No scribbles found", thread="Proofreading tool")
+                return None
             segmentation_handler.save_to_history()
 
             new_seg, region_slice, bboxes = split_merge_from_seeds(
