@@ -27,7 +27,12 @@ from plantseg import (
     PATH_MODEL_ZOO_CUSTOM,
     PATH_PLANTSEG_MODELS,
 )
-from plantseg.training.model import AbstractUNet, InterpolateUpsampling, UNet2D, UNet3D
+from plantseg.functionals.training.model import (
+    AbstractUNet,
+    InterpolateUpsampling,
+    UNet2D,
+    UNet3D,
+)
 from plantseg.utils import download_files, get_class, load_config, save_config
 
 logger_zoo = logging.getLogger("PlantSeg.Zoo")
@@ -341,7 +346,7 @@ class ModelZoo:
     def _create_model_by_config(self, model_config: dict):
         """Create a model instance from a configuration."""
         model_class = get_class(
-            model_config["name"], modules=["plantseg.training.model"]
+            model_config["name"], modules=["plantseg.functionals.training.model"]
         )
         return model_class(**model_config)
 
@@ -429,7 +434,7 @@ class ModelZoo:
         # Create model from architecture and kwargs
         architecture = str(
             architecture_callable
-        )  # e.g. 'plantseg.training.model.UNet3D'
+        )  # e.g. 'plantseg.functionals.training.model.UNet3D'
         architecture = "UNet3D" if "UNet3D" in architecture else "UNet2D"
         model_config = {
             "name": architecture,

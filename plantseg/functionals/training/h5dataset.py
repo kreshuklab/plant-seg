@@ -4,12 +4,11 @@ import h5py
 import numpy as np
 from torch.utils.data import Dataset
 
-from plantseg.prediction.utils.slice_builder import FilterSliceBuilder
+from plantseg.functionals.prediction.utils.slice_builder import FilterSliceBuilder
 
 logger = logging.getLogger(__name__)
 
 
-# copied from https://github.com/wolny/pytorch-3dunet
 class HDF5Dataset(Dataset):
     """
     Implementation of torch.utils.data.Dataset backed by the HDF5 files, which iterates over the raw and label datasets

@@ -85,7 +85,7 @@ def launch_training(path: Path):
     """Launch the training"""
     config = load_config(path)
 
-    from plantseg.training.train import unet_training
+    from plantseg.functionals.training.train import unet_training
 
     unet_training(*config)
 

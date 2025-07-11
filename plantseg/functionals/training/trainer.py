@@ -1,22 +1,20 @@
 import logging
-import os
 import shutil
-from typing import Optional
+from pathlib import Path
 
 import torch
-import torch.optim as optim
 from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torch.utils.tensorboard import SummaryWriter
+from torch.optim.optimizer import Optimizer
+from torch.utils.tensorboard.writer import SummaryWriter
 from tqdm import tqdm
 
-from plantseg.training.model import UNet2D
-from plantseg.training.utils import RunningAverage
+from plantseg.functionals.training.model import UNet2D
+from plantseg.functionals.training.utils import RunningAverage
 
 logger = logging.getLogger(__name__)
 
 
-# adapted from https://github.com/wolny/pytorch-3dunet
 class UNetTrainer:
     """UNet trainer.
 
@@ -36,15 +34,15 @@ class UNetTrainer:
     def __init__(
         self,
         model: nn.Module,
-        optimizer: optim.Optimizer,
-        lr_scheduler: optim.lr_scheduler.ReduceLROnPlateau,
+        optimizer: Optimizer,
+        lr_scheduler: ReduceLROnPlateau,
         loss_criterion: nn.Module,
         loaders: dict,
-        checkpoint_dir: str,
+        checkpoint_dir: Path,
         max_num_iterations: int,
         device: str = "cuda",
         log_after_iters: int = 100,
-        pre_trained: Optional[str] = None,
+        pre_trained: Path | None = None,
     ):
         self.model = model
         self.optimizer = optimizer
@@ -65,7 +63,7 @@ class UNetTrainer:
             self.model.load_state_dict(state)
 
         # init tensorboard logger
-        self.writer = SummaryWriter(log_dir=os.path.join(checkpoint_dir, "logs"))
+        self.writer = SummaryWriter(log_dir=checkpoint_dir / "logs")
 
     def train(self) -> None:
         for epoch in range(self.max_num_epochs):
@@ -194,15 +192,13 @@ class UNetTrainer:
         else:
             state_dict = self.model.state_dict()
 
-        last_file_path = os.path.join(self.checkpoint_dir, "last_checkpoint.pytorch")
+        last_file_path = self.checkpoint_dir / "last_checkpoint.pytorch"
         logger.info(f"Saving checkpoint to '{last_file_path}'")
 
         torch.save(state_dict, last_file_path)
         if is_best:
             logger.info("Saving best checkpoint")
-            best_file_path = os.path.join(
-                self.checkpoint_dir, "best_checkpoint.pytorch"
-            )
+            best_file_path = self.checkpoint_dir / "best_checkpoint.pytorch"
             shutil.copyfile(last_file_path, best_file_path)
 
     @staticmethod

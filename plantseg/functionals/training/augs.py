@@ -1,3 +1,4 @@
+import logging
 import random
 
 import numpy as np
@@ -7,11 +8,15 @@ from skimage import measure
 from skimage.filters import gaussian
 from skimage.segmentation import find_boundaries
 
-# WARN: use fixed random state for reproducibility; if you want to randomize on each run seed with `time.time()` e.g.
-GLOBAL_RANDOM_STATE = np.random.RandomState(47)
+GLOBAL_RANDOM_STATE_SEED = 47
+GLOBAL_RANDOM_STATE = np.random.RandomState(GLOBAL_RANDOM_STATE_SEED)
+
+logger = logging.getLogger(__name__)
+logger.info(
+    f"Using fixed random state {GLOBAL_RANDOM_STATE_SEED} for reproducibility, set GLOBAL_RANDOM_STATE to None to use random state based on time"
+)
 
 
-# copied from https://github.com/wolny/pytorch-3dunet
 class Compose(object):
     """
     Composes several transforms together.

@@ -1,10 +1,7 @@
-""""""
-
 import torch
 from torch import nn
 
 
-# copied from https://github.com/wolny/pytorch-3dunet
 def flatten(tensor):
     """Flattens a given tensor such that the channel axis is first.
     The shapes are transformed as follows:

@@ -26,7 +26,7 @@ from plantseg.functionals.prediction.utils.size_finder import (
 )
 from plantseg.functionals.prediction.utils.slice_builder import SliceBuilder
 from plantseg.functionals.prediction.utils.utils import get_stride_shape
-from plantseg.training.augs import get_test_augmentations
+from plantseg.functionals.training.augs import get_test_augmentations
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +176,7 @@ def unet_prediction(
     returning appropriately shaped arrays based on the output channel configuration.
 
     For Bioimage.IO Model Zoo models, weights are downloaded and loaded into `UNet3D` or `UNet2D`
-    in `plantseg.training.model`, i.e. `bioimageio.core` is not used. `biio_prediction()` uses
+    in `plantseg.functionals.training.model`, i.e. `bioimageio.core` is not used. `biio_prediction()` uses
     `bioimageio.core` for loading and running models.
 
     Args:
