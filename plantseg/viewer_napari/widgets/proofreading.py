@@ -3,11 +3,13 @@ from collections import deque
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from time import sleep, time
 
 import h5py
 import napari
 import numpy as np
 from magicgui import magicgui
+from magicgui.widgets import Label
 from napari.layers import Image, Labels
 from napari.qt.threading import thread_worker
 from napari.utils import CyclicLabelColormap
@@ -59,6 +61,7 @@ def get_current_viewer_wrapper() -> napari.Viewer:
             thread="Get Current Viewer",
             level="error",
         )
+        raise RuntimeError("No viewer found. Please open a viewer and try again.")
     return viewer
 
 
@@ -228,8 +231,15 @@ class ProofreadingHandler:
 
     @contextmanager
     def lock_manager(self):
-        """Context manager for locking and unlocking proofreading handler."""
+        """Blocking context manager for locking and unlocking proofreading handler."""
+        t0 = time()
+        while self._state.lock:
+            sleep(0.1)
+            if (time() - t0) < 300:
+                raise TimeoutError("Could not aquire lock!")
+
         self._state.lock = True
+
         try:
             yield
         finally:
@@ -760,6 +770,12 @@ def _on_mode_changed(mode: str):
         widget_proofreading_initialisation.filepath.show()
 
 
+widget_label_split_merge = Label(
+    value="Mark labels by drawing onto the `scribbles` layer in different colors.\n"
+    "Labels marked with the same color will be merged, different colors will be split.",
+)
+
+
 @magicgui(
     call_button=f"Split / Merge - < {DEFAULT_KEY_BINDING_PROOFREAD} >",
     image={
@@ -809,11 +825,8 @@ def widget_split_and_merge_from_scribbles(
             level="error",
         )
 
-    @thread_worker
+    @thread_worker(progress=True)
     def func():
-        if segmentation_handler.is_locked():
-            return None
-
         if segmentation_handler.scribbles.sum() == 0:
             log("No scribbles found", thread="Proofreading tool")
             return None
@@ -838,6 +851,12 @@ def widget_split_and_merge_from_scribbles(
     worker.start()
 
 
+widget_label_extraction = Label(
+    value="Double click in move mode to select labels.\n"
+    "Selected labels will be extracted to a new layer.",
+)
+
+
 @magicgui(call_button="Extract Corrected labels")
 def widget_filter_segmentation() -> None:
     """Extracts corrected labels from the segmentation.
@@ -855,12 +874,8 @@ def widget_filter_segmentation() -> None:
             "Proofreading widget not initialized. Run the proofreading widget tool once first"
         )
 
-    @thread_worker
+    @thread_worker(progress=True)
     def func():
-        if segmentation_handler.is_locked():
-            return
-            # raise ValueError("Segmentation is locked.")
-
         with segmentation_handler.lock_manager():
             filtered_seg = segmentation_handler.segmentation.copy()
             filtered_seg[segmentation_handler.corrected_cells_mask == 0] = 0
@@ -887,7 +902,12 @@ def widget_filter_segmentation() -> None:
     worker = func()  # type: ignore
     worker.returned.connect(on_done)
     worker.start()
-    return
+
+
+widget_filter_segmentation.tooltip = (
+    "Double right click to select a label and add it to the mask.\n"
+    "Extract saves the masked labels on a new layer"
+)
 
 
 @magicgui(call_button="Undo Last Action")
@@ -951,17 +971,21 @@ def setup_proofreading_keybindings():
     def _widget_clean_scribble(_viewer: napari.Viewer):
         widget_clean_scribble(viewer=_viewer)
 
-    @viewer.mouse_double_click_callbacks.append
     def _add_label_to_corrected(_viewer: napari.Viewer, event):
         # Maybe it would be better to run this callback only if the layer is active
         # if _viewer.layers.selection.active.name == CORRECTED_CELLS_LAYER_NAME:
         if CORRECTED_CELLS_LAYER_NAME in _viewer.layers:
             widget_add_label_to_corrected(viewer=viewer, position=event.position)
 
+    viewer.mouse_double_click_callbacks.pop()
+    viewer.mouse_double_click_callbacks.append(_add_label_to_corrected)
+
 
 activation_list_proofreading = [
+    widget_label_split_merge,
     widget_split_and_merge_from_scribbles,
     widget_clean_scribble,
+    widget_label_extraction,
     widget_filter_segmentation,
     widget_undo,
     widget_redo,

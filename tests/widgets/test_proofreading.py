@@ -1,5 +1,6 @@
 from collections import deque
 from pathlib import Path
+from time import sleep, time
 
 import h5py
 import numpy as np
@@ -18,7 +19,8 @@ def test_copy_if_not_none(mocker):
 
 
 def test_get_current_viewer(make_napari_viewer_proxy):
-    assert proofreading.get_current_viewer_wrapper() is None
+    with pytest.raises(RuntimeError):
+        proofreading.get_current_viewer_wrapper()
     viewer = make_napari_viewer_proxy()
     assert proofreading.get_current_viewer_wrapper() == viewer
 
@@ -593,14 +595,11 @@ def test_widget_split_and_merge_from_scribbles(mocker, napari_raw):
     proofreading.widget_split_and_merge_from_scribbles(mocker.sentinel, napari_raw)
     mocks["split_merge_from_seeds"].assert_not_called()
 
-    mock_sum = mocks["segmentation_handler"].scribbles.sum = mocker.Mock()
+    mock_sum = mocks["segmentation_handler"].scribbles.sum
     mock_sum.return_value = 5
-    mock_lock = mocks["segmentation_handler"].is_locked = mocker.Mock()
-    mock_lock.return_value = False
     mocks["split_merge_from_seeds"].return_value = [mocker.sentinel] * 3
 
     proofreading.widget_split_and_merge_from_scribbles(mocker.sentinel, napari_raw)
-    mocks["segmentation_handler"].is_locked.assert_called_once()
     mock_sum.assert_called_once()
     mocks["split_merge_from_seeds"].assert_called_once()
     mocks["segmentation_handler"].update_after_proofreading.assert_called_with(
@@ -624,7 +623,7 @@ def test_widget_filter_segmentation_log(mocker):
     )
 
 
-def test_widget_filter_segmentation(mocker):
+def test_widget_filter_segmentation(mocker, make_napari_viewer_proxy):
     mocks = mocker.patch.multiple(
         "plantseg.viewer_napari.widgets.proofreading",
         segmentation_handler=mocker.DEFAULT,
@@ -633,10 +632,13 @@ def test_widget_filter_segmentation(mocker):
         PlantSegImage=mocker.DEFAULT,
         napari=mocker.DEFAULT,
     )
+    mocker.sentinel._add_layer_from_data = mocker.Mock()
+    mocks["napari"].current_viewer.return_value = mocker.sentinel
 
-    mock_lock = mocks["segmentation_handler"].is_locked = mocker.Mock()
-    mock_lock.return_value = False
     proofreading.widget_filter_segmentation()
+    sleep(0.1)
+    mocks["ImageProperties"].assert_called_once()
+    mocks["PlantSegImage"].assert_called_once()
 
 
 def test_widget_undo(mocker):
