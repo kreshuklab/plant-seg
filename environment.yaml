@@ -6,6 +6,7 @@ dependencies:
   - pip
   # Neural Network
   - pytorch
+  - tensorboard
   # Bioimage and CV
   - tifffile
   - h5py

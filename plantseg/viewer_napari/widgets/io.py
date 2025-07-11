@@ -14,7 +14,6 @@ from plantseg.tasks.dataprocessing_tasks import set_voxel_size_task
 from plantseg.tasks.io_tasks import export_image_task, import_image_task
 from plantseg.tasks.workflow_handler import workflow_handler
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.prediction_old import widget_unet_prediction
 from plantseg.viewer_napari.widgets.utils import _return_value_if_widget, schedule_task
 from plantseg.workflow_gui.editor import Workflow_gui
 

@@ -3,7 +3,6 @@ from qtpy import QtCore, QtWidgets
 
 from plantseg.__version__ import __version__
 from plantseg.utils import check_version
-from plantseg.viewer_napari import log
 from plantseg.viewer_napari.containers import (
     get_proofreading_tab,
 )
@@ -12,7 +11,6 @@ from plantseg.viewer_napari.widgets.input import Input_Tab
 from plantseg.viewer_napari.widgets.output import Output_Tab
 from plantseg.viewer_napari.widgets.postprocessing import Postprocessing_Tab
 from plantseg.viewer_napari.widgets.preprocessing import Preprocessing_Tab
-from plantseg.viewer_napari.widgets.proofreading import setup_proofreading_keybindings
 from plantseg.viewer_napari.widgets.segmentation import Segmentation_Tab
 
 

@@ -33,6 +33,7 @@ requirements:
     - python>=3.11
     - pip
     - pytorch
+    - tensorboard
     - tifffile
     - h5py
     - zarr

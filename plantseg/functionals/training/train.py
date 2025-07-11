@@ -4,20 +4,20 @@ from pathlib import Path
 import torch
 import yaml
 from torch import nn
+from torch.optim.adam import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import ConcatDataset, DataLoader
 
 from plantseg import (
-    DIR_PLANTSEG_MODELS,
     FILE_CONFIG_TRAIN_YAML,
-    PATH_HOME,
+    PATH_PLANTSEG_MODELS,
     PATH_TRAIN_TEMPLATE,
 )
-from plantseg.training.augs import Augmenter
-from plantseg.training.h5dataset import HDF5Dataset
-from plantseg.training.losses import DiceLoss
-from plantseg.training.model import UNet2D, UNet3D
-from plantseg.training.trainer import UNetTrainer
+from plantseg.functionals.training.augs import Augmenter
+from plantseg.functionals.training.h5dataset import HDF5Dataset
+from plantseg.functionals.training.losses import DiceLoss
+from plantseg.functionals.training.model import UNet2D, UNet3D
+from plantseg.functionals.training.trainer import UNetTrainer
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ def unet_training(
     model_name: str,
     in_channels: int,
     out_channels: int,
-    feature_maps: tuple,
+    feature_maps: int | list[int] | tuple[int, ...],
     patch_size: tuple[int, int, int],
     max_num_iters: int,
     dimensionality: str,
@@ -121,8 +121,8 @@ def unet_training(
     }
 
     # Optimizer and training environment setup
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
-    checkpoint_dir = PATH_HOME / DIR_PLANTSEG_MODELS / model_name
+    optimizer = Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
+    checkpoint_dir = PATH_PLANTSEG_MODELS / model_name
     logger.info(f"Saving training files in {checkpoint_dir}")
     assert not checkpoint_dir.exists(), (
         f"Checkpoint dir {checkpoint_dir} already exists!"
