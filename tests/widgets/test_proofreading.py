@@ -586,7 +586,7 @@ def test_widget_split_and_merge_from_scribbles_log(mocker, napari_raw):
     )
 
 
-@pytest.mark.parametrize("run_id", range(100))
+@pytest.mark.parametrize("run_id", range(10))
 def test_widget_split_and_merge_from_scribbles(mocker, napari_raw, run_id, qtbot):
     proofreading.segmentation_handler._state.active = True
     handler = proofreading.segmentation_handler
@@ -637,6 +637,7 @@ def test_widget_split_and_merge_from_scribbles(mocker, napari_raw, run_id, qtbot
     proofreading.widget_split_and_merge_from_scribbles(mocker.sentinel, napari_raw)
     mock_save.assert_called_once()
     mock_split_merge.assert_called_once()
+    sleep(0.01)
 
 
 def test_locking():

@@ -248,7 +248,7 @@ class ProofreadingHandler:
         was_unlocked = self.mutex.tryLock(0)
         if was_unlocked:
             self.mutex.unlock()
-        return was_unlocked
+        return not was_unlocked
 
     # Proofreading state properties
     @property
