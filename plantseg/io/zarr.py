@@ -155,7 +155,7 @@ def create_zarr(
     if not key:
         raise ValueError("Key cannot be None or empty.")
 
-    zarr_file = zarr.open_group(str(path), mode)
+    zarr_file = zarr.open_group(store=str(path), mode=mode)
 
     if IS_ZARR_V3:
         # v3 requires explicit `create_array`, and write manually
@@ -192,7 +192,7 @@ def list_zarr_keys(path: Path) -> list[str]:
                 _list_keys.append(str(base / key))
         return _list_keys
 
-    zarr_file = zarr.open_group(path, "r")
+    zarr_file = zarr.open_group(store=path, mode="r")
     return _recursive_find_keys(zarr_file)
 
 
@@ -206,7 +206,7 @@ def del_zarr_key(path: Path, key: str, mode: str = "a") -> None:
         mode (str): The mode to open the Zarr file ['w', 'a'].
 
     """
-    zarr_file = zarr.open_group(path, mode)
+    zarr_file = zarr.open_group(store=path, mode=mode)
     if key in zarr_file:
         del zarr_file[key]
 
@@ -222,7 +222,7 @@ def rename_zarr_key(path: Path, old_key: str, new_key: str, mode: str = "r+") ->
         mode (str): The mode to open the Zarr file ['r+'].
 
     """
-    zarr_file = zarr.open_group(path, mode)
+    zarr_file = zarr.open_group(store=path, mode=mode)
     if old_key in zarr_file:
         zarr_file[new_key] = zarr_file[old_key]
         del zarr_file[old_key]
