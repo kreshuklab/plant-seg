@@ -5,6 +5,7 @@ from time import sleep, time
 import h5py
 import numpy as np
 import pytest
+from napari.qt.threading import thread_worker
 
 from plantseg.core.image import PlantSegImage
 from plantseg.viewer_napari.widgets import proofreading
@@ -46,7 +47,7 @@ def test_update_layer(make_napari_viewer_proxy, napari_labels):
     assert viewer.layers[0].name == "test"
 
 
-def test_updat_corrected_cells_mask_layer(mocker):
+def test_update_corrected_cells_mask_layer(mocker):
     mock = mocker.patch("plantseg.viewer_napari.widgets.proofreading.update_layer")
     proofreading.update_corrected_cells_mask_layer(
         data=mocker.sentinel, scale=mocker.sentinel
@@ -585,26 +586,126 @@ def test_widget_split_and_merge_from_scribbles_log(mocker, napari_raw):
     )
 
 
-def test_widget_split_and_merge_from_scribbles(mocker, napari_raw):
+@pytest.mark.parametrize("run_id", range(100))
+def test_widget_split_and_merge_from_scribbles(mocker, napari_raw, run_id, qtbot):
     proofreading.segmentation_handler._state.active = True
-    mocks = mocker.patch.multiple(
-        "plantseg.viewer_napari.widgets.proofreading",
-        segmentation_handler=mocker.DEFAULT,
-        split_merge_from_seeds=mocker.DEFAULT,
+    handler = proofreading.segmentation_handler
+    mock_split_merge = mocker.patch(
+        "plantseg.viewer_napari.widgets.proofreading.split_merge_from_seeds",
     )
-    proofreading.widget_split_and_merge_from_scribbles(mocker.sentinel, napari_raw)
-    mocks["split_merge_from_seeds"].assert_not_called()
-
-    mock_sum = mocks["segmentation_handler"].scribbles.sum
-    mock_sum.return_value = 5
-    mocks["split_merge_from_seeds"].return_value = [mocker.sentinel] * 3
 
     proofreading.widget_split_and_merge_from_scribbles(mocker.sentinel, napari_raw)
-    mock_sum.assert_called_once()
-    mocks["split_merge_from_seeds"].assert_called_once()
-    mocks["segmentation_handler"].update_after_proofreading.assert_called_with(
-        *[mocker.sentinel] * 3
+    mock_split_merge.assert_not_called()
+
+    mock_save = mocker.patch.object(handler, "save_to_history")
+    mock_scribble = mocker.patch(
+        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.scribbles",
+        new_callable=mocker.PropertyMock,
     )
+    mocker.patch(
+        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.segmentation",
+        new_callable=mocker.PropertyMock,
+    )
+    mocker.patch(
+        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.seg_layer_name",
+        new_callable=mocker.PropertyMock,
+    )
+    mocker.patch(
+        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.scale",
+        new_callable=mocker.PropertyMock,
+    )
+    mocker.patch(
+        "plantseg.viewer_napari.widgets.proofreading.update_region",
+    )
+
+    mocker.patch(
+        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.bboxes",
+        new_callable=mocker.PropertyMock,
+    )
+    mocker.patch(
+        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.max_label",
+        new_callable=mocker.PropertyMock,
+    )
+    mocker.patch(
+        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.corrected_cells",
+        new_callable=mocker.PropertyMock,
+    )
+    mock_scribble.sum = mocker.Mock()
+    mock_scribble.sum.return_value = 5
+    mock_split_merge.return_value = [mocker.sentinel] * 3
+
+    proofreading.widget_split_and_merge_from_scribbles(mocker.sentinel, napari_raw)
+    mock_save.assert_called_once()
+    mock_split_merge.assert_called_once()
+
+
+def test_locking():
+    handler = proofreading.ProofreadingHandler()
+
+    with handler.lock_manager():
+        assert handler.is_locked()
+
+    assert not handler.is_locked()
+
+    with handler.lock_manager():
+        with pytest.raises(TimeoutError):
+            with handler.lock_manager(timeout=0):
+                pass
+
+    assert not handler.is_locked()
+
+
+@pytest.mark.parametrize("i", range(100))
+def test_locking_threaded(i):
+    handler = proofreading.ProofreadingHandler()
+
+    @thread_worker()
+    def threaded(freeze: bool):
+        with handler.lock_manager(0 if not freeze else 300):
+            if freeze:
+                t0 = time()
+                while time() - t0 < 10:
+                    sleep(0.001)
+                    yield
+            else:
+                return
+
+    worker = threaded(True)
+    worker.start()
+    sleep(0.001)
+    assert handler.is_locked()
+    worker.quit()
+
+
+@pytest.mark.parametrize("i", range(100))
+def test_locking_threaded_timeout(qtbot, i):
+    handler = proofreading.ProofreadingHandler()
+
+    @thread_worker()
+    def threaded(freeze: bool):
+        with handler.lock_manager(0 if not freeze else 300):
+            if freeze:
+                t0 = time()
+                while time() - t0 < 10:
+                    sleep(0.001)
+                    yield
+            else:
+                return
+
+    worker1 = threaded(True)
+    worker1.start()
+    sleep(0.001)
+    assert handler.is_locked()
+    assert worker1._running
+
+    worker2 = threaded(False)
+    with qtbot.capture_exceptions() as exceptions:
+        with qtbot.waitSignal(worker2.errored, raising=False):
+            worker2.start()
+    assert len(exceptions) == 1
+    assert exceptions[0][0] is TimeoutError
+    worker1.await_workers()
+    worker2.await_workers()
 
 
 def test_widget_filter_segmentation_log(mocker):

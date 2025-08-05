@@ -14,6 +14,7 @@ from napari.layers import Image, Labels
 from napari.qt.threading import thread_worker
 from napari.utils import CyclicLabelColormap
 from pydantic import BaseModel, Field
+from qtpy.QtCore import QMutex
 
 from plantseg.core.image import ImageProperties, PlantSegImage, SemanticType
 from plantseg.functionals.proofreading.split_merge_tools import split_merge_from_seeds
@@ -228,26 +229,26 @@ class ProofreadingHandler:
         """Initializes the ProofreadingHandler with an inactive state."""
         self._state = ProofreadingState()
         self._scale = None
+        self.mutex = QMutex()
 
     @contextmanager
-    def lock_manager(self, timeout: float = 300):
+    def lock_manager(self, timeout: int = 30):
         """Blocking context manager for locking and unlocking proofreading handler."""
-        t0 = time()
-        while self._state.lock:
-            sleep(0.1)
-            if (time() - t0) > timeout:
-                raise TimeoutError("Could not aquire lock!")
-
-        self._state.lock = True
+        success = self.mutex.tryLock(timeout)
+        if not success:
+            raise TimeoutError
 
         try:
             yield
         finally:
-            self._state.lock = False
+            self.mutex.unlock()
 
     def is_locked(self) -> bool:
         """Checks if the proofreading handler is locked."""
-        return self._state.lock
+        was_unlocked = self.mutex.tryLock(0)
+        if was_unlocked:
+            self.mutex.unlock()
+        return was_unlocked
 
     # Proofreading state properties
     @property
