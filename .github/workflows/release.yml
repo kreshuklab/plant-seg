@@ -58,6 +58,11 @@ jobs:
           pytest -s --cov --cov-report=xml
           conda deactivate
 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.2.0
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Bump version
         id: bump
         uses: callowayproject/bump-my-version@master
