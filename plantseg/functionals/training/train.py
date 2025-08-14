@@ -64,7 +64,7 @@ def create_model_config(
 
 
 def unet_training(
-    dataset_dir: str,
+    dataset_dir: str | Path,
     model_name: str,
     in_channels: int,
     out_channels: int,

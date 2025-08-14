@@ -38,7 +38,7 @@ def div(text: str = ""):
         # 490px target length, 172px div png
         needed_ws = (490 - 172) - (text_len)
         # length of white space ~3.5px, char length less, needs to be balanced
-        n_ws = int((needed_ws / 4.1) + (text_len * 0.13))
+        n_ws = int((needed_ws / 3.5) + (text_len * 0.12))
 
         centered_text = text.center(n_ws, "\u00a0")  # wraps text in non-breaking spaces
         w = Label(

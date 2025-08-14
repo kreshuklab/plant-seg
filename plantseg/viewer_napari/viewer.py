@@ -6,26 +6,12 @@ from plantseg.utils import check_version
 from plantseg.viewer_napari.containers import (
     get_proofreading_tab,
 )
-from plantseg.viewer_napari.widgets.batch import Batch_Tab
+from plantseg.viewer_napari.widgets.batch import Batch_Tab, Misc_Tab
 from plantseg.viewer_napari.widgets.input import Input_Tab
 from plantseg.viewer_napari.widgets.output import Output_Tab
 from plantseg.viewer_napari.widgets.postprocessing import Postprocessing_Tab
 from plantseg.viewer_napari.widgets.preprocessing import Preprocessing_Tab
 from plantseg.viewer_napari.widgets.segmentation import Segmentation_Tab
-
-
-def scroll_wrap(w):
-    scrollArea = QtWidgets.QScrollArea()
-    scrollArea.setWidget(w.native)
-    scrollArea.setWidgetResizable(True)
-    pol = QtWidgets.QSizePolicy()
-    pol.setHorizontalPolicy(QtWidgets.QSizePolicy.Policy.Expanding)
-    pol.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.Minimum)
-    scrollArea.setSizePolicy(pol)
-    # width of scroll area (outside)
-    scrollArea.setMinimumWidth(550)
-
-    return scrollArea
 
 
 def run_viewer():
@@ -36,7 +22,7 @@ def run_viewer():
     preprocessing_tab = Preprocessing_Tab()
     segmentation_tab = Segmentation_Tab()
     postprocessing_tab = Postprocessing_Tab()
-    batch_tab = Batch_Tab(output_tab)
+    batch_tab = Misc_Tab(output_tab)
 
     # Create and add tabs
     container_list = [
@@ -49,11 +35,8 @@ def run_viewer():
         (batch_tab.get_container(), "Batch"),
     ]
     for _containers, name in container_list:
-        # width inside scroll area
         _containers.native.setFixedWidth(550)
         viewer.window.add_dock_widget(
-            # breaks layer-name updates #439
-            # scroll_wrap(_containers),
             _containers,
             name=name,
             tabify=True,
