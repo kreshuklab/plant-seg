@@ -10,28 +10,28 @@
       
       
       
-        <link rel="canonical" href="https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/">
+        <link rel="canonical" href="https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/tasks/io_tasks/">
       
       
-        <link rel="prev" href="../getting_started/contributing/">
+        <link rel="prev" href="../../">
       
       
-        <link rel="next" href="import/">
+        <link rel="next" href="../dataprocessing_tasks/">
       
       
-      <link rel="icon" href="../../images/favicon.ico">
+      <link rel="icon" href="../../../../images/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.16">
     
     
       
-        <title>PlantSeg Interactive - Napari - PlantSeg</title>
+        <title>plantseg.tasks.io_tasks - PlantSeg</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.7e37652d.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.7e37652d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -50,11 +50,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_markdown_exec_pyodide.css">
+      <link rel="stylesheet" href="../../../../assets/_markdown_exec_pyodide.css">
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#plantseg-interactive-napari" class="md-skip">
+        <a href="#import-and-export-tasks" class="md-skip">
           Skip to content
         </a>
       
@@ -100,9 +100,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="PlantSeg" class="md-header__button md-logo" aria-label="PlantSeg" data-md-component="logo">
+    <a href="../../../.." title="PlantSeg" class="md-header__button md-logo" aria-label="PlantSeg" data-md-component="logo">
       
-  <img src="../../logos/logo_white.png" alt="logo">
+  <img src="../../../../logos/logo_white.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -119,7 +119,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PlantSeg Interactive - Napari
+              plantseg.tasks.io_tasks
             
           </span>
         </div>
@@ -242,9 +242,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="PlantSeg" class="md-nav__button md-logo" aria-label="PlantSeg" data-md-component="logo">
+    <a href="../../../.." title="PlantSeg" class="md-nav__button md-logo" aria-label="PlantSeg" data-md-component="logo">
       
-  <img src="../../logos/logo_white.png" alt="logo">
+  <img src="../../../../logos/logo_white.png" alt="logo">
 
     </a>
     PlantSeg
@@ -294,7 +294,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../.." class="md-nav__link ">
+            <a href="../../../.." class="md-nav__link ">
               
   
   
@@ -358,7 +358,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../getting_started/" class="md-nav__link ">
+            <a href="../../../getting_started/" class="md-nav__link ">
               
   
   
@@ -393,7 +393,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting_started/installation/" class="md-nav__link">
+      <a href="../../../getting_started/installation/" class="md-nav__link">
         
   
   
@@ -416,7 +416,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting_started/contributing/" class="md-nav__link">
+      <a href="../../../getting_started/contributing/" class="md-nav__link">
         
   
   
@@ -443,8 +443,6 @@
       
   
   
-    
-  
   
   
     
@@ -479,15 +477,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
+            <a href="../../../plantseg_interactive_napari/" class="md-nav__link ">
               
   
   
@@ -500,13 +498,13 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             Napari GUI
@@ -522,7 +520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="import/" class="md-nav__link">
+      <a href="../../../plantseg_interactive_napari/import/" class="md-nav__link">
         
   
   
@@ -545,7 +543,7 @@
   
   
     <li class="md-nav__item">
-      <a href="preprocessing/" class="md-nav__link">
+      <a href="../../../plantseg_interactive_napari/preprocessing/" class="md-nav__link">
         
   
   
@@ -568,7 +566,7 @@
   
   
     <li class="md-nav__item">
-      <a href="segmentation/" class="md-nav__link">
+      <a href="../../../plantseg_interactive_napari/segmentation/" class="md-nav__link">
         
   
   
@@ -591,7 +589,7 @@
   
   
     <li class="md-nav__item">
-      <a href="postprocessing/" class="md-nav__link">
+      <a href="../../../plantseg_interactive_napari/postprocessing/" class="md-nav__link">
         
   
   
@@ -614,7 +612,7 @@
   
   
     <li class="md-nav__item">
-      <a href="proofreading/" class="md-nav__link">
+      <a href="../../../plantseg_interactive_napari/proofreading/" class="md-nav__link">
         
   
   
@@ -637,7 +635,7 @@
   
   
     <li class="md-nav__item">
-      <a href="output/" class="md-nav__link">
+      <a href="../../../plantseg_interactive_napari/output/" class="md-nav__link">
         
   
   
@@ -660,7 +658,7 @@
   
   
     <li class="md-nav__item">
-      <a href="batch/" class="md-nav__link">
+      <a href="../../../plantseg_interactive_napari/batch/" class="md-nav__link">
         
   
   
@@ -683,7 +681,7 @@
   
   
     <li class="md-nav__item">
-      <a href="unet_training/" class="md-nav__link">
+      <a href="../../../plantseg_interactive_napari/unet_training/" class="md-nav__link">
         
   
   
@@ -736,7 +734,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../workflow_gui/" class="md-nav__link ">
+            <a href="../../../workflow_gui/" class="md-nav__link ">
               
   
   
@@ -800,7 +798,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../plantseg_models/" class="md-nav__link ">
+            <a href="../../../plantseg_models/" class="md-nav__link ">
               
   
   
@@ -835,7 +833,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../plantseg_models/custom_datasets/" class="md-nav__link">
+      <a href="../../../plantseg_models/custom_datasets/" class="md-nav__link">
         
   
   
@@ -858,7 +856,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../plantseg_models/training/" class="md-nav__link">
+      <a href="../../../plantseg_models/training/" class="md-nav__link">
         
   
   
@@ -885,6 +883,8 @@
       
   
   
+    
+  
   
   
     
@@ -907,15 +907,15 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../python_api/" class="md-nav__link ">
+            <a href="../../" class="md-nav__link ">
               
   
   
@@ -934,7 +934,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             API
@@ -947,8 +947,10 @@
                 
   
   
+    
   
   
+  
     
     
       
@@ -966,11 +968,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_2" checked>
         
           
           <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
@@ -986,7 +988,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6_2">
             <span class="md-nav__icon md-icon"></span>
             tasks
@@ -997,10 +999,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../python_api/tasks/io_tasks/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    plantseg.tasks.io_tasks
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1011,6 +1035,74 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#import-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      Import task
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Import task">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plantseg.tasks.io_tasks.import_image_task" class="md-nav__link">
+    <span class="md-ellipsis">
+      import_image_task
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#export-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export task
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Export task">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plantseg.tasks.io_tasks.export_image_task" class="md-nav__link">
+    <span class="md-ellipsis">
+      export_image_task
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1023,7 +1115,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../python_api/tasks/dataprocessing_tasks/" class="md-nav__link">
+      <a href="../dataprocessing_tasks/" class="md-nav__link">
         
   
   
@@ -1046,7 +1138,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../python_api/tasks/segmentation_tasks/" class="md-nav__link">
+      <a href="../segmentation_tasks/" class="md-nav__link">
         
   
   
@@ -1069,7 +1161,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../python_api/tasks/prediction_tasks/" class="md-nav__link">
+      <a href="../prediction_tasks/" class="md-nav__link">
         
   
   
@@ -1150,7 +1242,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../python_api/functionals/io/" class="md-nav__link">
+      <a href="../../functionals/io/" class="md-nav__link">
         
   
   
@@ -1173,7 +1265,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../python_api/functionals/data_processing/" class="md-nav__link">
+      <a href="../../functionals/data_processing/" class="md-nav__link">
         
   
   
@@ -1196,7 +1288,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../python_api/functionals/cnn_prediction/" class="md-nav__link">
+      <a href="../../functionals/cnn_prediction/" class="md-nav__link">
         
   
   
@@ -1219,7 +1311,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../python_api/functionals/segmentation/" class="md-nav__link">
+      <a href="../../functionals/segmentation/" class="md-nav__link">
         
   
   
@@ -1310,7 +1402,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../plantseg_legacy/installation/" class="md-nav__link">
+      <a href="../../../plantseg_legacy/installation/" class="md-nav__link">
         
   
   
@@ -1359,7 +1451,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../plantseg_legacy/plantseg_classic_gui/" class="md-nav__link ">
+            <a href="../../../plantseg_legacy/plantseg_classic_gui/" class="md-nav__link ">
               
   
   
@@ -1394,7 +1486,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../plantseg_legacy/plantseg_classic_gui/data_processing/" class="md-nav__link">
+      <a href="../../../plantseg_legacy/plantseg_classic_gui/data_processing/" class="md-nav__link">
         
   
   
@@ -1417,7 +1509,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../plantseg_legacy/plantseg_classic_gui/cnn_prediction/" class="md-nav__link">
+      <a href="../../../plantseg_legacy/plantseg_classic_gui/cnn_prediction/" class="md-nav__link">
         
   
   
@@ -1440,7 +1532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../plantseg_legacy/plantseg_classic_gui/segmentation/" class="md-nav__link">
+      <a href="../../../plantseg_legacy/plantseg_classic_gui/segmentation/" class="md-nav__link">
         
   
   
@@ -1491,7 +1583,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../plantseg_legacy/plantseg_classic_cli/" class="md-nav__link ">
+            <a href="../../../plantseg_legacy/plantseg_classic_cli/" class="md-nav__link ">
               
   
   
@@ -1529,7 +1621,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../plantseg_legacy/troubleshooting/" class="md-nav__link">
+      <a href="../../../plantseg_legacy/troubleshooting/" class="md-nav__link">
         
   
   
@@ -1572,6 +1664,62 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#import-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      Import task
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Import task">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plantseg.tasks.io_tasks.import_image_task" class="md-nav__link">
+    <span class="md-ellipsis">
+      import_image_task
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#export-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      Export task
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Export task">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plantseg.tasks.io_tasks.export_image_task" class="md-nav__link">
+    <span class="md-ellipsis">
+      export_image_task
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1589,16 +1737,361 @@
   
 
 
-<h1 id="plantseg-interactive-napari">PlantSeg Interactive - Napari<a class="headerlink" href="#plantseg-interactive-napari" title="Permanent link">&para;</a></h1>
-<p>PlantSeg app can also be started using napari as a viewer.</p>
-<p>First, activate the newly created conda environment with:</p>
-<div class="highlight"><pre><span></span><code>conda<span class="w"> </span>activate<span class="w"> </span>plant-seg
-</code></pre></div>
-<p>then, start the plantseg in napari</p>
-<div class="highlight"><pre><span></span><code>plantseg<span class="w"> </span>--napari
-</code></pre></div>
-<p>This will allow you to interactively learn and test PlantSeg on your data:</p>
-<p><img alt="PlantSeg Napari" src="https://github.com/kreshuklab/plant-seg/raw/assets/images/plantseg_napari.png" /></p>
+<h1 id="import-and-export-tasks">Import and export tasks<a class="headerlink" href="#import-and-export-tasks" title="Permanent link">&para;</a></h1>
+<h2 id="import-task">Import task<a class="headerlink" href="#import-task" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="plantseg.tasks.io_tasks.import_image_task" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">io_tasks</span><span class="o">.</span><span class="n">import_image_task</span><span class="p">(</span><span class="n">input_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">semantic_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">stack_layout</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">image_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">m_slicing</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PlantSegImage</span></code>
+
+<a href="#plantseg.tasks.io_tasks.import_image_task" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Task wrapper creating a PlantSegImage object from an image file.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>input_path</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>path to the image file</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>semantic_type</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>semantic type of the image (raw, segmentation, prediction)</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>stack_layout</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>stack layout of the image (3D, 2D, 2D_time)</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>image_name</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>name of the image, if None the name will be the same as the file name</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>key for the image (used only for h5 and zarr formats)</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>m_slicing</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>m_slicing of the image (None, time, z, y, x)</p>
+          </div>
+        </li>
+    </ul>
+
+
+            <details class="quote">
+              <summary>Source code in <code>plantseg/tasks/io_tasks.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span><span class="p">(</span>
+    <span class="n">is_root</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">list_inputs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;input_path&quot;</span><span class="p">:</span> <span class="n">RunTimeInputSchema</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Path to a file, or a directory containing files (all files will be imported) or list of paths.&quot;</span><span class="p">,</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">is_input_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">import_image_task</span><span class="p">(</span>
+    <span class="n">input_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">semantic_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">stack_layout</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">image_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">m_slicing</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PlantSegImage</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Task wrapper creating a PlantSegImage object from an image file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_path (Path): path to the image file</span>
+<span class="sd">        semantic_type (str): semantic type of the image (raw, segmentation, prediction)</span>
+<span class="sd">        stack_layout (str): stack layout of the image (3D, 2D, 2D_time)</span>
+<span class="sd">        image_name (str): name of the image, if None the name will be the same as the file name</span>
+<span class="sd">        key (str | None): key for the image (used only for h5 and zarr formats)</span>
+<span class="sd">        m_slicing (str | None): m_slicing of the image (None, time, z, y, x)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">image_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">image_name</span> <span class="o">=</span> <span class="n">input_path</span><span class="o">.</span><span class="n">stem</span>
+
+    <span class="k">return</span> <span class="n">import_image</span><span class="p">(</span>
+        <span class="n">path</span><span class="o">=</span><span class="n">input_path</span><span class="p">,</span>
+        <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+        <span class="n">image_name</span><span class="o">=</span><span class="n">image_name</span><span class="p">,</span>
+        <span class="n">semantic_type</span><span class="o">=</span><span class="n">semantic_type</span><span class="p">,</span>
+        <span class="n">stack_layout</span><span class="o">=</span><span class="n">stack_layout</span><span class="p">,</span>
+        <span class="n">m_slicing</span><span class="o">=</span><span class="n">m_slicing</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div><h2 id="export-task">Export task<a class="headerlink" href="#export-task" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="plantseg.tasks.io_tasks.export_image_task" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">plantseg</span><span class="o">.</span><span class="n">tasks</span><span class="o">.</span><span class="n">io_tasks</span><span class="o">.</span><span class="n">export_image_task</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span> <span class="n">export_directory</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">name_pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{file_name}</span><span class="s1">_export&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">scale_to_origin</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">export_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;tiff&#39;</span><span class="p">,</span> <span class="n">data_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;uint16&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span></code>
+
+<a href="#plantseg.tasks.io_tasks.export_image_task" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Task wrapper for saving an PlantSegImage object to disk.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>image</code></b>
+              (<code><span title="plantseg.core.image.PlantSegImage">PlantSegImage</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>input image to be saved to disk</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>export_directory</code></b>
+              (<code><a class="autorefs autorefs-external" title="&lt;code&gt;pathlib.Path&lt;/code&gt;" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path">Path</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>output directory path where the image will be saved</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>name_pattern</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;{file_name}_export&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>output file name pattern, can contain the {image_name} or {file_name} tokens
+to be replaced in the final file name.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>key</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>key for the image (used only for h5 and zarr formats).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>scale_to_origin</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>scale the voxel size to the original one</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>export_format</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;tiff&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>file format (tiff, h5, zarr)</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>data_type</code></b>
+              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></code>, default:
+                  <code>&#39;uint16&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>data type to save the image.</p>
+          </div>
+        </li>
+    </ul>
+
+
+            <details class="quote">
+              <summary>Source code in <code>plantseg/tasks/io_tasks.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span>
+<span class="normal">95</span>
+<span class="normal">96</span>
+<span class="normal">97</span>
+<span class="normal">98</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@task_tracker</span><span class="p">(</span>
+    <span class="n">is_leaf</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">list_inputs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;export_directory&quot;</span><span class="p">:</span> <span class="n">RunTimeInputSchema</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Output directory path where the image will be saved&quot;</span><span class="p">,</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="s2">&quot;name_pattern&quot;</span><span class="p">:</span> <span class="n">RunTimeInputSchema</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+                <span class="s2">&quot;Output file name pattern. Use placeholder </span><span class="si">{image_name}</span><span class="s2"> for &quot;</span>
+                <span class="s2">&quot;the napari layer name or </span><span class="si">{file_name}</span><span class="s2"> for the input file name&quot;</span>
+            <span class="p">),</span>
+            <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">export_image_task</span><span class="p">(</span>
+    <span class="n">image</span><span class="p">:</span> <span class="n">PlantSegImage</span><span class="p">,</span>
+    <span class="n">export_directory</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">name_pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{file_name}</span><span class="s2">_export&quot;</span><span class="p">,</span>
+    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">scale_to_origin</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">export_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tiff&quot;</span><span class="p">,</span>
+    <span class="n">data_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;uint16&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Task wrapper for saving an PlantSegImage object to disk.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        image (PlantSegImage): input image to be saved to disk</span>
+<span class="sd">        export_directory (Path): output directory path where the image will be saved</span>
+<span class="sd">        name_pattern (str): output file name pattern, can contain the {image_name} or {file_name} tokens</span>
+<span class="sd">            to be replaced in the final file name.</span>
+<span class="sd">        key (str | None): key for the image (used only for h5 and zarr formats).</span>
+<span class="sd">        scale_to_origin (bool): scale the voxel size to the original one</span>
+<span class="sd">        export_format (str): file format (tiff, h5, zarr)</span>
+<span class="sd">        data_type (str): data type to save the image.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">save_image</span><span class="p">(</span>
+        <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span>
+        <span class="n">export_directory</span><span class="o">=</span><span class="n">export_directory</span><span class="p">,</span>
+        <span class="n">name_pattern</span><span class="o">=</span><span class="n">name_pattern</span><span class="p">,</span>
+        <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span>
+        <span class="n">scale_to_origin</span><span class="o">=</span><span class="n">scale_to_origin</span><span class="p">,</span>
+        <span class="n">export_format</span><span class="o">=</span><span class="n">export_format</span><span class="p">,</span>
+        <span class="n">data_type</span><span class="o">=</span><span class="n">data_type</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 
@@ -1621,7 +2114,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">September 14, 2024</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">October 21, 2024</span>
   </span>
 
     
@@ -1631,7 +2124,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">December 15, 2023</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">October 21, 2024</span>
   </span>
 
     
@@ -1649,19 +2142,9 @@
     
     <nav>
       
-        <a href="https://github.com/qin-yu" class="md-author" title="@qin-yu">
-          
-          <img src="https://avatars.githubusercontent.com/u/17722010?v=4&size=72" alt="qin-yu">
-        </a>
-      
         <a href="https://github.com/lorenzocerrone" class="md-author" title="@lorenzocerrone">
           
-          <img src="https://avatars.githubusercontent.com/u/23013839?u=54d10771b2f6c357c50f6bd59f7bf18b08fa473e&v=4&size=72" alt="Lorenzo">
-        </a>
-      
-        <a href="https://github.com/wolny" class="md-author" title="@wolny">
-          
-          <img src="https://avatars.githubusercontent.com/u/706781?u=8431c0ad0351b2cff1133a628c91f41228056920&v=4&size=72" alt="Adrian Wolny">
+          <img src="https://avatars.githubusercontent.com/u/23013839?v=4&size=72" alt="lorenzocerrone">
         </a>
       
       
@@ -1693,7 +2176,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../getting_started/contributing/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Contributing">
+          <a href="../../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Hierarchical Design of PlantSeg">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1703,20 +2186,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Contributing
+                Hierarchical Design of PlantSeg
               </div>
             </div>
           </a>
         
         
           
-          <a href="import/" class="md-footer__link md-footer__link--next" aria-label="Next: Import">
+          <a href="../dataprocessing_tasks/" class="md-footer__link md-footer__link--next" aria-label="Next: plantseg.tasks.dataprocessing_tasks">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Import
+                plantseg.tasks.dataprocessing_tasks
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1770,12 +2253,12 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["content.tooltips", "content.code.annotate", "navigation.instant", "navigation.instant.progress", "navigation.sections", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "search.suggest", "search.share"], "search": "../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.tooltips", "content.code.annotate", "navigation.instant", "navigation.instant.progress", "navigation.sections", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "search.suggest", "search.share"], "search": "../../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.50899def.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.50899def.min.js"></script>
       
-        <script src="../../assets/_markdown_exec_pyodide.js"></script>
+        <script src="../../../../assets/_markdown_exec_pyodide.js"></script>
       
     
   </body>

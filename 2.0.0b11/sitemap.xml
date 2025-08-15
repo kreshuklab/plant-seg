@@ -1,143 +1,143 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/index.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/getting_started/index.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/getting_started/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/getting_started/contributing.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/getting_started/contributing/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/getting_started/installation.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/getting_started/installation/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/index.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/batch.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/batch/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/import.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/import/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/output.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/output/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/postprocessing.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/postprocessing/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/preprocessing.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/preprocessing/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/proofreading.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/proofreading/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/segmentation.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/segmentation/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/unet_training.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_interactive_napari/unet_training/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/installation.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/installation/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/troubleshooting.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/troubleshooting/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/plantseg_classic_cli/index.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/plantseg_classic_cli/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/plantseg_classic_gui/index.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/plantseg_classic_gui/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/plantseg_classic_gui/cnn_prediction.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/plantseg_classic_gui/cnn_prediction/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/plantseg_classic_gui/data_processing.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/plantseg_classic_gui/data_processing/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/plantseg_classic_gui/segmentation.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_legacy/plantseg_classic_gui/segmentation/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_models/index.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_models/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_models/custom_datasets.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_models/custom_datasets/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_models/training.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/plantseg_models/training/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/index.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/functionals/cnn_prediction.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/functionals/cnn_prediction/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/functionals/data_processing.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/functionals/data_processing/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/functionals/io.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/functionals/io/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/functionals/segmentation.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/functionals/segmentation/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/tasks/dataprocessing_tasks.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/tasks/dataprocessing_tasks/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/tasks/io_tasks.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/tasks/io_tasks/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/tasks/prediction_tasks.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/tasks/prediction_tasks/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/tasks/segmentation_tasks.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/python_api/tasks/segmentation_tasks/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/workflow_gui/index.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/chapters/workflow_gui/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/snippets/widgets/preprocessing/rescale.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/snippets/widgets/preprocessing/rescale/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
     <url>
-         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/snippets/widgets/segmentation/prediction.html</loc>
-         <lastmod>2025-08-05</lastmod>
+         <loc>https://kreshuklab.github.io/plant-seg/2.0.0b11/snippets/widgets/segmentation/prediction/</loc>
+         <lastmod>2025-08-15</lastmod>
     </url>
 </urlset>
