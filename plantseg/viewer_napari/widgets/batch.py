@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Literal, Optional
 
+import torch
 from magicgui import magic_factory
 from magicgui.widgets import Container, Label
 from napari.components import tooltip
-import torch
 
 from plantseg import PATH_PLANTSEG_MODELS, logger
 from plantseg.functionals.training.train import unet_training
