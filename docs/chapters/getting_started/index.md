@@ -5,7 +5,7 @@ PlantSeg can be used in three different ways: interactively (using the Napari vi
 ## Interactive PlantSeg with Napari Viewer
 
 PlantSeg app can be started from the terminal.
-After [installing PlantSeg](/plant-seg/chapters/getting_started/installation) using the installer, there should be a menu entry for to launch PlantSeg.
+After [installing PlantSeg](installation.md) using the installer, there should be a menu entry for to launch PlantSeg.
 
 Alternatively, launch PlantSeg in the terminal. First activate your environment (by default this is the installation directory, change the command if needed) with:
 

@@ -53,8 +53,8 @@ The installer comes complete with its own python installation. During the instal
 === "conda-forge"
 
     If you want to install PlantSeg without the installer, you need to have
-    conda and git installed. (We recommend Microforge to get conda,
-    see [installing mamba](../contributing/#install-mamba))
+    conda. (We recommend Microforge to get conda,
+    see [installing mamba](contributing.md#install-mamba))
 
     ```bash
     conda create --name plant-seg plant-seg
@@ -64,7 +64,7 @@ The installer comes complete with its own python installation. During the instal
 
 === "latest git version"
 
-    To get the latest pre-release features, install PlantSeg from git. You need to have conda and git installed. (We recommend Microforge to get conda, see [installing mamba](../contributing/#install-mamba))
+    To get the latest pre-release features, install PlantSeg from git. You need to have conda and git installed. (We recommend Microforge to get conda, see [installing mamba](contributing.md#install-mamba))
 
     ```bash
     git clone https://github.com/kreshuklab/plant-seg.git
