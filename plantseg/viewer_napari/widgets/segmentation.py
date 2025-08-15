@@ -1,7 +1,7 @@
 from typing import Optional
 
 from magicgui import magic_factory
-from magicgui.widgets import Container
+from magicgui.widgets import Container, ProgressBar
 from napari.layers import Image, Labels, Layer
 
 from plantseg import logger
@@ -208,6 +208,7 @@ class Segmentation_Tab:
         pixel_pitch={"label": "Pixel pitch"},
         apply_nonmax_suppression={"label": "Apply nonmax suppression"},
         is_nuclei_image={"label": "Is nuclei image"},
+        pbar={"label": "Watershed is running", "max": 0, "min": 0, "visible": False},
     )
     def factory_dt_ws(
         self,
@@ -222,6 +223,7 @@ class Segmentation_Tab:
         pixel_pitch: tuple[int, int, int] = (1, 1, 1),
         apply_nonmax_suppression: bool = False,
         is_nuclei_image: bool = False,
+        pbar: Optional[ProgressBar] = None,
     ) -> None:
         if self.widget_layer_select.prediction.value is None:
             log(
@@ -247,6 +249,8 @@ class Segmentation_Tab:
                 "pixel_pitch": pixel_pitch if use_pixel_pitch else None,
                 "apply_nonmax_suppression": apply_nonmax_suppression,
                 "is_nuclei_image": is_nuclei_image,
+                "_pbar": pbar,
+                "_to_hide": [self.widget_dt_ws.call_button],
             },
         )
 

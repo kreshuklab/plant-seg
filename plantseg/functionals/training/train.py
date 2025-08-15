@@ -14,6 +14,7 @@ from plantseg import (
     PATH_PLANTSEG_MODELS,
     PATH_TRAIN_TEMPLATE,
 )
+from plantseg.core.zoo import model_zoo
 from plantseg.functionals.training.augs import Augmenter
 from plantseg.functionals.training.h5dataset import HDF5Dataset
 from plantseg.functionals.training.losses import DiceLoss
@@ -74,6 +75,9 @@ def unet_training(
     dimensionality: Literal["2D", "3D"],
     sparse: bool,
     device: str,
+    modality: str = "",
+    output_type: str = "",
+    description: str = "",
 ) -> None:
     """
     Main entrypoint for training a new unet model. Gets called when calling `plantseg --train` from cli.
@@ -162,6 +166,16 @@ def unet_training(
     )
 
     trainer.train()
+
+    model_zoo.add_custom_model(
+        new_model_name=model_name,
+        location=checkpoint_dir,
+        # resolution=
+        description=description,
+        dimensionality=dimensionality,
+        modality=modality,
+        output_type=output_type,
+    )
 
 
 def create_datasets(

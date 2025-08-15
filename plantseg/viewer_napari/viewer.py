@@ -6,8 +6,8 @@ from plantseg.utils import check_version
 from plantseg.viewer_napari.containers import (
     get_proofreading_tab,
 )
-from plantseg.viewer_napari.widgets.batch import Batch_Tab, Misc_Tab
 from plantseg.viewer_napari.widgets.input import Input_Tab
+from plantseg.viewer_napari.widgets.misc import Misc_Tab
 from plantseg.viewer_napari.widgets.output import Output_Tab
 from plantseg.viewer_napari.widgets.postprocessing import Postprocessing_Tab
 from plantseg.viewer_napari.widgets.preprocessing import Preprocessing_Tab
@@ -22,7 +22,7 @@ def run_viewer():
     preprocessing_tab = Preprocessing_Tab()
     segmentation_tab = Segmentation_Tab()
     postprocessing_tab = Postprocessing_Tab()
-    batch_tab = Misc_Tab(output_tab)
+    misc_tab = Misc_Tab(output_tab)
 
     # Create and add tabs
     container_list = [
@@ -32,7 +32,7 @@ def run_viewer():
         (postprocessing_tab.get_container(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
         (output_tab.get_container(), "Output"),
-        (batch_tab.get_container(), "Batch"),
+        (misc_tab.get_container(), "Misc"),
     ]
     for _containers, name in container_list:
         _containers.native.setFixedWidth(550)
