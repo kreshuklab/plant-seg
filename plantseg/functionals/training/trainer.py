@@ -71,10 +71,6 @@ class UNetTrainer:
             # train for one epoch
             should_terminate = self.train_epoch()
 
-            if should_terminate:
-                logger.info("Stopping criterion is satisfied. Finishing training")
-                return
-
             logger.info("Validating...")
             # set the model in eval mode
             self.model.eval()
@@ -97,6 +93,10 @@ class UNetTrainer:
 
             # save checkpoint
             self._save_checkpoint(is_best)
+
+            if should_terminate:
+                logger.info("Stopping criterion is satisfied. Finishing training")
+                return
 
         logger.info(
             f"Reached maximum number of epochs: {self.max_num_epochs}. Finishing training..."

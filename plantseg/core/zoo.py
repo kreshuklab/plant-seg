@@ -272,7 +272,9 @@ class ModelZoo:
                     return False, f"Failed to load or parse config_train.yml: {e}"
 
             if file_path.name in all_expected_files:
-                copy2(file_path, dest_dir)
+                # plantseg models are created by default in the model directory
+                if not file_path.parent == dest_dir:
+                    copy2(file_path, dest_dir)
                 found_files.add(file_path.name)
 
         missing_files = all_expected_files - found_files
