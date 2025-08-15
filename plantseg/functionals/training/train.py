@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Tuple
 
 import torch
 import yaml
@@ -75,6 +75,9 @@ def unet_training(
     sparse: bool,
     device: str,
 ) -> None:
+    """
+    Main entrypoint for training a new unet model. Gets called when calling `plantseg --train` from cli.
+    """
     # Model instantiation and logging
     final_sigmoid = not sparse
     if dimensionality in ["2D", "2d", "2"]:
@@ -161,7 +164,17 @@ def unet_training(
     trainer.train()
 
 
-def create_datasets(dataset_dir: str, phase: str, patch_shape):
+def create_datasets(
+    dataset_dir: str, phase: Literal["train", "val"], patch_shape: Tuple[int]
+):
+    """
+    Load a dataset for training a unet.
+
+    Args:
+        data_dir (str): Must contain a train and a val folder, which inturn contain .h5 files.
+        phase: Whether to load train or val.
+        patch_shape (tuple): shape of the patch to be extracted from the raw data set
+    """
     assert phase in ["train", "val"], f"Phase {phase} not supported"
     phase_dir = Path(dataset_dir) / phase
     file_paths = find_h5_files(phase_dir)
