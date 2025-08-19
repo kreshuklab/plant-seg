@@ -348,6 +348,7 @@ class Preprocessing_Tab:
             logger.debug("Shapes layer added, updating cropping.")
             self.initialised_widget_cropping = True
             self.widget_cropping.crop_roi.value = event.value
+            self._on_cropping_image_changed(self.widget_layer_select.layer.value)
             self.widget_cropping.show()
             self.widget_cropping_placeholder.hide()
 
