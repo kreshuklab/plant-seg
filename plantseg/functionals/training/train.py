@@ -20,6 +20,7 @@ from plantseg.functionals.training.h5dataset import HDF5Dataset
 from plantseg.functionals.training.losses import DiceLoss
 from plantseg.functionals.training.model import UNet2D, UNet3D
 from plantseg.functionals.training.trainer import UNetTrainer
+from plantseg.io.h5 import read_h5_voxel_size
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +79,7 @@ def unet_training(
     modality: str = "",
     output_type: str = "",
     description: str = "",
+    resolution: tuple[float, float, float] = (1.0, 1.0, 1.0),
 ) -> None:
     """
     Main entrypoint for training a new unet model. Gets called when calling `plantseg --train` from cli.
@@ -170,7 +172,7 @@ def unet_training(
     model_zoo.add_custom_model(
         new_model_name=model_name,
         location=checkpoint_dir,
-        # resolution=
+        resolution=resolution,
         description=description,
         dimensionality=dimensionality,
         modality=modality,
@@ -179,7 +181,7 @@ def unet_training(
 
 
 def create_datasets(
-    dataset_dir: str, phase: Literal["train", "val"], patch_shape: Tuple[int]
+    dataset_dir: str, phase: Literal["train", "val"], patch_shape: Tuple[int, int, int]
 ):
     """
     Load a dataset for training a unet.

@@ -9,11 +9,13 @@ from napari.components import tooltip
 
 from plantseg import PATH_PLANTSEG_MODELS, logger
 from plantseg.core.zoo import model_zoo
-from plantseg.functionals.training.train import unet_training
+from plantseg.functionals.training.train import find_h5_files, unet_training
+from plantseg.io.h5 import read_h5_voxel_size
 from plantseg.tasks.training_tasks import unet_training_task
 from plantseg.tasks.workflow_handler import task_tracker, workflow_handler
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.output import Output_Tab
+from plantseg.viewer_napari.widgets.prediction import Prediction_Widgets
 from plantseg.viewer_napari.widgets.utils import div, schedule_task
 from plantseg.workflow_gui.editor import Workflow_gui
 
@@ -87,7 +89,9 @@ class Batch_Tab:
 
 
 class Training_Tab:
-    def __init__(self):
+    def __init__(self, prediction_tab: Optional[Prediction_Widgets]):
+        self.prediction_tab = prediction_tab
+
         # Constants
         self.ALL_CUDA_DEVICES = [f"cuda:{i}" for i in range(torch.cuda.device_count())]
         self.MPS = ["mps"] if torch.backends.mps.is_available() else []
@@ -121,12 +125,16 @@ class Training_Tab:
             model_zoo.get_unique_output_types() + [self.CUSTOM]
         )
         self.widget_unet_training.output_type.reset_choices()
+        self.widget_unet_training.dataset.changed.connect(self._on_dataset_change)
+
+        self.widget_info = Label(value=f"Model dir: {PATH_PLANTSEG_MODELS}")
 
     def get_container(self):
         return Container(
             widgets=[
                 div("Custom Model Training"),
                 self.widget_unet_training,
+                self.widget_info,
             ],
             labels=False,
         )
@@ -167,6 +175,13 @@ class Training_Tab:
             "widget_type": "TupleEdit",
             "tooltip": "",
         },
+        resolution={
+            "label": "Data Resolution",
+            "value": [1.0, 1.0, 1.0],
+            "widget_type": "TupleEdit",
+            "tooltip": "Voxel size in um of the training data.\n"
+            "Is initialized correctly from the chosen data if possible.",
+        },
         max_num_iters={
             "label": "Max iterations",
             "value": 100,
@@ -185,20 +200,30 @@ class Training_Tab:
             "label": "Microscopy modality",
             "tooltip": "Modality of the model (e.g. confocal, light-sheet ...).",
             "widget_type": "ComboBox",
-            "value": Undefined,
+            "value": None,
         },
-        custom_modality={"label": "Custom modality", "value": Undefined},
+        custom_modality={
+            "label": "Custom modality",
+            "value": Undefined,
+            "visible": False,
+        },
         output_type={
             "label": "Prediction type",
             "widget_type": "ComboBox",
             "tooltip": "Type of prediction (e.g. cell boundaries prediction or nuclei...).",
-            "value": Undefined,
+            "value": None,
         },
-        custom_output_type={"label": "Custom type", "value": Undefined},
+        custom_output_type={
+            "label": "Custom type",
+            "value": Undefined,
+            "visible": False,
+        },
         sparse={
             "label": "Sparse",
-            "widget_type": "CheckBox",
+            "widget_type": "RadioButtons",
+            "choices": [False, True],
             "value": False,
+            "orientation": "horizontal",
             "tooltip": "If True, use Softmax in final layer.\nElse use a Sigmoid.",
         },
         device={
@@ -216,20 +241,33 @@ class Training_Tab:
         channels,
         feature_maps,
         patch_size,
+        resolution,
         max_num_iters: int,
         dimensionality,
         sparse,
         device,
-        modality: str = "",
+        modality: Optional[str] = None,
         custom_modality: str = "",
-        output_type: str = "",
+        output_type: Optional[str] = None,
         custom_output_type: str = "",
         pbar: Optional[ProgressBar] = None,
     ) -> None:
+        if modality is None or output_type is None:
+            log("Choose a modality and a prediction type!", thread="train_gui")
+            return
         if modality == self.CUSTOM:
             modality = custom_modality
+            if len(modality) == 0:
+                log("Custom modality can't be empty!", thread="train_gui")
+                return
         if output_type == self.CUSTOM:
             output_type = custom_output_type
+            if len(output_type) == 0:
+                log("Custom prediction type can't be empty!", thread="train_gui")
+                return
+        if len(model_name) == 0:
+            log("Please choose a model name!", thread="train_gui")
+            return
 
         # Enable geometric progression by setting type to int
         if len(feature_maps) == 1:
@@ -244,7 +282,15 @@ class Training_Tab:
             )
             return
 
-        log(f"Starting training task", thread="train_gui")
+        if not all((dataset / d).exists() for d in ["train", "val"]):
+            log(
+                "Dataset dir must contain a train and a val directory,\n"
+                "each containing h5 files!",
+                thread="train_gui",
+            )
+            return
+
+        log("Starting training task", thread="train_gui")
         schedule_task(
             task=unet_training_task,
             task_kwargs={
@@ -258,6 +304,11 @@ class Training_Tab:
                 "dimensionality": dimensionality,
                 "sparse": sparse,
                 "device": device,
+                "modality": modality,
+                "output_type": output_type,
+                "description": description,
+                "resolution": resolution,
+                "prediction_tab": self.prediction_tab,
                 "_pbar": pbar,
                 "_to_hide": [self.widget_unet_training.call_button],
             },
@@ -287,11 +338,35 @@ class Training_Tab:
         else:
             self.widget_unet_training.custom_output_type.hide()
 
+    def _on_dataset_change(self, dataset_dir: Path):
+        if not dataset_dir.exists() or not dataset_dir.is_dir():
+            return
+        if not all((dataset_dir / d).exists() for d in ["train", "val"]):
+            return
+
+        logger.debug(f"_on_dataset_change called: {dataset_dir}")
+
+        h5s = find_h5_files(dataset_dir / "train")
+        if len(h5s) < 1:
+            logger.debug("_on_dataset_change: no h5 files found")
+            return
+
+        voxel_size = read_h5_voxel_size(h5s[0], "raw").voxels_size
+        if voxel_size is None:
+            voxel_size = (1.0, 1.0, 1.0)
+
+        self.widget_unet_training.resolution.value = voxel_size
+        logger.debug(f"Resolution of training data: {voxel_size}")
+
 
 class Misc_Tab:
-    def __init__(self, output_tab: Optional[Output_Tab] = None):
+    def __init__(
+        self,
+        output_tab: Optional[Output_Tab] = None,
+        prediction_tab: Optional[Prediction_Widgets] = None,
+    ):
         self.batch_tab = Batch_Tab(output_tab)
-        self.train_tab = Training_Tab()
+        self.train_tab = Training_Tab(prediction_tab)
 
     def get_container(self):
         return Container(

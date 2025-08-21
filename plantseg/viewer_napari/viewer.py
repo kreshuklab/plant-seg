@@ -22,7 +22,7 @@ def run_viewer():
     preprocessing_tab = Preprocessing_Tab()
     segmentation_tab = Segmentation_Tab()
     postprocessing_tab = Postprocessing_Tab()
-    misc_tab = Misc_Tab(output_tab)
+    misc_tab = Misc_Tab(output_tab, segmentation_tab.prediction_widgets)
 
     # Create and add tabs
     container_list = [

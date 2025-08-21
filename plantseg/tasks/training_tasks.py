@@ -6,6 +6,7 @@ from plantseg import PATH_PLANTSEG_MODELS
 from plantseg.functionals.training.train import unet_training
 from plantseg.tasks.workflow_handler import task_tracker
 from plantseg.viewer_napari import log
+from plantseg.viewer_napari.widgets.prediction import Prediction_Widgets
 
 
 @task_tracker
@@ -20,6 +21,11 @@ def unet_training_task(
     dimensionality: Literal["2D", "3D"],
     sparse: bool,
     device: str,
+    modality: str = "",
+    output_type: str = "",
+    description: str = "",
+    resolution: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    prediction_tab: Optional[Prediction_Widgets] = None,
     _tracker: Optional["PBar_Tracker"] = None,
 ):
     unet_training(
@@ -33,7 +39,13 @@ def unet_training_task(
         dimensionality=dimensionality,
         sparse=sparse,
         device=device,
+        modality=modality,
+        output_type=output_type,
+        description=description,
+        resolution=resolution,
     )
 
     checkpoint_dir = PATH_PLANTSEG_MODELS / model_name
     log(f"Finished training, saved model to {checkpoint_dir}", thread="train_gui")
+    if prediction_tab:
+        prediction_tab.widget_unet_prediction.model_name.reset_choices()
