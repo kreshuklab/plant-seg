@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Literal, Tuple
+from typing import Literal, Optional, Tuple
 
 import torch
 import yaml
@@ -80,6 +80,7 @@ def unet_training(
     output_type: str = "",
     description: str = "",
     resolution: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    pre_trained: Optional[Path] = None,
 ) -> None:
     """
     Main entrypoint for training a new unet model. Gets called when calling `plantseg --train` from cli.
@@ -165,6 +166,7 @@ def unet_training(
         checkpoint_dir=checkpoint_dir,
         max_num_iterations=max_num_iters,
         device=device,
+        pre_trained=pre_trained,
     )
 
     trainer.train()
@@ -181,7 +183,9 @@ def unet_training(
 
 
 def create_datasets(
-    dataset_dir: str, phase: Literal["train", "val"], patch_shape: Tuple[int, int, int]
+    dataset_dir: str | Path,
+    phase: Literal["train", "val"],
+    patch_shape: Tuple[int, int, int],
 ):
     """
     Load a dataset for training a unet.

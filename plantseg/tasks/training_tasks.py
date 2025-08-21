@@ -25,7 +25,8 @@ def unet_training_task(
     output_type: str = "",
     description: str = "",
     resolution: tuple[float, float, float] = (1.0, 1.0, 1.0),
-    prediction_tab: Optional[Prediction_Widgets] = None,
+    pre_trained: Path | None = None,
+    widgets_to_reset: Optional[list] = None,
     _tracker: Optional["PBar_Tracker"] = None,
 ):
     unet_training(
@@ -43,9 +44,11 @@ def unet_training_task(
         output_type=output_type,
         description=description,
         resolution=resolution,
+        pre_trained=pre_trained,
     )
 
     checkpoint_dir = PATH_PLANTSEG_MODELS / model_name
     log(f"Finished training, saved model to {checkpoint_dir}", thread="train_gui")
-    if prediction_tab:
-        prediction_tab.widget_unet_prediction.model_name.reset_choices()
+    if widgets_to_reset:
+        for widget in widgets_to_reset:
+            widget.reset_choices()

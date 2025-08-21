@@ -5,7 +5,6 @@ import torch
 from magicgui import magic_factory
 from magicgui.types import Undefined
 from magicgui.widgets import Container, Label, ProgressBar
-from napari.components import tooltip
 
 from plantseg import PATH_PLANTSEG_MODELS, logger
 from plantseg.core.zoo import model_zoo
@@ -17,75 +16,6 @@ from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.output import Output_Tab
 from plantseg.viewer_napari.widgets.prediction import Prediction_Widgets
 from plantseg.viewer_napari.widgets.utils import div, schedule_task
-from plantseg.workflow_gui.editor import Workflow_gui
-
-
-class Batch_Tab:
-    def __init__(self, output_tab: Optional[Output_Tab] = None):
-        self.widget_export_workflow = self.factory_export_headless_workflow()
-        self.widget_export_workflow.self.bind(self)
-        self.widget_export_workflow.hide()
-
-        self.widget_edit_worflow = self.factory_edit_worflow()
-        self.widget_edit_worflow.self.bind(self)
-
-        self.widget_export_placeholder = Label(
-            value="Export an image before saving the workflow\nfor batch execution!"
-        )
-
-        if output_tab:
-            output_tab.successful_export.connect(self.toggle_export_vis)
-
-    def get_container(self):
-        return Container(
-            widgets=[
-                div("Export Batch Workflow"),
-                self.widget_export_placeholder,
-                self.widget_export_workflow,
-                div("Edit Batch Workflow"),
-                self.widget_edit_worflow,
-            ],
-            labels=False,
-        )
-
-    @magic_factory(
-        call_button="Export Workflow",
-        directory={
-            "label": "Export directory",
-            "mode": "d",
-            "tooltip": "Select the directory where the workflow will be exported",
-        },
-        workflow_name={
-            "label": "Workflow name",
-            "tooltip": "Name of the exported workflow file.",
-        },
-    )
-    def factory_export_headless_workflow(
-        self,
-        directory: Path = Path.home(),
-        workflow_name: str = "headless_workflow.yaml",
-    ) -> None:
-        """Save the workflow as a yaml file"""
-
-        if not workflow_name.endswith(".yaml"):
-            workflow_name = f"{workflow_name}.yaml"
-
-        workflow_path = directory / workflow_name
-        workflow_handler.save_to_yaml(path=workflow_path)
-
-        log(f"Workflow saved to {workflow_path}", thread="Export stacks", level="info")
-
-    @magic_factory(
-        call_button="Edit a Workflow",
-    )
-    def factory_edit_worflow(self) -> None:
-        log("Starting workflow editor", thread="Workflow")
-        Workflow_gui()
-
-    def toggle_export_vis(self):
-        logger.debug("toggle export called!")
-        self.widget_export_placeholder.hide()
-        self.widget_export_workflow.show()
 
 
 class Training_Tab:
@@ -106,6 +36,14 @@ class Training_Tab:
         self.widget_unet_training.device._default_choices = self.ALL_DEVICES
         self.widget_unet_training.device.reset_choices()
         self.widget_unet_training.device.value = self.ALL_DEVICES[0]
+
+        self.widget_unet_training.pretrained._default_choices = (
+            lambda _: model_zoo.list_models()
+        )
+        self.widget_unet_training.pretrained.changed.connect(
+            self._on_pretrained_changed
+        )
+        self.widget_unet_training.pretrained.reset_choices()
 
         self.widget_unet_training.dimensionality.changed.connect(
             self._on_dimensionality_change
@@ -147,6 +85,13 @@ class Training_Tab:
             "mode": "d",
             "tooltip": "Dataset directory should contain a `train` and a `val`\n"
             "directory, each containing h5 files.",
+        },
+        pretrained={
+            "label": "Pretrained model",
+            "tooltip": "Select an existing model to retrain.\n"
+            "Hover over the name to show the model description.",
+            "choices": [None],
+            "value": None,
         },
         model_name={
             "label": "Model name",
@@ -236,6 +181,7 @@ class Training_Tab:
     def factory_unet_training(
         self,
         dataset: Path,
+        pretrained: Optional[str],
         model_name: str,
         description: str,
         channels,
@@ -290,6 +236,12 @@ class Training_Tab:
             )
             return
 
+        pre_model_path = None
+        if pretrained is not None:
+            model, model_config, pre_model_path = model_zoo.get_model_by_name(
+                pretrained
+            )
+
         log("Starting training task", thread="train_gui")
         schedule_task(
             task=unet_training_task,
@@ -308,7 +260,11 @@ class Training_Tab:
                 "output_type": output_type,
                 "description": description,
                 "resolution": resolution,
-                "prediction_tab": self.prediction_tab,
+                "pre_trained": pre_model_path,
+                "widgets_to_reset": [
+                    self.prediction_tab.widget_unet_prediction.model_name,
+                    self.widget_unet_training.pretrained,
+                ],
                 "_pbar": pbar,
                 "_to_hide": [self.widget_unet_training.call_button],
             },
@@ -358,6 +314,30 @@ class Training_Tab:
         self.widget_unet_training.resolution.value = voxel_size
         logger.debug(f"Resolution of training data: {voxel_size}")
 
+    def _on_pretrained_changed(self, model_name: str | None):
+        logger.debug(f"_on_model_name_changed called: {model_name}")
+
+        if model_name is None:
+            self.description = "No description available for this model."
+            self.widget_unet_training.feature_maps.enabled = True
+        else:
+            self.widget_unet_training.feature_maps.enabled = False
+            model, model_config, pre_model_path = model_zoo.get_model_by_name(
+                model_name
+            )
+            logger.info(f"Selected model config: {model_config}")
+            if isinstance(model_config["f_maps"], list):
+                self.widget_unet_training.feature_maps.value = model_config["f_maps"]
+            else:
+                self.widget_unet_training.feature_maps.value = [model_config["f_maps"]]
+
+            self.description = model_zoo.get_model_description(model_name)
+
+        self.widget_unet_training.pretrained.tooltip = (
+            "Select an existing model to retrain. Current model description:"
+            f"\n\n{self.description}"
+        )
+
 
 class Misc_Tab:
     def __init__(
@@ -365,13 +345,13 @@ class Misc_Tab:
         output_tab: Optional[Output_Tab] = None,
         prediction_tab: Optional[Prediction_Widgets] = None,
     ):
-        self.batch_tab = Batch_Tab(output_tab)
+        # self.batch_tab = Batch_Tab(output_tab)
         self.train_tab = Training_Tab(prediction_tab)
 
     def get_container(self):
         return Container(
             widgets=[
-                self.batch_tab.get_container(),
+                # self.batch_tab.get_container(),
                 self.train_tab.get_container(),
             ],
             labels=False,

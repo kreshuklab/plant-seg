@@ -32,7 +32,7 @@ def run_viewer():
         (postprocessing_tab.get_container(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
         (output_tab.get_container(), "Output"),
-        (misc_tab.get_container(), "Misc"),
+        (misc_tab.get_container(), "Train"),
     ]
     for _containers, name in container_list:
         _containers.native.setFixedWidth(550)
