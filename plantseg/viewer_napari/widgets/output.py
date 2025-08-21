@@ -9,8 +9,8 @@ from psygnal import Signal
 
 from plantseg import logger
 from plantseg.core.image import PlantSegImage
-from plantseg.tasks.workflow_handler import workflow_handler
 from plantseg.tasks.io_tasks import export_image_task
+from plantseg.tasks.workflow_handler import workflow_handler
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.utils import div
 from plantseg.workflow_gui.editor import Workflow_gui
