@@ -83,13 +83,15 @@ class Training_Tab:
             "label": "Dataset",
             "value": Path.home(),
             "mode": "d",
-            "tooltip": "Dataset directory should contain a `train` and a `val`\n"
-            "directory, each containing h5 files.",
+            "tooltip": "Dataset directory. It must contain a `train` and a `val`\n"
+            "directory, each containing h5 files.\n"
+            "Input/Output keys must be `raw` and `label` respectively.",
         },
         pretrained={
             "label": "Pretrained model",
-            "tooltip": "Select an existing model to retrain.\n"
-            "Hover over the name to show the model description.",
+            "tooltip": "Optionally select an existing model to retrain.\n"
+            "Hover over the name to show the model description.\n"
+            "Leave empty to create a new model.",
             "choices": [None],
             "value": None,
         },
@@ -112,7 +114,8 @@ class Training_Tab:
             "value": [16],
             "tooltip": "Number of feature maps at each level of the encoder.\n"
             "If it's one number, the number of feature maps is given by\n"
-            "the geometric progression: f_maps ^ k, k=1,2,3,4",
+            "the geometric progression: f_maps ^ k, k=1,2,3,4\n"
+            "Can't be modified for pretrained models.",
         },
         patch_size={
             "label": "Patch size",
