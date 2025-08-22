@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.functionals.dataprocessing.dataprocessing import normalize_01
@@ -28,6 +29,7 @@ def dt_watershed_task(
     apply_nonmax_suppression: bool = False,
     n_threads: int | None = None,
     is_nuclei_image: bool = False,
+    _tracker: Optional["PBar_Tracker"] = None,
 ) -> PlantSegImage:
     """Distance transform watershed segmentation task.
 

@@ -173,8 +173,8 @@ class Prediction_Widgets:
         },
         model_name={
             "label": "PlantSeg model",
-            "tooltip": f"Select a pretrained PlantSeg model. "
-            f"Current model description:\n{model_zoo.get_model_description(model_zoo.list_models()[0])}",
+            "tooltip": "Select a pretrained PlantSeg model.\n"
+            "Hover over the name to show the model description.",
             "choices": [None],
             "value": None,
         },
@@ -453,7 +453,8 @@ class Prediction_Widgets:
             self.widget_unet_prediction.advanced.show()
             self.widget_unet_prediction.device.show()
         self.widget_unet_prediction.model_name.tooltip = (
-            f"Select a pretrained model. Current model description:\n{self.description}"
+            "Select a pretrained model. Current model description:"
+            f"\n\n{self.description}"
         )
 
         if self.widget_unet_prediction.advanced.value:
