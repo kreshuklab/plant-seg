@@ -5,17 +5,17 @@ import torch
 from magicgui import magic_factory
 from magicgui.types import Undefined
 from magicgui.widgets import Container, Label, ProgressBar
+from napari.layers import Image, Labels
 
 from plantseg import PATH_PLANTSEG_MODELS, logger
+from plantseg.core.image import SemanticType
 from plantseg.core.zoo import model_zoo
-from plantseg.functionals.training.train import find_h5_files, unet_training
+from plantseg.functionals.training.train import find_h5_files
 from plantseg.io.h5 import read_h5_voxel_size
 from plantseg.tasks.training_tasks import unet_training_task
-from plantseg.tasks.workflow_handler import task_tracker, workflow_handler
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.output import Output_Tab
 from plantseg.viewer_napari.widgets.prediction import Prediction_Widgets
-from plantseg.viewer_napari.widgets.utils import div, schedule_task
+from plantseg.viewer_napari.widgets.utils import div, get_layers, schedule_task
 
 
 class Training_Tab:
@@ -33,6 +33,9 @@ class Training_Tab:
         # initialize widgets
         self.widget_unet_training = self.factory_unet_training()
         self.widget_unet_training.self.bind(self)
+
+        self.widget_unet_training.from_disk.changed.connect(self._on_from_disk_change)
+
         self.widget_unet_training.device._default_choices = self.ALL_DEVICES
         self.widget_unet_training.device.reset_choices()
         self.widget_unet_training.device.value = self.ALL_DEVICES[0]
@@ -79,6 +82,14 @@ class Training_Tab:
 
     @magic_factory(
         call_button="Start Training",
+        from_disk={
+            "label": "Train from",
+            "value": "Disk",
+            "widget_type": "RadioButtons",
+            "choices": ["Disk", "GUI"],
+            "orientation": "horizontal",
+            "tooltip": "Whether to train from a dataset on disk or from loaded layers in Napari.",
+        },
         dataset={
             "label": "Dataset",
             "value": Path.home(),
@@ -86,6 +97,16 @@ class Training_Tab:
             "tooltip": "Dataset directory. It must contain a `train` and a `val`\n"
             "directory, each containing h5 files.\n"
             "Input/Output keys must be `raw` and `label` respectively.",
+        },
+        image={
+            "label": "Training input",
+            "tooltip": "e.g. raw microscopy image",
+            "visible": False,
+        },
+        segmentation={
+            "label": "Training segmentation",
+            "tooltip": "The to the training input corresponding segmentation.",
+            "visible": False,
         },
         pretrained={
             "label": "Pretrained model",
@@ -101,7 +122,11 @@ class Training_Tab:
             "tooltip": "How your new model should be called.\n"
             "Can't be the name of an existing model.",
         },
-        description={"label": "Description", "value": "A model trained by the user."},
+        description={
+            "label": "Description",
+            "value": "A model trained by the user.",
+            "tooltip": "Model description will be saved alongside the model.",
+        },
         channels={
             "label": "In and Out Channels",
             "value": (1, 1),
@@ -135,6 +160,8 @@ class Training_Tab:
             "value": 100,
             "max": 100000000,
             "min": 1,
+            "tooltip": "Maximum number of iterations after which the training\n"
+            "will be stopped. Stops earlier if the accuracy converges.",
         },
         dimensionality={
             "label": "Dimensionality",
@@ -183,7 +210,10 @@ class Training_Tab:
     )
     def factory_unet_training(
         self,
-        dataset: Path,
+        from_disk: str,
+        dataset: Optional[Path],
+        image: Optional[Image],
+        segmentation: Optional[Labels],
         pretrained: Optional[str],
         model_name: str,
         description: str,
@@ -201,6 +231,23 @@ class Training_Tab:
         custom_output_type: str = "",
         pbar: Optional[ProgressBar] = None,
     ) -> None:
+        """Train a boundary prediction unet"""
+        if from_disk == "Disk":
+            image = None
+            segmentation = None
+            if dataset is None:
+                log("Please choose a dataset to load!", thread="train_gui")
+                return
+
+        else:
+            dataset = None
+            if image is None or segmentation is None:
+                log(
+                    "Please choose a raw image and a segmentation to train!",
+                    thread="train_gui",
+                )
+                return
+
         if modality is None or output_type is None:
             log("Choose a modality and a prediction type!", thread="train_gui")
             return
@@ -231,25 +278,25 @@ class Training_Tab:
             )
             return
 
-        if not all((dataset / d).exists() for d in ["train", "val"]):
-            log(
-                "Dataset dir must contain a train and a val directory,\n"
-                "each containing h5 files!",
-                thread="train_gui",
-            )
-            return
-
         pre_model_path = None
         if pretrained is not None:
             model, model_config, pre_model_path = model_zoo.get_model_by_name(
                 pretrained
             )
 
+        widgets_to_reset = [
+            self.widget_unet_training.pretrained,
+        ]
+        if self.prediction_tab:
+            self.prediction_tab.widget_unet_prediction.model_name
+
         log("Starting training task", thread="train_gui")
         schedule_task(
             task=unet_training_task,
             task_kwargs={
                 "dataset_dir": dataset,
+                "image": image,
+                "segmentation": segmentation,
                 "model_name": model_name,
                 "in_channels": channels[0],
                 "out_channels": channels[1],
@@ -264,14 +311,36 @@ class Training_Tab:
                 "description": description,
                 "resolution": resolution,
                 "pre_trained": pre_model_path,
-                "widgets_to_reset": [
-                    self.prediction_tab.widget_unet_prediction.model_name,
-                    self.widget_unet_training.pretrained,
-                ],
+                "widgets_to_reset": widgets_to_reset,
                 "_pbar": pbar,
                 "_to_hide": [self.widget_unet_training.call_button],
             },
         )
+
+    def _on_from_disk_change(self, from_disk: str):
+        logger.debug(f"_on_from_disk_change called: {from_disk}")
+        if from_disk == "Disk":
+            self.widget_unet_training.image.hide()
+            self.widget_unet_training.segmentation.hide()
+            self.widget_unet_training.dataset.show()
+        else:
+            self.widget_unet_training.dataset.hide()
+            self.widget_unet_training.image.show()
+            self.widget_unet_training.segmentation.show()
+
+    def update_layer_selection(self, event):
+        """Updates layer drop-down menus"""
+        logger.debug(
+            f"Updating segmentation layer selection: {event.value}, {event.type}"
+        )
+        raws = get_layers(SemanticType.RAW)
+        segmentations = get_layers(SemanticType.SEGMENTATION)
+
+        self.widget_unet_training.image.choices = raws
+        self.widget_unet_training.segmentation.choices = segmentations
+
+        if raws and segmentations:
+            self.widget_unet_training.from_disk.value = "GUI"
 
     def _on_dimensionality_change(self, dimensionality: Literal["3D", "2D"]):
         """Update patch size according to chosen dimensionality."""
@@ -339,23 +408,4 @@ class Training_Tab:
         self.widget_unet_training.pretrained.tooltip = (
             "Select an existing model to retrain. Current model description:"
             f"\n\n{self.description}"
-        )
-
-
-class Misc_Tab:
-    def __init__(
-        self,
-        output_tab: Optional[Output_Tab] = None,
-        prediction_tab: Optional[Prediction_Widgets] = None,
-    ):
-        # self.batch_tab = Batch_Tab(output_tab)
-        self.train_tab = Training_Tab(prediction_tab)
-
-    def get_container(self):
-        return Container(
-            widgets=[
-                # self.batch_tab.get_container(),
-                self.train_tab.get_container(),
-            ],
-            labels=False,
         )

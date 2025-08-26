@@ -20,7 +20,6 @@ from plantseg.functionals.training.h5dataset import HDF5Dataset
 from plantseg.functionals.training.losses import DiceLoss
 from plantseg.functionals.training.model import UNet2D, UNet3D
 from plantseg.functionals.training.trainer import UNetTrainer
-from plantseg.io.h5 import read_h5_voxel_size
 
 logger = logging.getLogger(__name__)
 
@@ -127,15 +126,18 @@ def unet_training(
             shuffle=True,
             pin_memory=True,
             num_workers=1,
-        ),
-        "val": DataLoader(
+        )
+    }
+    if len(val_datasets) > 0:
+        loaders["val"] = DataLoader(
             ConcatDataset(val_datasets),
             batch_size=batch_size,
             shuffle=False,
             pin_memory=True,
             num_workers=1,
-        ),
-    }
+        )
+    else:
+        loaders["val"] = []
 
     # Optimizer and training environment setup
     optimizer = Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)

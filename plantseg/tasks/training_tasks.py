@@ -1,17 +1,21 @@
-import logging
+import tempfile
 from pathlib import Path
 from typing import Literal, Optional
 
+from napari.layers import Image, Labels
+
 from plantseg import PATH_PLANTSEG_MODELS
+from plantseg.core.image import PlantSegImage, save_image
 from plantseg.functionals.training.train import unet_training
 from plantseg.tasks.workflow_handler import task_tracker
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.prediction import Prediction_Widgets
 
 
 @task_tracker
 def unet_training_task(
-    dataset_dir: str | Path,
+    dataset_dir: Optional[Path],
+    image: Optional[Image],
+    segmentation: Optional[Labels],
     model_name: str,
     in_channels: int,
     out_channels: int,
@@ -29,6 +33,49 @@ def unet_training_task(
     widgets_to_reset: Optional[list] = None,
     _tracker: Optional["PBar_Tracker"] = None,
 ):
+    if dataset_dir is None and (image is None or segmentation is None):
+        raise ValueError("dataset_dir or (image and segmentation) must not be None!")
+    if dataset_dir is not None and (image is not None or segmentation is not None):
+        raise ValueError("dataset_dir or (image and segmentation) must be None!")
+
+    # make training dataset on the fly
+    tmp_dir = None
+    if image is not None and segmentation is not None:
+        tmp_dir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        out_path = Path(tmp_dir.name)
+        train = out_path / "train"
+        train.mkdir()
+        val = out_path / "val"
+        val.mkdir()
+        save_image(
+            image=PlantSegImage.from_napari_layer(image),
+            export_directory=train,
+            name_pattern="to_train",
+            key="raw",
+            scale_to_origin=False,
+            export_format="h5",
+        )
+        save_image(
+            image=PlantSegImage.from_napari_layer(segmentation),
+            export_directory=train,
+            name_pattern="to_train",
+            key="label",
+            scale_to_origin=False,
+            export_format="h5",
+        )
+        dataset_dir = out_path
+
+    assert dataset_dir is not None, (
+        "Logic error in unet_training_task"
+    )  # make pyright happy
+    if not all((dataset_dir / d).exists() for d in ["train", "val"]):
+        log(
+            "Dataset dir must contain a train and a val directory,\n"
+            "each containing h5 files!",
+            thread="train_gui_task",
+        )
+        return
+
     unet_training(
         dataset_dir=dataset_dir,
         model_name=model_name,
@@ -48,7 +95,10 @@ def unet_training_task(
     )
 
     checkpoint_dir = PATH_PLANTSEG_MODELS / model_name
-    log(f"Finished training, saved model to {checkpoint_dir}", thread="train_gui")
+    log(f"Finished training, saved model to {checkpoint_dir}", thread="train_gui_task")
     if widgets_to_reset:
         for widget in widgets_to_reset:
             widget.reset_choices()
+
+    if tmp_dir:
+        tmp_dir.cleanup()

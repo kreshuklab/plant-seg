@@ -2,11 +2,12 @@
 
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 import torch
 
+from plantseg import FILE_MODEL_ZOO_CUSTOM, PATH_PLANTSEG_MODELS
+from plantseg.core.zoo import model_zoo
 from plantseg.functionals.training.train import unet_training
 
 
@@ -34,9 +35,19 @@ class TestUnetTrainingIntegration:
             model_name = "test_integration_3d_cpu"
 
             mocker.patch(
-                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS", temp_path
+                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                temp_path,
             )
-            mocker.patch("plantseg.core.zoo.PATH_PLANTSEG_MODELS", temp_path)
+            mocker.patch.multiple(
+                "plantseg.core.zoo",
+                PATH_PLANTSEG_MODELS=temp_path,
+                PATH_MODEL_ZOO_CUSTOM=temp_path / FILE_MODEL_ZOO_CUSTOM,
+            )
+            mocker.patch.multiple(
+                model_zoo,
+                path_zoo=temp_path,
+                path_zoo_custom=temp_path / FILE_MODEL_ZOO_CUSTOM,
+            )
             unet_training(
                 dataset_dir=str(test_data_dir),
                 model_name=model_name,
@@ -58,6 +69,9 @@ class TestUnetTrainingIntegration:
 
             config_file = model_dir / "config_train.yml"
             assert config_file.exists(), f"Config file not created: {config_file}"
+
+            mocker.stopall()
+            assert not (PATH_PLANTSEG_MODELS / model_name).exists()
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_training_integration_3d_gpu(self, mocker):
@@ -81,9 +95,19 @@ class TestUnetTrainingIntegration:
             model_name = "test_integration_3d_gpu"
 
             mocker.patch(
-                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS", temp_path
+                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                temp_path,
             )
-            mocker.patch("plantseg.core.zoo.PATH_PLANTSEG_MODELS", temp_path)
+            mocker.patch.multiple(
+                "plantseg.core.zoo",
+                PATH_PLANTSEG_MODELS=temp_path,
+                PATH_MODEL_ZOO_CUSTOM=temp_path / FILE_MODEL_ZOO_CUSTOM,
+            )
+            mocker.patch.multiple(
+                model_zoo,
+                path_zoo=temp_path,
+                path_zoo_custom=temp_path / FILE_MODEL_ZOO_CUSTOM,
+            )
             unet_training(
                 dataset_dir=str(test_data_dir),
                 model_name=model_name,
@@ -99,3 +123,6 @@ class TestUnetTrainingIntegration:
 
             model_dir = temp_path / model_name
             assert model_dir.exists(), f"Model directory not created: {model_dir}"
+
+            mocker.stopall()
+            assert not (PATH_PLANTSEG_MODELS / model_name).exists()

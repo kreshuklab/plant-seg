@@ -7,11 +7,11 @@ from plantseg.viewer_napari.containers import (
     get_proofreading_tab,
 )
 from plantseg.viewer_napari.widgets.input import Input_Tab
-from plantseg.viewer_napari.widgets.misc import Misc_Tab
 from plantseg.viewer_napari.widgets.output import Output_Tab
 from plantseg.viewer_napari.widgets.postprocessing import Postprocessing_Tab
 from plantseg.viewer_napari.widgets.preprocessing import Preprocessing_Tab
 from plantseg.viewer_napari.widgets.segmentation import Segmentation_Tab
+from plantseg.viewer_napari.widgets.training import Training_Tab
 
 
 def run_viewer():
@@ -22,7 +22,7 @@ def run_viewer():
     preprocessing_tab = Preprocessing_Tab()
     segmentation_tab = Segmentation_Tab()
     postprocessing_tab = Postprocessing_Tab()
-    misc_tab = Misc_Tab(output_tab, segmentation_tab.prediction_widgets)
+    training_tab = Training_Tab(segmentation_tab.prediction_widgets)
 
     # Create and add tabs
     container_list = [
@@ -32,7 +32,7 @@ def run_viewer():
         (postprocessing_tab.get_container(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
         (output_tab.get_container(), "Output"),
-        (misc_tab.get_container(), "Train"),
+        (training_tab.get_container(), "Train"),
     ]
     for _containers, name in container_list:
         _containers.native.setFixedWidth(550)
@@ -48,6 +48,7 @@ def run_viewer():
     viewer.layers.events.inserted.connect(preprocessing_tab.update_layer_selection)
     viewer.layers.events.inserted.connect(segmentation_tab.update_layer_selection)
     viewer.layers.events.inserted.connect(postprocessing_tab.update_layer_selection)
+    viewer.layers.events.inserted.connect(training_tab.update_layer_selection)
 
     # Drop-down update for renaming of layers
     viewer.layers.selection.events.active.connect(input_tab.update_layer_selection)
@@ -60,6 +61,7 @@ def run_viewer():
     viewer.layers.selection.events.active.connect(
         postprocessing_tab.update_layer_selection
     )
+    viewer.layers.selection.events.active.connect(training_tab.update_layer_selection)
 
     # Show data tab by default
     viewer.window._dock_widgets["Input"].show()
