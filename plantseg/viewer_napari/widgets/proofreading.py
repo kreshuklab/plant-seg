@@ -849,6 +849,7 @@ def widget_split_and_merge_from_scribbles(
 
     worker = func()  # type: ignore
     worker.start()
+    return worker
 
 
 widget_label_extraction = Label(

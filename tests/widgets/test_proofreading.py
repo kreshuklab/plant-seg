@@ -5,7 +5,7 @@ from time import sleep, time
 import h5py
 import numpy as np
 import pytest
-from napari.qt.threading import thread_worker
+from napari.qt.threading import WorkerBase, thread_worker
 
 from plantseg.core.image import PlantSegImage
 from plantseg.viewer_napari.widgets import proofreading
@@ -588,20 +588,30 @@ def test_widget_split_and_merge_from_scribbles_log(mocker, napari_raw):
 
 @pytest.mark.parametrize("run_id", range(10))
 def test_widget_split_and_merge_from_scribbles(mocker, napari_raw, run_id, qtbot):
-    proofreading.segmentation_handler._state.active = True
-    handler = proofreading.segmentation_handler
     mock_split_merge = mocker.patch(
         "plantseg.viewer_napari.widgets.proofreading.split_merge_from_seeds",
     )
-
-    proofreading.widget_split_and_merge_from_scribbles(mocker.sentinel, napari_raw)
-    mock_split_merge.assert_not_called()
-
-    mock_save = mocker.patch.object(handler, "save_to_history")
     mock_scribble = mocker.patch(
         "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.scribbles",
         new_callable=mocker.PropertyMock,
     )
+    scribble = mocker.Mock()
+    mock_scribble.return_value = scribble
+    scribble.sum.return_value = 0
+
+    handler = mocker.patch(
+        "plantseg.viewer_napari.widgets.proofreading.segmentation_handler",
+        new=proofreading.ProofreadingHandler(),
+    )
+    handler._state.active = True
+
+    worker = proofreading.widget_split_and_merge_from_scribbles(
+        mocker.sentinel, napari_raw
+    )
+    worker.await_workers()
+    mock_split_merge.assert_not_called()
+
+    mock_save = mocker.patch.object(handler, "save_to_history")
     mocker.patch(
         "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.segmentation",
         new_callable=mocker.PropertyMock,
@@ -630,14 +640,15 @@ def test_widget_split_and_merge_from_scribbles(mocker, napari_raw, run_id, qtbot
         "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.corrected_cells",
         new_callable=mocker.PropertyMock,
     )
-    mock_scribble.sum = mocker.Mock()
-    mock_scribble.sum.return_value = 5
+    scribble.sum.return_value = 5
     mock_split_merge.return_value = [mocker.sentinel] * 3
 
-    proofreading.widget_split_and_merge_from_scribbles(mocker.sentinel, napari_raw)
+    worker = proofreading.widget_split_and_merge_from_scribbles(
+        mocker.sentinel, napari_raw
+    )
+    worker.await_workers()
     mock_save.assert_called_once()
     mock_split_merge.assert_called_once()
-    sleep(0.01)
 
 
 def test_locking():
