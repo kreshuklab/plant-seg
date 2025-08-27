@@ -1,7 +1,1 @@
-include plantseg/resources/config_gui_template.yaml
-include plantseg/resources/config_predict_template.yaml
-include plantseg/resources/FOR2581_Logo_FINAL_no_text.png
-include plantseg/resources/gui_configuration.yaml
-include plantseg/resources/raw2seg_template.yaml
-include plantseg/resources/models_zoo.yaml
-include plantseg/resources/div*.png
+include plantseg/resources/*
