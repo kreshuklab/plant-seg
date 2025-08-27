@@ -6,26 +6,12 @@ from plantseg.utils import check_version
 from plantseg.viewer_napari.containers import (
     get_proofreading_tab,
 )
-from plantseg.viewer_napari.widgets.batch import Batch_Tab
 from plantseg.viewer_napari.widgets.input import Input_Tab
 from plantseg.viewer_napari.widgets.output import Output_Tab
 from plantseg.viewer_napari.widgets.postprocessing import Postprocessing_Tab
 from plantseg.viewer_napari.widgets.preprocessing import Preprocessing_Tab
 from plantseg.viewer_napari.widgets.segmentation import Segmentation_Tab
-
-
-def scroll_wrap(w):
-    scrollArea = QtWidgets.QScrollArea()
-    scrollArea.setWidget(w.native)
-    scrollArea.setWidgetResizable(True)
-    pol = QtWidgets.QSizePolicy()
-    pol.setHorizontalPolicy(QtWidgets.QSizePolicy.Policy.Expanding)
-    pol.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.Minimum)
-    scrollArea.setSizePolicy(pol)
-    # width of scroll area (outside)
-    scrollArea.setMinimumWidth(550)
-
-    return scrollArea
+from plantseg.viewer_napari.widgets.training import Training_Tab
 
 
 def run_viewer():
@@ -36,7 +22,7 @@ def run_viewer():
     preprocessing_tab = Preprocessing_Tab()
     segmentation_tab = Segmentation_Tab()
     postprocessing_tab = Postprocessing_Tab()
-    batch_tab = Batch_Tab(output_tab)
+    training_tab = Training_Tab(segmentation_tab.prediction_widgets)
 
     # Create and add tabs
     container_list = [
@@ -46,14 +32,11 @@ def run_viewer():
         (postprocessing_tab.get_container(), "Postprocessing"),
         (get_proofreading_tab(), "Proofreading"),
         (output_tab.get_container(), "Output"),
-        (batch_tab.get_container(), "Batch"),
+        (training_tab.get_container(), "Train"),
     ]
     for _containers, name in container_list:
-        # width inside scroll area
         _containers.native.setFixedWidth(550)
         viewer.window.add_dock_widget(
-            # breaks layer-name updates #439
-            # scroll_wrap(_containers),
             _containers,
             name=name,
             tabify=True,
@@ -65,6 +48,7 @@ def run_viewer():
     viewer.layers.events.inserted.connect(preprocessing_tab.update_layer_selection)
     viewer.layers.events.inserted.connect(segmentation_tab.update_layer_selection)
     viewer.layers.events.inserted.connect(postprocessing_tab.update_layer_selection)
+    viewer.layers.events.inserted.connect(training_tab.update_layer_selection)
 
     # Drop-down update for renaming of layers
     viewer.layers.selection.events.active.connect(input_tab.update_layer_selection)
@@ -77,6 +61,7 @@ def run_viewer():
     viewer.layers.selection.events.active.connect(
         postprocessing_tab.update_layer_selection
     )
+    viewer.layers.selection.events.active.connect(training_tab.update_layer_selection)
 
     # Show data tab by default
     viewer.window._dock_widgets["Input"].show()

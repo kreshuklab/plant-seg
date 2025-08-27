@@ -11,7 +11,7 @@ def output_tab():
 
 def test_output_initialization(output_tab):
     container = output_tab.get_container()
-    assert len(container) == 2
+    assert len(container) == 3
 
 
 def test_export_shape(output_tab, mocker, napari_shapes):

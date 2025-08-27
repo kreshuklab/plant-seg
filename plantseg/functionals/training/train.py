@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Literal, Optional, Tuple
 
 import torch
 import yaml
@@ -13,6 +14,7 @@ from plantseg import (
     PATH_PLANTSEG_MODELS,
     PATH_TRAIN_TEMPLATE,
 )
+from plantseg.core.zoo import model_zoo
 from plantseg.functionals.training.augs import Augmenter
 from plantseg.functionals.training.h5dataset import HDF5Dataset
 from plantseg.functionals.training.losses import DiceLoss
@@ -27,11 +29,13 @@ def create_model_config(
     in_channels,
     out_channels,
     patch_size,
-    dimensionality,
+    dimensionality: Literal["2D", "3D"],
     sparse,
     f_maps,
     max_num_iters,
 ):
+    """Write training config to yaml file."""
+
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     with open(PATH_TRAIN_TEMPLATE, "r") as f:
         train_template = yaml.load(f, Loader=yaml.FullLoader)
@@ -39,10 +43,12 @@ def create_model_config(
     train_template["model"]["in_channels"] = in_channels
     train_template["model"]["out_channels"] = out_channels
     train_template["model"]["f_maps"] = f_maps
-    if dimensionality == "2D":
+    if dimensionality in ["2D", "2d", "2"]:
         train_template["model"]["name"] = "UNet2D"
-    else:
+    elif dimensionality in ["3D", "3d", "3"]:
         train_template["model"]["name"] = "UNet3D"
+    else:
+        raise ValueError(f"Unknown dimensionality {dimensionality}")
     train_template["model"]["final_sigmoid"] = not sparse
     train_template["trainer"]["checkpoint_dir"] = str(checkpoint_dir)
     train_template["trainer"]["max_num_iterations"] = max_num_iters
@@ -59,33 +65,43 @@ def create_model_config(
 
 
 def unet_training(
-    dataset_dir: str,
+    dataset_dir: str | Path,
     model_name: str,
     in_channels: int,
     out_channels: int,
     feature_maps: int | list[int] | tuple[int, ...],
     patch_size: tuple[int, int, int],
     max_num_iters: int,
-    dimensionality: str,
+    dimensionality: Literal["2D", "3D"],
     sparse: bool,
     device: str,
+    modality: str = "",
+    output_type: str = "",
+    description: str = "",
+    resolution: tuple[float, float, float] = (1.0, 1.0, 1.0),
+    pre_trained: Optional[Path] = None,
 ) -> None:
+    """
+    Main entrypoint for training a new unet model. Gets called when calling `plantseg --train` from cli.
+    """
     # Model instantiation and logging
     final_sigmoid = not sparse
-    if dimensionality in ["2D", "2d"]:
+    if dimensionality in ["2D", "2d", "2"]:
         model = UNet2D(
             in_channels=in_channels,
             out_channels=out_channels,
             f_maps=feature_maps,
             final_sigmoid=final_sigmoid,
         )
-    else:
+    elif dimensionality in ["3D", "3d", "3"]:
         model = UNet3D(
             in_channels=in_channels,
             out_channels=out_channels,
             f_maps=feature_maps,
             final_sigmoid=final_sigmoid,
         )
+    else:
+        raise ValueError(f"Unknown dimensionality {dimensionality}")
     logger.info(f"Using {model.__class__.__name__} model for training.")
 
     # Device configuration
@@ -110,15 +126,18 @@ def unet_training(
             shuffle=True,
             pin_memory=True,
             num_workers=1,
-        ),
-        "val": DataLoader(
+        )
+    }
+    if len(val_datasets) > 0:
+        loaders["val"] = DataLoader(
             ConcatDataset(val_datasets),
             batch_size=batch_size,
             shuffle=False,
             pin_memory=True,
             num_workers=1,
-        ),
-    }
+        )
+    else:
+        loaders["val"] = []
 
     # Optimizer and training environment setup
     optimizer = Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
@@ -149,12 +168,35 @@ def unet_training(
         checkpoint_dir=checkpoint_dir,
         max_num_iterations=max_num_iters,
         device=device,
+        pre_trained=pre_trained,
     )
 
     trainer.train()
 
+    model_zoo.add_custom_model(
+        new_model_name=model_name,
+        location=checkpoint_dir,
+        resolution=resolution,
+        description=description,
+        dimensionality=dimensionality,
+        modality=modality,
+        output_type=output_type,
+    )
 
-def create_datasets(dataset_dir: str, phase: str, patch_shape):
+
+def create_datasets(
+    dataset_dir: str | Path,
+    phase: Literal["train", "val"],
+    patch_shape: Tuple[int, int, int],
+):
+    """
+    Load a dataset for training a unet.
+
+    Args:
+        data_dir (str): Must contain a train and a val folder, which inturn contain .h5 files.
+        phase: Whether to load train or val.
+        patch_shape (tuple): shape of the patch to be extracted from the raw data set
+    """
     assert phase in ["train", "val"], f"Phase {phase} not supported"
     phase_dir = Path(dataset_dir) / phase
     file_paths = find_h5_files(phase_dir)
