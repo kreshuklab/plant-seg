@@ -118,7 +118,6 @@ def test_gaussian_smoothing_image(preprocessing_tab, mocker, napari_raw):
     )
     preprocessing_tab.widget_layer_select.layer.choices = (None,)
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
     preprocessing_tab.widget_gaussian_smoothing()
     mocked_scheduler.assert_called_once()
 
@@ -155,7 +154,6 @@ def test_cropping_no_shapes(preprocessing_tab, mocker, napari_raw):
     )
 
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
 
     assert preprocessing_tab.widget_cropping(crop_roi=None) is None
     mocked_scheduler.assert_not_called()
@@ -177,7 +175,6 @@ def test_cropping_too_many_rectangels(preprocessing_tab, mocker, napari_raw):
     )
 
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
     shape = Shapes(
         data=[
             [[0, 0], [0, 1], [1, 1], [1, 0]],
@@ -204,7 +201,6 @@ def test_cropping_ellipse(preprocessing_tab, mocker, napari_raw):
     )
 
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
     shape = Shapes(
         data=[
             [[0, 0], [0, 1], [1, 1], [1, 0]],
@@ -231,9 +227,48 @@ def test_cropping_one_rectangle(preprocessing_tab, mocker, napari_raw):
         ]
     )
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
     preprocessing_tab.widget_cropping(crop_roi=shape)
     mocked_scheduler.assert_called_once()
+
+
+def test_cropping_z_range(preprocessing_tab, mocker, napari_raw):
+    mocked_scheduler = mocker.patch(
+        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        autospec=True,
+    )
+    # is uninitialized
+    assert preprocessing_tab.widget_cropping.crop_z.value == (0, 100)
+
+    preprocessing_tab.initialised_widget_cropping = True
+    preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
+
+    assert preprocessing_tab.widget_cropping.crop_z.value == (0, 10)
+
+
+def test_cropping_activation(preprocessing_tab, mocker, napari_raw):
+    mocked_scheduler = mocker.patch(
+        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        autospec=True,
+    )
+
+    shape = Shapes(
+        data=[
+            [[0, 0], [0, 1], [1, 1], [1, 0]],
+        ]
+    )
+    assert preprocessing_tab.widget_cropping.crop_roi.value is None
+    preprocessing_tab.widget_cropping.crop_roi.choices = (shape,)
+    assert preprocessing_tab.widget_cropping.crop_roi.value == shape
+
+    preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
+    assert not preprocessing_tab.initialised_widget_cropping
+
+    mock_event = mocker.Mock()
+    mock_event.value = shape
+    mock_event.type = "inserted"
+
+    preprocessing_tab.update_layer_selection(mock_event)
+    assert preprocessing_tab.initialised_widget_cropping
 
 
 def test_cropping_no_rectangle(preprocessing_tab, mocker, napari_raw):
@@ -243,7 +278,6 @@ def test_cropping_no_rectangle(preprocessing_tab, mocker, napari_raw):
     )
     shape = Shapes()
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
     preprocessing_tab.widget_cropping(crop_roi=shape)
     mocked_scheduler.assert_called_once()
 
@@ -259,7 +293,6 @@ def test_rescaling_no_voxelsize(preprocessing_tab, mocker, napari_raw):
     )
     napari_raw._metadata["original_voxel_size"]["voxels_size"] = None
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
 
     preprocessing_tab.widget_rescaling()
     mocked_scheduler.assert_not_called()
@@ -276,15 +309,13 @@ def test_rescaling_set_voxel_size(preprocessing_tab, mocker, napari_raw):
         autospec=True,
     )
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
 
     preprocessing_tab.widget_rescaling(mode=RescaleModes.SET_VOXEL_SIZE)
     assert set_voxel_size_task == mocked_scheduler.call_args[0][0]
 
 
-def test_rescaling_to_shape_none(preprocessing_tab, mocker, napari_raw):
+def test_rescaling_to_shape_none(preprocessing_tab, napari_raw):
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
 
     with pytest.raises(ValueError):
         preprocessing_tab.widget_rescaling(mode=RescaleModes.TO_SHAPE)
@@ -296,7 +327,6 @@ def test_rescaling_to_shape(preprocessing_tab, mocker, napari_raw):
         autospec=True,
     )
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
 
     preprocessing_tab.widget_rescaling(
         mode=RescaleModes.TO_SHAPE, reference_layer=napari_raw
@@ -310,7 +340,6 @@ def test_rescaling_from_factor(preprocessing_tab, mocker, napari_raw):
         autospec=True,
     )
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
 
     preprocessing_tab.widget_rescaling(mode=RescaleModes.FROM_FACTOR)
     assert image_rescale_to_voxel_size_task == mocked_scheduler.call_args[0][0]
@@ -322,7 +351,6 @@ def test_rescaling_to_voxel_size(preprocessing_tab, mocker, napari_raw):
         autospec=True,
     )
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
 
     preprocessing_tab.widget_rescaling(mode=RescaleModes.TO_VOXEL_SIZE)
     assert image_rescale_to_voxel_size_task == mocked_scheduler.call_args[0][0]
@@ -334,7 +362,6 @@ def test_rescaling_to_model_voxel_size(preprocessing_tab, mocker, napari_raw):
         autospec=True,
     )
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_raw
 
     preprocessing_tab.widget_rescaling(mode=RescaleModes.TO_MODEL_VOXEL_SIZE)
     assert image_rescale_to_voxel_size_task == mocked_scheduler.call_args[0][0]
