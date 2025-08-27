@@ -4,7 +4,7 @@ from typing import Literal, Optional
 
 from napari.layers import Image, Labels
 
-from plantseg import PATH_PLANTSEG_MODELS
+from plantseg import PATH_PLANTSEG_MODELS, logger
 from plantseg.core.image import PlantSegImage, save_image
 from plantseg.functionals.training.train import unet_training
 from plantseg.tasks.workflow_handler import task_tracker
@@ -98,6 +98,7 @@ def unet_training_task(
     log(f"Finished training, saved model to {checkpoint_dir}", thread="train_gui_task")
     if widgets_to_reset:
         for widget in widgets_to_reset:
+            logger.debug(f"Updating: {widget}")
             widget.reset_choices()
 
     if tmp_dir:
