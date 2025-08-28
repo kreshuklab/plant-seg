@@ -201,13 +201,41 @@ class Segmentation_Tab:
             "tooltip": "Show advanced parameters for the Watershed algorithm.",
             "widget_type": "CheckBox",
         },
-        sigma_seeds={"label": "Sigma seeds"},
-        sigma_weights={"label": "Sigma weights"},
-        alpha={"label": "Alpha"},
-        use_pixel_pitch={"label": "Use pixel pitch"},
-        pixel_pitch={"label": "Pixel pitch"},
-        apply_nonmax_suppression={"label": "Apply nonmax suppression"},
-        is_nuclei_image={"label": "Is nuclei image"},
+        sigma_seeds={
+            "label": "Sigma seeds",
+            "tooltip": "Standard deviation for Gaussian smoothing applied to "
+            "the seed map. Defaults to 1.0.",
+        },
+        sigma_weights={
+            "label": "Sigma weights",
+            "tooltip": "Standard deviation for Gaussian smoothing applied to "
+            "theweight map. Defaults to 2.0.",
+        },
+        alpha={
+            "label": "Alpha",
+            "tooltip": "Blending factor between the input image and the "
+            "distance transform when computing the weight map. Defaults to 1.0.",
+        },
+        use_pixel_pitch={
+            "label": "Use pixel pitch",
+            "tooltip": "Anisotropy factors for the distance transform. "
+            "If None, isotropic distances are assumed. Defaults to None.",
+        },
+        pixel_pitch={
+            "label": "Pixel pitch",
+            "tooltip": "Anisotropy factors for the distance transform. "
+            "If None, isotropic distances are assumed. Defaults to None.",
+        },
+        apply_nonmax_suppression={
+            "label": "Apply nonmax suppression",
+            "tooltip": "applies non-maximum suppression to the detected seeds, "
+            "reducing seed redundancy. This requires the Nifty library.",
+        },
+        is_nuclei_image={
+            "label": "Is nuclei image",
+            "tooltip": "If True, indicates that the input image is a nuclei "
+            "image, and preprocessing is applied accordingly.",
+        },
         pbar={"label": "Watershed is running", "max": 0, "min": 0, "visible": False},
     )
     def factory_dt_ws(
