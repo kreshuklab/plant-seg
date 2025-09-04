@@ -14,7 +14,8 @@ from napari.layers import Image, Labels
 from napari.qt.threading import thread_worker
 from napari.utils import CyclicLabelColormap
 from pydantic import BaseModel, Field
-from qtpy.QtCore import QMutex
+from qtpy.QtCore import QMutex, Qt
+
 
 from plantseg.core.image import ImageProperties, PlantSegImage, SemanticType
 from plantseg.functionals.proofreading.split_merge_tools import split_merge_from_seeds
@@ -772,9 +773,11 @@ def _on_mode_changed(mode: str):
 
 
 widget_label_split_merge = Label(
-    value="Mark labels by drawing onto the `scribbles` layer in different colors.\n"
-    "Labels marked with the same color will be merged, different colors will be split.",
+    value="<strong>INSTRUCTIONS:</strong><br>Mark labels by drawing onto the `Scribbles` layer"
+    " in different colors.<br>Labels marked with <strong>the same color</strong>"
+    " will be merged, <strong>different colors</strong> will be split.",
 )
+widget_label_split_merge.native.setTextFormat(Qt.TextFormat.RichText)
 
 
 @magicgui(
