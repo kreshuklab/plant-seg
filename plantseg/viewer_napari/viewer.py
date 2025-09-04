@@ -6,6 +6,7 @@ from plantseg.utils import check_version
 from plantseg.viewer_napari.containers import (
     get_proofreading_tab,
 )
+from plantseg.viewer_napari.updater import update
 from plantseg.viewer_napari.widgets.input import Input_Tab
 from plantseg.viewer_napari.widgets.output import Output_Tab
 from plantseg.viewer_napari.widgets.postprocessing import Postprocessing_Tab
@@ -84,5 +85,6 @@ def run_viewer():
                 child.setText("")
             child.setAlignment(QtCore.Qt.AlignLeft)
 
-    # log("Plantseg is ready!", thread="Run viewer", level="info")
+    viewer.window.plugins_menu.addAction("Update PlantSeg", update)
+
     napari.run()
