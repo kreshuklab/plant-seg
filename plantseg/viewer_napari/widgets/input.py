@@ -200,11 +200,13 @@ class Input_Tab:
         if ext in H5_EXTENSIONS:
             self.widget_open_file.dataset_key.show()
             self.widget_open_file.button_key_refresh.show()
+            self.widget_open_file.button_key_refresh.width = 120
             dataset_keys = list_h5_keys(path)
 
         elif ext in ZARR_EXTENSIONS:
             self.widget_open_file.dataset_key.show()
             self.widget_open_file.button_key_refresh.show()
+            self.widget_open_file.button_key_refresh.width = 120
             dataset_keys = list_zarr_keys(path)
 
         else:
