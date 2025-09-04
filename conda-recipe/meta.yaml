@@ -1,5 +1,5 @@
 package:
-  name: plantseg
+  name: plant-seg
   version: "2.0.0b13"
 
 source:
