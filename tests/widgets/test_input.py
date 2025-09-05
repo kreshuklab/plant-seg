@@ -30,8 +30,6 @@ def test_input_tab_open_file(input_tab, mocker):
     kwargs = {
         "path_mode": True,
         "path": Path(),
-        "dataset_key": "",
-        "button_key_refresh": True,
         "stack_layout": "",
         "layer_type": InputType.RAW.value,
         "new_layer_name": "",
@@ -58,8 +56,8 @@ def test_open_file_widget_path_handling(input_tab):
 
 
 def test_look_up_dataset_keys_empty(input_tab, zarr_file_empty, mocker):
-    mock_show = mocker.patch.object(input_tab.widget_open_file.dataset_key, "show")
-    mock_hide = mocker.patch.object(input_tab.widget_open_file.dataset_key, "hide")
+    mock_show = mocker.patch.object(input_tab.widget_open_file.key_combo, "show")
+    mock_hide = mocker.patch.object(input_tab.widget_open_file.key_combo, "hide")
 
     input_tab.look_up_dataset_keys(zarr_file_empty)
     mock_show.assert_called_once()
@@ -67,8 +65,8 @@ def test_look_up_dataset_keys_empty(input_tab, zarr_file_empty, mocker):
 
 
 def test_look_up_dataset_keys_3d(input_tab, zarr_file_3d, mocker):
-    mock_show = mocker.patch.object(input_tab.widget_open_file.dataset_key, "show")
-    mock_hide = mocker.patch.object(input_tab.widget_open_file.dataset_key, "hide")
+    mock_show = mocker.patch.object(input_tab.widget_open_file.key_combo, "show")
+    mock_hide = mocker.patch.object(input_tab.widget_open_file.key_combo, "hide")
 
     input_tab.look_up_dataset_keys(zarr_file_3d)
     mock_show.assert_called_once()
@@ -80,8 +78,8 @@ def test_look_up_dataset_keys_3d(input_tab, zarr_file_3d, mocker):
 
 
 def test_look_up_dataset_keys_h5(input_tab, h5_file, mocker):
-    mock_show = mocker.patch.object(input_tab.widget_open_file.dataset_key, "show")
-    mock_hide = mocker.patch.object(input_tab.widget_open_file.dataset_key, "hide")
+    mock_show = mocker.patch.object(input_tab.widget_open_file.key_combo, "show")
+    mock_hide = mocker.patch.object(input_tab.widget_open_file.key_combo, "hide")
 
     input_tab.look_up_dataset_keys(h5_file)
     mock_show.assert_called_once()

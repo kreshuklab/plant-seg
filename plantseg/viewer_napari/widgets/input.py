@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 from magicgui import magic_factory
-from magicgui.widgets import Container, Label, PushButton
+from magicgui.widgets import Container, EmptyWidget, Label, PushButton, create_widget
 from napari.layers import Image, Labels, Layer
 
 from plantseg import logger
@@ -48,6 +48,7 @@ class Input_Tab:
 
         # @@@@@ Open File @@@@@
         self.widget_open_file = self.factory_open_file()
+        self._wrap_key_refresh()
         self.widget_open_file.self.bind(self)
 
         self.widget_open_file.path_mode.changed.connect(self._on_path_mode_changed)
@@ -133,18 +134,6 @@ class Input_Tab:
             "orientation": "horizontal",
             "choices": InputType.to_choices(),
         },
-        dataset_key={
-            "label": "Key (h5/zarr only)",
-            "widget_type": "ComboBox",
-            "choices": [],  # set self.get_current_dataset_keys
-            "tooltip": "Key to be loaded from h5",
-            "visible": False,
-        },
-        button_key_refresh={
-            "label": "Refresh keys",
-            "widget_type": "PushButton",
-            "visible": False,
-        },
         stack_layout={
             "value": ImageLayout.ZYX.value,
             "label": "Stack layout",
@@ -158,13 +147,14 @@ class Input_Tab:
         self,
         path_mode: bool,
         path: Path,
-        dataset_key: str,
-        button_key_refresh: bool,
         stack_layout: str,
         layer_type: str,
         new_layer_name: str,
     ) -> None:
         """Open a file and return a napari layer."""
+
+        # the function argument is always None because of the magicfactory
+        dataset_key = self.widget_open_file.dataset_key.value
 
         if not self.path_changed_once:
             log("Please select a file to load!", thread="Input")
@@ -178,7 +168,7 @@ class Input_Tab:
         else:
             raise ValueError(f"Unknown layer type {layer_type}")
 
-        return schedule_task(
+        schedule_task(
             import_image_task,
             task_kwargs={
                 "input_path": path,
@@ -189,8 +179,52 @@ class Input_Tab:
             },
         )
 
+    def _wrap_key_refresh(self):
+        w = self.widget_open_file
+
+        dataset_key_d = {
+            "label": "Key (h5/zarr only)",
+            "widget_type": "ComboBox",
+            "options": {
+                "tooltip": "Key to be loaded from h5",
+            },
+            "annotation": str,
+            "name": "_dataset_key",
+        }
+        refresh_d = {
+            "label": "Refresh",
+            "widget_type": "PushButton",
+            "annotation": bool,
+            "name": "_button_key_refresh",
+        }
+
+        key = create_widget(**dataset_key_d)
+        refresh = create_widget(**refresh_d)
+        refresh.max_width = 80
+
+        combo = Container(
+            widgets=[key, refresh],
+            layout="horizontal",
+            labels=False,
+            name="key_combo",
+            label="Dataset key",
+            gui_only=True,
+        )
+
+        w.dataset_key = key
+        w.button_key_refresh = refresh
+        combo.hide()
+        w.insert(3, combo)
+
     def generate_layer_name(self, path: Path, dataset_key: str) -> str:
         dataset_key = dataset_key.replace("/", "_")
+
+        if self.widget_open_file.key_combo.visible:
+            if "label" in self.widget_open_file.dataset_key.value:
+                self.widget_open_file.layer_type.value = InputType.SEGMENTATION.value
+            elif "raw" in self.widget_open_file.dataset_key.value:
+                self.widget_open_file.layer_type.value = InputType.RAW.value
+
         return path.stem + dataset_key
 
     def look_up_dataset_keys(self, path: Path):
@@ -198,36 +232,36 @@ class Input_Tab:
         ext = path.suffix.lower()
 
         if ext in H5_EXTENSIONS:
-            self.widget_open_file.dataset_key.show()
-            self.widget_open_file.button_key_refresh.show()
-            self.widget_open_file.button_key_refresh.width = 120
+            self.widget_open_file.key_combo.show()
+            logger.debug("Width set!")
             dataset_keys = list_h5_keys(path)
 
         elif ext in ZARR_EXTENSIONS:
-            self.widget_open_file.dataset_key.show()
-            self.widget_open_file.button_key_refresh.show()
-            self.widget_open_file.button_key_refresh.width = 120
+            self.widget_open_file.key_combo.show()
             dataset_keys = list_zarr_keys(path)
 
         else:
             self.widget_open_file.new_layer_name.value = self.generate_layer_name(
                 path, ""
             )
-            self.widget_open_file.dataset_key.hide()
-            self.widget_open_file.button_key_refresh.hide()
+            self.widget_open_file.key_combo.hide()
             return
 
         self.current_dataset_keys = dataset_keys.copy()
         self.widget_open_file.dataset_key.choices = dataset_keys
+
+        # handle empth zarr/h5 files
         if dataset_keys == [None] or not dataset_keys:
-            self.widget_open_file.dataset_key.hide()
-            self.widget_open_file.button_key_refresh.hide()
+            self.widget_open_file.key_combo.hide()
             return
+
+        # change selected key only if old key is unavailable
         if self.widget_open_file.dataset_key.value not in dataset_keys:
             self.widget_open_file.dataset_key.value = dataset_keys[0]
-            self.widget_open_file.new_layer_name.value = self.generate_layer_name(
-                path, self.widget_open_file.dataset_key.value
-            )
+
+        self.widget_open_file.new_layer_name.value = self.generate_layer_name(
+            path, self.widget_open_file.dataset_key.value
+        )
 
     def _on_path_mode_changed(self, path_mode: str):
         logger.debug("_on_path_mode_changed called!")
