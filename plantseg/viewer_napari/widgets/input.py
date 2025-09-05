@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Optional, Sequence
 
 from magicgui import magic_factory
-from magicgui.widgets import Container, EmptyWidget, Label, PushButton, create_widget
+from magicgui.widgets import Container, Label, PushButton, create_widget
+from magicgui.widgets.bases import ButtonWidget, CategoricalWidget
 from napari.layers import Image, Labels, Layer
 
 from plantseg import logger
@@ -53,16 +54,12 @@ class Input_Tab:
 
         self.widget_open_file.path_mode.changed.connect(self._on_path_mode_changed)
         self.widget_open_file.path.changed.connect(self._on_path_changed)
-        self.widget_open_file.button_key_refresh.changed.connect(
-            self._on_refresh_keys_button
-        )
+        self.button_key_refresh.changed.connect(self._on_refresh_keys_button)
         self.path_changed_once = False
 
-        self.widget_open_file.dataset_key._default_choices = (
-            lambda _: self.current_dataset_keys
-        )
-        self.widget_open_file.dataset_key.reset_choices()
-        self.widget_open_file.dataset_key.changed.connect(self._on_dataset_key_changed)
+        self.dataset_key._default_choices = lambda _: self.current_dataset_keys
+        self.dataset_key.reset_choices()
+        self.dataset_key.changed.connect(self._on_dataset_key_changed)
         self.widget_open_file.called.connect(self._on_done)
 
         # @@@@@@ Set Voxel size @@@@@
@@ -154,7 +151,7 @@ class Input_Tab:
         """Open a file and return a napari layer."""
 
         # the function argument is always None because of the magicfactory
-        dataset_key = self.widget_open_file.dataset_key.value
+        dataset_key = self.dataset_key.value
 
         if not self.path_changed_once:
             log("Please select a file to load!", thread="Input")
@@ -198,8 +195,8 @@ class Input_Tab:
             "name": "_button_key_refresh",
         }
 
-        key = create_widget(**dataset_key_d)
-        refresh = create_widget(**refresh_d)
+        key: CategoricalWidget = create_widget(**dataset_key_d)
+        refresh: ButtonWidget = create_widget(**refresh_d)
         refresh.max_width = 80
 
         combo = Container(
@@ -211,8 +208,8 @@ class Input_Tab:
             gui_only=True,
         )
 
-        w.dataset_key = key
-        w.button_key_refresh = refresh
+        self.dataset_key = key
+        self.button_key_refresh = refresh
         combo.hide()
         w.insert(3, combo)
 
@@ -220,9 +217,9 @@ class Input_Tab:
         dataset_key = dataset_key.replace("/", "_")
 
         if self.widget_open_file.key_combo.visible:
-            if "label" in self.widget_open_file.dataset_key.value:
+            if "label" in self.dataset_key.value:
                 self.widget_open_file.layer_type.value = InputType.SEGMENTATION.value
-            elif "raw" in self.widget_open_file.dataset_key.value:
+            elif "raw" in self.dataset_key.value:
                 self.widget_open_file.layer_type.value = InputType.RAW.value
 
         return path.stem + dataset_key
@@ -233,7 +230,6 @@ class Input_Tab:
 
         if ext in H5_EXTENSIONS:
             self.widget_open_file.key_combo.show()
-            logger.debug("Width set!")
             dataset_keys = list_h5_keys(path)
 
         elif ext in ZARR_EXTENSIONS:
@@ -248,7 +244,7 @@ class Input_Tab:
             return
 
         self.current_dataset_keys = dataset_keys.copy()
-        self.widget_open_file.dataset_key.choices = dataset_keys
+        self.dataset_key.choices = dataset_keys
 
         # handle empth zarr/h5 files
         if dataset_keys == [None] or not dataset_keys:
@@ -256,11 +252,11 @@ class Input_Tab:
             return
 
         # change selected key only if old key is unavailable
-        if self.widget_open_file.dataset_key.value not in dataset_keys:
-            self.widget_open_file.dataset_key.value = dataset_keys[0]
+        if self.dataset_key.value not in dataset_keys:
+            self.dataset_key.value = dataset_keys[0]
 
         self.widget_open_file.new_layer_name.value = self.generate_layer_name(
-            path, self.widget_open_file.dataset_key.value
+            path, self.dataset_key.value
         )
 
     def _on_path_mode_changed(self, path_mode: str):
