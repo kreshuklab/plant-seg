@@ -74,6 +74,22 @@ The installer comes complete with its own python installation. During the instal
     plantseg --napari
     ```
 
+    For development, we recommend using the `environment-dev.yaml` instead! 
+    Also check [the contributing section](./contributing.md)
+
+## Updating
+
+If you have installed PlantSeg *via* the installer or from Conda-forge, you can update to a new version right in the GUI!
+Go to the `Plugins` menu on top, then click `Update Plantset`!
+
+If you have cloned the git repository, you need to update your local repo:
+
+```bash
+cd plant-seg
+git pull
+conda env update -f environment.yaml # environment-dev.yaml for development
+```
+
 ## Optional dependencies
 
 Certain compressed TIFF files (e.g., Zlib, ZSTD, LZMA formats) require additional codecs to be processed correctly by PlantSeg. To handle such files, install the `imagecodecs` package:
