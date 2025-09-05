@@ -94,8 +94,9 @@ class Postprocessing_Tab:
             return
 
         ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
+        self.widget_layer_select.layer.value.visible = False
 
-        return schedule_task(
+        schedule_task(
             relabel_segmentation_task,
             task_kwargs={
                 "image": ps_image,
@@ -129,8 +130,9 @@ class Postprocessing_Tab:
             return
 
         ps_image = PlantSegImage.from_napari_layer(self.widget_layer_select.layer.value)
+        self.widget_layer_select.layer.value.visible = False
 
-        return schedule_task(
+        schedule_task(
             set_biggest_instance_to_zero_task,
             task_kwargs={
                 "image": ps_image,
@@ -168,8 +170,9 @@ class Postprocessing_Tab:
             self.widget_layer_select.layer.value
         )
         ps_foreground = PlantSegImage.from_napari_layer(foreground)
+        self.widget_layer_select.layer.value.visible = False
 
-        return schedule_task(
+        schedule_task(
             remove_false_positives_by_foreground_probability_task,
             task_kwargs={
                 "segmentation": ps_segmentation,
@@ -245,6 +248,7 @@ class Postprocessing_Tab:
         threshold_split = threshold[1] / 100
         quantile_min = quantile[0] / 100
         quantile_max = quantile[1] / 100
+        self.widget_layer_select.layer.value.visible = False
 
         return schedule_task(
             fix_over_under_segmentation_from_nuclei_task,
