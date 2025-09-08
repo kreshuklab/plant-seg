@@ -1,6 +1,8 @@
 from pathlib import Path
 
+import magicgui
 import pytest
+from magicgui.widgets import Label
 
 from plantseg.viewer_napari.widgets.input import (
     Docs_Container,
@@ -13,7 +15,7 @@ from plantseg.viewer_napari.widgets.input import (
 @pytest.fixture
 def input_tab():
     """Fixture to create an Input_Tab instance for testing"""
-    return Input_Tab()
+    yield Input_Tab()
 
 
 def test_input_tab_initialization(input_tab):
@@ -30,8 +32,6 @@ def test_input_tab_open_file(input_tab, mocker):
     kwargs = {
         "path_mode": True,
         "path": Path(),
-        "dataset_key": "",
-        "button_key_refresh": True,
         "stack_layout": "",
         "layer_type": InputType.RAW.value,
         "new_layer_name": "",
@@ -58,38 +58,33 @@ def test_open_file_widget_path_handling(input_tab):
 
 
 def test_look_up_dataset_keys_empty(input_tab, zarr_file_empty, mocker):
-    mock_show = mocker.patch.object(input_tab.widget_open_file.dataset_key, "show")
-    mock_hide = mocker.patch.object(input_tab.widget_open_file.dataset_key, "hide")
-
+    mock_gen_name = mocker.patch(
+        "plantseg.viewer_napari.widgets.input.Input_Tab.generate_layer_name"
+    )
     input_tab.look_up_dataset_keys(zarr_file_empty)
-    mock_show.assert_called_once()
-    mock_hide.assert_called_once()
+    mock_gen_name.assert_not_called()
 
 
 def test_look_up_dataset_keys_3d(input_tab, zarr_file_3d, mocker):
-    mock_show = mocker.patch.object(input_tab.widget_open_file.dataset_key, "show")
-    mock_hide = mocker.patch.object(input_tab.widget_open_file.dataset_key, "hide")
+    mock_gen_name = mocker.patch(
+        "plantseg.viewer_napari.widgets.input.Input_Tab.generate_layer_name"
+    )
 
     input_tab.look_up_dataset_keys(zarr_file_3d)
-    mock_show.assert_called_once()
-    mock_hide.assert_not_called()
-    assert input_tab.widget_open_file.dataset_key.value in ("raw", "raw_2")
-    assert all(
-        n in ("raw", "raw_2") for n in input_tab.widget_open_file.dataset_key.choices
-    )
+    assert input_tab.dataset_key.value in ("raw", "raw_2")
+    assert all(n in ("raw", "raw_2") for n in input_tab.dataset_key.choices)
+    assert mock_gen_name.call_count == 2
 
 
 def test_look_up_dataset_keys_h5(input_tab, h5_file, mocker):
-    mock_show = mocker.patch.object(input_tab.widget_open_file.dataset_key, "show")
-    mock_hide = mocker.patch.object(input_tab.widget_open_file.dataset_key, "hide")
+    mock_gen_name = mocker.patch(
+        "plantseg.viewer_napari.widgets.input.Input_Tab.generate_layer_name"
+    )
 
     input_tab.look_up_dataset_keys(h5_file)
-    mock_show.assert_called_once()
-    mock_hide.assert_not_called()
-    assert input_tab.widget_open_file.dataset_key.value in ("/label", "/raw")
-    assert all(
-        n in ("/label", "/raw") for n in input_tab.widget_open_file.dataset_key.choices
-    )
+    assert input_tab.dataset_key.value in ("/label", "/raw")
+    assert all(n in ("/label", "/raw") for n in input_tab.dataset_key.choices)
+    assert mock_gen_name.call_count == 2
 
 
 def test_set_voxel_size(input_tab, napari_raw, mocker):
@@ -115,7 +110,7 @@ def test_on_path_changed(input_tab, mocker):
 
 def test_on_refresh_keys_button(input_tab, mocker):
     mocked_lookup = mocker.patch.object(input_tab, "look_up_dataset_keys")
-    input_tab.widget_open_file.button_key_refresh.native.click()
+    input_tab.button_key_refresh.native.click()
     mocked_lookup.assert_called_once()
 
 
