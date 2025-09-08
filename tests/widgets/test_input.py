@@ -2,6 +2,7 @@ from pathlib import Path
 
 import magicgui
 import pytest
+from magicgui.widgets import Label
 
 from plantseg.viewer_napari.widgets.input import (
     Docs_Container,
@@ -57,34 +58,33 @@ def test_open_file_widget_path_handling(input_tab):
 
 
 def test_look_up_dataset_keys_empty(input_tab, zarr_file_empty, mocker):
-    mock_show = mocker.patch.object(input_tab.widget_open_file.key_combo, "show")
-    mock_hide = mocker.patch.object(input_tab.widget_open_file.key_combo, "hide")
-
+    mock_gen_name = mocker.patch(
+        "plantseg.viewer_napari.widgets.input.Input_Tab.generate_layer_name"
+    )
     input_tab.look_up_dataset_keys(zarr_file_empty)
-    mock_show.assert_called_once()
-    mock_hide.assert_called_once()
+    mock_gen_name.assert_not_called()
 
 
 def test_look_up_dataset_keys_3d(input_tab, zarr_file_3d, mocker):
-    mock_show = mocker.patch.object(input_tab.widget_open_file.key_combo, "show")
-    mock_hide = mocker.patch.object(input_tab.widget_open_file.key_combo, "hide")
+    mock_gen_name = mocker.patch(
+        "plantseg.viewer_napari.widgets.input.Input_Tab.generate_layer_name"
+    )
 
     input_tab.look_up_dataset_keys(zarr_file_3d)
-    mock_show.assert_called_once()
-    mock_hide.assert_not_called()
     assert input_tab.dataset_key.value in ("raw", "raw_2")
     assert all(n in ("raw", "raw_2") for n in input_tab.dataset_key.choices)
+    assert mock_gen_name.call_count == 2
 
 
 def test_look_up_dataset_keys_h5(input_tab, h5_file, mocker):
-    mock_show = mocker.patch.object(input_tab.widget_open_file.key_combo, "show")
-    mock_hide = mocker.patch.object(input_tab.widget_open_file.key_combo, "hide")
+    mock_gen_name = mocker.patch(
+        "plantseg.viewer_napari.widgets.input.Input_Tab.generate_layer_name"
+    )
 
     input_tab.look_up_dataset_keys(h5_file)
-    mock_show.assert_called_once()
-    mock_hide.assert_not_called()
     assert input_tab.dataset_key.value in ("/label", "/raw")
     assert all(n in ("/label", "/raw") for n in input_tab.dataset_key.choices)
+    assert mock_gen_name.call_count == 2
 
 
 def test_set_voxel_size(input_tab, napari_raw, mocker):
