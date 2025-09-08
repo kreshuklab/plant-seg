@@ -18,6 +18,7 @@ build:
     - 'mkdir -p {{ PREFIX }}\Menu' # [win]
     - 'cp {{ RECIPE_DIR }}\..\Menu/plant-seg.json {{ PREFIX }}\Menu\{{ PKG_NAME }}_menu.json' # [win]
     - 'cp {{ RECIPE_DIR }}\..\Menu\icon.png {{ PREFIX }}\Menu\icon.png' # [win]
+    - 'cp {{ RECIPE_DIR }}\..\Menu\icon.ico {{ PREFIX }}\Menu\icon.ico' # [win]
     - 'cp {{ RECIPE_DIR }}\..\Menu\logo_horizontal.png {{ PREFIX }}\Menu\logo_horizontal.png' # [win]
     - 'cp {{ RECIPE_DIR }}\..\Menu\logo_vertical.png {{ PREFIX }}\Menu\logo_vertical.png' # [win]
 
