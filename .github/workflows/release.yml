@@ -12,7 +12,7 @@ on:
           - major
           - minor
           - patch
-          - pre_l
+          - pre_label
           - pre_n
 
 jobs:
