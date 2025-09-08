@@ -774,7 +774,7 @@ def _on_mode_changed(mode: str):
 widget_label_split_merge = Label(
     value="<strong>INSTRUCTIONS:</strong><br>Mark labels by drawing onto the `Scribbles` layer"
     " in different colors.<br>Labels marked with <strong>the same color</strong>"
-    " will be merged, <strong>different colors</strong> will be split.",
+    " will be merged<br>Labels marked with <strong>different colors</strong> will be split.",
 )
 widget_label_split_merge.native.setTextFormat(Qt.TextFormat.RichText)
 
