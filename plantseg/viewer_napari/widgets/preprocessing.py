@@ -2,7 +2,8 @@ from enum import Enum
 from typing import Optional
 
 from magicgui import magic_factory
-from magicgui.widgets import Container, Label
+from magicgui.widgets import Container, Label, PushButton
+import napari
 from napari.layers import Image, Labels, Layer, Shapes
 
 from plantseg import logger
@@ -68,13 +69,12 @@ class Preprocessing_Tab:
 
         self.initialised_widget_cropping: bool = False
 
-        self.widget_cropping_placeholder = Container(
-            widgets=[
-                Label(
-                    value="To crop an image, add a shape layer and draw one rectange."
-                )
-            ]
+        addShape_button = PushButton(
+            value=False,
+            text="To start cropping, add a shapes layer by clicking here,\nthen draw a single rectangle",
         )
+        addShape_button.clicked.connect(lambda _: napari.current_viewer().add_shapes())
+        self.widget_cropping_placeholder = Container(widgets=[addShape_button])
         self.widget_cropping.hide()
 
         # @@@@@ Rescaling @@@@@
@@ -349,8 +349,8 @@ class Preprocessing_Tab:
             self.initialised_widget_cropping = True
             self.widget_cropping.crop_roi.value = event.value
             self._on_cropping_image_changed(self.widget_layer_select.layer.value)
-            self.widget_cropping.show()
             self.widget_cropping_placeholder.hide()
+            self.widget_cropping.show()
 
     def _on_cropping_image_changed(self, image: Optional[Layer]):
         """Called upon changing widget_layer_select"""
