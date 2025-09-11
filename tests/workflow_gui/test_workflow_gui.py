@@ -63,6 +63,34 @@ def test_load_save_unchanged(gui, workflow_yaml, tmp_path):
     assert parsed_out == parsed_in
 
 
+def test_load_save_unchanged_complete(gui, workflow_complete_yaml, tmp_path):
+    out_file = tmp_path / "test_workflow_out.yaml"
+    with open(workflow_complete_yaml, "r") as f:
+        parsed_in = yaml.safe_load(f)
+    parsed_in["runner"] = "serial"
+    assert parsed_in == gui.config
+
+    gui.save_b.native.click()
+    gui.save.path.value = str(out_file)
+    gui.save.call_button.native.click()
+
+    with open(out_file, "r") as f:
+        parsed_out = yaml.safe_load(f)
+
+    # Step through task_list
+    for k, v in parsed_in.items():
+        if isinstance(v, list):
+            for i, l in enumerate(v):
+                if isinstance(l, dict):
+                    for kk, vv in l.items():
+                        assert vv == parsed_out.get(k)[i].get(kk)
+
+        else:
+            assert v == parsed_out.get(k)
+
+    assert parsed_out == parsed_in
+
+
 def test_load_missing_config(gui, mock_logger, workflow_yaml):
     gui.change_config.call_button.native.click()
 
