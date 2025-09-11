@@ -17,6 +17,8 @@ from plantseg.viewer_napari.widgets.training import Training_Tab
 
 def run_viewer():
     viewer = napari.Viewer(title="PlantSeg v2")
+    viewer.window.file_menu.menuAction().setVisible(False)
+    viewer.window.layers_menu.menuAction().setVisible(False)
     # setup_proofreading_keybindings(viewer=viewer)
     input_tab = Input_Tab()
     output_tab = Output_Tab()
