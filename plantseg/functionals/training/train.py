@@ -33,6 +33,7 @@ def create_model_config(
     sparse,
     f_maps,
     max_num_iters,
+    pre_trained: Optional[Path] = None,
 ):
     """Write training config to yaml file."""
 
@@ -52,6 +53,9 @@ def create_model_config(
     train_template["model"]["final_sigmoid"] = not sparse
     train_template["trainer"]["checkpoint_dir"] = str(checkpoint_dir)
     train_template["trainer"]["max_num_iterations"] = max_num_iters
+    train_template["trainer"]["pre_trained"] = (
+        str(pre_trained) if pre_trained else "null"
+    )
     train_template["loaders"]["train"]["slice_builder"]["patch_shape"] = patch_size
     train_template["loaders"]["train"]["slice_builder"]["stride_shape"] = list(
         i // 2 for i in patch_size
@@ -156,6 +160,7 @@ def unet_training(
         sparse,
         feature_maps,
         max_num_iters,
+        pre_trained=pre_trained,
     )
 
     # Trainer initialization and execution
