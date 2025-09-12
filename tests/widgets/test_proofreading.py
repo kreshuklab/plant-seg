@@ -673,7 +673,7 @@ def test_locking_threaded(i):
 
     @thread_worker()
     def threaded(freeze: bool):
-        with handler.lock_manager(0 if not freeze else 300):
+        with handler.lock_manager(10 if not freeze else 300):
             if freeze:
                 t0 = time()
                 while time() - t0 < 10:
@@ -695,7 +695,7 @@ def test_locking_threaded_timeout(qtbot, i):
 
     @thread_worker()
     def threaded(freeze: bool):
-        with handler.lock_manager(0 if not freeze else 300):
+        with handler.lock_manager(10 if not freeze else 10000):
             if freeze:
                 t0 = time()
                 while time() - t0 < 10:
