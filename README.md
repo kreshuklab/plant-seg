@@ -26,7 +26,10 @@ Pre-trained models are provided.
 
 ## Getting Started
 
-For detailed usage checkout our [**documentation** 📖](https://kreshuklab.github.io/plant-seg/).
+Checkout the [**documentation** 📖](https://kreshuklab.github.io/plant-seg/latest/chapters/getting_started/) for more details.
+
+https://github.com/user-attachments/assets/c64694ca-2c94-470e-ab6e-c39d555324b9
+
 
 ## Installation
 
