@@ -1,10 +1,10 @@
 # PlantSeg Interactive - Napari
 
-Interactively apply operations to your images and run the segmentation 
+Interactively apply operations to your images and run the segmentation
 pipeline using the GUI of PlantSeg.
 PlantSeg uses napari as its front-end.
 
-Start PlantSeg according to your chosen [installion method](../getting_started/installation.md).
+Start PlantSeg according to your chosen [installation method](../getting_started/installation.md).
 From the terminal, you can start PlantSeg in the GUI mode with:
 
 ```bash
@@ -12,7 +12,6 @@ plantseg --napari
 or
 plantseg -n
 ```
-
 
 ![Plantseg 2.0 interface](../../logos/plantseg2gui.png)
 
