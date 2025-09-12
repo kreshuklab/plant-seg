@@ -1,27 +1,18 @@
-# Training on New Data
+# Advanced training
 
-For training new models we rely on the [pytorch-3dunet](https://github.com/wolny/pytorch-3dunet).
-A similar configuration file can be used for training on new data and all the instructions can be found in the repo.
+!!! warning
+    The recommended way to train models is through the [napari training GUI](../plantseg_interactive_napari/unet_training.md).
+    This section gives additional background information not needed for intended training procedure.
 
-## Adding Models
+For training models, we rely on the [pytorch-3dunet](https://github.com/wolny/pytorch-3dunet).  
+You can import models trained using this library into PlantSeg by choosing
+`ADD CUSTOM MODEL` in the model selection drop-down in the segmentation tab.
+Models are by default stored in `~/.plantseg_models/`.
 
-1. Put these three files in one directory:
-      1. configuration file used for training: `config_train.yml`
-      2. snapshot of the best model across training: `best_checkpoint.pytorch`
-      3. snapshot of the last model saved during training: `last_checkpoint.pytorch`
-2. Click "Add Custom Model" in the GUI and follow the instruction
+Each model needs the following files:
 
-### Alternative Old Method
+* Configuration file used for training: `config_train.yml`
+* A snapshot of the best model across training: `best_checkpoint.pytorch`
+* A Snapshot of the last model saved during training: `last_checkpoint.pytorch`
 
-When the network is trained, it is enough to create `~/.plantseg_models/MY_MODEL_NAME` directory
-and copy the following files into it:
-
-* configuration file used for training: `config_train.yml`
-* snapshot of the best model across training: `best_checkpoint.pytorch`
-* snapshot of the last model saved during training: `last_checkpoint.pytorch`
-
-The later two files are automatically generated during training and contain all neural networks parameters.
-
-Now you can simply use your model for prediction by setting the [config.yaml](https://github.com/kreshuklab/plant-seg/blob/master/examples/config.yaml) key to `MY_MODEL_NAME`.
-
-If you want your model to be part of the open-source model zoo provided with this package, please contact us.
+Check the model directory to see examples of the `config_train.yml`

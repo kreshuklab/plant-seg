@@ -122,7 +122,7 @@ nav:
   - Dataset and Training:
       - chapters/plantseg_models/index.md
       - Custom Datasets: chapters/plantseg_models/custom_datasets.md
-      - Training: chapters/plantseg_models/training.md
+      - Advanced Training: chapters/plantseg_models/training.md
 
   - API:
       - chapters/python_api/index.md
