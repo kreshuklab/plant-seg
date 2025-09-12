@@ -1,9 +1,9 @@
 from enum import Enum
 from typing import Optional
 
+import napari
 from magicgui import magic_factory
 from magicgui.widgets import Container, Label, PushButton
-import napari
 from napari.layers import Image, Labels, Layer, Shapes
 
 from plantseg import logger
@@ -73,7 +73,11 @@ class Preprocessing_Tab:
             value=False,
             text="To start cropping, add a shapes layer by clicking here,\nthen draw a single rectangle",
         )
-        addShape_button.clicked.connect(lambda _: napari.current_viewer().add_shapes())
+        viewer = napari.current_viewer()
+        if viewer is not None:
+            addShape_button.clicked.connect(
+                lambda _: viewer.add_shapes(ndim=3, scale=viewer.layers.extent.step)
+            )
         self.widget_cropping_placeholder = Container(widgets=[addShape_button])
         self.widget_cropping.hide()
 
