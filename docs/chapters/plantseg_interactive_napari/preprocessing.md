@@ -6,6 +6,14 @@ PlantSeg Interactive. This functionalities are available in the
 
 ## Widget: Crop
 
+<div>
+<figure class="video_container">
+  <video controls="true" allowfullscreen="true" poster="/path/to/poster.png">
+    <source src="https://github.com/kreshuklab/plant-seg/raw/refs/heads/assets/videos/cropping_20fps.mp4" type="video/mp4">
+  </video>
+</figure>
+</div>
+
 To crop an image, first add a `Shapes` layer. You find the `Add Shapes Layer`
 button above the layer list on the left side. With the `Shapes` layer selected,
 you can add one rectangle using by pressing `R` and drawing.

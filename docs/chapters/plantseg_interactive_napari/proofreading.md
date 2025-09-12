@@ -3,7 +3,7 @@
 <div>
 <figure class="video_container">
   <video controls="true" allowfullscreen="true" poster="/path/to/poster.png">
-    <source src="https://github.com/kreshuklab/plant-seg/raw/refs/heads/assets/proofreading_cut.mp4" type="video/mp4">
+    <source src="https://github.com/kreshuklab/plant-seg/raw/refs/heads/assets/videos/proofreading_20fps.mp4" type="video/mp4">
   </video>
 </figure>
 </div>

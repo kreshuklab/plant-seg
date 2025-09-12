@@ -1,5 +1,13 @@
 # Quick Start
 
+<div>
+<figure class="video_container">
+  <video controls="true" allowfullscreen="true" poster="/path/to/poster.png">
+    <source src="https://github.com/kreshuklab/plant-seg/raw/refs/heads/assets/videos/full_workflow_20fps.mp4" type="video/mp4">
+  </video>
+</figure>
+</div>
+
 PlantSeg has two main modes of operation: interactively, using the [Napari](https://napari.org/stable/index.html) viewer, or for batch processing from the command line.
 The following sections will guide you through the installation and usage of
 PlantSeg in each of these modes.
