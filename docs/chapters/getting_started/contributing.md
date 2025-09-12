@@ -74,3 +74,11 @@ pre-commit run --all-files
 Commit messages are important. Please follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
 
 For efficiency, pytest is not included in the pre-commit hooks. Please run the tests separately.
+
+## Videos
+
+Video encoding settings for this website:
+
+```bash
+ffmpeg -i input.webm -vcodec libx264 -r 20 -crf 28 -tune animation -vf "scale=-2:'min(1080,ih)'" output_20fps.mp4
+```
