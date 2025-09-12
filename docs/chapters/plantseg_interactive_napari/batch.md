@@ -11,8 +11,13 @@ You can review and edit workflow scripts using the build-in workflow editor;
 open it either directly from the napari `Batch` tab, or from the command
 line using `plantseg -e` .
 
-!!! note
+Read more about [batch workflows in this chapter](../workflow_gui/index.md).
+
+!!! note ""
     You find the batch processing section in the output tab in napari!
+
+!!! warning
+    Some interactive steps can't be recorded into workflows, especially **cropping** and **proofreading**
 
 ## Widget: Export Batch Workflow
 

@@ -1,5 +1,13 @@
 # Manual Proofreading
 
+<div>
+<figure class="video_container">
+  <video controls="true" allowfullscreen="true" poster="/path/to/poster.png">
+    <source src="https://github.com/kreshuklab/plant-seg/raw/refs/heads/assets/proofreading_cut.mp4" type="video/mp4">
+  </video>
+</figure>
+</div>
+
 ## Widget: Proofreading with Manual Split and Merge
 
 Once the segmentation is done, or a label image is loaded along with a boundary image, the user can start the proofreading process. In the proofreading widget, set the "Mode" to "Layer" if you are going to correct a loaded image, or set the "Mode" to "File" if you already had a proofreading session exported as a file. For "Segmentation", select the image layer that you want to correct, then click "Initialise" to start the proofreading process.

@@ -1,7 +1,8 @@
 # PlantSeg introduction
 
 !!! tip "PlantSeg v2 is out!"
-    We are working on updating the documentation for the new version of PlantSeg. Stay tuned for more updates and new manuscripts!
+    In this update, we switched to Napari as our front-end!
+    You now can interactively work on your images in PlantSeg.
 
 PlantSeg is a tool for 3D and 2D segmentation.
 The methods used are very generic and can be used for any instance segmentation workflow,
@@ -17,7 +18,7 @@ but they are tuned towards cell segmentation in plant tissue. The tool is fundam
 * ***Cell Segmentation as graph partitioning***: The boundary prediction from the first step serve as the basis for automated segmentation. PlantSeg implements four distinct algorithms for this task, each with unique features tailored to different segmentation needs. This graph partitioning approach is particularly effective for segmenting densely packed cells.
 
 <figure markdown="span">
-  ![PlantSeg Napari](https://github.com/kreshuklab/plant-seg/raw/assets/images/plantseg_napari.png)<!-- { width="300" } -->
+  ![Main Figure](./logos/plantseg2gui.png)
   <figcaption>Figure: PlantSeg v2 Interface</figcaption>
 </figure>
 
