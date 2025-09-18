@@ -1,10 +1,11 @@
 import timeit
+import webbrowser
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Iterable, Optional
 
 import napari
-from magicgui.widgets import Label, ProgressBar, Widget
+from magicgui.widgets import Container, Label, ProgressBar, PushButton, Widget
 from napari.layers import Layer
 from napari.qt.threading import create_worker
 from psygnal import evented
@@ -203,3 +204,36 @@ def schedule_task(
     worker.start()
     log(f"{task_name} started", thread="Task")
     return None
+
+
+class Help_text:
+    def __init__(self):
+        logger.debug("Help text init")
+        self.docs_url = "https://kreshuklab.github.io/plant-seg/latest/"
+
+    def get_doc_container(self, text="", sub_url="") -> Container:
+        logger.debug("get_doc_container called!")
+        """Creates a container with a documentation button and a logo."""
+
+        self.docs_url += sub_url
+        button = PushButton(text="Help")
+        button.max_width = 80
+        button.max_width = 80
+        button.max_height = 24
+        button.changed.connect(self.open_docs)
+        container = Container(
+            widgets=[button],
+            label=text,
+            layout="horizontal",
+            labels=False,
+        )
+        container[0].show()
+        container.margins = [25, 0, 0, 0]
+        return Container(widgets=[container], labels=True, layout="horizontal")
+
+    def open_docs(self, button):
+        logger.debug("open_docs called!")
+        """Open the documentation URL in the default web browser when the button is clicked."""
+        webbrowser.open(self.docs_url, new=0, autoraise=True)
+        logger.info(f"Docs webpage opened: {self.docs_url}")
+        return button

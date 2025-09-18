@@ -1,8 +1,9 @@
 from typing import Optional
 
 from magicgui import magic_factory
-from magicgui.widgets import Container
+from magicgui.widgets import Container, Label
 from napari.layers import Image, Labels
+from qtpy.QtCore import Qt
 
 from plantseg import logger
 from plantseg.core.image import PlantSegImage, SemanticType
@@ -13,7 +14,12 @@ from plantseg.tasks.dataprocessing_tasks import (
     set_biggest_instance_to_zero_task,
 )
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.utils import div, get_layers, schedule_task
+from plantseg.viewer_napari.widgets.utils import (
+    Help_text,
+    div,
+    get_layers,
+    schedule_task,
+)
 
 
 class Postprocessing_Tab:
@@ -46,9 +52,35 @@ class Postprocessing_Tab:
         )
         self.widget_fix_segmentation_by_nuclei.self.bind(self)
 
+        # @@@@@ Toggle buttons @@@@@
+        self.widget_show_remove_false_positive = self.factory_show_button()
+        self.widget_show_remove_false_positive.self.bind(self)
+        self.widget_show_remove_false_positive.toggle.bind(
+            lambda _: self.toggle_visibility_1
+        )
+
+        self.widget_show_fix_segmentation = self.factory_show_button()
+        self.widget_show_fix_segmentation.self.bind(self)
+        self.widget_show_fix_segmentation.toggle.bind(
+            lambda _: self.toggle_visibility_2
+        )
+
+        help_text = (
+            "<strong>Postprocessing:</strong> Optional steps to improve a segmentation."
+        )
+        self.help_text_container = Help_text()
+        self.tab_help = self.help_text_container.get_doc_container(
+            help_text,
+            sub_url="chapters/plantseg_interactive_napari/postprocessing/",
+        )
+
+        self.toggle_visibility_1(False)
+        self.toggle_visibility_2(False)
+
     def get_container(self):
         return Container(
             widgets=[
+                self.tab_help,
                 div("Layer Selection"),
                 self.widget_layer_select,
                 div("Relabel Instances"),
@@ -56,12 +88,40 @@ class Postprocessing_Tab:
                 div("Set biggest Instance to Zero"),
                 self.widget_set_biggest_instance_zero,
                 div("Remove False-Positives by Foreground"),
+                self.widget_show_remove_false_positive,
                 self.widget_remove_false_positives_by_foreground,
                 div("Split/Merge Instances by Nuclei"),
+                self.widget_show_fix_segmentation,
                 self.widget_fix_segmentation_by_nuclei,
             ],
             labels=False,
         )
+
+    @magic_factory(
+        call_button="Show",
+    )
+    def factory_show_button(self, toggle):
+        toggle(visible=True)
+
+    def toggle_visibility_1(self, visible: bool):
+        "Toggle visibility of remove false positives"
+        if visible:
+            self.widget_show_remove_false_positive.hide()
+            self.toggle_visibility_2(False)
+            self.widget_remove_false_positives_by_foreground.show()
+        else:
+            self.widget_remove_false_positives_by_foreground.hide()
+            self.widget_show_remove_false_positive.show()
+
+    def toggle_visibility_2(self, visible: bool):
+        "Toggle visibility of fix segmentation by nuclei"
+        if visible:
+            self.widget_show_fix_segmentation.hide()
+            self.toggle_visibility_1(False)
+            self.widget_fix_segmentation_by_nuclei.show()
+        else:
+            self.widget_fix_segmentation_by_nuclei.hide()
+            self.widget_show_fix_segmentation.show()
 
     @magic_factory(
         call_button=False,

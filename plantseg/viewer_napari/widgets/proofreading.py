@@ -708,7 +708,7 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
     call_button="Initialize Proofreading",
     mode={
         "label": "Mode",
-        "choices": ["New", "Continue"],
+        "choices": ["New", "Load from file"],
         "widget_type": "RadioButtons",
         "orientation": "horizontal",
     },
@@ -745,7 +745,7 @@ def widget_proofreading_initialisation(
             )
             return
         initialize_from_layer(segmentation, are_you_sure=are_you_sure)
-    elif mode == "Continue":
+    elif mode == "Load from file":
         if filepath is None:
             log("No state file selected", thread="Proofreading tool", level="error")
             return
@@ -766,7 +766,7 @@ def _on_mode_changed(mode: str):
     if mode == "New":
         widget_proofreading_initialisation.segmentation.show()
         widget_proofreading_initialisation.filepath.hide()
-    elif mode == "Continue":
+    elif mode == "Load from file":
         widget_proofreading_initialisation.segmentation.hide()
         widget_proofreading_initialisation.filepath.show()
 

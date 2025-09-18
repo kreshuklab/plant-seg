@@ -5,6 +5,7 @@ import napari
 from magicgui import magic_factory
 from magicgui.widgets import Container, Label, PushButton
 from napari.layers import Image, Labels, Layer, Shapes
+from qtpy.QtCore import Qt
 
 from plantseg import logger
 from plantseg.core.image import ImageDimensionality, PlantSegImage, SemanticType
@@ -20,7 +21,12 @@ from plantseg.tasks.dataprocessing_tasks import (
     set_voxel_size_task,
 )
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.utils import div, get_layers, schedule_task
+from plantseg.viewer_napari.widgets.utils import (
+    Help_text,
+    div,
+    get_layers,
+    schedule_task,
+)
 
 
 class RescaleType(Enum):
@@ -135,8 +141,16 @@ class Preprocessing_Tab:
         self.toggle_visibility_1(True)
         self.toggle_visibility_2(False)
 
+        help_text = "<strong>Preprocessing:</strong> Optional image operations."
+        self.help_text_container = Help_text()
+        self.tab_help = self.help_text_container.get_doc_container(
+            help_text,
+            sub_url="chapters/plantseg_interactive_napari/preprocessing/",
+        )
+
         self.container = Container(
             widgets=[
+                self.tab_help,
                 self.hidden_label,
                 div("Layer Selection"),
                 self.widget_layer_select,
@@ -316,6 +330,8 @@ class Preprocessing_Tab:
             rectangle = None
 
         ps_image = PlantSegImage.from_napari_layer(layer)
+        crop_roi.visible = False
+        layer.visible = False
 
         return schedule_task(
             image_cropping_task,
