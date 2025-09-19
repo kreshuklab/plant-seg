@@ -212,8 +212,8 @@ class Help_text:
         self.docs_url = "https://kreshuklab.github.io/plant-seg/latest/"
 
     def get_doc_container(self, text="", sub_url="") -> Container:
-        logger.debug("get_doc_container called!")
         """Creates a container with a documentation button and a logo."""
+        logger.debug("get_doc_container called!")
 
         self.docs_url += sub_url
         button = PushButton(text="Help")
