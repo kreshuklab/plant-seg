@@ -45,7 +45,7 @@ def run_viewer():
             tabify=True,
         )
         # allow content to float to top of dock
-        # _containers.native.layout().addStretch()
+        _containers.native.layout().addStretch()
 
     # Drop-down update for new layers
     viewer.layers.events.inserted.connect(preprocessing_tab.update_layer_selection)
