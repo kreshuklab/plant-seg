@@ -86,7 +86,7 @@ class Training_Tab:
             "label": "Train from",
             "value": "Disk",
             "widget_type": "RadioButtons",
-            "choices": ["Disk", "GUI"],
+            "choices": ["Disk", "Current Data"],
             "orientation": "horizontal",
             "tooltip": "Whether to train from a dataset on disk or from loaded layers in Napari.",
         },
@@ -332,7 +332,7 @@ class Training_Tab:
         self.widget_unet_training.segmentation.choices = segmentations
 
         if raws and segmentations:
-            self.widget_unet_training.from_disk.value = "GUI"
+            self.widget_unet_training.from_disk.value = "Current Data"
 
     def _on_dimensionality_change(self, dimensionality: Literal["3D", "2D"]):
         """Update patch size according to chosen dimensionality."""

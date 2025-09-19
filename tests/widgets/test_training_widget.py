@@ -95,7 +95,7 @@ def test_unet_training_no_image(
     m_schedule = mocker.patch("plantseg.viewer_napari.widgets.training.schedule_task")
 
     training_tab.widget_unet_training(
-        from_disk="GUI",
+        from_disk="Current Data",
         dataset=None,
         image=None,
         segmentation=napari_segmentation,
@@ -122,7 +122,7 @@ def test_unet_training_no_image(
     m_schedule.assert_not_called()
 
     training_tab.widget_unet_training(
-        from_disk="GUI",
+        from_disk="Current Data",
         dataset=None,
         image=napari_raw,
         segmentation=None,
@@ -417,7 +417,7 @@ def test_on_from_disk_change(training_tab, mocker):
     m_hide_dataset = mocker.patch.object(
         training_tab.widget_unet_training.dataset, "hide"
     )
-    training_tab.widget_unet_training.from_disk.value = "GUI"
+    training_tab.widget_unet_training.from_disk.value = "Current Data"
 
     m_show_image.assert_called_once()
     m_show_seg.assert_called_once()

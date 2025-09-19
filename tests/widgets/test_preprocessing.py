@@ -19,7 +19,7 @@ def preprocessing_tab():
 
 def test_preprocessing_tab_initialization(preprocessing_tab):
     container = preprocessing_tab.get_container()
-    assert len(container) == 14
+    assert len(container) == 15
 
 
 def test_on_layer_select_raw(preprocessing_tab, napari_raw, mocker):

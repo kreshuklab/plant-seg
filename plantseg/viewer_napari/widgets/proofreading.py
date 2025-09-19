@@ -21,6 +21,7 @@ from plantseg.functionals.proofreading.split_merge_tools import split_merge_from
 from plantseg.functionals.proofreading.utils import get_bboxes
 from plantseg.io import H5_EXTENSIONS
 from plantseg.viewer_napari import log
+from plantseg.viewer_napari.widgets.utils import Help_text
 
 DEFAULT_KEY_BINDING_PROOFREAD = "n"
 DEFAULT_KEY_BINDING_CLEAN = "j"
@@ -629,6 +630,33 @@ def widget_add_label_to_corrected(viewer: napari.Viewer, position: tuple[int, ..
     segmentation_handler.toggle_corrected_cell(cell_id)
 
 
+help_text_container = Help_text()
+
+
+def get_widget_tab_help_text(help_text_container):
+    help_text = (
+        "<strong>Proofreading:</strong><br>"
+        "Correct segmentation by interactively merging/splitting labels."
+    )
+
+    tab_help = help_text_container.get_doc_container(
+        help_text,
+        sub_url="chapters/plantseg_interactive_napari/proofreading/",
+    )
+    return tab_help
+
+
+# before initialization
+widget_tab_help_text = get_widget_tab_help_text(help_text_container)
+
+# after initialization
+widget_label_split_merge = help_text_container.get_doc_container(
+    text="<strong>INSTRUCTIONS:</strong><br>Mark labels by drawing onto the `Scribbles` layer"
+    " in different colors.<br>Labels marked with <strong>the same color</strong>"
+    " will be merged<br>Labels marked with <strong>different colors</strong> will be split.",
+)
+
+
 def initialize_proofreading(segmentation: PlantSegImage) -> None:
     """Initializes the proofreading tool with the given segmentation.
 
@@ -639,6 +667,7 @@ def initialize_proofreading(segmentation: PlantSegImage) -> None:
     Returns:
         bool: True if initialization was successful, False otherwise.
     """
+    widget_tab_help_text.hide()
     segmentation_handler.reset()
     segmentation_handler.setup(segmentation)
     widget_proofreading_initialisation.call_button.text = "Re-initialize Proofreading"  # type: ignore
@@ -698,6 +727,7 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
         )
         return
 
+    widget_tab_help_text.hide()
     segmentation_handler.load_state_from_disk(state)
     widget_proofreading_initialisation.call_button.text = "Re-initialize Proofreading"  # type: ignore
     setup_proofreading_widget()
@@ -708,7 +738,7 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
     call_button="Initialize Proofreading",
     mode={
         "label": "Mode",
-        "choices": ["New", "Continue"],
+        "choices": ["New", "Load from file"],
         "widget_type": "RadioButtons",
         "orientation": "horizontal",
     },
@@ -745,7 +775,7 @@ def widget_proofreading_initialisation(
             )
             return
         initialize_from_layer(segmentation, are_you_sure=are_you_sure)
-    elif mode == "Continue":
+    elif mode == "Load from file":
         if filepath is None:
             log("No state file selected", thread="Proofreading tool", level="error")
             return
@@ -766,17 +796,9 @@ def _on_mode_changed(mode: str):
     if mode == "New":
         widget_proofreading_initialisation.segmentation.show()
         widget_proofreading_initialisation.filepath.hide()
-    elif mode == "Continue":
+    elif mode == "Load from file":
         widget_proofreading_initialisation.segmentation.hide()
         widget_proofreading_initialisation.filepath.show()
-
-
-widget_label_split_merge = Label(
-    value="<strong>INSTRUCTIONS:</strong><br>Mark labels by drawing onto the `Scribbles` layer"
-    " in different colors.<br>Labels marked with <strong>the same color</strong>"
-    " will be merged<br>Labels marked with <strong>different colors</strong> will be split.",
-)
-widget_label_split_merge.native.setTextFormat(Qt.TextFormat.RichText)
 
 
 @magicgui(

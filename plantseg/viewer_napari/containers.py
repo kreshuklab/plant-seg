@@ -9,6 +9,7 @@ from plantseg.viewer_napari.widgets import (
     widget_redo,
     widget_save_state,
     widget_split_and_merge_from_scribbles,
+    widget_tab_help_text,
     widget_undo,
 )
 
@@ -16,6 +17,7 @@ from plantseg.viewer_napari.widgets import (
 def get_proofreading_tab():
     container = Container(
         widgets=[
+            widget_tab_help_text,
             widget_label_split_merge,
             widget_proofreading_initialisation,
             widget_split_and_merge_from_scribbles,
