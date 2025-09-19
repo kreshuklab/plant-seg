@@ -528,7 +528,7 @@ def test_widget_proofreading_initialisation(mocker, napari_segmentation):
         thread="Proofreading tool",
         level="error",
     )
-    proofreading.widget_proofreading_initialisation("Continue", None, None)
+    proofreading.widget_proofreading_initialisation("Load from file", None, None)
     mocks["log"].assert_called_with(
         "No state file selected", thread="Proofreading tool", level="error"
     )
@@ -546,7 +546,7 @@ def test_widget_proofreading_initialisation(mocker, napari_segmentation):
     mocks["initialize_from_layer"].reset_mock()
 
     proofreading.widget_proofreading_initialisation(
-        "Continue", None, Path(), mocker.sentinel
+        "Load from file", None, Path(), mocker.sentinel
     )
     mocks["initialize_from_file"].assert_called_with(
         Path(), are_you_sure=mocker.sentinel
@@ -561,7 +561,7 @@ def test_on_mode_change(mocker):
     proofreading._on_mode_changed("New")
     mock.segmentation.show.assert_called_once()
     mock.filepath.hide.assert_called_once()
-    proofreading._on_mode_changed("Continue")
+    proofreading._on_mode_changed("Load from file")
     mock.segmentation.hide.assert_called_once()
     mock.filepath.show.assert_called_once()
 
