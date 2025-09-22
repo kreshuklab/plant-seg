@@ -72,25 +72,24 @@ class Segmentation_Tab:
 
         # @@@@@ Hide/Show buttons @@@@@
         self.widget_show_prediction = self.factory_show_button()
+        self.widget_show_prediction.name += "_prediction"
         self.widget_show_prediction.self.bind(self)
         self.widget_show_prediction.toggle.bind(lambda _: self.toggle_visibility_1)
         self.prediction_widgets.widget_unet_prediction.hide()
 
         self.widget_show_watershed = self.factory_show_button()
+        self.widget_show_watershed.name += "_watershed"
         self.widget_show_watershed.self.bind(self)
         self.widget_show_watershed.toggle.bind(lambda _: self.toggle_visibility_2)
 
         self.widget_show_agglomeration = self.factory_show_button()
+        self.widget_show_agglomeration.name += "_agglomeration"
         self.widget_show_agglomeration.self.bind(self)
         self.widget_show_agglomeration.toggle.bind(lambda _: self.toggle_visibility_3)
 
         # @@@@@ AllInOne Watershed & agglomeration @@@@@
         self.widget_aio_ws = self.factory_aio_ws()
-        self._wrap_key_refresh()
         self.widget_aio_ws.self.bind(self)
-        self.widget_aio_ws.advanced_switch.clicked.connect(
-            lambda _: self.set_separate_steps_list()
-        )
 
         self.widget_aio_ws.mode._default_choices = AGGLOMERATION_MODES
         self.widget_aio_ws.mode.reset_choices()
@@ -102,18 +101,22 @@ class Segmentation_Tab:
         self.widget_aio_ws.stacked.value = False
 
         self.widget_show_prediction_aio = self.factory_show_button()
+        self.widget_show_prediction_aio.name += "_prediction_aio"
         self.widget_show_prediction_aio.self.bind(self)
         self.widget_show_prediction_aio.toggle.bind(
             lambda _: self.toggle_visibility_aio_1
         )
 
         self.widget_show_aio_ws = self.factory_show_button()
+        self.widget_show_aio_ws.name += "_aio_ws"
         self.widget_show_aio_ws.self.bind(self)
         self.widget_show_aio_ws.toggle.bind(lambda _: self.toggle_visibility_aio_2)
 
+        self.container_aio_buttons = self.factory_aio_buttons()
         self._aio_advanced_button.clicked.connect(
             lambda _: self.set_separate_steps_list()
         )
+        self._aio_call_button.clicked.connect(lambda _: self.widget_aio_ws())
 
         self.container_list = []
         self.container = Container(
@@ -138,6 +141,7 @@ class Segmentation_Tab:
             (div("3. Superpixel to Segmentation"), True),
             (self.widget_show_agglomeration, True),
             (self.widget_agglomeration, False),
+            (self.container_aio_buttons, False),
         ]
         self.update_container(new_container_list)
 
@@ -153,13 +157,14 @@ class Segmentation_Tab:
             (div("2. Boundary to Segmentation"), True),
             (self.widget_show_aio_ws, True),
             (self.widget_aio_ws, False),
+            (self.container_aio_buttons, False),
         ]
         self.update_container(new_container_list)
 
     def update_container(self, new_container_list):
         for w, v in self.container_list:
             w.hide()
-        for _ in self.container:
+        for _ in range(len(self.container)):
             self.container.pop(0)
         for w, v in new_container_list:
             self.container.append(w)
@@ -244,6 +249,7 @@ class Segmentation_Tab:
 
     def toggle_visibility_aio_1(self, visible: bool):
         """Toggles visibility of the prediction section"""
+        logger.debug(f"toggle_visibility_aio_1 {visible} called!")
         if visible:
             self.widget_show_prediction_aio.hide()
             self.toggle_visibility_aio_2(False)
@@ -255,12 +261,15 @@ class Segmentation_Tab:
 
     def toggle_visibility_aio_2(self, visible: bool):
         """Toggles visibility of the aio watershed section"""
+        logger.debug(f"toggle_visibility_aio_2 {visible} called!")
         if visible:
             self.widget_show_aio_ws.hide()
             self.toggle_visibility_aio_1(False)
             self.widget_aio_ws.show()
+            self.container_aio_buttons.show()
         else:
             self.widget_aio_ws.hide()
+            self.container_aio_buttons.hide()
             self.widget_show_aio_ws.show()
 
     @magic_factory(
@@ -607,11 +616,6 @@ class Segmentation_Tab:
             "max": 1.0,
             "min": 0.0,
         },
-        advanced_switch={
-            "label": "Advanced view",
-            "tooltip": "Show watershed and agglomeration separately.",
-            "widget_type": "PushButton",
-        },
         pbar={"label": "Segmentation is running", "max": 0, "min": 0, "visible": False},
     )
     def factory_aio_ws(
@@ -628,7 +632,6 @@ class Segmentation_Tab:
         is_nuclei_image: bool = False,
         mode: str = AGGLOMERATION_MODES[0][1],
         beta: float = 0.6,
-        advanced_switch: bool = False,
         pbar: Optional[ProgressBar] = None,
     ) -> None:
         if self.widget_layer_select.prediction.value is None:
@@ -675,24 +678,22 @@ class Segmentation_Tab:
             },
         )
 
-    def _wrap_key_refresh(self, i=0):
-        w = self.widget_aio_ws
-
+    def factory_aio_buttons(self):
         call_button = PushButton(text="Boundary to Segmentation")
         advanced_button = PushButton(text="Advanced")
         advanced_button.max_width = 80
 
-        combo = Container(
+        widget_aio_combo = Container(
             widgets=[call_button, advanced_button],
             layout="horizontal",
             labels=False,
-            name="key_combo",
             label="",
+            name="_button_combo",
             gui_only=True,
         )
+        widget_aio_combo.margins = (9, 0, 9, 9)
 
         self._aio_call_button = call_button
         self._aio_advanced_button = advanced_button
-        combo.show()
-        w.append(combo)
-        # TODO: Fix label
+        widget_aio_combo.show()
+        return widget_aio_combo
