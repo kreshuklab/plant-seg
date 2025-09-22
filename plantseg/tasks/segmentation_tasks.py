@@ -223,3 +223,140 @@ def lmc_segmentation_task(
         semantic_type=SemanticType.SEGMENTATION,
     )
     return ps_seg
+
+
+@task_tracker
+def aio_watershed_task(
+    image: PlantSegImage,
+    nuclei: Optional[PlantSegImage],
+    threshold: float = 0.5,
+    sigma_seeds: float = 1.0,
+    stacked: bool = False,
+    sigma_weights: float = 2.0,
+    min_size: int = 100,
+    alpha: float = 1.0,
+    pixel_pitch: tuple[int, ...] | None = None,
+    apply_nonmax_suppression: bool = False,
+    n_threads: int | None = None,
+    is_nuclei_image: bool = False,
+    mode: str = "gasp",
+    beta: float = 0.6,
+    _tracker: Optional["PBar_Tracker"] = None,
+):
+    # Segmentation
+    if image.is_multichannel:
+        raise ValueError("Multichannel images are not supported for this task.")
+
+    if image.semantic_type != SemanticType.PREDICTION:
+        logger.warning(
+            "The input image is not a boundary probability map. The task will still attempt to run, but the results may not be as expected."
+        )
+
+    if image.image_layout == ImageLayout.YX and stacked:
+        logger.warning(
+            "Stack, or 'per slice' is only for 3D images (ZYX). The stack option will be disabled."
+        )
+        stacked = False
+
+    if is_nuclei_image:
+        boundary_pmaps = normalize_01(image.get_data())
+        boundary_pmaps = 1.0 - boundary_pmaps
+        mask = boundary_pmaps < threshold
+    else:
+        boundary_pmaps = image.get_data()
+        mask = None
+
+    dt_seg = dt_watershed(
+        boundary_pmaps=boundary_pmaps,
+        threshold=threshold,
+        sigma_seeds=sigma_seeds,
+        stacked=stacked,
+        sigma_weights=sigma_weights,
+        min_size=min_size,
+        alpha=alpha,
+        pixel_pitch=pixel_pitch,
+        apply_nonmax_suppression=apply_nonmax_suppression,
+        n_threads=n_threads,
+        mask=mask,
+    )
+
+    dt_seg_image = image.derive_new(
+        dt_seg,
+        name=f"{image.name}_dt_watershed",
+        semantic_type=SemanticType.SEGMENTATION,
+    )
+
+    # Agglomeration
+
+    if image.is_multichannel:
+        raise ValueError("Multichannel images are not supported for this task.")
+
+    if image.semantic_type != SemanticType.PREDICTION:
+        logger.warning(
+            "The input image is not a boundary probability map. The task will still attempt to run, but the results may not be as expected."
+        )
+
+    boundary_pmaps = image.get_data()
+
+    if dt_seg_image.semantic_type != SemanticType.SEGMENTATION:
+        raise ValueError("The input over_segmentation is not a segmentation map.")
+    superpixels = dt_seg_image.get_data()
+
+    if boundary_pmaps.shape != superpixels.shape:
+        raise ValueError(
+            "The boundary probability map and the over-segmentation map should have the same shape."
+        )
+
+    if mode == "gasp":
+        seg = gasp(
+            boundary_pmaps,
+            superpixels=superpixels,
+            beta=beta,
+            post_minsize=min_size,
+        )
+    elif mode == "multicut":
+        if superpixels is None:
+            raise ValueError("The superpixels are required for the multicut mode.")
+        seg = multicut(
+            boundary_pmaps,
+            superpixels=superpixels,
+            beta=beta,
+            post_minsize=min_size,
+        )
+    elif mode == "mutex_ws":
+        seg = mutex_ws(
+            boundary_pmaps,
+            superpixels=superpixels,
+            beta=beta,
+            post_minsize=min_size,
+        )
+    elif mode == "lmc":
+        if nuclei is None:
+            raise ValueError("Nuclei image required for the lmc mode.")
+        if (
+            nuclei.semantic_type is SemanticType.PREDICTION
+            or nuclei.semantic_type is SemanticType.RAW
+        ):
+            lmc = lifted_multicut_from_nuclei_pmaps
+            extra_key = "nuclei_pmaps"
+        else:
+            lmc = lifted_multicut_from_nuclei_segmentation
+            extra_key = "nuclei_seg"
+
+        seg = lmc(
+            boundary_pmaps=boundary_pmaps,
+            superpixels=superpixels,
+            **{extra_key: nuclei.get_data()},
+            beta=beta,
+            post_minsize=min_size,
+        )
+
+    else:
+        raise ValueError(
+            f"Unknown mode: {mode}, select one of ['gasp', 'multicut', 'mutex_ws', 'lmc']"
+        )
+
+    seg_image = image.derive_new(
+        seg, name=f"{image.name}_{mode}", semantic_type=SemanticType.SEGMENTATION
+    )
+    return seg_image
