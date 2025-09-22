@@ -5,8 +5,8 @@ from plantseg.tasks.segmentation_tasks import (
     lmc_segmentation_task,
 )
 from plantseg.viewer_napari.widgets.segmentation import (
-    Segmentation_Tab,
     AGGLOMERATION_MODES,
+    Segmentation_Tab,
 )
 
 
