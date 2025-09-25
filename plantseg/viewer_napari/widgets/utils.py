@@ -23,7 +23,7 @@ def _return_value_if_widget(x):
     return x
 
 
-def div(text: str = ""):
+def div(text: str = "", divider=True):
     """Returns a divider widget
     Can put up to 54 chars headline into it.
     """
@@ -42,13 +42,16 @@ def div(text: str = ""):
         n_ws = int((needed_ws / 4.1) + (text_len * 0.13))
 
         centered_text = text.center(n_ws, "\u00a0")  # wraps text in non-breaking spaces
-        w = Label(
-            value=(
-                f"<img src={resources / 'div1.png'}>"
-                f"{centered_text}"
-                f"<img src={resources / 'div2.png'}>"
+        if divider:
+            w = Label(
+                value=(
+                    f"<img src={resources / 'div1.png'}>"
+                    f"{centered_text}"
+                    f"<img src={resources / 'div2.png'}>"
+                )
             )
-        )
+        else:
+            w = Label(value=(f"{text.ljust(n_ws, '\u00a0')}"))
     else:
         w = Label(value=f"<img src={resources / 'div.png'}>")
 
