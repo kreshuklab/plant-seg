@@ -147,7 +147,7 @@ class Workflow_widgets:
 
         # TODO:The inputs section is currently a list of dicts, should be just a dict (#429)
         inputs = self.config["inputs"][0]
-        cont.append(Label(value="I/O:\n"))
+        cont.append(Label(value="File loading and saving:\n"))
         field_tracker = self.changing_fields["inputs"] = {}
 
         for io_type, path in inputs.items():
@@ -187,7 +187,7 @@ class Workflow_widgets:
             w.self.bind(self)
 
         self.reset_b = PushButton(
-            text="Reset to file",
+            text="Reset from file",
             tooltip="Overwrite ALL settings with content from the yaml file.",
         )
         self.reset_b.changed.connect(self.show_config)
