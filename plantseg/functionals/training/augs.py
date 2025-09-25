@@ -417,7 +417,7 @@ class StandardLabelToBoundary:
         self.foreground = foreground
 
     def __call__(self, m):
-        assert m.ndim == 3
+        assert m.ndim == 3, f"Only 3D labels supported, dimensionality: {m.ndim}"
 
         boundaries = find_boundaries(m, connectivity=2, mode=self.mode)
         boundaries = boundaries.astype("int32")

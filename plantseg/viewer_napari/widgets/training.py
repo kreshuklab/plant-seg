@@ -8,10 +8,11 @@ from magicgui.widgets import Container, Label, ProgressBar
 from napari.layers import Image, Labels
 
 from plantseg import PATH_PLANTSEG_MODELS, logger
-from plantseg.core.image import SemanticType
+from plantseg.core.image import ImageLayout, PlantSegImage, SemanticType
 from plantseg.core.zoo import model_zoo
+from plantseg.functionals.training.model import UNet2D, UNet3D
 from plantseg.functionals.training.train import find_h5_files
-from plantseg.io.h5 import read_h5_voxel_size
+from plantseg.io.h5 import read_h5_shape, read_h5_voxel_size
 from plantseg.tasks.training_tasks import unet_training_task
 from plantseg.viewer_napari import log
 from plantseg.viewer_napari.widgets.prediction import Prediction_Widgets
@@ -21,6 +22,8 @@ from plantseg.viewer_napari.widgets.utils import div, get_layers, schedule_task
 class Training_Tab:
     def __init__(self, prediction_tab: Optional[Prediction_Widgets]):
         self.prediction_tab = prediction_tab
+        self.in_shape = None
+        self.out_shape = None
 
         # Constants
         self.ALL_CUDA_DEVICES = [f"cuda:{i}" for i in range(torch.cuda.device_count())]
@@ -33,6 +36,10 @@ class Training_Tab:
         # initialize widgets
         self.widget_unet_training = self.factory_unet_training()
         self.widget_unet_training.self.bind(self)
+
+        self.widget_unet_training.insert(0, div("Training Data", False))
+        self.widget_unet_training.insert(8, div("Model", False))
+        self.widget_unet_training.insert(15, div("Meta data", False))
 
         self.widget_unet_training.from_disk.changed.connect(self._on_from_disk_change)
 
@@ -67,6 +74,10 @@ class Training_Tab:
         )
         self.widget_unet_training.output_type.reset_choices()
         self.widget_unet_training.dataset.changed.connect(self._on_dataset_change)
+        self.widget_unet_training.image.changed.connect(self._on_image_change)
+        self.widget_unet_training.segmentation.changed.connect(
+            self._on_segmentation_change
+        )
 
         self.widget_info = Label(value=f"Model dir: {PATH_PLANTSEG_MODELS}")
 
@@ -132,6 +143,7 @@ class Training_Tab:
             "value": (1, 1),
             "tooltip": "Number of input and output channels",
             "widget_type": "TupleEdit",
+            "enabled": False,
         },
         feature_maps={
             "label": "Feature dimensions",
@@ -154,6 +166,7 @@ class Training_Tab:
             "widget_type": "TupleEdit",
             "tooltip": "Voxel size in um of the training data.\n"
             "Is initialized correctly from the chosen data if possible.",
+            "enabled": False,
         },
         max_num_iters={
             "label": "Max iterations",
@@ -170,6 +183,8 @@ class Training_Tab:
             "value": "3D",
             "choices": ["3D", "2D"],
             "tooltip": "Train a 3D unet or a 2D unet",
+            "enabled": False,
+            "visible": False,  # output channels not supported, so it is always known
         },
         modality={
             "label": "Microscopy modality",
@@ -202,25 +217,28 @@ class Training_Tab:
     )
     def factory_unet_training(
         self,
+        # data
         from_disk: str,
         dataset: Optional[Path],
         image: Optional[Image],
         segmentation: Optional[Labels],
-        pretrained: Optional[str],
-        model_name: str,
-        description: str,
         channels,
+        resolution,
+        dimensionality,
+        # model
+        pretrained: Optional[str],
         feature_maps,
         patch_size,
-        resolution,
         max_num_iters: int,
-        dimensionality,
         device,
-        modality: Optional[str] = None,
-        custom_modality: str = "",
-        output_type: Optional[str] = None,
-        custom_output_type: str = "",
-        pbar: Optional[ProgressBar] = None,
+        # metadata
+        model_name: str,
+        description: str,
+        modality: Optional[str],
+        custom_modality: str,
+        output_type: Optional[str],
+        custom_output_type: str,
+        pbar: Optional[ProgressBar],
     ) -> None:
         """Train a boundary prediction unet"""
         if from_disk == "Disk":
@@ -336,13 +354,78 @@ class Training_Tab:
 
     def _on_dimensionality_change(self, dimensionality: Literal["3D", "2D"]):
         """Update patch size according to chosen dimensionality."""
+        logger.debug(f"_on_dimensionality_change called with {dimensionality}")
 
+        # Patch size:
         if dimensionality == "2D":
             ps = self.widget_unet_training.patch_size.value
             self.previous_patch_size = ps
             self.widget_unet_training.patch_size.value = [1, ps[1], ps[2]]
         else:
             self.widget_unet_training.patch_size.value = self.previous_patch_size
+        self.update_channels()
+
+    def update_channels(self):
+        """Updates the number of input and output channels
+
+        Determination based on self.in_shape and self.out_shape, which are set
+        on data change.
+        This function would support output channels, but currently the training
+        does not, therefore the `dimensionality` field is not visible, as it is
+        only needed in the case of 3d in- and 3d output with an uncertain number
+        of output channels.
+        """
+        try:
+            logger.debug("update_channels called")
+            dimensionality = self.widget_unet_training.dimensionality
+            ch = self.widget_unet_training.channels
+            if self.in_shape is None or self.out_shape is None:
+                return
+            if len(self.in_shape) == 2:
+                if len(self.out_shape) == 2:
+                    ch.value = (1, 1)
+                elif len(self.out_shape) == 3:
+                    ch.value = (1, self.out_shape[0])
+                    raise ValueError("No channels in output supported!")
+                elif len(self.out_shape) == 4:
+                    raise ValueError("For 2D input only 2D output is supported!")
+                else:
+                    raise ValueError(f"Output shape {self.out_shape} not supported!")
+
+            elif len(self.in_shape) == 3:
+                if len(self.out_shape) == 2:
+                    # must be 2D!
+                    ch.value = (self.in_shape[0], 1)
+
+                elif len(self.out_shape) == 3:
+                    if dimensionality.value == "3D":
+                        ch.value = (1, 1)
+                    elif dimensionality.value == "2D":
+                        ch.value = (self.in_shape[0], self.out_shape[0])
+                        raise ValueError("No channels in output supported!")
+
+                elif len(self.out_shape) == 4:
+                    # must be 3D!
+                    ch.value = (1, self.out_shape[0])
+                    raise ValueError("No channels in output supported!")
+                else:
+                    raise ValueError(f"Output shape {self.out_shape} not supported!")
+
+            elif len(self.in_shape) == 4:
+                if len(self.out_shape) == 2:
+                    raise ValueError("For 3D input only 3D output is supported!")
+                elif len(self.out_shape) == 3:
+                    ch.value = (self.in_shape[0], 1)
+                elif len(self.out_shape) == 4:
+                    ch.value = (self.in_shape[0], self.out_shape[0])
+                    raise ValueError("No channels in output supported!")
+                else:
+                    raise ValueError(f"Output shape {self.out_shape} not supported!")
+            else:
+                raise ValueError(f"Input shape {self.in_shape} not supported!")
+            logger.debug(f"Determined channels: {ch.value}")
+        except ValueError as e:
+            log(f"Error: {e}", thread="training", level="ERROR")
 
     def _on_custom_modality_change(self, modality: str):
         logger.debug(f"_on_custom_modality_change called: {modality}")
@@ -359,6 +442,7 @@ class Training_Tab:
             self.widget_unet_training.custom_output_type.hide()
 
     def _on_dataset_change(self, dataset_dir: Path):
+        """Updates resolution, dimensionality and channels"""
         if not dataset_dir.exists() or not dataset_dir.is_dir():
             return
         if not all((dataset_dir / d).exists() for d in ["train", "val"]):
@@ -371,12 +455,95 @@ class Training_Tab:
             logger.debug("_on_dataset_change: no h5 files found")
             return
 
+        # get resolution
         voxel_size = read_h5_voxel_size(h5s[0], "raw").voxels_size
         if voxel_size is None:
             voxel_size = (1.0, 1.0, 1.0)
+            self.widget_unet_training.resolution.enabled = True
+        else:
+            self.widget_unet_training.resolution.enabled = False
 
         self.widget_unet_training.resolution.value = voxel_size
         logger.debug(f"Resolution of training data: {voxel_size}")
+
+        # get channels
+        self.in_shape = read_h5_shape(h5s[0], key="raw")
+        self.out_shape = read_h5_shape(h5s[0], key="label")
+        logger.debug(
+            f"In/Out shape determined from dataset: {self.in_shape}, {self.out_shape}"
+        )
+        self.update_dimensionality()
+
+    def update_dimensionality(self):
+        """Updates and enables/disables the dimensionality input
+
+        This should be called whenever the input is changed, after
+        setting self.in_shape and self.out_shape.
+
+        Triggers _on_dimensionality_change, which calls update_channels.
+        """
+        logger.debug(
+            f"update_dimensionality called, in/out: {self.in_shape}, {self.out_shape}"
+        )
+        dimensionality = self.widget_unet_training.dimensionality
+
+        if self.in_shape is None or self.out_shape is None:
+            return
+        if len(self.in_shape) == 2:
+            dimensionality.enabled = False
+            dimensionality.value = "2D"
+            if len(self.out_shape) > 3:
+                raise ValueError(
+                    f"Input/Output shapes not supported: {self.in_shape}, {self.out_shape}"
+                )
+
+        elif len(self.in_shape) == 3:
+            if len(self.out_shape) == 2:
+                dimensionality.enabled = False
+                dimensionality.value = "2D"
+            elif len(self.out_shape) == 3:
+                # Dimensionality only ambiguouse if output could have channels
+                # Which it can't atm -> dimensionality not visible
+                dimensionality.enabled = True
+                dimensionality.value = "3D"
+            elif len(self.out_shape) == 4:
+                dimensionality.enabled = False
+                dimensionality.value = "3D"
+
+        elif len(self.in_shape) == 4:
+            dimensionality.enabled = False
+            dimensionality.value = "3D"
+
+            if len(self.out_shape) < 3:
+                raise ValueError(
+                    f"Input/Output shapes not supported: {self.in_shape}, {self.out_shape}"
+                )
+
+        if (not 1 < len(self.in_shape) < 5) or (not 1 < len(self.out_shape) < 5):
+            raise ValueError(
+                f"Input/Output shapes not supported: {self.in_shape}, {self.out_shape}"
+            )
+        # update_channels called from setting dimensionality
+        dimensionality.changed.emit(dimensionality.value)
+
+    def _on_image_change(self, image: Image):
+        """Update resolution, dimensionality and input channels on image change"""
+        pl_image = PlantSegImage.from_napari_layer(image)
+        self.widget_unet_training.resolution.value = pl_image.voxel_size
+        ch_dim = pl_image.channel_axis
+        if ch_dim and pl_image.image_layout == ImageLayout.ZCYX:
+            raise ValueError("Only CZYX image layout supported for 4D training.")
+        self.in_shape = pl_image.shape
+        self.update_dimensionality()
+
+    def _on_segmentation_change(self, seg: Labels):
+        """Update resolution, dimensionality and output channels on image change"""
+        pl_image = PlantSegImage.from_napari_layer(seg)
+        ch_dim = pl_image.channel_axis
+        if ch_dim:
+            raise ValueError("No channels in output supported.")
+        self.out_shape = pl_image.shape
+        self.update_dimensionality()
 
     def _on_pretrained_changed(self, model_name: str | None):
         logger.debug(f"_on_model_name_changed called: {model_name}")
@@ -396,6 +563,38 @@ class Training_Tab:
                 self.widget_unet_training.feature_maps.value = [model_config["f_maps"]]
 
             self.description = model_zoo.get_model_description(model_name)
+
+            model_channels = (model_config["in_channels"], model_config["out_channels"])
+            if model_channels != self.widget_unet_training.channels.value:
+                log(
+                    "Model incompatible chosen data!\nModel channels: "
+                    f"{model_channels}\nData channels: "
+                    f"{self.widget_unet_training.channels.value}",
+                    thread="training",
+                    level="ERROR",
+                )
+            if (
+                isinstance(model, UNet3D)
+                and self.widget_unet_training.dimensionality.value != "3D"
+            ):
+                log(
+                    "Model incompatible with chosen data!\n"
+                    "Model is a 3D model, but data is "
+                    f"{self.widget_unet_training.dimensionality.value}",
+                    thread="training",
+                    level="ERROR",
+                )
+            elif (
+                isinstance(model, UNet2D)
+                and self.widget_unet_training.dimensionality.value != "2D"
+            ):
+                log(
+                    "Model incompatible with chosen data!\n"
+                    "Model is a 2D model, but data is "
+                    f"{self.widget_unet_training.dimensionality.value}",
+                    thread="training",
+                    level="ERROR",
+                )
 
         self.widget_unet_training.pretrained.tooltip = (
             "Select an existing model to retrain. Current model description:"

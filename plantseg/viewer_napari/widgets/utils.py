@@ -23,11 +23,12 @@ def _return_value_if_widget(x):
     return x
 
 
-def div(text: str = ""):
+def div(text: str = "", divider=True):
     """Returns a divider widget
     Can put up to 54 chars headline into it.
     """
     resources = Path(__file__).resolve().parent.parent.parent / "resources"
+    space = "\u00a0"
     if text:
         if len(text) > 54:
             logger.warning(
@@ -41,14 +42,17 @@ def div(text: str = ""):
         # length of white space ~3.5px, char length less, needs to be balanced
         n_ws = int((needed_ws / 4.1) + (text_len * 0.13))
 
-        centered_text = text.center(n_ws, "\u00a0")  # wraps text in non-breaking spaces
-        w = Label(
-            value=(
-                f"<img src={resources / 'div1.png'}>"
-                f"{centered_text}"
-                f"<img src={resources / 'div2.png'}>"
+        centered_text = text.center(n_ws, space)  # wraps text in non-breaking spaces
+        if divider:
+            w = Label(
+                value=(
+                    f"<img src={resources / 'div1.png'}>"
+                    f"{centered_text}"
+                    f"<img src={resources / 'div2.png'}>"
+                )
             )
-        )
+        else:
+            w = Label(value=(f"{text.ljust(n_ws, space)}"))
     else:
         w = Label(value=f"<img src={resources / 'div.png'}>")
 

@@ -1,5 +1,10 @@
 import logging
 
+try:
+    import pyside6
+except ImportError:
+    pass
+
 from plantseg.viewer_napari.loggers import napari_handler
 
 logger_viewer_napari = logging.getLogger(__name__)

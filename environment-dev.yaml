@@ -21,8 +21,8 @@ dependencies:
   - bioimageio.core>=0.9.0
   - bioimageio.spec>=0.5.4.3
   # GUI
+  - pyside6
   - qtpy
-  - pyqt
   - napari
   # Other
   - qt-material
