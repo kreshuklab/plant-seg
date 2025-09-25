@@ -28,6 +28,7 @@ def div(text: str = "", divider=True):
     Can put up to 54 chars headline into it.
     """
     resources = Path(__file__).resolve().parent.parent.parent / "resources"
+    space = "\u00a0"
     if text:
         if len(text) > 54:
             logger.warning(
@@ -41,7 +42,7 @@ def div(text: str = "", divider=True):
         # length of white space ~3.5px, char length less, needs to be balanced
         n_ws = int((needed_ws / 4.1) + (text_len * 0.13))
 
-        centered_text = text.center(n_ws, "\u00a0")  # wraps text in non-breaking spaces
+        centered_text = text.center(n_ws, space)  # wraps text in non-breaking spaces
         if divider:
             w = Label(
                 value=(
@@ -51,7 +52,7 @@ def div(text: str = "", divider=True):
                 )
             )
         else:
-            w = Label(value=(f"{text.ljust(n_ws, '\u00a0')}"))
+            w = Label(value=(f"{text.ljust(n_ws, space)}"))
     else:
         w = Label(value=f"<img src={resources / 'div.png'}>")
 
