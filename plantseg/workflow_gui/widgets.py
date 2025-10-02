@@ -3,6 +3,7 @@ import pprint
 import webbrowser
 from abc import abstractmethod
 from pathlib import Path
+from typing import Optional
 
 import yaml
 from magicgui import magic_factory, magicgui
@@ -19,6 +20,7 @@ from magicgui.widgets import (
     SpinBox,
 )
 from qt_material import apply_stylesheet
+from qtpy import QtCore
 
 logger = logging.getLogger(__name__)
 
@@ -147,30 +149,30 @@ class Workflow_widgets:
 
         # TODO:The inputs section is currently a list of dicts, should be just a dict (#429)
         inputs = self.config["inputs"][0]
-        cont.append(Label(value="File loading and saving:\n"))
+
+        header_c = Container(
+            widgets=[
+                Label(label="File loading and saving:"),
+                PushButton(text="Advanced Options", tooltip="Show tasks"),
+            ],
+            layout="horizontal",
+        )
+        header_c[1].clicked.connect(lambda _: self.swich_advanced_view())
+
+        # cont.append(Label(value="File loading and saving:\n"))
+        cont.append(header_c)
         field_tracker = self.changing_fields["inputs"] = {}
 
-        for io_type, path in inputs.items():
-            if io_type.startswith("name_pattern"):
-                w = self.io_name(
-                    name={
-                        "tooltip": self.config["infos"]["inputs_schema"][io_type][
-                            "description"
-                        ],
-                        "widget_type": "LineEdit",
-                        "label": io_type,
-                        "value": path,
-                    }
-                )
-                cont.append(w)
-                field_tracker[io_type] = w
-                w.self.bind(self)
-                continue
+        names_d = list(filter(lambda item: item[0].startswith("name"), inputs.items()))
+        inputs_d = list(
+            filter(lambda item: item[0].startswith("input"), inputs.items())
+        )
+        export_d = list(
+            filter(lambda item: item[0].startswith("export"), inputs.items())
+        )
 
+        for io_type, path in inputs_d:
             file_mode = "r"
-            if io_type.startswith("export_directory"):
-                file_mode = "d"
-
             w = self.io_item(
                 path={
                     "tooltip": self.config["infos"]["inputs_schema"][io_type][
@@ -186,13 +188,45 @@ class Workflow_widgets:
             field_tracker[io_type] = w
             w.self.bind(self)
 
+        for io_type, path in export_d:
+            file_mode = "d"
+            w = self.io_item(
+                path={
+                    "tooltip": self.config["infos"]["inputs_schema"][io_type][
+                        "description"
+                    ],
+                    "widget_type": "FileEdit",
+                    "label": io_type,
+                    "value": path,
+                    "mode": file_mode,
+                }
+            )
+            cont.append(w)
+            field_tracker[io_type] = w
+            w.self.bind(self)
+
+        for io_type, path in names_d:
+            w = self.io_name(
+                name={
+                    "tooltip": self.config["infos"]["inputs_schema"][io_type][
+                        "description"
+                    ],
+                    "widget_type": "LineEdit",
+                    "label": io_type,
+                    "value": path,
+                }
+            )
+            cont.append(w)
+            field_tracker[io_type] = w
+            w.self.bind(self)
+
         self.reset_b = PushButton(
             text="Reset from file",
-            tooltip="Overwrite ALL settings with content from the yaml file.",
+            tooltip="Overwrite ALL changes with content from the yaml file.",
         )
         self.reset_b.changed.connect(self.show_config)
 
-        self.save_b = PushButton(text="Save to..", tooltip="Open the save dialog.")
+        self.save_b = PushButton(text="Save as..", tooltip="Open the save dialog.")
         self.save.path.value = self.config_path
         self.save_b.changed.connect(self.save.show)
         self.save_b.changed.connect(lambda: self.apply_theme(self.save.native))
@@ -210,6 +244,24 @@ class Workflow_widgets:
         [w.show() for w in controls_c]
         cont.append(info)
         cont.append(controls_c)
+
+    def swich_advanced_view(self, advanced: Optional[bool] = None):
+        logger.debug("swich_advanced_view called")
+        if advanced is not None:
+            self.advanced = not advanced
+
+        if self.advanced:
+            self.advanced = False
+            self.content[-1].hide()
+
+        else:
+            self.advanced = True
+            self.content[-1].show()
+
+        mwn = self.main_window.native
+        c_size = self.content.native.sizeHint()
+        b_size = self.bottom_buttons.native.sizeHint()
+        mwn.resize(c_size + b_size + QtCore.QSize(0, 80))
 
     @magic_factory(call_button=False)
     def io_item(self, path: Path):
