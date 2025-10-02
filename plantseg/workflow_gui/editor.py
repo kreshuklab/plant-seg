@@ -82,7 +82,7 @@ class Workflow_gui(Workflow_widgets):
         [w.show() for w in self.content]
         [w.show() for w in self.bottom_buttons]
 
-        self.swich_advanced_view(False)
+        self.switch_advanced_view(False)
 
         mwn = self.main_window.native
         c_size = self.content.native.sizeHint()

@@ -20,7 +20,7 @@ from magicgui.widgets import (
     SpinBox,
 )
 from qt_material import apply_stylesheet
-from qtpy import QtCore
+from qtpy import QtCore, QtGui
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +137,12 @@ class Workflow_widgets:
         task_tree = Task_tree(self.config["list_tasks"], self.config)
         tasks_container = task_tree.build_container()
 
-        cont.append(Label(value="Tasks:\n"))
+        label = Label(value="Tasks:\n")
+        font = QtGui.QFont()
+        font.setBold(True)
+        label.native.setFont(font)
+
+        cont.append(label)
         cont.append(tasks_container)
 
         self.changing_fields["tasks"] = task_tree.changing_fields
@@ -152,14 +157,19 @@ class Workflow_widgets:
 
         header_c = Container(
             widgets=[
-                Label(label="File loading and saving:"),
+                Label(value="Edit file paths and names:"),
                 PushButton(text="Advanced Options", tooltip="Show tasks"),
             ],
             layout="horizontal",
+            labels=False,
         )
-        header_c[1].clicked.connect(lambda _: self.swich_advanced_view())
+        header_c[1].clicked.connect(lambda _: self.switch_advanced_view())
+        header_c[0].min_width = 400
 
-        # cont.append(Label(value="File loading and saving:\n"))
+        font = QtGui.QFont()
+        font.setBold(True)
+        header_c[0].native.setFont(font)
+
         cont.append(header_c)
         field_tracker = self.changing_fields["inputs"] = {}
 
@@ -245,7 +255,7 @@ class Workflow_widgets:
         cont.append(info)
         cont.append(controls_c)
 
-    def swich_advanced_view(self, advanced: Optional[bool] = None):
+    def switch_advanced_view(self, advanced: Optional[bool] = None):
         logger.debug("swich_advanced_view called")
         if advanced is not None:
             self.advanced = not advanced
