@@ -29,6 +29,7 @@ class Workflow_gui(Workflow_widgets):
         super().__init__()
         self.config_path = config_path
         self.config: Optional[dict] = None
+        self.advanced = False
 
         # setup initial state
         if not isinstance(self.config_path, Path):
@@ -80,6 +81,8 @@ class Workflow_gui(Workflow_widgets):
 
         [w.show() for w in self.content]
         [w.show() for w in self.bottom_buttons]
+
+        self.switch_advanced_view(False)
 
         mwn = self.main_window.native
         c_size = self.content.native.sizeHint()
