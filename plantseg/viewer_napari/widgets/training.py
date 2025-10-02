@@ -39,7 +39,7 @@ class Training_Tab:
 
         self.widget_unet_training.insert(0, div("Training Data", False))
         self.widget_unet_training.insert(8, div("Model", False))
-        self.widget_unet_training.insert(15, div("Meta data", False))
+        self.widget_unet_training.insert(15, div("Meta Data", False))
 
         self.widget_unet_training.from_disk.changed.connect(self._on_from_disk_change)
 
