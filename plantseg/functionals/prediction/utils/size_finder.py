@@ -78,7 +78,19 @@ def find_patch_and_halo_shapes(
         else:  # count_shrink == 0.
             assert np.all(shape_patch_max <= shape_volume)
             adjusted_patch_shape = shape_patch_max
-        return tuple(adjusted_patch_shape - halo_shape * 2), tuple(halo_shape)
+
+        patch_size = adjusted_patch_shape - halo_shape * 2
+        if np.any(patch_size < 1):
+            if np.any(adjusted_patch_shape < 1):
+                raise RuntimeError(
+                    "Error during patch size calculation!\n"
+                    f"Adjusted patch shape {adjusted_patch_shape}"
+                )
+            logger.info("Halo bigger than patch size, setting halo to (0,0,0)")
+            halo_shape = np.array((0, 0, 0))
+            patch_size = adjusted_patch_shape
+
+        return tuple(patch_size), tuple(halo_shape)
 
 
 def find_a_max_patch_shape(
