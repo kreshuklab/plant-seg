@@ -81,6 +81,12 @@ except AssertionError:  # catch Pytorch not installed with CUDA support
             (44, 44, 44),
             ((104, 104, 104), (44, 44, 44)),
         ),
+        (
+            (1000, 1000, 1000),
+            (192, 192, 192),
+            (100, 100, 100),
+            ((192, 192, 192), (0, 0, 0)),
+        ),
     ],
 )
 def test_find_patch_and_halo_shapes(
