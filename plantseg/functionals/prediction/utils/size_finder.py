@@ -86,7 +86,7 @@ def find_patch_and_halo_shapes(
                     "Error during patch size calculation!\n"
                     f"Adjusted patch shape {adjusted_patch_shape}"
                 )
-            logger.info("Halo bigger than patch size, setting halo to (0,0,0)")
+            logger.debug("Halo bigger than patch size, setting halo to (0,0,0)")
             halo_shape = np.array((0, 0, 0))
             patch_size = adjusted_patch_shape
 
