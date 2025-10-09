@@ -25,6 +25,7 @@ ALL_TESTED_GPUS = [
     "NVIDIA GeForce RTX 3090",
     "NVIDIA A100-PCIE-40GB",
     "NVIDIA A40",
+    "NVIDIA GeForce RTX 4050 Laptop GPU",
 ]
 MAX_PATCH_SHAPES = {
     "generic_confocal_3D_unet": {
@@ -32,6 +33,7 @@ MAX_PATCH_SHAPES = {
         "NVIDIA GeForce RTX 3090": (256, 256, 256),
         "NVIDIA A100-PCIE-40GB": (272, 272, 272),
         "NVIDIA A40": (272, 272, 272),
+        "NVIDIA GeForce RTX 4050 Laptop GPU": (160, 160, 160),
     },
     "confocal_2D_unet_ovules_ds2x": {
         "NVIDIA GeForce RTX 2080 Ti": (
@@ -46,6 +48,7 @@ MAX_PATCH_SHAPES = {
         ),  # (1, 2960, 2960) if search step is 1.
         "NVIDIA A100-PCIE-40GB": (1, 3200, 3200),
         "NVIDIA A40": (1, 3200, 3200),
+        "NVIDIA GeForce RTX 4050 Laptop GPU": (1, 1280, 1280),
     },
 }
 
@@ -80,6 +83,12 @@ except AssertionError:  # catch Pytorch not installed with CUDA support
             (192, 192, 192),
             (44, 44, 44),
             ((104, 104, 104), (44, 44, 44)),
+        ),
+        (
+            (1000, 1000, 1000),
+            (192, 192, 192),
+            (100, 100, 100),
+            ((192, 192, 192), (0, 0, 0)),
         ),
     ],
 )

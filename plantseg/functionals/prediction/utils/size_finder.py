@@ -78,7 +78,19 @@ def find_patch_and_halo_shapes(
         else:  # count_shrink == 0.
             assert np.all(shape_patch_max <= shape_volume)
             adjusted_patch_shape = shape_patch_max
-        return tuple(adjusted_patch_shape - halo_shape * 2), tuple(halo_shape)
+
+        patch_size = adjusted_patch_shape - halo_shape * 2
+        if np.any(patch_size < 1):
+            if np.any(adjusted_patch_shape < 1):
+                raise RuntimeError(
+                    "Error during patch size calculation!\n"
+                    f"Adjusted patch shape {adjusted_patch_shape}"
+                )
+            logger.debug("Halo bigger than patch size, setting halo to (0,0,0)")
+            halo_shape = np.array((0, 0, 0))
+            patch_size = adjusted_patch_shape
+
+        return tuple(patch_size), tuple(halo_shape)
 
 
 def find_a_max_patch_shape(
@@ -119,10 +131,13 @@ def find_a_max_patch_shape(
                     low = mid + 1  # Try larger patches
                 except RuntimeError as e:
                     if "out of memory" in str(e):
+                        errs = str(e).split(".", maxsplit=1)
                         logger.info(
-                            f"Encountered '{e}' at patch shape {patch_shape}, "
+                            f"Encountered '{errs[0]}' at patch shape {patch_shape}, "
                             "reducing it."
                         )
+                        logger.debug(f"{errs[-1]}")
+
                         high = mid - 1  # Try smaller patches
                     else:
                         logger.warning(
@@ -149,6 +164,7 @@ def find_a_max_patch_shape(
                     if "out of memory" in str(e):
                         best_n -= 20
                     else:
+                        del model
                         raise
                 finally:
                     del x
@@ -202,9 +218,11 @@ def find_batch_size(
                 _ = model(x)
             except RuntimeError as e:
                 if "out of memory" in str(e):
+                    errs = str(e).split(".", maxsplit=1)
                     logger.info(
-                        f"Encountered '{e}' at batch size {batch_size}, halving it."
+                        f"Encountered '{errs[0]}' at batch size {batch_size}, halving it."
                     )
+                    logger.debug(f"{errs[-1]}")
                     batch_size //= 2
                     break
                 else:
@@ -217,13 +235,13 @@ def find_batch_size(
             finally:
                 del x
                 torch.cuda.empty_cache()
+    del model
+    torch.cuda.empty_cache()
     if batch_size == 0:
         raise RuntimeError(
             f"Could not determine a feasible batch size for patch size "
             f"{patch_shape} and halo {patch_halo}. Please reduce the patch size."
         )
-    del model
-    torch.cuda.empty_cache()
     return batch_size
 
 
