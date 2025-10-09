@@ -1,7 +1,8 @@
+import subprocess
+
 from napari.qt.threading import thread_worker
 
 from plantseg.viewer_napari import log
-import subprocess
 
 
 def update():
