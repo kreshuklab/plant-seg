@@ -79,6 +79,10 @@ The installer comes complete with its own python installation. During the instal
 
 ## Updating
 
+!!! info
+    Due to an external change, this only works from version 2.0.0rc5 onward.  
+    If you are running an older version, please uninstall and reinstall PlantSeg.
+
 If you have installed PlantSeg *via* the installer or from Conda-forge, you can update to a new version right in the GUI!
 Go to the `Plugins` menu on top, then click `Update Plantset`!
 
