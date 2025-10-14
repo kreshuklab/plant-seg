@@ -10,7 +10,7 @@ def update():
     def _update():
         try:
             subprocess.run(
-                ["conda", "update", "plant-seg"],
+                ["conda", "update", "plant-seg", "-c", "conda-forge"],
                 input="y\n",
                 text=True,
                 check=True,
