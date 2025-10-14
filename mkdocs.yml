@@ -104,6 +104,7 @@ nav:
       - chapters/getting_started/index.md
       - Installation: chapters/getting_started/installation.md
       - Contributing: chapters/getting_started/contributing.md
+      - Know Issues: chapters/getting_started/known_issues.md
 
   - Napari GUI:
       - chapters/plantseg_interactive_napari/index.md
