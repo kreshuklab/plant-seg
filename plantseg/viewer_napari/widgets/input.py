@@ -7,6 +7,7 @@ from magicgui import magic_factory
 from magicgui.widgets import Container, Label, PushButton, create_widget
 from magicgui.widgets.bases import ButtonWidget, CategoricalWidget
 from napari.layers import Image, Labels, Layer
+from qtpy import QtGui
 
 from plantseg import logger
 from plantseg.core.image import ImageLayout, ImageType, PlantSegImage, SemanticType
@@ -350,13 +351,22 @@ class Input_Tab:
         else:
             voxel_size_formatted = "None"
 
+        parts = {
+            "shape": f"Shape: {ps_image.shape}",
+            "voxels": f"Voxel size: {voxel_size_formatted}",
+            "type": f"Type: {ps_image.semantic_type.value}",
+            "layout": f"Layout: {ps_image.image_layout.value}",
+        }
         str_info = (
-            f"Shape: {ps_image.shape}\n"
-            f"Voxel size: {voxel_size_formatted}\n"
-            f"Type: {ps_image.semantic_type.value}\n"
-            f"Layout: {ps_image.image_layout.value}"
+            f"{parts['shape']:<30} {parts['voxels']:<30}\n"
+            f"{parts['type']:<30} {parts['layout']:<30}"
         )
+
+        font = QtGui.QFont("Monospace")
+        font.setStyleHint(QtGui.QFont.TypeWriter)
+
         self.widget_info.value = str_info
+        self.widget_info.native.setFont(font)
 
     def _on_set_voxel_size_layer_done(self):
         logger.debug("_on_set_voxel_size_layer_done called!")
