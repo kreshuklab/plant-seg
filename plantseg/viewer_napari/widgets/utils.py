@@ -6,12 +6,12 @@ from typing import Callable, Iterable, Optional
 
 import napari
 import napari.settings
-from pydantic import ValidationError
 from magicgui.widgets import Container, Label, ProgressBar, PushButton, Widget
 from napari.layers import Layer
 from napari.qt.threading import create_worker
 from psygnal import evented
 from psygnal.qt import start_emitting_from_queue
+from pydantic import ValidationError
 from qtpy import QtGui, QtWidgets
 
 from plantseg import logger
