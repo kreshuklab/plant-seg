@@ -140,7 +140,7 @@ def check_version(
         feature_text_l = []
 
         if crr_version == latest_release_version:
-            result = f"You are using the latest release of PlantSeg: {current_version}."
+            result = f"You are using the latest release of PlantSeg: {current_version}"
             if not silent:
                 logger.info(result)
 
@@ -149,6 +149,7 @@ def check_version(
                 feature_text_l.extend(new_release_features[:8])
         elif crr_version < latest_release_version:
             result = (
+                f"You are using PlantSeg {current_version}\n"
                 f"New release of PlantSeg available: {latest_release_version}.\n"
                 "Please update to the latest version."
             )
@@ -161,6 +162,7 @@ def check_version(
 
         elif latest_release_version < crr_version < latest_version:
             result = (
+                f"You are using PlantSeg {current_version}\n"
                 f"New version of PlantSeg available: {latest_version}.\n"
                 "Please update to the latest version."
             )
