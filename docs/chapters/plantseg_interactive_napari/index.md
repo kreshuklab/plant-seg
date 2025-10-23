@@ -32,3 +32,16 @@ Below, you can switch to a **grid view** or a **3D view** with the respective ic
 
 This is the main interface of PlantSeg.
 On the bottom you can switch through the different sections of PlantSeg.
+
+## Hotkeys
+
+### General
+
+* `Ctrl+i` Increase font size
+* `Ctrl+o` Decrease font size
+* `Ctrl+w` Quit PlantSeg
+
+### Proofreading
+
+* `n` Merge/Split using current scribbles
+* `j` Clean scribbles
