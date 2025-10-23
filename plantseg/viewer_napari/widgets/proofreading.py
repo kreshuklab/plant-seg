@@ -16,12 +16,13 @@ from napari.utils import CyclicLabelColormap
 from pydantic import BaseModel, Field
 from qtpy.QtCore import QMutex, Qt
 
+from plantseg import logger
 from plantseg.core.image import ImageProperties, PlantSegImage, SemanticType
 from plantseg.functionals.proofreading.split_merge_tools import split_merge_from_seeds
 from plantseg.functionals.proofreading.utils import get_bboxes
 from plantseg.io import H5_EXTENSIONS
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.utils import Help_text
+from plantseg.viewer_napari.widgets.utils import Help_text, div, get_layers
 
 DEFAULT_KEY_BINDING_PROOFREAD = "n"
 DEFAULT_KEY_BINDING_CLEAN = "j"
@@ -982,6 +983,9 @@ def widget_save_state(
     segmentation_handler.save_state_to_disk(filepath, raw=raw, pmap=pmap)
 
 
+widget_save_div = div("Save proofreading")
+
+
 def setup_proofreading_keybindings():
     """Sets up keybindings for the proofreading tool in Napari."""
     viewer = napari.current_viewer()
@@ -1014,6 +1018,7 @@ activation_list_proofreading = [
     widget_filter_segmentation,
     widget_undo,
     widget_redo,
+    widget_save_div,
     widget_save_state,
 ]
 
@@ -1024,3 +1029,24 @@ for widget in activation_list_proofreading:
 def setup_proofreading_widget():
     for widget in activation_list_proofreading:
         widget.show()
+
+
+def update_layer_selection(event):
+    """Updates layer drop-down menus"""
+    logger.debug(f"Updating segmentation layer selection: {event.value}, {event.type}")
+    raws = get_layers(SemanticType.RAW)
+    predictions = get_layers(SemanticType.PREDICTION)
+    segmentations = get_layers(SemanticType.SEGMENTATION)
+
+    widget_proofreading_initialisation.segmentation.choices = segmentations
+    widget_save_state.raw.choices = raws
+    widget_save_state.pmap.choices = raws + predictions
+    widget_split_and_merge_from_scribbles.image.choices = raws + predictions
+
+    # Set values to inserted
+    if event.type == "inserted":
+        if (
+            event.value._metadata.get("semantic_type", None)
+            == SemanticType.SEGMENTATION
+        ):
+            widget_proofreading_initialisation.segmentation.value = event.value

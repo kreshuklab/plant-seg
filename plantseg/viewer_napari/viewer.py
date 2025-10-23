@@ -7,19 +7,41 @@ from plantseg.viewer_napari.containers import (
     get_proofreading_tab,
 )
 from plantseg.viewer_napari.updater import update
+from plantseg.viewer_napari.widgets import proofreading
 from plantseg.viewer_napari.widgets.input import Input_Tab
 from plantseg.viewer_napari.widgets.output import Output_Tab
 from plantseg.viewer_napari.widgets.postprocessing import Postprocessing_Tab
 from plantseg.viewer_napari.widgets.preprocessing import Preprocessing_Tab
 from plantseg.viewer_napari.widgets.segmentation import Segmentation_Tab
 from plantseg.viewer_napari.widgets.training import Training_Tab
+from plantseg.viewer_napari.widgets.utils import decrease_font_size, increase_font_size
+
+
+def scroll_wrap(w):
+    scrollArea = QtWidgets.QScrollArea()
+    scrollArea.setWidget(w.native)
+    scrollArea.setWidgetResizable(True)
+    pol = QtWidgets.QSizePolicy()
+    pol.setHorizontalPolicy(QtWidgets.QSizePolicy.Policy.Minimum)
+    pol.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.MinimumExpanding)
+    scrollArea.setSizePolicy(pol)
+    return scrollArea
 
 
 def run_viewer():
     viewer = napari.Viewer(title="PlantSeg v2")
     viewer.window.file_menu.menuAction().setVisible(False)
     viewer.window.layers_menu.menuAction().setVisible(False)
-    # setup_proofreading_keybindings(viewer=viewer)
+
+    # By hiding the menu, also closing shortcuts are removed
+    @viewer.bind_key("Ctrl+w")
+    def _close_window(viewer):
+        viewer.window._qt_window.close(False, True)
+
+    @viewer.bind_key("Ctrl+q")
+    def _close_app(viewer):
+        viewer.window._qt_window.close(True, True)
+
     input_tab = Input_Tab()
     output_tab = Output_Tab()
     preprocessing_tab = Preprocessing_Tab()
@@ -38,20 +60,24 @@ def run_viewer():
         (training_tab.get_container(), "Train"),
     ]
     for _containers, name in container_list:
-        _containers.native.setFixedWidth(550)
+        # _containers.native.setMaximumHeight(600)
+        # allow content to float to top of dock
+        _containers.native.layout().addStretch()
+        _containers.native.setMinimumWidth(400)
+        _containers = scroll_wrap(_containers)
+        _containers.setMinimumWidth(350)
         viewer.window.add_dock_widget(
             _containers,
             name=name,
             tabify=True,
         )
-        # allow content to float to top of dock
-        _containers.native.layout().addStretch()
 
     # Drop-down update for new layers
     viewer.layers.events.inserted.connect(preprocessing_tab.update_layer_selection)
     viewer.layers.events.inserted.connect(segmentation_tab.update_layer_selection)
     viewer.layers.events.inserted.connect(postprocessing_tab.update_layer_selection)
     viewer.layers.events.inserted.connect(training_tab.update_layer_selection)
+    viewer.layers.events.inserted.connect(proofreading.update_layer_selection)
 
     # Drop-down update for renaming of layers
     viewer.layers.selection.events.active.connect(input_tab.update_layer_selection)
@@ -65,6 +91,7 @@ def run_viewer():
         postprocessing_tab.update_layer_selection
     )
     viewer.layers.selection.events.active.connect(training_tab.update_layer_selection)
+    viewer.layers.selection.events.active.connect(proofreading.update_layer_selection)
 
     # Show data tab by default
     viewer.window._dock_widgets["Input"].show()
@@ -88,5 +115,11 @@ def run_viewer():
             child.setAlignment(QtCore.Qt.AlignLeft)
 
     viewer.window.plugins_menu.addAction("Update PlantSeg", update)
+    viewer.window.view_menu.addAction(
+        "Increase font size", increase_font_size, "Ctrl+i"
+    )
+    viewer.window.view_menu.addAction(
+        "Decrease font size", decrease_font_size, "Ctrl+o"
+    )
 
     napari.run()

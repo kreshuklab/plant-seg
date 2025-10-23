@@ -2,6 +2,7 @@ import pytest
 import requests
 
 from plantseg.utils import check_version
+from plantseg.viewer_napari.widgets.utils import decrease_font_size, increase_font_size
 
 
 @pytest.fixture
@@ -34,6 +35,7 @@ def test_check_version_new_version(mock_logger, requests_mock):
 
     # Assert logger warning was called with appropriate message
     true_logline = (
+        f"You are using PlantSeg {current_version}\n"
         f"New release of PlantSeg available: {latest_version}.\n"
         "Please update to the latest version."
     )
@@ -67,7 +69,7 @@ def test_check_version_same_version(mock_logger, requests_mock):
     logline, features = check_version(current_version)
 
     # Assert logger info was called with appropriate message
-    true_logline = f"You are using the latest release of PlantSeg: {current_version}."
+    true_logline = f"You are using the latest release of PlantSeg: {current_version}"
     mock_logger.info.assert_called_once_with(true_logline)
     assert logline == true_logline
     assert features == "New features in this release:\n\nfirst feature\nsecond feature"
@@ -128,6 +130,7 @@ def test_check_version_beta_version(mock_logger, requests_mock):
 
     # Assert logger info was called with appropriate message
     true_logline = (
+        f"You are using PlantSeg {current_version}\n"
         f"New version of PlantSeg available: {latest_version}.\n"
         "Please update to the latest version."
     )
@@ -155,7 +158,9 @@ def test_check_version_new_beta_version(mock_logger, requests_mock):
 
     # Assert logger warning was called with appropriate message
     mock_logger.warning.assert_called_once_with(
-        f"New version of PlantSeg available: {latest_version}.\nPlease update to the latest version."
+        f"You are using PlantSeg {current_version}\n"
+        f"New version of PlantSeg available: {latest_version}.\n"
+        "Please update to the latest version."
     )
 
 
@@ -193,3 +198,11 @@ def test_check_version_value_error(mock_logger, requests_mock):
     mock_logger.warning.assert_called_once_with(
         "Could not parse version information. Error: Invalid version: 'invalid_version'"
     )
+
+
+def test_increase_font_size():
+    increase_font_size()
+
+
+def test_decrease_font_size():
+    decrease_font_size()

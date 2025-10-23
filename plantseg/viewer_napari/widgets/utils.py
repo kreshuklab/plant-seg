@@ -5,11 +5,13 @@ from pathlib import Path
 from typing import Callable, Iterable, Optional
 
 import napari
+import napari.settings
 from magicgui.widgets import Container, Label, ProgressBar, PushButton, Widget
 from napari.layers import Layer
 from napari.qt.threading import create_worker
 from psygnal import evented
 from psygnal.qt import start_emitting_from_queue
+from pydantic import ValidationError
 from qtpy import QtGui, QtWidgets
 
 from plantseg import logger
@@ -210,6 +212,22 @@ def schedule_task(
     return None
 
 
+def increase_font_size():
+    try:
+        settings = napari.settings.get_settings()
+        settings.appearance.font_size += 1
+    except ValueError:
+        log("Font size can't be increased further!", thread="Font", level="Warning")
+
+
+def decrease_font_size():
+    try:
+        settings = napari.settings.get_settings()
+        settings.appearance.font_size -= 1
+    except ValueError:
+        log("Font size can't be reduced further!", thread="Font", level="Warning")
+
+
 class Help_text:
     def __init__(self):
         logger.debug("Help text init")
@@ -221,7 +239,6 @@ class Help_text:
 
         self.docs_url += sub_url
         button = PushButton(text="Help")
-        button.max_width = 80
         button.max_width = 80
         button.max_height = 24
         button.changed.connect(self.open_docs)
