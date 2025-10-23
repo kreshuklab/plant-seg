@@ -806,3 +806,38 @@ def test_setup_keybindings(make_napari_viewer_proxy):
 
 def test_setup_proofreading_widget():
     proofreading.setup_proofreading_widget()
+
+
+def test_update_layer_selection(
+    mocker, napari_raw, napari_segmentation, make_napari_viewer_proxy
+):
+    viewer = make_napari_viewer_proxy()
+    viewer.add_layer(napari_raw)
+
+    sentinel = mocker.sentinel
+    sentinel.value = napari_raw
+    sentinel.type = "inserted"
+
+    assert proofreading.widget_proofreading_initialisation.segmentation.value is None
+    assert proofreading.widget_save_state.raw.value is None
+    assert proofreading.widget_save_state.pmap.value is None
+    assert proofreading.widget_split_and_merge_from_scribbles.image.value is None
+
+    proofreading.update_layer_selection(sentinel)
+
+    assert proofreading.widget_proofreading_initialisation.segmentation.value is None
+    assert proofreading.widget_save_state.raw.value is None
+    assert proofreading.widget_save_state.pmap.value is None
+    assert proofreading.widget_split_and_merge_from_scribbles.image.value is None
+
+    viewer.add_layer(napari_segmentation)
+    sentinel.value = napari_segmentation
+    proofreading.update_layer_selection(sentinel)
+
+    assert (
+        proofreading.widget_proofreading_initialisation.segmentation.value
+        is napari_segmentation
+    )
+    assert proofreading.widget_save_state.raw.value is None
+    assert proofreading.widget_save_state.pmap.value is None
+    assert proofreading.widget_split_and_merge_from_scribbles.image.value is None
