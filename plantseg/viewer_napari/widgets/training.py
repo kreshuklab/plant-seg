@@ -27,7 +27,8 @@ class Training_Tab:
 
         # Constants
         self.ALL_CUDA_DEVICES = [f"cuda:{i}" for i in range(torch.cuda.device_count())]
-        self.MPS = ["mps"] if torch.backends.mps.is_available() else []
+        # self.MPS = ["mps"] if torch.backends.mps.is_available() else []
+        self.MPS = []  # MPS does lack some necessary ops #385
         self.ALL_DEVICES = self.ALL_CUDA_DEVICES + self.MPS + ["cpu"]
         self.CUSTOM = "Custom"
 
