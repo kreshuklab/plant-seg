@@ -107,6 +107,9 @@ jobs:
           overwrite: true
           if-no-files-found: error
 
+      - name: Trigger building docs
+        run: gh workflow run build-and-publish-docs.yml -f {{ steps.bump.outputs.current-version }}
+
   build_installer:
     needs: test-and-build
     strategy:

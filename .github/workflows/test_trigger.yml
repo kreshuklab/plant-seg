@@ -1,0 +1,26 @@
+name: Test triggering docs build
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version string"
+        required: true
+        type: string
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Conda requires a login shell in order to work properly
+        shell: bash -l {0}
+    env:
+      DISPLAY: ":99.0"
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Trigger building docs
+        run: gh workflow run build-and-publish-docs.yml -f {{ inputs.version }}
