@@ -518,13 +518,13 @@ class PlantSegImage:
         The scale is equal to the voxel size in each spatial dimension and 1 in other channels.
         """
         if self.image_layout == ImageLayout.YX:
-            return (self.voxel_size.x, self.voxel_size.y)
+            return (self.voxel_size.y, self.voxel_size.x)
         elif self.image_layout == ImageLayout.ZYX:
-            return (self.voxel_size.z, self.voxel_size.x, self.voxel_size.y)
+            return (self.voxel_size.z, self.voxel_size.y, self.voxel_size.x)
         elif self.image_layout == ImageLayout.CYX:
-            return (1.0, self.voxel_size.x, self.voxel_size.y)
+            return (1.0, self.voxel_size.y, self.voxel_size.x)
         elif self.image_layout == ImageLayout.CZYX:
-            return (1.0, self.voxel_size.z, self.voxel_size.x, self.voxel_size.y)
+            return (1.0, self.voxel_size.z, self.voxel_size.y, self.voxel_size.x)
         elif self.image_layout == ImageLayout.ZCYX:
             raise ValueError(
                 f"Image layout {self.image_layout} not supported, should have been converted to CZYX"
