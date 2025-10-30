@@ -19,7 +19,6 @@ def test_semantic_type_enum():
     assert SemanticType.RAW.value == "raw"
     assert SemanticType.SEGMENTATION.value == "segmentation"
     assert SemanticType.PREDICTION.value == "prediction"
-    assert SemanticType.LABEL.value == "label"
 
 
 def test_image_type_enum():
@@ -95,7 +94,7 @@ def test_image_properties_image_type():
 
     label_image_props = ImageProperties(
         name="label_image",
-        semantic_type=SemanticType.LABEL,
+        semantic_type=SemanticType.SEGMENTATION,
         voxel_size=voxel_size,
         image_layout=ImageLayout.ZYX,
         original_voxel_size=voxel_size,
@@ -130,7 +129,7 @@ def test_image_properties_interpolation_order():
 
     label_image_props = ImageProperties(
         name="label_image",
-        semantic_type=SemanticType.LABEL,
+        semantic_type=SemanticType.SEGMENTATION,
         voxel_size=voxel_size,
         image_layout=ImageLayout.ZYX,
         original_voxel_size=voxel_size,

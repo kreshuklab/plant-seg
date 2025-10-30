@@ -379,7 +379,6 @@ class Input_Tab:
         all_layers = get_layers(
             [
                 SemanticType.RAW,
-                SemanticType.LABEL,
                 SemanticType.PREDICTION,
                 SemanticType.SEGMENTATION,
             ]

@@ -67,9 +67,9 @@ def test_on_images_changed(output_tab, mocker, napari_raw):
     mocked_toggle.assert_called_with(True)
 
 
-def test_on_images_changed_labels(output_tab, mocker, napari_labels):
+def test_on_images_changed_labels(output_tab, mocker, napari_segmentation):
     mocked_toggle = mocker.patch.object(output_tab, "_toggle_key")
     output_tab.widget_export_image.data_type.value = "float32"
-    output_tab._on_images_changed(image=napari_labels)
+    output_tab._on_images_changed(image=napari_segmentation)
     mocked_toggle.assert_called_with(True)
     assert output_tab.widget_export_image.data_type.value == "uint16"

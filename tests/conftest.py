@@ -50,21 +50,6 @@ def napari_raw_2d():
 
 
 @pytest.fixture
-def napari_labels():
-    data = np.random.rand(10, 10, 10)
-    data = np.array(data, dtype=np.int8)
-    voxel_size = (1.0, 1.0, 1.0)
-    metadata = {
-        "semantic_type": SemanticType.LABEL,
-        "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
-        "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
-        "image_layout": "ZYX",
-        "id": uuid4(),
-    }
-    return Labels(data, metadata=metadata, name="test_label_3D")
-
-
-@pytest.fixture
 def napari_prediction():
     data = np.random.rand(10, 10, 10)
     voxel_size = (1.0, 1.0, 1.0)

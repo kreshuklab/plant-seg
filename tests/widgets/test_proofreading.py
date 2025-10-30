@@ -26,24 +26,24 @@ def test_get_current_viewer(make_napari_viewer_proxy):
     assert proofreading.get_current_viewer_wrapper() == viewer
 
 
-def test_update_layer_empty(make_napari_viewer_proxy, napari_labels):
+def test_update_layer_empty(make_napari_viewer_proxy, napari_segmentation):
     viewer = make_napari_viewer_proxy()
     proofreading.update_layer(
-        napari_labels.data, layer_name="test", scale=napari_labels.scale
+        napari_segmentation.data, layer_name="test", scale=napari_segmentation.scale
     )
-    np.testing.assert_array_equal(viewer.layers[0].data, napari_labels.data)
-    np.testing.assert_array_equal(viewer.layers[0].scale, napari_labels.scale)
+    np.testing.assert_array_equal(viewer.layers[0].data, napari_segmentation.data)
+    np.testing.assert_array_equal(viewer.layers[0].scale, napari_segmentation.scale)
     assert viewer.layers[0].name == "test"
 
 
-def test_update_layer(make_napari_viewer_proxy, napari_labels):
+def test_update_layer(make_napari_viewer_proxy, napari_segmentation):
     viewer = make_napari_viewer_proxy()
     viewer.add_labels(np.zeros((5, 5, 5), dtype=int), name="test", scale=[1, 1, 1])
     proofreading.update_layer(
-        napari_labels.data, layer_name="test", scale=napari_labels.scale
+        napari_segmentation.data, layer_name="test", scale=napari_segmentation.scale
     )
-    np.testing.assert_array_equal(viewer.layers[0].data, napari_labels.data)
-    np.testing.assert_array_equal(viewer.layers[0].scale, napari_labels.scale)
+    np.testing.assert_array_equal(viewer.layers[0].data, napari_segmentation.data)
+    np.testing.assert_array_equal(viewer.layers[0].scale, napari_segmentation.scale)
     assert viewer.layers[0].name == "test"
 
 
@@ -81,17 +81,17 @@ def test_update_region_empty(mocker, make_napari_viewer_proxy, napari_raw):
         )
 
 
-def test_update_region(make_napari_viewer_proxy, napari_labels, napari_raw):
+def test_update_region(make_napari_viewer_proxy, napari_segmentation, napari_raw):
     viewer = make_napari_viewer_proxy()
     viewer.add_image(napari_raw.data, name="test", scale=[1, 1, 1])
     sl = (slice(0, 2), slice(0, 2), slice(0, 2))
     proofreading.update_region(
-        napari_labels.data[sl],
+        napari_segmentation.data[sl],
         layer_name="test",
         region_slice=sl,
-        scale=napari_labels.scale,
+        scale=napari_segmentation.scale,
     )
-    np.testing.assert_array_equal(viewer.layers[0].data[sl], napari_labels.data[sl])
+    np.testing.assert_array_equal(viewer.layers[0].data[sl], napari_segmentation.data[sl])
     np.testing.assert_array_equal(
         viewer.layers[0].data[(slice(2, -1), slice(2, -1), slice(2, -1))],
         napari_raw.data[
@@ -102,7 +102,7 @@ def test_update_region(make_napari_viewer_proxy, napari_labels, napari_raw):
             )
         ],
     )
-    np.testing.assert_array_equal(viewer.layers[0].scale, napari_labels.scale)
+    np.testing.assert_array_equal(viewer.layers[0].scale, napari_segmentation.scale)
     assert viewer.layers[0].name == "test"
 
 
