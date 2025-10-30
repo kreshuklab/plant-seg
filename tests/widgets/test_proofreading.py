@@ -440,17 +440,6 @@ def test_widget_add_label_to_corrected(
     mock.assert_called_once()
 
 
-def test_initialize_proofreading(mocker, napari_segmentation, make_napari_viewer_proxy):
-    viewer = make_napari_viewer_proxy()
-    viewer.add_layer(napari_segmentation)
-    pi = PlantSegImage.from_napari_layer(napari_segmentation)
-    mock = mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.setup_proofreading_widget",
-    )
-    proofreading.initialize_proofreading(pi)
-    mock.assert_called_once()
-
-
 def test_initialize_from_layer_wrong_layer(mocker, napari_segmentation):
     napari_segmentation.name = proofreading.SCRIBBLES_LAYER_NAME
     mock = mocker.patch(
@@ -479,14 +468,13 @@ def test_initialize_from_layer_not_sure(mocker, napari_segmentation):
 
 def test_initialize_from_layer(mocker, napari_segmentation, make_napari_viewer_proxy):
     viewer = make_napari_viewer_proxy()
+    viewer.add_layer(napari_segmentation)
     mocks = mocker.patch.multiple(
         "plantseg.viewer_napari.widgets.proofreading",
-        initialize_proofreading=mocker.DEFAULT,
         widget_proofreading_initialisation=mocker.DEFAULT,
     )
     proofreading.segmentation_handler._state.active = True
     proofreading.initialize_from_layer(napari_segmentation, True)
-    mocks["initialize_proofreading"].assert_called_once()
     mocks["widget_proofreading_initialisation"].are_you_sure.hide.assert_called_once()
 
 
