@@ -91,7 +91,9 @@ def test_update_region(make_napari_viewer_proxy, napari_segmentation, napari_raw
         region_slice=sl,
         scale=napari_segmentation.scale,
     )
-    np.testing.assert_array_equal(viewer.layers[0].data[sl], napari_segmentation.data[sl])
+    np.testing.assert_array_equal(
+        viewer.layers[0].data[sl], napari_segmentation.data[sl]
+    )
     np.testing.assert_array_equal(
         viewer.layers[0].data[(slice(2, -1), slice(2, -1), slice(2, -1))],
         napari_raw.data[
