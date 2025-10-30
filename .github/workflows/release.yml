@@ -166,10 +166,12 @@ jobs:
           constructor --output-dir installer constructor/
           conda deactivate
 
-      - name: publish to heibox using python uploader
+      - name: publish to heibox and release using python uploader
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           conda activate constructor
-          python constructor/uploader.py ${{ secrets.SEAFILE_API_TOKEN }}
+          python -u constructor/uploader.py ${{ secrets.SEAFILE_API_TOKEN }}
           conda deactivate
 
       - name: Upload Installer Artifact
