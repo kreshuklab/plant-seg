@@ -910,7 +910,7 @@ def widget_filter_segmentation() -> None:
 
             new_seg_properties = ImageProperties(
                 name=f"{properties.name}_corrected",
-                semantic_type=SemanticType.LABEL,
+                semantic_type=SemanticType.SEGMENTATION,
                 voxel_size=properties.voxel_size,
                 image_layout=properties.image_layout,
                 original_voxel_size=properties.original_voxel_size,
