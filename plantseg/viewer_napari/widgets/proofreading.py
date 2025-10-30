@@ -686,14 +686,15 @@ def initialize_from_layer(segmentation: Labels, are_you_sure: bool = False) -> N
         return
 
     ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
-    widget_tab_help_text.hide()
     segmentation_handler.setup(ps_segmentation)
-    widget_proofreading_initialisation.call_button.text = "Re-initialize Proofreading"  # type: ignore
-    setup_proofreading_widget()
-    log("Proofreading initialized", thread="Proofreading tool")
+
+    widget_tab_help_text.hide()
     widget_proofreading_initialisation.are_you_sure.value = False
     widget_proofreading_initialisation.are_you_sure.hide()
     widget_proofreading_initialisation.call_button.text = "Re-initialize Proofreading"  # type: ignore
+    widget_proofreading_initialisation.call_button.text = "Re-initialize Proofreading"  # type: ignore
+    setup_proofreading_widget()
+    log("Proofreading initialized", thread="Proofreading tool")
 
     viewer = get_current_viewer_wrapper()
     # Avoid re-initializing with proofreading helper layers
@@ -717,8 +718,9 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
         )
         return
 
-    widget_tab_help_text.hide()
     segmentation_handler.load_state_from_disk(state)
+
+    widget_tab_help_text.hide()
     widget_proofreading_initialisation.are_you_sure.value = False
     widget_proofreading_initialisation.are_you_sure.hide()
     widget_proofreading_initialisation.call_button.text = "Re-initialize Proofreading"  # type: ignore
