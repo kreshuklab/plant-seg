@@ -36,11 +36,11 @@ def test_on_layer_select_raw(preprocessing_tab, napari_raw, mocker):
     mocked_hide.assert_not_called()
 
 
-def test_on_layer_select_label(preprocessing_tab, napari_labels):
+def test_on_layer_select_label(preprocessing_tab, napari_segmentation):
     assert preprocessing_tab.widget_rescaling.order.value == 0
     preprocessing_tab.widget_rescaling.order.value = 1
 
-    preprocessing_tab._on_layer_selection(napari_labels)
+    preprocessing_tab._on_layer_selection(napari_segmentation)
     assert preprocessing_tab.widget_rescaling.order.value == 0
 
 
@@ -60,11 +60,11 @@ def test_on_rescale_order_change_no_image(preprocessing_tab):
     assert preprocessing_tab._on_rescale_order_changed(0) is None
 
 
-def test_on_rescale_order_change_labels(preprocessing_tab, napari_labels):
+def test_on_rescale_order_change_labels(preprocessing_tab, napari_segmentation):
     assert preprocessing_tab.widget_rescaling.order.value == 0
 
-    preprocessing_tab.widget_layer_select.layer.choices = (napari_labels,)
-    preprocessing_tab.widget_layer_select.layer.value = napari_labels
+    preprocessing_tab.widget_layer_select.layer.choices = (napari_segmentation,)
+    preprocessing_tab.widget_layer_select.layer.value = napari_segmentation
     preprocessing_tab._on_rescale_order_changed(1)
     assert preprocessing_tab.widget_rescaling.order.value == 0
 

@@ -118,17 +118,15 @@ def test_update_layer_selection(
     input_tab,
     mocker,
     napari_raw,
-    napari_labels,
-    napari_prediction,
     napari_segmentation,
+    napari_prediction,
     napari_shapes,
     make_napari_viewer_proxy,
 ):
     viewer = make_napari_viewer_proxy()
     viewer.add_layer(napari_raw)
-    viewer.add_layer(napari_labels)
-    viewer.add_layer(napari_prediction)
     viewer.add_layer(napari_segmentation)
+    viewer.add_layer(napari_prediction)
     viewer.add_layer(napari_shapes)
 
     assert input_tab.widget_details_layer_select.layer.choices == (None,)

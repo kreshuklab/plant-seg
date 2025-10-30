@@ -324,10 +324,7 @@ def set_biggest_instance_to_zero_task(
     Returns:
         PlantSegImage: New segmentation image with largest instance set to 0.
     """
-    if not (
-        image.semantic_type == SemanticType.SEGMENTATION
-        or image.semantic_type == SemanticType.LABEL
-    ):
+    if not image.semantic_type == SemanticType.SEGMENTATION:
         raise ValueError("Input image must be a segmentation or mask image.")
     data = image.get_data()
     logger.info(
@@ -354,10 +351,7 @@ def relabel_segmentation_task(
     Returns:
         PlantSegImage: New segmentation image with relabeled instances.
     """
-    if not (
-        image.semantic_type == SemanticType.SEGMENTATION
-        or image.semantic_type == SemanticType.LABEL
-    ):
+    if not image.semantic_type == SemanticType.SEGMENTATION:
         raise ValueError("Input image must be a segmentation or mask image.")
     data = image.get_data()
     new_data = relabel_segmentation(data, background=background)

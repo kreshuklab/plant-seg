@@ -32,7 +32,6 @@ class SemanticType(Enum):
     """
 
     RAW = "raw"
-    LABEL = "label"
     PREDICTION = "prediction"
     SEGMENTATION = "segmentation"
 
@@ -131,10 +130,7 @@ class ImageProperties(BaseModel):
     def image_type(self) -> ImageType:
         if self.semantic_type in (SemanticType.RAW, SemanticType.PREDICTION):
             return ImageType.IMAGE
-        elif self.semantic_type in (
-            SemanticType.SEGMENTATION,
-            SemanticType.LABEL,
-        ):
+        elif self.semantic_type == SemanticType.SEGMENTATION:
             return ImageType.LABEL
         else:
             raise ValueError(f"Semantic type {self.semantic_type} not recognized")
