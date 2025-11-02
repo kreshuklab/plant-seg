@@ -36,7 +36,7 @@ https://github.com/user-attachments/assets/9551210b-0ed6-4f06-b1d1-4059aadecd11
 The easiest way to get PlantSeg is using the installer. [**Download it here**](https://heibox.uni-heidelberg.de/d/72b4bd3ba5f14409bfee/)
 
 The installer comes with python and conda.
-Please go to the [documentation](https://kreshuklab.github.io/plant-seg/chapters/getting_started/installation/) for more detailed instructions.
+Please go to the [documentation](https://kreshuklab.github.io/plant-seg/latest/chapters/getting_started/installation/) for more detailed instructions.
 
 For development, we recommend to clone the repo and install using:
 
