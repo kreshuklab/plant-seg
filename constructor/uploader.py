@@ -1,8 +1,9 @@
+import json
+import subprocess
 import sys
 from pathlib import Path
-import subprocess
+
 import requests
-import json
 
 assert len(sys.argv) == 2, "Uploader needs heibox api token"
 heibox_token = sys.argv[1]
