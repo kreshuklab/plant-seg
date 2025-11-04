@@ -9,7 +9,9 @@ def plantseg_viewer(qtbot):
     pv = Plantseg_viewer()
     pv.init_tabs()
     pv.setup_layer_updates()
-    return pv
+    yield pv
+
+    pv.viewer.window._qt_window.close(True, False)
 
 
 @pytest.fixture
