@@ -64,14 +64,14 @@ def launch_napari():
     """Launch the Napari viewer."""
     import rich.traceback
 
-    from plantseg.viewer_napari.viewer import run_viewer
+    from plantseg.viewer_napari.viewer import Plantseg_viewer
 
     rich.traceback.install(
         show_locals=True,
         suppress=[],
     )
 
-    run_viewer()
+    Plantseg_viewer().start_viewer()
 
 
 def launch_workflow_headless(path: Path):
