@@ -31,7 +31,9 @@ def scroll_wrap(w):
 class Plantseg_viewer:
     def __init__(self, viewer=None):
         if viewer is None:
-            self.viewer = napari.Viewer(title="PlantSeg v2")
+            viewer = napari.Viewer(title="PlantSeg v2")
+        self.viewer = viewer
+
         self._container_list = []
         self._tabs = []
 

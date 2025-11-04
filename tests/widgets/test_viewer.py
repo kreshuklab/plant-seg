@@ -5,8 +5,8 @@ from plantseg.viewer_napari.viewer import Plantseg_viewer
 
 
 @pytest.fixture
-def plantseg_viewer(qtbot):
-    pv = Plantseg_viewer()
+def plantseg_viewer(make_napari_viewer):
+    pv = Plantseg_viewer(make_napari_viewer())
     pv.init_tabs()
     pv.setup_layer_updates()
     yield pv
