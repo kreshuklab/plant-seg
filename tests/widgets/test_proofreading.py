@@ -670,10 +670,10 @@ def test_locking():
 
 
 @pytest.mark.parametrize("i", range(100))
-def test_locking_threaded(i):
+def test_locking_threaded_simple(i):
     handler = proofreading.ProofreadingHandler()
 
-    @thread_worker()
+    @thread_worker
     def threaded(freeze: bool):
         with handler.lock_manager(10 if not freeze else 300):
             if freeze:
@@ -683,19 +683,20 @@ def test_locking_threaded(i):
                     yield
             else:
                 return
+        sleep(0.001)
 
     worker = threaded(True)
     worker.start()
     sleep(0.001)
     assert handler.is_locked()
-    worker.quit()
+    worker.await_workers()
 
 
 @pytest.mark.parametrize("i", range(100))
 def test_locking_threaded_timeout(qtbot, i):
     handler = proofreading.ProofreadingHandler()
 
-    @thread_worker()
+    @thread_worker
     def threaded(freeze: bool):
         with handler.lock_manager(10 if not freeze else 10000):
             if freeze:
@@ -705,6 +706,7 @@ def test_locking_threaded_timeout(qtbot, i):
                     yield
             else:
                 return
+        sleep(0.001)
 
     worker1 = threaded(True)
     worker1.start()

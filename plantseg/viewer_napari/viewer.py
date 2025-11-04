@@ -28,98 +28,150 @@ def scroll_wrap(w):
     return scrollArea
 
 
-def run_viewer():
-    viewer = napari.Viewer(title="PlantSeg v2")
-    viewer.window.file_menu.menuAction().setVisible(False)
-    viewer.window.layers_menu.menuAction().setVisible(False)
+class Plantseg_viewer:
+    def __init__(self, viewer=None):
+        if viewer is None:
+            viewer = napari.Viewer(title="PlantSeg v2")
+        self.viewer = viewer
 
-    # By hiding the menu, also closing shortcuts are removed
-    @viewer.bind_key("Ctrl+w")
-    def _close_window(viewer):
-        viewer.window._qt_window.close(False, True)
+        self._container_list = []
+        self._tabs = []
 
-    @viewer.bind_key("Ctrl+q")
-    def _close_app(viewer):
-        viewer.window._qt_window.close(True, True)
-
-    input_tab = Input_Tab()
-    output_tab = Output_Tab()
-    preprocessing_tab = Preprocessing_Tab()
-    segmentation_tab = Segmentation_Tab()
-    postprocessing_tab = Postprocessing_Tab()
-    training_tab = Training_Tab(segmentation_tab.prediction_widgets)
-
-    # Create and add tabs
-    container_list = [
-        (input_tab.get_container(), "Input"),
-        (preprocessing_tab.get_container(), "Preprocessing"),
-        (segmentation_tab.get_container(), "Segmentation"),
-        (postprocessing_tab.get_container(), "Postprocessing"),
-        (get_proofreading_tab(), "Proofreading"),
-        (output_tab.get_container(), "Output"),
-        (training_tab.get_container(), "Train"),
-    ]
-    for _containers, name in container_list:
-        # _containers.native.setMaximumHeight(600)
-        # allow content to float to top of dock
-        _containers.native.layout().addStretch()
-        _containers.native.setMinimumWidth(400)
-        _containers = scroll_wrap(_containers)
-        _containers.setMinimumWidth(350)
-        viewer.window.add_dock_widget(
-            _containers,
-            name=name,
-            tabify=True,
+        self.viewer.window.plugins_menu.addAction("Update PlantSeg", update)
+        self.viewer.window.view_menu.addAction(
+            "Increase font size", increase_font_size, "Ctrl+i"
+        )
+        self.viewer.window.view_menu.addAction(
+            "Decrease font size", decrease_font_size, "Ctrl+o"
         )
 
-    # Drop-down update for new layers
-    viewer.layers.events.inserted.connect(preprocessing_tab.update_layer_selection)
-    viewer.layers.events.inserted.connect(segmentation_tab.update_layer_selection)
-    viewer.layers.events.inserted.connect(postprocessing_tab.update_layer_selection)
-    viewer.layers.events.inserted.connect(training_tab.update_layer_selection)
-    viewer.layers.events.inserted.connect(proofreading.update_layer_selection)
+    def init_tabs(self):
+        self.input_tab = Input_Tab()
+        self.output_tab = Output_Tab()
+        self.preprocessing_tab = Preprocessing_Tab()
+        self.segmentation_tab = Segmentation_Tab()
+        self.postprocessing_tab = Postprocessing_Tab()
+        self.training_tab = Training_Tab(self.segmentation_tab.prediction_widgets)
 
-    # Drop-down update for renaming of layers
-    viewer.layers.selection.events.active.connect(input_tab.update_layer_selection)
-    viewer.layers.selection.events.active.connect(
-        preprocessing_tab.update_layer_selection
-    )
-    viewer.layers.selection.events.active.connect(
-        segmentation_tab.update_layer_selection
-    )
-    viewer.layers.selection.events.active.connect(
-        postprocessing_tab.update_layer_selection
-    )
-    viewer.layers.selection.events.active.connect(training_tab.update_layer_selection)
-    viewer.layers.selection.events.active.connect(proofreading.update_layer_selection)
+        self._tabs = [
+            self.input_tab,
+            self.output_tab,
+            self.preprocessing_tab,
+            self.segmentation_tab,
+            self.postprocessing_tab,
+            self.training_tab,
+        ]
 
-    # Show data tab by default
-    viewer.window._dock_widgets["Input"].show()
-    viewer.window._dock_widgets["Input"].raise_()
-    # viewer.window._qt_viewer.set_welcome_visible(False)
-    welcome_widget = viewer.window._qt_viewer._welcome_widget
+    @property
+    def container_list(self):
+        assert self._tabs, "Tabs not initialized!"
+        if self._container_list == []:
+            self._container_list = [
+                (self.input_tab.get_container(), "Input"),
+                (self.preprocessing_tab.get_container(), "Preprocessing"),
+                (self.segmentation_tab.get_container(), "Segmentation"),
+                (self.postprocessing_tab.get_container(), "Postprocessing"),
+                (get_proofreading_tab(), "Proofreading"),
+                (self.output_tab.get_container(), "Output"),
+                (self.training_tab.get_container(), "Train"),
+            ]
+        return self._container_list
 
-    v_short, v_features = check_version(current_version=__version__, silent=True)
+    def add_containers_to_dock(self):
+        for _containers, name in self.container_list:
+            # _containers.native.setMaximumHeight(600)
+            # allow content to float to top of dock
+            _containers.native.layout().addStretch()
+            _containers.native.setMinimumWidth(400)
+            _containers = scroll_wrap(_containers)
+            _containers.setMinimumWidth(350)
+            self.viewer.window.add_dock_widget(
+                _containers,
+                name=name,
+                tabify=True,
+            )
 
-    for i, child in enumerate(welcome_widget.findChildren(QtWidgets.QWidget)):
-        if isinstance(child, QtWidgets.QLabel):
-            if i == 3:
-                child.setText(
-                    "Welcome to PlantSeg!\n\nTo load an image use the menu on the right\n\n"
-                    + v_short
-                    + "\n\n"
-                    + v_features
-                )
-            else:
-                child.setText("")
-            child.setAlignment(QtCore.Qt.AlignLeft)
+    def setup_layer_updates(self):
+        assert self._tabs, "Tabs not initialized!"
+        # Drop-down update for new layers
+        self.viewer.layers.events.inserted.connect(
+            self.preprocessing_tab.update_layer_selection
+        )
+        self.viewer.layers.events.inserted.connect(
+            self.segmentation_tab.update_layer_selection
+        )
+        self.viewer.layers.events.inserted.connect(
+            self.postprocessing_tab.update_layer_selection
+        )
+        self.viewer.layers.events.inserted.connect(
+            self.training_tab.update_layer_selection
+        )
+        self.viewer.layers.events.inserted.connect(proofreading.update_layer_selection)
+        self.viewer.layers.events.inserted.connect(
+            self.output_tab.update_layer_selection
+        )
 
-    viewer.window.plugins_menu.addAction("Update PlantSeg", update)
-    viewer.window.view_menu.addAction(
-        "Increase font size", increase_font_size, "Ctrl+i"
-    )
-    viewer.window.view_menu.addAction(
-        "Decrease font size", decrease_font_size, "Ctrl+o"
-    )
+        # Drop-down update for renaming of layers
+        self.viewer.layers.selection.events.active.connect(
+            self.input_tab.update_layer_selection
+        )
+        self.viewer.layers.selection.events.active.connect(
+            self.preprocessing_tab.update_layer_selection
+        )
+        self.viewer.layers.selection.events.active.connect(
+            self.segmentation_tab.update_layer_selection
+        )
+        self.viewer.layers.selection.events.active.connect(
+            self.postprocessing_tab.update_layer_selection
+        )
+        self.viewer.layers.selection.events.active.connect(
+            self.training_tab.update_layer_selection
+        )
+        self.viewer.layers.selection.events.active.connect(
+            proofreading.update_layer_selection
+        )
+        self.viewer.layers.selection.events.active.connect(
+            self.output_tab.update_layer_selection
+        )
 
-    napari.run()
+    def setup_welcome_page(self):
+        welcome_widget = self.viewer.window._qt_viewer._welcome_widget
+        v_short, v_features = check_version(current_version=__version__, silent=True)
+
+        for i, child in enumerate(welcome_widget.findChildren(QtWidgets.QWidget)):
+            if isinstance(child, QtWidgets.QLabel):
+                if i == 3:
+                    child.setText(
+                        "Welcome to PlantSeg!\n\nTo load an image use the menu on the right\n\n"
+                        + v_short
+                        + "\n\n"
+                        + v_features
+                    )
+                else:
+                    child.setText("")
+                child.setAlignment(QtCore.Qt.AlignLeft)
+
+    def finalize_viewer(self):
+        # Show data tab by default
+        self.viewer.window._dock_widgets["Input"].show()
+        self.viewer.window._dock_widgets["Input"].raise_()
+        self.viewer.window.file_menu.menuAction().setVisible(False)
+        self.viewer.window.layers_menu.menuAction().setVisible(False)
+
+        # By hiding the menu, also closing shortcuts are removed
+        @self.viewer.bind_key("Ctrl+w")
+        def _close_window(viewer):
+            self.viewer.window._qt_window.close(False, True)
+
+        @self.viewer.bind_key("Ctrl+q")
+        def _close_app(viewer):
+            viewer.window._qt_window.close(True, True)
+
+    def start_viewer(self):
+        self.init_tabs()
+        self.add_containers_to_dock()
+        self.setup_layer_updates()
+        self.setup_welcome_page()
+        self.finalize_viewer()
+
+        napari.run()
