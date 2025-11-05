@@ -12,7 +12,7 @@ from plantseg.core.image import PlantSegImage
 from plantseg.tasks.io_tasks import export_image_task
 from plantseg.tasks.workflow_handler import workflow_handler
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.utils import div
+from plantseg.viewer_napari.widgets.utils import div, get_layers
 from plantseg.workflow_gui.editor import Workflow_gui
 
 
@@ -244,3 +244,10 @@ class Output_Tab:
 
     def _on_export_format_changed(self, export_format: str):
         self._toggle_key(export_format != "tiff")
+
+    def update_layer_selection(self, event):
+        """Updates layer drop-down menus"""
+        logger.debug(f"Updating output layer selection: {event.value}, {event.type}")
+        all_layers = get_layers()
+
+        self.widget_export_image.image.choices = all_layers
