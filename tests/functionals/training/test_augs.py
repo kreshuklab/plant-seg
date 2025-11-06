@@ -1,7 +1,8 @@
+import numpy as np
 import pytest
 import torch
+
 from plantseg.functionals.training import augs
-import numpy as np
 
 
 def test_compose(mocker):
