@@ -491,7 +491,7 @@ def test_initialize_from_file_not_sure(mocker):
     )
 
 
-def test_initialize_from_file(mocker, make_napari_viewer_proxy):
+def test_initialize_from_file(mocker):
     mocks = mocker.patch.multiple(
         "plantseg.viewer_napari.widgets.proofreading",
         segmentation_handler=mocker.DEFAULT,
@@ -655,6 +655,35 @@ def test_locking():
                 pass
 
     assert not handler.is_locked()
+
+
+def test_corrected_cells():
+    handler = proofreading.ProofreadingHandler()
+    handler.corrected_cells
+
+
+def test_corrected_cells_mask(make_napari_viewer_proxy):
+    viewer = make_napari_viewer_proxy()
+    viewer.add_labels(
+        np.zeros((5, 5, 5), dtype=int),
+        name=proofreading.CORRECTED_CELLS_LAYER_NAME,
+        scale=[1, 1, 1],
+    )
+    handler = proofreading.ProofreadingHandler()
+    handler.corrected_cells_mask
+
+
+def test_max_label(make_napari_viewer_proxy):
+    viewer = make_napari_viewer_proxy()
+    viewer.add_labels(
+        np.zeros((5, 5, 5), dtype=int),
+        name="test_seg",
+        scale=[1, 1, 1],
+    )
+    handler = proofreading.ProofreadingHandler()
+    handler._state.current_seg_layer_name = "test_seg"
+
+    assert handler.max_label == 0
 
 
 @pytest.mark.parametrize("i", range(100))

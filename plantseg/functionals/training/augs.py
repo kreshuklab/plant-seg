@@ -1,5 +1,6 @@
 import logging
 import random
+from typing import Callable
 
 import numpy as np
 import torch
@@ -17,15 +18,15 @@ logger.info(
 )
 
 
-class Compose(object):
+class Compose:
     """
     Composes several transforms together.
 
     Args:
-        transforms (list of ``Transform`` objects): list of transforms to compose.
+        transforms: list of transforms to compose.
     """
 
-    def __init__(self, transforms):
+    def __init__(self, transforms: list[Callable]):
         self.transforms = transforms
 
     def __call__(self, m):
@@ -321,87 +322,6 @@ class CropToFixed:
             return np.stack(channels, axis=0)
 
 
-class AbstractLabelToBoundary:
-    AXES_TRANSPOSE = [
-        (0, 1, 2),  # X
-        (0, 2, 1),  # Y
-        (2, 0, 1),  # Z
-    ]
-
-    def __init__(
-        self,
-        ignore_index=None,
-        aggregate_affinities=False,
-        append_label=False,
-        **kwargs,
-    ):
-        """
-        :param ignore_index: label to be ignored in the output, i.e. after computing the boundary the label ignore_index
-            will be restored where is was in the patch originally
-        :param aggregate_affinities: aggregate affinities with the same offset across Z,Y,X axes
-        :param append_label: if True append the original ground truth labels to the last channel
-        :param blur: Gaussian blur the boundaries
-        :param sigma: standard deviation for Gaussian kernel
-        """
-        self.ignore_index = ignore_index
-        self.aggregate_affinities = aggregate_affinities
-        self.append_label = append_label
-
-    def __call__(self, m):
-        """
-        Extract boundaries from a given 3D label tensor.
-        :param m: input 3D tensor
-        :return: binary mask, with 1-label corresponding to the boundary and 0-label corresponding to the background
-        """
-        assert m.ndim == 3
-
-        kernels = self.get_kernels()
-        boundary_arr = [
-            np.where(np.abs(convolve(m, kernel)) > 0, 1, 0) for kernel in kernels
-        ]
-        channels = np.stack(boundary_arr)
-        results = []
-        if self.aggregate_affinities:
-            assert len(kernels) % 3 == 0, (
-                "Number of kernels must be divided by 3 (one kernel per offset per Z,Y,X axes"
-            )
-            # aggregate affinities with the same offset
-            for i in range(0, len(kernels), 3):
-                # merge across X,Y,Z axes (logical OR)
-                xyz_aggregated_affinities = np.logical_or.reduce(
-                    channels[i : i + 3, ...]
-                ).astype(np.int32)
-                # recover ignore index
-                xyz_aggregated_affinities = _recover_ignore_index(
-                    xyz_aggregated_affinities, m, self.ignore_index
-                )
-                results.append(xyz_aggregated_affinities)
-        else:
-            results = [
-                _recover_ignore_index(channels[i], m, self.ignore_index)
-                for i in range(channels.shape[0])
-            ]
-
-        if self.append_label:
-            # append original input data
-            results.append(m)
-
-        # stack across channel dim
-        return np.stack(results, axis=0)
-
-    @staticmethod
-    def create_kernel(axis, offset):
-        # create conv kernel
-        k_size = offset + 1
-        k = np.zeros((1, 1, k_size), dtype=np.int32)
-        k[0, 0, 0] = 1
-        k[0, 0, offset] = -1
-        return np.transpose(k, axis)
-
-    def get_kernels(self):
-        raise NotImplementedError
-
-
 class StandardLabelToBoundary:
     def __init__(
         self,
@@ -441,10 +361,14 @@ class Standardize:
     Apply Z-score normalization (0-mean, 1-std) to a given input tensor.
 
     Args:
-        eps (float, optional): A small value added to the denominator for numerical stability. Defaults to 1e-10.
-        mean (Optional[float]): The mean to use for standardization. If None, the mean of the input is used. Defaults to None.
-        std (Optional[float]): The standard deviation to use for standardization. If None, the std of the input is used. Defaults to None.
-        channelwise (bool, optional): Whether to apply the normalization channel-wise. Defaults to False.
+        eps (float, optional): A small value added to the denominator for
+            numerical stability. Defaults to 1e-10.
+        mean (Optional[float]): The mean to use for standardization. If None,
+            the mean of the input is used. Defaults to None.
+        std (Optional[float]): The standard deviation to use for standardization.
+            If None, the std of the input is used. Defaults to None.
+        channelwise (bool, optional): Whether to apply the normalization
+            channel-wise. Channel must be first dimension. Defaults to False.
 
     Raises:
         AssertionError: If mean or std is provided, both must be provided.
@@ -608,8 +532,7 @@ class RgbToLabel:
     def __call__(self, img):
         img = np.array(img)
         assert img.ndim == 3 and img.shape[2] == 3
-        result = img[..., 0] * 65536 + img[..., 1] * 256 + img[..., 2]
-        return result
+        return img[..., 0] * 65536 + img[..., 1] * 256 + img[..., 2]
 
 
 class LabelToTensor:
