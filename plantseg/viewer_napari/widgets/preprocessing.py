@@ -359,6 +359,10 @@ class Preprocessing_Tab:
         self.widget_image_pair_operations.layer1.choices = all_layers
         self.widget_image_pair_operations.layer2.choices = all_layers
 
+        self.widget_cropping.crop_roi.choices = list(
+            filter(lambda l: isinstance(l, Shapes), napari.current_viewer().layers)
+        )
+
         if event.type != "inserted":
             return
         if event.value in self.widget_layer_select.layer.choices:
