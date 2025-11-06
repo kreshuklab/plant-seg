@@ -498,7 +498,7 @@ class ProofreadingHandler:
             for name in ["raw", "pmap"]:
                 if name in f:
                     ps_image = PlantSegImage.from_h5(filepath, key=name)
-                    if ps_image.name not in viewer.layers:
+                    if ps_image.name not in [layer.name for layer in viewer.layers]:
                         ps_image_layer_tuple = ps_image.to_napari_layer_tuple()
                         viewer._add_layer_from_data(*ps_image_layer_tuple)
                     else:
@@ -508,6 +508,9 @@ class ProofreadingHandler:
                         )
 
         # Create the segmentation layer
+        if ps_segmentation.name in [layer.name for layer in viewer.layers]:
+            viewer.layers.remove(ps_segmentation.name)  # pyright: ignore
+
         ps_image_layer_tuple = ps_segmentation.to_napari_layer_tuple()
         viewer._add_layer_from_data(*ps_image_layer_tuple)
         self.setup(ps_segmentation)
@@ -658,24 +661,6 @@ widget_label_split_merge = help_text_container.get_doc_container(
 )
 
 
-def initialize_proofreading(segmentation: PlantSegImage) -> None:
-    """Initializes the proofreading tool with the given segmentation.
-
-    Args:
-        viewer (napari.Viewer): The current Napari viewer instance.
-        segmentation (PlantSegImage): The segmentation image to use.
-
-    Returns:
-        bool: True if initialization was successful, False otherwise.
-    """
-    widget_tab_help_text.hide()
-    segmentation_handler.reset()
-    segmentation_handler.setup(segmentation)
-    widget_proofreading_initialisation.call_button.text = "Re-initialize Proofreading"  # type: ignore
-    setup_proofreading_widget()
-    log("Proofreading initialized", thread="Proofreading tool")
-
-
 def initialize_from_layer(segmentation: Labels, are_you_sure: bool = False) -> None:
     if segmentation.name in [
         SCRIBBLES_LAYER_NAME,
@@ -701,10 +686,15 @@ def initialize_from_layer(segmentation: Labels, are_you_sure: bool = False) -> N
         return
 
     ps_segmentation = PlantSegImage.from_napari_layer(segmentation)
-    initialize_proofreading(ps_segmentation)
+    segmentation_handler.setup(ps_segmentation)
+
+    widget_tab_help_text.hide()
     widget_proofreading_initialisation.are_you_sure.value = False
     widget_proofreading_initialisation.are_you_sure.hide()
     widget_proofreading_initialisation.call_button.text = "Re-initialize Proofreading"  # type: ignore
+    widget_proofreading_initialisation.call_button.text = "Re-initialize Proofreading"  # type: ignore
+    setup_proofreading_widget()
+    log("Proofreading initialized", thread="Proofreading tool")
 
     viewer = get_current_viewer_wrapper()
     # Avoid re-initializing with proofreading helper layers
@@ -728,8 +718,11 @@ def initialize_from_file(state: Path, are_you_sure: bool = False) -> None:
         )
         return
 
-    widget_tab_help_text.hide()
     segmentation_handler.load_state_from_disk(state)
+
+    widget_tab_help_text.hide()
+    widget_proofreading_initialisation.are_you_sure.value = False
+    widget_proofreading_initialisation.are_you_sure.hide()
     widget_proofreading_initialisation.call_button.text = "Re-initialize Proofreading"  # type: ignore
     setup_proofreading_widget()
     log("Proofreading initialized", thread="Proofreading tool")
@@ -992,11 +985,11 @@ def setup_proofreading_keybindings():
     if viewer is None:
         return
 
-    @viewer.bind_key(DEFAULT_KEY_BINDING_PROOFREAD)
+    @viewer.bind_key(DEFAULT_KEY_BINDING_PROOFREAD, overwrite=True)
     def _widget_split_and_merge_from_scribbles(_viewer: napari.Viewer):
         widget_split_and_merge_from_scribbles(viewer=_viewer)  # type: ignore
 
-    @viewer.bind_key(DEFAULT_KEY_BINDING_CLEAN)
+    @viewer.bind_key(DEFAULT_KEY_BINDING_CLEAN, overwrite=True)
     def _widget_clean_scribble(_viewer: napari.Viewer):
         widget_clean_scribble(viewer=_viewer)
 
