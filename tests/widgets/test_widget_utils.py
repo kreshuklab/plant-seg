@@ -1,7 +1,6 @@
-from magicgui.widgets import Label, Widget
-from napari.layers import Image
 import pytest
-from napari.layers import Labels
+from magicgui.widgets import Label, Widget
+from napari.layers import Image, Labels
 from superqt.utils import WorkerBase
 
 from plantseg.core.image import PlantSegImage
