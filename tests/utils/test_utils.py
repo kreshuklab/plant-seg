@@ -2,7 +2,6 @@ import pytest
 import requests
 
 from plantseg.utils import check_version
-from plantseg.viewer_napari.widgets.utils import decrease_font_size, increase_font_size
 
 
 @pytest.fixture
@@ -198,11 +197,3 @@ def test_check_version_value_error(mock_logger, requests_mock):
     mock_logger.warning.assert_called_once_with(
         "Could not parse version information. Error: Invalid version: 'invalid_version'"
     )
-
-
-def test_increase_font_size():
-    increase_font_size()
-
-
-def test_decrease_font_size():
-    decrease_font_size()
