@@ -217,6 +217,7 @@ def image_rescale_to_voxel_size_task(
     Args:
         image (PlantSegImage): input image
         new_voxel_size (VoxelSize): new voxel size
+        new_unit: (str): unit, e.g. `um`
         order (int): order of the interpolation
 
     """
