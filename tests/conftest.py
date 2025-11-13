@@ -50,6 +50,20 @@ def napari_raw_2d():
 
 
 @pytest.fixture
+def napari_raw_4d():
+    data = np.random.rand(10, 10, 10, 10)
+    voxel_size = None
+    metadata = {
+        "semantic_type": SemanticType.RAW,
+        "voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "original_voxel_size": {"voxels_size": voxel_size, "unit": "um"},
+        "image_layout": "ZCYX",
+        "id": uuid4(),
+    }
+    return Image(data, metadata=metadata, name="test_image_2D")
+
+
+@pytest.fixture
 def napari_prediction():
     data = np.random.rand(10, 10, 10)
     voxel_size = (1.0, 1.0, 1.0)

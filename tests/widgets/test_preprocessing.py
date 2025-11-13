@@ -245,7 +245,10 @@ def test_cropping_z_range(preprocessing_tab, mocker, napari_raw):
     assert preprocessing_tab.widget_cropping.crop_z.value == (0, 10)
 
 
-def test_cropping_activation(preprocessing_tab, mocker, napari_raw):
+def test_cropping_activation(
+    preprocessing_tab, mocker, napari_raw, make_napari_viewer_proxy
+):
+    viewer = make_napari_viewer_proxy()
     mocked_scheduler = mocker.patch(
         target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
@@ -256,6 +259,7 @@ def test_cropping_activation(preprocessing_tab, mocker, napari_raw):
             [[0, 0], [0, 1], [1, 1], [1, 0]],
         ]
     )
+    viewer.add_layer(shape)
     assert preprocessing_tab.widget_cropping.crop_roi.value is None
     preprocessing_tab.widget_cropping.crop_roi.choices = (shape,)
     assert preprocessing_tab.widget_cropping.crop_roi.value == shape

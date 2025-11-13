@@ -1,5 +1,7 @@
 import logging
 
+import numpy as np
+
 from plantseg.core.image import (
     ImageDimensionality,
     ImageLayout,
@@ -49,7 +51,7 @@ def _compute_slices_3d(rectangle, crop_z: tuple[int, int], shape):
     if rectangle is None:
         return z_slice, slice(0, shape[1]), slice(0, shape[2])
 
-    if (rectangle[2, 0] - rectangle[0, 0]) > 0:
+    if len(np.unique(rectangle[:, 0])) != 1:
         raise ValueError("Invalid crop, the rextangle must be drawn in the XY plane.")
 
     x_start = max(rectangle[0, 1], 0)
@@ -215,6 +217,7 @@ def image_rescale_to_voxel_size_task(
     Args:
         image (PlantSegImage): input image
         new_voxel_size (VoxelSize): new voxel size
+        new_unit: (str): unit, e.g. `um`
         order (int): order of the interpolation
 
     """
