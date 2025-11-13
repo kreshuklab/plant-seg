@@ -190,7 +190,7 @@ def schedule_task(
             update_progressbar(pbar, tracker), thread="main"
         )
         task_kwargs["_tracker"] = tracker
-        start_emitting_from_queue()
+        start_emitting_from_queue(msec=100)
     if hide_list := task_kwargs.pop("_to_hide", None):
         for to_hide in hide_list:
             to_hide.hide()
