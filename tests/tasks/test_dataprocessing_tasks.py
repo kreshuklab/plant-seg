@@ -1,6 +1,6 @@
-from napari.layers import Image
 import numpy as np
 import pytest
+from napari.layers import Image
 
 from plantseg.core.image import ImageLayout, PlantSegImage
 from plantseg.functionals.dataprocessing.dataprocessing import ImagePairOperation
