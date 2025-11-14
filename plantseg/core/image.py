@@ -155,34 +155,6 @@ class ImageProperties(BaseModel):
             raise ValueError(f"Image type {self.image_type} not recognized")
 
 
-def scale_to_voxelsize(
-    scale: tuple[float, ...], layout: ImageLayout, unit: str = "um"
-) -> VoxelSize:
-    if layout == ImageLayout.YX:
-        assert len(scale) == 2, f"Scale should have 2 elements for layout {layout}"
-        return VoxelSize(voxels_size=(1.0, scale[0], scale[1]), unit=unit)
-
-    elif layout == ImageLayout.CYX:
-        assert len(scale) == 3, f"Scale should have 3 elements for layout {layout}"
-        return VoxelSize(voxels_size=(1.0, scale[1], scale[2]), unit=unit)
-
-    elif layout == ImageLayout.ZYX:
-        assert len(scale) == 3, f"Scale should have 3 elements for layout {layout}"
-        return VoxelSize(voxels_size=scale, unit=unit)
-
-    elif layout == ImageLayout.CZYX:
-        assert len(scale) == 4, f"Scale should have 4 elements for layout {layout}"
-        return VoxelSize(voxels_size=(scale[1], scale[2], scale[3]), unit=unit)
-
-    elif layout == ImageLayout.ZCYX:
-        raise ValueError(
-            f"Image layout {layout} not supported, should have been converted to CZYX"
-        )
-
-    else:
-        raise ValueError(f"Image layout {layout} not recognized")
-
-
 class PlantSegImage:
     """Image class represents an image with its metadata and data."""
 
