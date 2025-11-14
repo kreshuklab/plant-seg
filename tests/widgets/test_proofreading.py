@@ -578,6 +578,7 @@ def test_widget_split_and_merge_from_scribbles_log(mocker, napari_raw):
 
 @pytest.mark.parametrize("run_id", range(10))
 def test_widget_split_and_merge_from_scribbles(mocker, napari_raw, run_id, qtbot):
+    WorkerBase.await_workers(500)
     mock_split_merge = mocker.patch(
         "plantseg.viewer_napari.widgets.proofreading.split_merge_from_seeds",
     )
@@ -688,6 +689,7 @@ def test_max_label(make_napari_viewer_proxy):
 
 @pytest.mark.parametrize("i", range(100))
 def test_locking_threaded_simple(i):
+    WorkerBase.await_workers(500)
     handler = proofreading.ProofreadingHandler()
 
     @thread_worker
@@ -711,6 +713,8 @@ def test_locking_threaded_simple(i):
 
 @pytest.mark.parametrize("i", range(100))
 def test_locking_threaded_timeout(qtbot, i):
+    WorkerBase.await_workers(500)
+
     handler = proofreading.ProofreadingHandler()
 
     @thread_worker
@@ -718,8 +722,8 @@ def test_locking_threaded_timeout(qtbot, i):
         with handler.lock_manager(10 if not freeze else 10000):
             if freeze:
                 t0 = time()
-                while time() - t0 < 10:
-                    sleep(0.001)
+                while time() - t0 < 10000:
+                    qtbot.wait(10)
                     yield
             else:
                 return
@@ -727,13 +731,16 @@ def test_locking_threaded_timeout(qtbot, i):
 
     worker1 = threaded(True)
     worker1.start()
-    sleep(0.001)
+
+    while not worker1.is_running:
+        sleep(0.0001)
+
     assert handler.is_locked()
-    assert worker1._running
+    assert worker1.is_running
 
     worker2 = threaded(False)
     with qtbot.capture_exceptions() as exceptions:
-        with qtbot.waitSignal(worker2.errored, raising=False):
+        with qtbot.waitSignal(worker2.errored, raising=True):
             worker2.start()
     assert len(exceptions) == 1
     assert exceptions[0][0] is TimeoutError
