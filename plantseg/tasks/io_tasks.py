@@ -2,7 +2,7 @@ from pathlib import Path
 
 from plantseg.core.image import PlantSegImage, import_image, save_image
 from plantseg.tasks import task_tracker
-from plantseg.tasks.workflow_handler import RunTimeInputSchema
+from plantseg.tasks.workflow_handler import RunTimeInputSchema, Task_message
 
 
 @task_tracker(
@@ -22,7 +22,7 @@ def import_image_task(
     image_name: str | None = None,
     key: str | None = None,
     m_slicing: str | None = None,
-) -> PlantSegImage:
+) -> PlantSegImage | Task_message:
     """
     Task wrapper creating a PlantSegImage object from an image file.
 
@@ -38,14 +38,17 @@ def import_image_task(
     if image_name is None:
         image_name = input_path.stem
 
-    return import_image(
-        path=input_path,
-        key=key,
-        image_name=image_name,
-        semantic_type=semantic_type,
-        stack_layout=stack_layout,
-        m_slicing=m_slicing,
-    )
+    try:
+        return import_image(
+            path=input_path,
+            key=key,
+            image_name=image_name,
+            semantic_type=semantic_type,
+            stack_layout=stack_layout,
+            m_slicing=m_slicing,
+        )
+    except Exception as e:
+        return Task_message(message=str(e), name="import image", level="warning")
 
 
 @task_tracker(
