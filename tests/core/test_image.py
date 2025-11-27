@@ -2,8 +2,8 @@ from pathlib import Path
 from uuid import uuid4
 
 import numpy as np
-from napari.layers import Image
 import pytest
+from napari.layers import Image
 
 from plantseg.core.image import (
     ImageDimensionality,
