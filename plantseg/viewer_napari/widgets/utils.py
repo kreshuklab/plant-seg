@@ -16,6 +16,7 @@ from qtpy import QtGui, QtWidgets
 
 from plantseg import logger
 from plantseg.core.image import PlantSegImage, SemanticType
+from plantseg.tasks.workflow_handler import Task_message
 from plantseg.viewer_napari import log
 
 
@@ -154,7 +155,7 @@ def schedule_task(
 
     timer_start = timeit.default_timer()
 
-    def on_done(task_result: PlantSegImage | list[PlantSegImage] | None):
+    def on_done(task_result: PlantSegImage | list[PlantSegImage] | Task_message | None):
         timer = timeit.default_timer() - timer_start
         log(f"{task_name} complete in {timer:.2f}s", thread="Task")
 
@@ -171,6 +172,9 @@ def schedule_task(
             for ps_im in task_result:
                 add_ps_image_to_viewer(ps_im, replace=True)
 
+        elif isinstance(task_result, Task_message):
+            log(task_result.message, thread=task_result.name, level=task_result.level)
+            return None
         elif task_result is None:
             return None
 

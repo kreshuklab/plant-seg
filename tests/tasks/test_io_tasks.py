@@ -9,6 +9,7 @@ from plantseg.core.image import (
 )
 from plantseg.io.voxelsize import VoxelSize
 from plantseg.tasks.io_tasks import export_image_task, import_image_task
+from plantseg.tasks.workflow_handler import Task_message
 
 
 @pytest.mark.parametrize(
@@ -54,7 +55,7 @@ def test_image_io_round_trip(tmp_path, shape, layout, export_format):
         file_path = tmp_path / "test.zarr"
         key = "raw"
 
-    imported_image: PlantSegImage = import_image_task(
+    imported_image = import_image_task(
         input_path=file_path,
         key=key,
         image_name="tesi_import",
@@ -62,6 +63,7 @@ def test_image_io_round_trip(tmp_path, shape, layout, export_format):
         stack_layout=layout,
         m_slicing=None,
     )
+    assert isinstance(imported_image, PlantSegImage)
 
     original_data = image.get_data()
     imported_data = imported_image.get_data()
@@ -117,7 +119,7 @@ def test_label_io_round_trip(tmp_path, shape, layout, export_format):
         file_path = tmp_path / "test.zarr"
         key = "raw"
 
-    imported_image: PlantSegImage = import_image_task(
+    imported_image = import_image_task(
         input_path=file_path,
         key=key,
         image_name="tesi_import",
@@ -125,6 +127,7 @@ def test_label_io_round_trip(tmp_path, shape, layout, export_format):
         stack_layout=layout,
         m_slicing=None,
     )
+    assert isinstance(imported_image, PlantSegImage)
 
     original_data = image.get_data()
     imported_data = imported_image.get_data()
@@ -136,6 +139,45 @@ def test_label_io_round_trip(tmp_path, shape, layout, export_format):
     assert image.voxel_size == imported_image.voxel_size
     assert image.semantic_type == imported_image.semantic_type
     assert image.image_layout == imported_image.image_layout
+
+
+def test_label_import_image_task_error_message(tmp_path):
+    shape = (64, 64)
+    layout = ImageLayout.YX
+    export_format = "h5"
+    mock_data = np.random.randint(0, 10, size=shape).astype("uint16")
+
+    property = ImageProperties(
+        name="test",
+        voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
+        semantic_type=SemanticType.SEGMENTATION,
+        image_layout=layout,
+        original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
+    )
+    image = PlantSegImage(data=mock_data, properties=property)
+
+    export_image_task(
+        image=image,
+        export_directory=tmp_path,
+        name_pattern="test",
+        key="raw",
+        export_format=export_format,
+        data_type="uint16",
+    )
+
+    file_path = tmp_path / "test.h5"
+    key = "raw"
+
+    result = import_image_task(
+        input_path=file_path,
+        key=key,
+        image_name="tesi_import",
+        semantic_type="segmentation",
+        stack_layout=ImageLayout.CYX,
+        m_slicing=None,
+    )
+    assert isinstance(result, Task_message)
+    assert "but should have 3 dimensions for layout" in result.message
 
 
 def test_io_slicing_trip(tmp_path):

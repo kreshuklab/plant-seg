@@ -1,9 +1,10 @@
 import json
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from inspect import signature
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Literal
 from uuid import UUID, uuid4
 
 import yaml
@@ -25,6 +26,13 @@ class RunTimeInputSchema(BaseModel):
     required: bool = True
     default: Any = None
     is_input_file: bool = False
+
+
+@dataclass
+class Task_message:
+    message: str
+    name: str
+    level: Literal["warning", "info", "debug"] = "warning"
 
 
 class Infos(BaseModel):
@@ -371,6 +379,12 @@ def task_tracker(
                             f"Output {i} is not an Image object, but {type(img)}"
                         )
                     list_outputs.append(img.unique_name)
+
+            elif isinstance(out_image, Task_message):
+                # error message gets handled in schedulers callback `ondone`
+                list_outputs = []
+                return out_image
+
             else:
                 raise ValueError(
                     f"Output of a workflow function should be one of None, Image or tuple of Images. Got {type(out_image)}"
