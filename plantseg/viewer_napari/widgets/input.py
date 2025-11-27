@@ -386,6 +386,8 @@ class Input_Tab:
         self.widget_details_layer_select.layer.choices = all_layers
 
         if layer in all_layers:
+            # trigger refresh even if name has not changed
+            self.widget_details_layer_select.layer.value = None
             self.widget_details_layer_select.layer.value = layer
         else:
             logger.debug(f"Can't show info for {layer}")
