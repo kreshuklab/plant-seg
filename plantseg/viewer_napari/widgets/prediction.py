@@ -30,6 +30,7 @@ class UNetPredictionMode(Enum):
 class Prediction_Widgets:
     def __init__(self, widget_layer_select):
         self.widget_layer_select = widget_layer_select
+        self.additional_layer_container = widget_layer_select[-1]
         # Constants
         self.ALL_CUDA_DEVICES = [f"cuda:{i}" for i in range(torch.cuda.device_count())]
         # self.MPS = ["mps"] if torch.backends.mps.is_available() else []
@@ -45,6 +46,8 @@ class Prediction_Widgets:
         self.ALL_TYPES = "All types"
         self.CUSTOM = "Custom"
         self.ADD_MODEL = "ADD CUSTOM MODEL"
+
+        self.channels = (0, 0)
 
         # @@@@@ model filter container @@@@@
         self.model_filters = Container(
@@ -258,6 +261,7 @@ class Prediction_Widgets:
             ps_image = PlantSegImage.from_napari_layer(
                 self.widget_layer_select.layer.value
             )
+        # TODO: Merge layers into multi-channel image if needed
 
         if mode is UNetPredictionMode.PLANTSEG:
             if model_name is None:
@@ -446,6 +450,11 @@ class Prediction_Widgets:
             return
 
         self.description = model_zoo.get_model_description(model_name)
+        self.channels = [
+            model_zoo.get_model_config_by_name(model_name)["model"]["in_channels"],
+            model_zoo.get_model_config_by_name(model_name)["model"]["out_channels"],
+        ]
+        # TODO: add more info resolution etc.
         if self.description is None:
             self.description = "No description available for this model."
             self.widget_unet_prediction.advanced.hide()
@@ -457,6 +466,22 @@ class Prediction_Widgets:
             "Select a pretrained model. Current model description:"
             f"\n\n{self.description}"
         )
+
+        if self.channels[0] != 1:
+            self.additional_layer_container.show()
+            self.additional_layer_container.clear()
+            self.additional_layer_container.extend(
+                [
+                    ComboBox(
+                        choices=self.widget_layer_select.layer.choices,
+                        label=f"{i + 1}",
+                    )
+                    for i in range(self.channels[0] - 1)
+                ]
+            )
+        else:
+            self.additional_layer_container.clear()
+            self.additional_layer_container.hide()
 
         if self.widget_unet_prediction.advanced.value:
             self.update_halo()
