@@ -177,7 +177,7 @@ def test_label_import_image_task_error_message(tmp_path):
         m_slicing=None,
     )
     assert isinstance(result, Task_message)
-    assert "but should have 3 dimensions for layout" in result.message
+    assert "Data to import has shape (64, 64)" in result.message
 
 
 def test_io_slicing_trip(tmp_path):
@@ -207,7 +207,7 @@ def test_io_slicing_trip(tmp_path):
     file_path = tmp_path / "test_raw.tiff"
     key = None
 
-    imported_image: PlantSegImage = import_image_task(
+    imported_image = import_image_task(
         input_path=file_path,
         key=key,
         image_name="tesi_import",
@@ -215,6 +215,7 @@ def test_io_slicing_trip(tmp_path):
         stack_layout=layout,
         m_slicing="5:10,:, :50",
     )
+    assert isinstance(imported_image, PlantSegImage)
 
     imported_data = imported_image.get_data()
 

@@ -578,9 +578,9 @@ def import_image(
     key: str | None = None,
     image_name: str = "image",
     semantic_type: str = "raw",
-    stack_layout: str = "YX",
+    stack_layout: str | ImageLayout = "YX",
     m_slicing: str | None = None,
-) -> PlantSegImage:
+) -> PlantSegImage | list[PlantSegImage]:
     """
     Open an image file and create a PlantSegImage object.
 
@@ -588,32 +588,76 @@ def import_image(
         path (Path): Path to the image file
         key (Optional[str]): Key to load data from h5 or zarr files
         image_name (str): Name of the image (a unique name to identify the image)
-        semantic_type (str): Semantic type of the image, should be raw, segmentation, prediction or label
+        semantic_type (str): Semantic type of the image, should be raw, segmentation,
+            prediction or label
         stack_layout (str): Layout of the image, should be YX, CYX, ZYX, CZYX or ZCYX
-        m_slicing (str): Slicing to apply to the image, should be a string with the format [start:stop, ...] for each dimension.
+        m_slicing (str): Slicing to apply to the image, should be a string
+            with the format [start:stop, ...] for each dimension.
     """
     data, voxel_size = smart_load_with_vs(path, key)
     if voxel_size is None:
         voxel_size = VoxelSize()
 
+    images = []
     image_layout = ImageLayout(stack_layout)
-    if image_layout is ImageLayout.ZCYX:  # then make it CZYX
-        data = np.moveaxis(data, 0, 1)
-        image_layout = ImageLayout.CZYX
 
-    if m_slicing is not None:
-        data = dp.image_crop(data, m_slicing)
+    if not len(image_layout.name) == len(data.shape):
+        raise ValueError(
+            f"Data to import has shape {data.shape}, incompatible with choosen layout {image_layout}"
+        )
 
-    image_properties = ImageProperties(
-        name=image_name,
-        semantic_type=SemanticType(semantic_type),
-        voxel_size=voxel_size,
-        image_layout=image_layout,
-        original_voxel_size=voxel_size,
-        source_file_name=path.stem,
-    )
+    if image_layout not in [ImageLayout.ZCYX, ImageLayout.CZYX, ImageLayout.CYX]:
+        if m_slicing is not None:
+            data = dp.image_crop(data, m_slicing)
 
-    return PlantSegImage(data=data, properties=image_properties)
+        image_properties = ImageProperties(
+            name=image_name,
+            semantic_type=SemanticType(semantic_type),
+            voxel_size=voxel_size,
+            image_layout=image_layout,
+            original_voxel_size=voxel_size,
+            source_file_name=path.stem,
+        )
+
+        return PlantSegImage(data=data, properties=image_properties)
+
+    elif image_layout is ImageLayout.CYX:
+        for ch in range(data.shape[0]):
+            image_properties = ImageProperties(
+                name=image_name + f"_{ch}",
+                semantic_type=SemanticType(semantic_type),
+                voxel_size=voxel_size,
+                image_layout=ImageLayout.YX,
+                original_voxel_size=voxel_size,
+                source_file_name=path.stem,
+            )
+            images.append(PlantSegImage(data=data[ch], properties=image_properties))
+
+    elif image_layout is ImageLayout.CZYX:
+        for ch in range(data.shape[0]):
+            image_properties = ImageProperties(
+                name=image_name + f"_{ch}",
+                semantic_type=SemanticType(semantic_type),
+                voxel_size=voxel_size,
+                image_layout=ImageLayout.ZYX,
+                original_voxel_size=voxel_size,
+                source_file_name=path.stem,
+            )
+            images.append(PlantSegImage(data=data[ch], properties=image_properties))
+
+    elif image_layout is ImageLayout.ZCYX:
+        for ch in range(data.shape[1]):
+            image_properties = ImageProperties(
+                name=image_name + f"_{ch}",
+                semantic_type=SemanticType(semantic_type),
+                voxel_size=voxel_size,
+                image_layout=ImageLayout.ZYX,
+                original_voxel_size=voxel_size,
+                source_file_name=path.stem,
+            )
+            images.append(PlantSegImage(data=data[:, ch], properties=image_properties))
+
+    return images
 
 
 def _image_postprocessing(

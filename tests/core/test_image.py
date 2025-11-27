@@ -1,7 +1,9 @@
+from pathlib import Path
 from uuid import uuid4
 
 import numpy as np
 from napari.layers import Image
+import pytest
 
 from plantseg.core.image import (
     ImageDimensionality,
@@ -10,6 +12,7 @@ from plantseg.core.image import (
     ImageType,
     PlantSegImage,
     SemanticType,
+    import_image,
 )
 from plantseg.io.voxelsize import VoxelSize
 
@@ -293,3 +296,83 @@ def test_requires_scaling():
 
     assert same_voxel_size == voxel_size
     assert original_voxel_size != voxel_size
+
+
+@pytest.fixture
+def test_h5_dir():
+    return Path(__file__).parent.parent / "resources" / "training_sources"
+
+
+def test_import_image_YX(test_h5_dir):
+    file = test_h5_dir / "train_2D_2D.h5"
+    image = import_image(
+        path=file,
+        key="raw",
+        stack_layout="YX",
+    )
+    assert isinstance(image, PlantSegImage)
+    assert image.semantic_type == SemanticType.RAW
+    assert image.image_layout == ImageLayout.YX
+
+
+def test_import_image_CYX(test_h5_dir):
+    file = test_h5_dir / "train_2Dc_2D.h5"
+    images = import_image(
+        path=file,
+        key="raw",
+        stack_layout="CYX",
+    )
+    assert isinstance(images, list)
+    assert all([isinstance(i, PlantSegImage) for i in images])
+    assert len(images) == 2
+    assert images[0].semantic_type == SemanticType.RAW
+    assert images[0].image_layout == ImageLayout.YX
+
+
+def test_import_image_YX_error(test_h5_dir):
+    file = test_h5_dir / "train_2D_2D.h5"
+    with pytest.raises(ValueError):
+        import_image(
+            path=file,
+            key="raw",
+            stack_layout="ZYX",
+        )
+
+
+def test_import_image_ZYX(test_h5_dir):
+    file = test_h5_dir / "train_3D_3D.h5"
+    image = import_image(
+        path=file,
+        key="raw",
+        stack_layout="ZYX",
+    )
+    assert image.semantic_type == SemanticType.RAW
+    assert image.image_layout == ImageLayout.ZYX
+
+
+def test_import_image_CZYX(test_h5_dir):
+    file = test_h5_dir / "train_3Dc_3D.h5"
+    images = import_image(
+        path=file,
+        key="raw",
+        stack_layout="CZYX",
+    )
+    assert isinstance(images, list)
+    assert all([isinstance(i, PlantSegImage) for i in images])
+    assert len(images) == 2
+    assert images[0].semantic_type == SemanticType.RAW
+    assert images[0].image_layout == ImageLayout.ZYX
+
+
+def test_import_image_ZCYX(test_h5_dir):
+    file = test_h5_dir / "train_3Dc_3D.h5"
+    images = import_image(
+        path=file,
+        key="raw",
+        stack_layout="ZCYX",
+    )
+    assert isinstance(images, list)
+    assert all([isinstance(i, PlantSegImage) for i in images])
+    assert len(images) == 75
+    assert images[0].semantic_type == SemanticType.RAW
+    assert images[0].image_layout == ImageLayout.ZYX
