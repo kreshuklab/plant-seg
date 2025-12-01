@@ -1,6 +1,9 @@
+import warnings
+
 import napari
 from qtpy import QtCore, QtWidgets
 
+from plantseg import logger
 from plantseg.__version__ import __version__
 from plantseg.utils import check_version
 from plantseg.viewer_napari.containers import (
@@ -153,8 +156,18 @@ class Plantseg_viewer:
 
     def finalize_viewer(self):
         # Show data tab by default
-        self.viewer.window.dock_widgets["Input"].show()
-        self.viewer.window.dock_widgets["Input"].raise_()
+        if logger.level > 10:  # 10 = DEBUG level
+            # Suppress FutureWarning about `dock_widgets`` being private
+            # We need to use `_dock_widgets` (not `dock_widgets`) because we need access
+            # to the `QtViewerDockWidget` objects which have `.show()` and `.raise_()` methods
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=FutureWarning)
+                self.viewer.window._dock_widgets["Input"].show()
+                self.viewer.window._dock_widgets["Input"].raise_()
+        else:
+            self.viewer.window._dock_widgets["Input"].show()
+            self.viewer.window._dock_widgets["Input"].raise_()
+
         self.viewer.window.file_menu.menuAction().setVisible(False)
         self.viewer.window.layers_menu.menuAction().setVisible(False)
 
