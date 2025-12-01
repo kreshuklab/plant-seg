@@ -153,8 +153,8 @@ class Plantseg_viewer:
 
     def finalize_viewer(self):
         # Show data tab by default
-        self.viewer.window._dock_widgets["Input"].show()
-        self.viewer.window._dock_widgets["Input"].raise_()
+        self.viewer.window.dock_widgets["Input"].show()
+        self.viewer.window.dock_widgets["Input"].raise_()
         self.viewer.window.file_menu.menuAction().setVisible(False)
         self.viewer.window.layers_menu.menuAction().setVisible(False)
 
