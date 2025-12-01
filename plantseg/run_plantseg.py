@@ -55,17 +55,12 @@ def create_parser():
     arg_parser.add_argument(
         "--loglevel",
         choices=["ERROR", "WARNING", "INFO", "DEBUG"],
-        help="Set the level of the logger.",
-    )
-    arg_parser.add_argument(
-        "--dev",
-        action="store_true",
-        help="Enable developer mode (show all warnings including compatibility warnings)",
+        help="Set the level of the logger. DEBUG level will also show all warnings including compatibility warnings.",
     )
     return arg_parser.parse_args()
 
 
-def launch_napari(dev_mode: bool = False):
+def launch_napari(loglevel: str = "INFO"):
     """Launch the Napari viewer."""
     import warnings
 
@@ -75,8 +70,8 @@ def launch_napari(dev_mode: bool = False):
 
     # Suppress FutureWarning about functools.partial from Python 3.13
     # This is a known issue with magicgui library until it's updated
-    # Only suppress in production mode, show in dev mode
-    if not dev_mode:
+    # Only suppress when not in DEBUG mode, show in DEBUG mode for developers
+    if loglevel != "DEBUG":
         warnings.filterwarnings(
             "ignore",
             message=".*functools.partial will be a method descriptor.*",
@@ -128,7 +123,7 @@ def main():
     elif args.clean:
         clean_models()
     elif args.napari:
-        launch_napari(dev_mode=args.dev)
+        launch_napari(loglevel=args.loglevel or "INFO")
     elif args.config:
         launch_workflow_headless(args.config)
     elif args.train:
