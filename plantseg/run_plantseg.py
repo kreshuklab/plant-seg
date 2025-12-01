@@ -57,14 +57,31 @@ def create_parser():
         choices=["ERROR", "WARNING", "INFO", "DEBUG"],
         help="Set the level of the logger.",
     )
+    arg_parser.add_argument(
+        "--dev",
+        action="store_true",
+        help="Enable developer mode (show all warnings including compatibility warnings)",
+    )
     return arg_parser.parse_args()
 
 
-def launch_napari():
+def launch_napari(dev_mode: bool = False):
     """Launch the Napari viewer."""
+    import warnings
+
     import rich.traceback
 
     from plantseg.viewer_napari.viewer import Plantseg_viewer
+
+    # Suppress FutureWarning about functools.partial from Python 3.13
+    # This is a known issue with magicgui library until it's updated
+    # Only suppress in production mode, show in dev mode
+    if not dev_mode:
+        warnings.filterwarnings(
+            "ignore",
+            message=".*functools.partial will be a method descriptor.*",
+            category=FutureWarning,
+        )
 
     rich.traceback.install(
         show_locals=True,
@@ -111,7 +128,7 @@ def main():
     elif args.clean:
         clean_models()
     elif args.napari:
-        launch_napari()
+        launch_napari(dev_mode=args.dev)
     elif args.config:
         launch_workflow_headless(args.config)
     elif args.train:
