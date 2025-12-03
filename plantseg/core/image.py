@@ -267,6 +267,56 @@ class PlantSegImage:
         ps_image._id = id
         return ps_image
 
+    def split_channels(self) -> list["PlantSegImage"]:
+        if not self.is_multichannel:
+            return [self]
+        assert self.channel_axis is not None, "No channel axis known!"
+
+        if self.dimensionality == ImageDimensionality.TWO:
+            new_image_layout = ImageLayout.YX
+        else:
+            new_image_layout = ImageLayout.ZYX
+
+        images = []
+        for ch in range(self.shape[self.channel_axis]):
+            images.append(
+                self.derive_new(
+                    data=self.get_data(channel=ch),
+                    name=self.name + f"_{ch}",
+                    image_layout=new_image_layout,
+                )
+            )
+        return images
+
+    def merge_with(self, image: "PlantSegImage"):
+        if not all(
+            (
+                self.semantic_type == image.semantic_type,
+                self.voxel_size == image.voxel_size,
+                self.dimensionality == image.dimensionality,
+            )
+        ):
+            raise ValueError("Images can't be merged, not compatible!")
+
+        images = self.split_channels()
+        images.extend(image.split_channels())
+
+        if self.dimensionality == ImageDimensionality.TWO:
+            new_image_layout = ImageLayout.CYX
+        else:
+            new_image_layout = ImageLayout.CZYX
+
+        new_props = ImageProperties(
+            name=self.name + "_merged",
+            semantic_type=self.semantic_type,
+            voxel_size=self.voxel_size,
+            image_layout=new_image_layout,
+            original_voxel_size=self.original_voxel_size,
+        )
+
+        data = np.stack([image.get_data() for image in images])
+        return PlantSegImage(data, new_props)
+
     def to_napari_layer_tuple(self) -> LayerDataTuple:
         """
         Prepare and normalise the image to be loaded as a napari layer.
@@ -468,8 +518,10 @@ class PlantSegImage:
         """Returns the data of the image.
 
         Args:
-            channel (int): Channel to load from the image (if the image is multichannel). If None, all channels are loaded.
-            normalize_01 (bool): Normalize the data between 0 and 1, if the image is a Label image, the data is not normalized.
+            channel (int): Channel to load from the image (if the image is
+                multichannel). If None, all channels are loaded.
+            normalize_01 (bool): Normalize the data between 0 and 1, if the
+                image is a Label image, the data is not normalized.
         """
         if self.image_type == ImageType.LABEL:
             return self._data
@@ -663,6 +715,7 @@ def import_image(
 def _image_postprocessing(
     image: PlantSegImage, scale_to_origin: bool, export_dtype: str
 ) -> tuple[np.ndarray, VoxelSize]:
+    assert isinstance(image, PlantSegImage), f"type: {type(image)}"
     if scale_to_origin and image.requires_scaling:
         data = dp.scale_image_to_voxelsize(
             image.get_data(),

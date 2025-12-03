@@ -261,9 +261,14 @@ class Prediction_Widgets:
             ps_image = PlantSegImage.from_napari_layer(
                 self.widget_layer_select.layer.value
             )
-        # TODO: Merge layers into multi-channel image if needed
 
-        if mode is UNetPredictionMode.PLANTSEG:
+        if self.channels[0] > 1:
+            for image in self.additional_layer_container:
+                ps_image = ps_image.merge_with(
+                    PlantSegImage.from_napari_layer(image.value)
+                )
+
+        if mode == UNetPredictionMode.PLANTSEG:
             if model_name is None:
                 log(
                     "Choose a model first!",
