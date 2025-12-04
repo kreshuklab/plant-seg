@@ -152,6 +152,7 @@ def test_unet_training_no_image(
     m_get_models.assert_not_called()
     m_schedule.assert_not_called()
 
+
 def test_unet_training_channels(
     training_tab,
     mocker,
@@ -165,13 +166,14 @@ def test_unet_training_channels(
     m_schedule = mocker.patch("plantseg.viewer_napari.widgets.training.schedule_task")
 
     m_additional_inputs = [mocker.Mock() for _ in range(3)]
-    m_additional_inputs
-    training_tab.additional_inputs = 
+    for m in m_additional_inputs:
+        m.value = napari_raw
+    training_tab.additional_inputs = m_additional_inputs
     training_tab.widget_unet_training(
         from_disk="Current Data",
         dataset=None,
         image=napari_raw,
-        segmentation=None,
+        segmentation=napari_segmentation,
         pretrained=None,
         model_name="test_model",
         description="description",
@@ -188,11 +190,10 @@ def test_unet_training_channels(
         custom_output_type="",
         pbar=None,
     )
-    m_log.assert_called_with(
-        "Please choose a raw image and a segmentation to train!", thread="train_gui"
-    )
+    m_log.assert_called_with("Starting training task", thread="train_gui")
     m_get_models.assert_not_called()
-    m_schedule.assert_not_called()
+    m_schedule.assert_called_once()
+    assert m_schedule.call_args.kwargs["task_kwargs"]["image"] == [napari_raw] * 4
 
 
 def test_unet_training_none(training_tab, mocker):
