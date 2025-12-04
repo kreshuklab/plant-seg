@@ -1,5 +1,6 @@
 import numba
 import numpy as np
+from numba.typed import List
 
 
 @numba.njit
@@ -64,10 +65,12 @@ def _get_bboxes2D(segmentation, labels_idx):
 
 
 def _get_bboxes(segmentation, labels_idx):
+    typed_labels_idx = List()
+    [typed_labels_idx.append(x) for x in labels_idx]
     if len(segmentation.shape) == 3:
-        return _get_bboxes3D(segmentation, labels_idx)
+        return _get_bboxes3D(segmentation, typed_labels_idx)
     elif len(segmentation.shape) == 2:
-        return _get_bboxes2D(segmentation, labels_idx)
+        return _get_bboxes2D(segmentation, typed_labels_idx)
     else:
         raise ValueError("Segmentation shape not supported")
 
