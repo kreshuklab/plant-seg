@@ -152,6 +152,48 @@ def test_unet_training_no_image(
     m_get_models.assert_not_called()
     m_schedule.assert_not_called()
 
+def test_unet_training_channels(
+    training_tab,
+    mocker,
+    napari_segmentation,
+    napari_raw,
+):
+    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_get_models = mocker.patch(
+        "plantseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
+    )
+    m_schedule = mocker.patch("plantseg.viewer_napari.widgets.training.schedule_task")
+
+    m_additional_inputs = [mocker.Mock() for _ in range(3)]
+    m_additional_inputs
+    training_tab.additional_inputs = 
+    training_tab.widget_unet_training(
+        from_disk="Current Data",
+        dataset=None,
+        image=napari_raw,
+        segmentation=None,
+        pretrained=None,
+        model_name="test_model",
+        description="description",
+        channels=(1, 1),
+        feature_maps=[16],
+        patch_size=[16, 64, 64],
+        resolution=[1.0, 1.0, 1.0],
+        max_num_iters=100,
+        dimensionality="3D",
+        device="cpu",
+        modality="confocal",
+        custom_modality="",
+        output_type="boundaries",
+        custom_output_type="",
+        pbar=None,
+    )
+    m_log.assert_called_with(
+        "Please choose a raw image and a segmentation to train!", thread="train_gui"
+    )
+    m_get_models.assert_not_called()
+    m_schedule.assert_not_called()
+
 
 def test_unet_training_none(training_tab, mocker):
     m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")

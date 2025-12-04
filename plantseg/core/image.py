@@ -312,6 +312,7 @@ class PlantSegImage:
             voxel_size=self.voxel_size,
             image_layout=new_image_layout,
             original_voxel_size=self.original_voxel_size,
+            source_file_name=self.source_file_name,
         )
 
         data = np.stack([image.get_data() for image in images])

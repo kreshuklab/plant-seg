@@ -3,16 +3,16 @@ from pathlib import Path
 from typing import Optional
 
 from magicgui import magic_factory
-from magicgui.widgets import Container, Label
+from magicgui.widgets import ComboBox, Container, Label
 from napari.layers import Image, Labels, Layer
 from psygnal import Signal
 
 from plantseg import logger
 from plantseg.core.image import PlantSegImage
-from plantseg.tasks.io_tasks import export_image_task
+from plantseg.tasks.io_tasks import export_image_task, merge_channels_task
 from plantseg.tasks.workflow_handler import workflow_handler
 from plantseg.viewer_napari import log
-from plantseg.viewer_napari.widgets.utils import div, get_layers
+from plantseg.viewer_napari.widgets.utils import add_ps_image_to_viewer, div, get_layers
 from plantseg.workflow_gui.editor import Workflow_gui
 
 
@@ -106,6 +106,12 @@ class Output_Tab:
             self._on_export_format_changed
         )
 
+        self.additional_layers = Container(
+            widgets=[], visible=False, label="Additional channels", labels=True
+        )
+        self.widget_export_image.insert(4, self.additional_layers)
+        self.widget_export_image.n_channels.changed.connect(self._on_n_channels_change)
+
         self.batch_tab = Batch_Tab(self)
 
     def get_container(self):
@@ -129,6 +135,12 @@ class Output_Tab:
             "label": "Export directory",
             "mode": "d",
             "tooltip": "Select the directory where the files will be exported",
+        },
+        n_channels={
+            "label": "Number of channels",
+            "widget_type": "SpinBox",
+            "value": 1,
+            "min": 1,
         },
         name_pattern={
             "label": "Export name pattern",
@@ -161,6 +173,7 @@ class Output_Tab:
         self,
         image: Layer | None = None,
         directory: Path = Path.home(),
+        n_channels: int = 1,
         name_pattern: str = "{file_name}_export",
         export_format: str = "tiff",
         key: str = "raw",
@@ -177,10 +190,26 @@ class Output_Tab:
             )
             return
 
-        timer = time.time()
-        log("export_image_task started", thread="Output", level="info")
         ps_image = PlantSegImage.from_napari_layer(image)
 
+        # merge channels if necessary
+        if n_channels > 1:
+            images = [ps_image]
+            for selection in self.additional_layers:
+                if not isinstance(selection.value, Layer):
+                    log(
+                        "Choose all channels or adjust the number of channels!",
+                        thread="Output",
+                        level="WARNING",
+                    )
+                    return
+                images.append(PlantSegImage.from_napari_layer(selection.value))
+            ps_image = merge_channels_task(
+                **{f"image_{i}": image for i, image in enumerate(images)}
+            )
+
+        timer = time.time()
+        log("export_image_task started", thread="Output", level="info")
         export_image_task(
             image=ps_image,
             export_directory=directory,
@@ -244,6 +273,19 @@ class Output_Tab:
 
     def _on_export_format_changed(self, export_format: str):
         self._toggle_key(export_format != "tiff")
+
+    def _on_n_channels_change(self, n_channels: int):
+        self.additional_layers.clear()
+        for ch in range(n_channels - 1):
+            self.additional_layers.append(
+                ComboBox(
+                    choices=self.widget_export_image.image.choices, label=f"{ch + 1}"
+                )
+            )
+        if len(self.additional_layers) > 0:
+            self.additional_layers.show()
+        else:
+            self.additional_layers.hide()
 
     def update_layer_selection(self, event):
         """Updates layer drop-down menus"""

@@ -22,7 +22,7 @@ def import_image_task(
     image_name: str | None = None,
     key: str | None = None,
     m_slicing: str | None = None,
-) -> PlantSegImage | Task_message:
+) -> PlantSegImage | list[PlantSegImage] | Task_message:
     """
     Task wrapper creating a PlantSegImage object from an image file.
 
@@ -99,3 +99,12 @@ def export_image_task(
         data_type=data_type,
     )
     return None
+
+
+@task_tracker
+def merge_channels_task(**kwargs) -> PlantSegImage:
+    images: list[PlantSegImage] = list(kwargs.values())
+    image = images[0].derive_new(images[0].get_data(), images[0].name + "_merged")
+    for im in images[1:]:
+        image = image.merge_with(im)
+    return image
