@@ -43,10 +43,8 @@ def unet_training_task(
     if image is not None and segmentation is not None:
         if isinstance(image, list):
             image_mc = PlantSegImage.from_napari_layer(image[0])
-            logger.debug(f"***** shape: {image_mc.shape}")
             for im in image[1:]:
                 image_mc = image_mc.merge_with(PlantSegImage.from_napari_layer(im))
-                logger.debug(f"***** shape: {image_mc.shape}")
             pl_image = image_mc
         else:
             pl_image = PlantSegImage.from_napari_layer(image)

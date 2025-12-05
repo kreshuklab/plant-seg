@@ -279,7 +279,10 @@ class Output_Tab:
         for ch in range(n_channels - 1):
             self.additional_layers.append(
                 ComboBox(
-                    choices=self.widget_export_image.image.choices, label=f"{ch + 1}"
+                    choices=self.widget_export_image.image.choices,
+                    label=f"{ch + 1}",
+                    tooltip="Additional layer to merge with main output "
+                    "into separate channel.",
                 )
             )
         if len(self.additional_layers) > 0:
