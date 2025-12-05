@@ -4,6 +4,7 @@ from datetime import datetime
 from enum import Enum
 from inspect import signature
 from pathlib import Path
+from pprint import pp
 from typing import Any, Callable, Literal
 from uuid import UUID, uuid4
 
@@ -340,12 +341,16 @@ def task_tracker(
                 for param in func_signature.parameters
             }
 
+            # Some tasks might have an arbitrary number of inputs (merge)
+            # Those must be named kwargs
+            parameters.pop("kwargs", None)
+
             images_inputs = {}
 
             for name, arg in kwargs.items():
                 if isinstance(arg, PlantSegImage):
                     images_inputs[name] = arg.unique_name
-                    parameters.pop(name)
+                    parameters.pop(name, None)
 
                 elif name in list_inputs.keys():
                     value = list_inputs[name]

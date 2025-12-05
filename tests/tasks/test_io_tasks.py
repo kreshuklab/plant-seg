@@ -8,7 +8,11 @@ from plantseg.core.image import (
     SemanticType,
 )
 from plantseg.io.voxelsize import VoxelSize
-from plantseg.tasks.io_tasks import export_image_task, import_image_task
+from plantseg.tasks.io_tasks import (
+    export_image_task,
+    import_image_task,
+    merge_channels_task,
+)
 from plantseg.tasks.workflow_handler import Task_message
 
 
@@ -177,7 +181,7 @@ def test_label_import_image_task_error_message(tmp_path):
         m_slicing=None,
     )
     assert isinstance(result, Task_message)
-    assert "but should have 3 dimensions for layout" in result.message
+    assert "Data to import has shape (64, 64)" in result.message
 
 
 def test_io_slicing_trip(tmp_path):
@@ -207,7 +211,7 @@ def test_io_slicing_trip(tmp_path):
     file_path = tmp_path / "test_raw.tiff"
     key = None
 
-    imported_image: PlantSegImage = import_image_task(
+    imported_image = import_image_task(
         input_path=file_path,
         key=key,
         image_name="tesi_import",
@@ -215,7 +219,52 @@ def test_io_slicing_trip(tmp_path):
         stack_layout=layout,
         m_slicing="5:10,:, :50",
     )
+    assert isinstance(imported_image, PlantSegImage)
 
     imported_data = imported_image.get_data()
 
     assert imported_data.shape == (5, 64, 50)
+
+
+def test_merge_channels():
+    shape = (32, 64, 64)
+    layout = ImageLayout.ZYX
+    mock_data = np.random.randint(0, 10, size=shape).astype("uint16")
+
+    property = ImageProperties(
+        name="test",
+        voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
+        semantic_type=SemanticType.RAW,
+        image_layout=layout,
+        original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
+    )
+    image_1 = PlantSegImage(data=mock_data, properties=property)
+    image_2 = PlantSegImage(data=mock_data, properties=property)
+    image_3 = PlantSegImage(data=mock_data, properties=property)
+
+    merged = merge_channels_task(image_1=image_1, image_2=image_2, image_3=image_3)
+    assert isinstance(merged, PlantSegImage)
+    assert merged.semantic_type == SemanticType.RAW
+    assert merged.image_layout == ImageLayout.CZYX
+    assert merged.shape == (3, 32, 64, 64)
+
+
+def test_merge_channels_one():
+    shape = (32, 64, 64)
+    layout = ImageLayout.ZYX
+    mock_data = np.random.randint(0, 10, size=shape).astype("uint16")
+
+    property = ImageProperties(
+        name="test",
+        voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
+        semantic_type=SemanticType.RAW,
+        image_layout=layout,
+        original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
+    )
+    image_1 = PlantSegImage(data=mock_data, properties=property)
+
+    merged = merge_channels_task(images=image_1)
+    assert isinstance(merged, PlantSegImage)
+    assert merged.semantic_type == SemanticType.RAW
+    assert merged.image_layout == ImageLayout.ZYX
+    assert merged.shape == (32, 64, 64)

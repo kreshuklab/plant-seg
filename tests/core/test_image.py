@@ -1,6 +1,9 @@
+import time
+from pathlib import Path
 from uuid import uuid4
 
 import numpy as np
+import pytest
 from napari.layers import Image
 
 from plantseg.core.image import (
@@ -10,6 +13,7 @@ from plantseg.core.image import (
     ImageType,
     PlantSegImage,
     SemanticType,
+    import_image,
 )
 from plantseg.io.voxelsize import VoxelSize
 
@@ -293,3 +297,318 @@ def test_requires_scaling():
 
     assert same_voxel_size == voxel_size
     assert original_voxel_size != voxel_size
+
+
+@pytest.fixture
+def test_h5_dir():
+    return Path(__file__).parent.parent / "resources" / "training_sources"
+
+
+def test_import_image_YX(test_h5_dir):
+    file = test_h5_dir / "train_2D_2D.h5"
+    image = import_image(
+        path=file,
+        key="raw",
+        stack_layout="YX",
+    )
+    assert isinstance(image, PlantSegImage)
+    assert image.semantic_type == SemanticType.RAW
+    assert image.image_layout == ImageLayout.YX
+
+
+def test_import_image_CYX(test_h5_dir):
+    file = test_h5_dir / "train_2Dc_2D.h5"
+    images = import_image(
+        path=file,
+        key="raw",
+        stack_layout="CYX",
+    )
+    assert isinstance(images, list)
+    assert all([isinstance(i, PlantSegImage) for i in images])
+    assert len(images) == 2
+    assert images[0].semantic_type == SemanticType.RAW
+    assert images[0].image_layout == ImageLayout.YX
+
+
+def test_import_image_CYX_warning(mocker, test_h5_dir):
+    mocker.patch("plantseg.core.image.last_warning", new=0.0)
+    mock_loader = mocker.patch("plantseg.core.image.smart_load_with_vs")
+    mock_loader.return_value = (
+        np.random.rand(3, 2, 11),
+        VoxelSize(voxels_size=(1.0, 1.0, 1.0)),
+    )
+    file = test_h5_dir / "train_3Dc_3D.h5"
+    with pytest.raises(ValueError):
+        import_image(
+            path=file,
+            key="raw",
+            stack_layout="CYX",
+        )
+
+
+def test_import_image_YX_error(test_h5_dir):
+    file = test_h5_dir / "train_2D_2D.h5"
+    with pytest.raises(ValueError):
+        import_image(
+            path=file,
+            key="raw",
+            stack_layout="ZYX",
+        )
+
+
+def test_import_image_ZYX(test_h5_dir):
+    file = test_h5_dir / "train_3D_3D.h5"
+    image = import_image(
+        path=file,
+        key="raw",
+        stack_layout="ZYX",
+    )
+    assert image.semantic_type == SemanticType.RAW
+    assert image.image_layout == ImageLayout.ZYX
+
+
+def test_import_image_CZYX(test_h5_dir):
+    file = test_h5_dir / "train_3Dc_3D.h5"
+    images = import_image(
+        path=file,
+        key="raw",
+        stack_layout="CZYX",
+    )
+    assert isinstance(images, list)
+    assert all([isinstance(i, PlantSegImage) for i in images])
+    assert len(images) == 2
+    assert images[0].semantic_type == SemanticType.RAW
+    assert images[0].image_layout == ImageLayout.ZYX
+
+
+def test_import_image_CZYX_warning(mocker, test_h5_dir):
+    mocker.patch("plantseg.core.image.last_warning", new=0.0)
+    mock_loader = mocker.patch("plantseg.core.image.smart_load_with_vs")
+    mock_loader.return_value = (
+        np.random.rand(3, 2, 10, 11),
+        VoxelSize(voxels_size=(1.0, 1.0, 1.0)),
+    )
+    file = test_h5_dir / "train_3Dc_3D.h5"
+    with pytest.raises(ValueError):
+        import_image(
+            path=file,
+            key="raw",
+            stack_layout="CZYX",
+        )
+
+
+def test_import_image_ZCYX(mocker, test_h5_dir):
+    mocker.patch("plantseg.core.image.last_warning", new=time.time())
+    file = test_h5_dir / "train_3Dc_3D.h5"
+    images = import_image(
+        path=file,
+        key="raw",
+        stack_layout="ZCYX",
+    )
+    assert isinstance(images, list)
+    assert all([isinstance(i, PlantSegImage) for i in images])
+    assert len(images) == 75
+    assert images[0].semantic_type == SemanticType.RAW
+    assert images[0].image_layout == ImageLayout.ZYX
+
+
+def test_import_image_ZCYX_warning(mocker, test_h5_dir):
+    mocker.patch("plantseg.core.image.last_warning", new=0.0)
+    file = test_h5_dir / "train_3Dc_3D.h5"
+    with pytest.raises(ValueError):
+        import_image(
+            path=file,
+            key="raw",
+            stack_layout="ZCYX",
+        )
+
+
+def test_split_image_CZYX():
+    data = np.random.rand(3, 9, 10, 11)
+    voxel_size = VoxelSize(voxels_size=(0.5, 1.0, 1.0), unit="um")
+    image_props = ImageProperties(
+        name="image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.CZYX,
+        original_voxel_size=voxel_size,
+    )
+    ps_image = PlantSegImage(data, image_props)
+    splits = ps_image.split_channels()
+
+    assert len(splits) == 3
+    assert all([s.image_layout == ImageLayout.ZYX for s in splits])
+    assert all([s.semantic_type == SemanticType.RAW for s in splits])
+    assert all([s.voxel_size == voxel_size for s in splits])
+    assert all([s.shape == (9, 10, 11) for s in splits])
+
+
+def test_split_image_ZCYX():
+    data = np.random.rand(9, 4, 10, 11)
+    voxel_size = VoxelSize(voxels_size=(0.5, 1.0, 1.0), unit="um")
+    image_props = ImageProperties(
+        name="image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.ZCYX,
+        original_voxel_size=voxel_size,
+    )
+    ps_image = PlantSegImage(data, image_props)
+    splits = ps_image.split_channels()
+
+    assert len(splits) == 4
+    assert all([s.image_layout == ImageLayout.ZYX for s in splits])
+    assert all([s.semantic_type == SemanticType.RAW for s in splits])
+    assert all([s.voxel_size == voxel_size for s in splits])
+    assert all([s.shape == (9, 10, 11) for s in splits])
+
+
+def test_split_image_CYX():
+    data = np.random.rand(4, 10, 11)
+    voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
+    image_props = ImageProperties(
+        name="image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.CYX,
+        original_voxel_size=voxel_size,
+    )
+    ps_image = PlantSegImage(data, image_props)
+    splits = ps_image.split_channels()
+
+    assert len(splits) == 4
+    assert all([s.image_layout == ImageLayout.YX for s in splits])
+    assert all([s.semantic_type == SemanticType.RAW for s in splits])
+    assert all([s.voxel_size == voxel_size for s in splits])
+    assert all([s.shape == (10, 11) for s in splits])
+
+
+def test_merge_images_2d():
+    data = np.random.rand(10, 11)
+    voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
+    image_props = ImageProperties(
+        name="image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.YX,
+        original_voxel_size=voxel_size,
+    )
+    ps_image_1 = PlantSegImage(data, image_props)
+    ps_image_2 = PlantSegImage(data, image_props)
+
+    merged = ps_image_1.merge_with(ps_image_2)
+    assert merged.dimensionality == ImageDimensionality.TWO
+    assert merged.is_multichannel
+    assert merged.shape == (2, 10, 11)
+
+
+def test_merge_images_3d():
+    data = np.random.rand(9, 10, 11)
+    voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
+    image_props = ImageProperties(
+        name="image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.ZYX,
+        original_voxel_size=voxel_size,
+    )
+    ps_image_1 = PlantSegImage(data, image_props)
+    ps_image_2 = PlantSegImage(data, image_props)
+
+    merged = ps_image_1.merge_with(ps_image_2)
+    assert merged.dimensionality == ImageDimensionality.THREE
+    assert merged.is_multichannel
+    assert merged.shape == (2, 9, 10, 11)
+
+
+def test_merge_images_3dc():
+    data = np.random.rand(2, 9, 10, 11)
+    voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
+    image_props = ImageProperties(
+        name="image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.CZYX,
+        original_voxel_size=voxel_size,
+    )
+    ps_image_1 = PlantSegImage(data, image_props)
+    data = np.random.rand(2, 9, 10, 11)
+    voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
+    image_props = ImageProperties(
+        name="image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.CZYX,
+        original_voxel_size=voxel_size,
+    )
+    ps_image_2 = PlantSegImage(data, image_props)
+
+    merged = ps_image_1.merge_with(ps_image_2)
+    assert merged.dimensionality == ImageDimensionality.THREE
+    assert merged.is_multichannel
+    assert merged.shape == (4, 9, 10, 11)
+
+    data = np.random.rand(9, 10, 11)
+    voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
+    image_props = ImageProperties(
+        name="image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.ZYX,
+        original_voxel_size=voxel_size,
+    )
+    ps_image_3 = PlantSegImage(data, image_props)
+    merged = merged.merge_with(ps_image_3)
+    assert merged.dimensionality == ImageDimensionality.THREE
+    assert merged.is_multichannel
+    assert merged.shape == (5, 9, 10, 11)
+
+
+def test_merge_images_wrong_semantic():
+    data = np.random.rand(9, 10, 11)
+    voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
+    image_props = ImageProperties(
+        name="image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.ZYX,
+        original_voxel_size=voxel_size,
+    )
+    ps_image_1 = PlantSegImage(data, image_props)
+    image_props = ImageProperties(
+        name="image",
+        semantic_type=SemanticType.PREDICTION,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.ZYX,
+        original_voxel_size=voxel_size,
+    )
+    ps_image_2 = PlantSegImage(data, image_props)
+
+    with pytest.raises(ValueError):
+        ps_image_1.merge_with(ps_image_2)
+
+
+def test_merge_images_2d_3d():
+    data = np.random.rand(9, 10, 11)
+    voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
+    image_props = ImageProperties(
+        name="image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.ZYX,
+        original_voxel_size=voxel_size,
+    )
+    ps_image_1 = PlantSegImage(data, image_props)
+    data = np.random.rand(10, 11)
+    voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
+    image_props = ImageProperties(
+        name="image",
+        semantic_type=SemanticType.RAW,
+        voxel_size=voxel_size,
+        image_layout=ImageLayout.YX,
+        original_voxel_size=voxel_size,
+    )
+    ps_image_2 = PlantSegImage(data, image_props)
+
+    with pytest.raises(ValueError):
+        ps_image_1.merge_with(ps_image_2)

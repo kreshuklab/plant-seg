@@ -34,6 +34,10 @@ class Segmentation_Tab:
         self.widget_layer_select = self.factory_layer_select()
         self.widget_layer_select.self.bind(self)
         self.widget_layer_select.prediction.changed.connect(self._on_prediction_change)
+        self.widget_layer_select.append(
+            Container(widgets=[], visible=False, labels=True, label="Additional Inputs")
+        )
+        self.widget_layer_select[-1].margins = (0, 0, 0, 0)
 
         # @@@@@ agglomeration @@@@@
         self.widget_agglomeration = self.factory_agglomeration()
@@ -537,6 +541,10 @@ class Segmentation_Tab:
                 == SemanticType.SEGMENTATION
             ):
                 self.widget_layer_select.superpixels.value = event.value
+
+        # update additional layer selection for multi channel models
+        for combo_box in self.widget_layer_select[-1]:
+            combo_box.choices = raws
 
     @magic_factory(
         call_button=False,
