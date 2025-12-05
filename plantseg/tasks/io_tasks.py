@@ -103,6 +103,10 @@ def export_image_task(
 
 @task_tracker
 def merge_channels_task(**kwargs) -> PlantSegImage:
+    """Merge an arbitrary number of PlantSegImages
+
+    Pass each image as a named argument, the name doesn't matter.
+    """
     images: list[PlantSegImage] = list(kwargs.values())
     image = images[0].derive_new(images[0].get_data(), images[0].name + "_merged")
     for im in images[1:]:
