@@ -1,4 +1,5 @@
 import logging
+import time
 from enum import Enum
 from pathlib import Path
 from typing import Literal
@@ -18,6 +19,7 @@ from plantseg.io.voxelsize import VoxelSize
 from plantseg.io.zarr import create_zarr
 
 logger = logging.getLogger(__name__)
+last_warning = 0.0
 
 
 class SemanticType(Enum):
@@ -647,6 +649,7 @@ def import_image(
         m_slicing (str): Slicing to apply to the image, should be a string
             with the format [start:stop, ...] for each dimension.
     """
+    global last_warning
     data, voxel_size = smart_load_with_vs(path, key)
     if voxel_size is None:
         voxel_size = VoxelSize()
@@ -675,6 +678,12 @@ def import_image(
         return PlantSegImage(data=data, properties=image_properties)
 
     elif image_layout is ImageLayout.CYX:
+        if data.shape[0] > min(data.shape) and (time.time() - last_warning) > 120:
+            last_warning = time.time()
+            raise ValueError(
+                f"Double check the stack layout and try again!\nData shape {data.shape}"
+            )
+
         for ch in range(data.shape[0]):
             image_properties = ImageProperties(
                 name=image_name + f"_{ch}",
@@ -687,6 +696,12 @@ def import_image(
             images.append(PlantSegImage(data=data[ch], properties=image_properties))
 
     elif image_layout is ImageLayout.CZYX:
+        if data.shape[0] > min(data.shape) and (time.time() - last_warning) > 120:
+            last_warning = time.time()
+            raise ValueError(
+                f"Double check the stack layout and try again!\nData shape {data.shape}"
+            )
+
         for ch in range(data.shape[0]):
             image_properties = ImageProperties(
                 name=image_name + f"_{ch}",
@@ -699,6 +714,12 @@ def import_image(
             images.append(PlantSegImage(data=data[ch], properties=image_properties))
 
     elif image_layout is ImageLayout.ZCYX:
+        if data.shape[1] > min(data.shape) and (time.time() - last_warning) > 120:
+            last_warning = time.time()
+            raise ValueError(
+                f"Double check the stack layout and try again!\nData shape {data.shape}"
+            )
+
         for ch in range(data.shape[1]):
             image_properties = ImageProperties(
                 name=image_name + f"_{ch}",

@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 from uuid import uuid4
 
@@ -329,6 +330,22 @@ def test_import_image_CYX(test_h5_dir):
     assert images[0].image_layout == ImageLayout.YX
 
 
+def test_import_image_CYX_warning(mocker, test_h5_dir):
+    mocker.patch("plantseg.core.image.last_warning", new=0.0)
+    mock_loader = mocker.patch("plantseg.core.image.smart_load_with_vs")
+    mock_loader.return_value = (
+        np.random.rand(3, 2, 11),
+        VoxelSize(voxels_size=(1.0, 1.0, 1.0)),
+    )
+    file = test_h5_dir / "train_3Dc_3D.h5"
+    with pytest.raises(ValueError):
+        import_image(
+            path=file,
+            key="raw",
+            stack_layout="CYX",
+        )
+
+
 def test_import_image_YX_error(test_h5_dir):
     file = test_h5_dir / "train_2D_2D.h5"
     with pytest.raises(ValueError):
@@ -364,7 +381,24 @@ def test_import_image_CZYX(test_h5_dir):
     assert images[0].image_layout == ImageLayout.ZYX
 
 
-def test_import_image_ZCYX(test_h5_dir):
+def test_import_image_CZYX_warning(mocker, test_h5_dir):
+    mocker.patch("plantseg.core.image.last_warning", new=0.0)
+    mock_loader = mocker.patch("plantseg.core.image.smart_load_with_vs")
+    mock_loader.return_value = (
+        np.random.rand(3, 2, 10, 11),
+        VoxelSize(voxels_size=(1.0, 1.0, 1.0)),
+    )
+    file = test_h5_dir / "train_3Dc_3D.h5"
+    with pytest.raises(ValueError):
+        import_image(
+            path=file,
+            key="raw",
+            stack_layout="CZYX",
+        )
+
+
+def test_import_image_ZCYX(mocker, test_h5_dir):
+    mocker.patch("plantseg.core.image.last_warning", new=time.time())
     file = test_h5_dir / "train_3Dc_3D.h5"
     images = import_image(
         path=file,
@@ -376,6 +410,17 @@ def test_import_image_ZCYX(test_h5_dir):
     assert len(images) == 75
     assert images[0].semantic_type == SemanticType.RAW
     assert images[0].image_layout == ImageLayout.ZYX
+
+
+def test_import_image_ZCYX_warning(mocker, test_h5_dir):
+    mocker.patch("plantseg.core.image.last_warning", new=0.0)
+    file = test_h5_dir / "train_3Dc_3D.h5"
+    with pytest.raises(ValueError):
+        import_image(
+            path=file,
+            key="raw",
+            stack_layout="ZCYX",
+        )
 
 
 def test_split_image_CZYX():
