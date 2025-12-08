@@ -237,7 +237,15 @@ def unet_prediction(
         maximum_patch_shape = find_a_max_patch_shape(
             model, model_config["in_channels"], device
         )
-        raw_shape = raw.shape if input_layout == "ZYX" else (1,) + raw.shape
+        if input_layout == "YX":
+            raw_shape = (1,) + raw.shape
+        elif input_layout == "ZYX":
+            raw_shape = raw.shape
+        elif input_layout == "CYX":
+            raw_shape = (1,) + raw.shape[1:]
+        elif input_layout == "CZYX":
+            raw_shape = raw.shape[1:]
+
         assert len(raw_shape) == 3
         patch, patch_halo = find_patch_and_halo_shapes(
             raw_shape, maximum_patch_shape, patch_halo, both_sides=False

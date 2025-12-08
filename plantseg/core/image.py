@@ -1,4 +1,5 @@
 import logging
+import time
 from enum import Enum
 from pathlib import Path
 from typing import Literal
@@ -18,6 +19,7 @@ from plantseg.io.voxelsize import VoxelSize
 from plantseg.io.zarr import create_zarr
 
 logger = logging.getLogger(__name__)
+last_warning = 0.0
 
 
 class SemanticType(Enum):
@@ -267,6 +269,57 @@ class PlantSegImage:
         ps_image._id = id
         return ps_image
 
+    def split_channels(self) -> list["PlantSegImage"]:
+        if not self.is_multichannel:
+            return [self]
+        assert self.channel_axis is not None, "No channel axis known!"
+
+        if self.dimensionality == ImageDimensionality.TWO:
+            new_image_layout = ImageLayout.YX
+        else:
+            new_image_layout = ImageLayout.ZYX
+
+        images = []
+        for ch in range(self.shape[self.channel_axis]):
+            images.append(
+                self.derive_new(
+                    data=self.get_data(channel=ch),
+                    name=self.name + f"_{ch}",
+                    image_layout=new_image_layout,
+                )
+            )
+        return images
+
+    def merge_with(self, image: "PlantSegImage"):
+        if not all(
+            (
+                self.semantic_type == image.semantic_type,
+                self.voxel_size == image.voxel_size,
+                self.dimensionality == image.dimensionality,
+            )
+        ):
+            raise ValueError("Images can't be merged, not compatible!")
+
+        images = self.split_channels()
+        images.extend(image.split_channels())
+
+        if self.dimensionality == ImageDimensionality.TWO:
+            new_image_layout = ImageLayout.CYX
+        else:
+            new_image_layout = ImageLayout.CZYX
+
+        new_props = ImageProperties(
+            name=self.name + "_merged",
+            semantic_type=self.semantic_type,
+            voxel_size=self.voxel_size,
+            image_layout=new_image_layout,
+            original_voxel_size=self.original_voxel_size,
+            source_file_name=self.source_file_name,
+        )
+
+        data = np.stack([im.get_data() for im in images])
+        return PlantSegImage(data, new_props)
+
     def to_napari_layer_tuple(self) -> LayerDataTuple:
         """
         Prepare and normalise the image to be loaded as a napari layer.
@@ -468,8 +521,10 @@ class PlantSegImage:
         """Returns the data of the image.
 
         Args:
-            channel (int): Channel to load from the image (if the image is multichannel). If None, all channels are loaded.
-            normalize_01 (bool): Normalize the data between 0 and 1, if the image is a Label image, the data is not normalized.
+            channel (int): Channel to load from the image (if the image is
+                multichannel). If None, all channels are loaded.
+            normalize_01 (bool): Normalize the data between 0 and 1, if the
+                image is a Label image, the data is not normalized.
         """
         if self.image_type == ImageType.LABEL:
             return self._data
@@ -578,9 +633,9 @@ def import_image(
     key: str | None = None,
     image_name: str = "image",
     semantic_type: str = "raw",
-    stack_layout: str = "YX",
+    stack_layout: str | ImageLayout = "YX",
     m_slicing: str | None = None,
-) -> PlantSegImage:
+) -> PlantSegImage | list[PlantSegImage]:
     """
     Open an image file and create a PlantSegImage object.
 
@@ -588,37 +643,101 @@ def import_image(
         path (Path): Path to the image file
         key (Optional[str]): Key to load data from h5 or zarr files
         image_name (str): Name of the image (a unique name to identify the image)
-        semantic_type (str): Semantic type of the image, should be raw, segmentation, prediction or label
+        semantic_type (str): Semantic type of the image, should be raw, segmentation,
+            prediction or label
         stack_layout (str): Layout of the image, should be YX, CYX, ZYX, CZYX or ZCYX
-        m_slicing (str): Slicing to apply to the image, should be a string with the format [start:stop, ...] for each dimension.
+        m_slicing (str): Slicing to apply to the image, should be a string
+            with the format [start:stop, ...] for each dimension.
     """
+    global last_warning
     data, voxel_size = smart_load_with_vs(path, key)
     if voxel_size is None:
         voxel_size = VoxelSize()
 
+    images = []
     image_layout = ImageLayout(stack_layout)
-    if image_layout is ImageLayout.ZCYX:  # then make it CZYX
-        data = np.moveaxis(data, 0, 1)
-        image_layout = ImageLayout.CZYX
 
-    if m_slicing is not None:
-        data = dp.image_crop(data, m_slicing)
+    if not len(image_layout.name) == len(data.shape):
+        raise ValueError(
+            f"Data to import has shape {data.shape}, incompatible with choosen layout {image_layout}"
+        )
 
-    image_properties = ImageProperties(
-        name=image_name,
-        semantic_type=SemanticType(semantic_type),
-        voxel_size=voxel_size,
-        image_layout=image_layout,
-        original_voxel_size=voxel_size,
-        source_file_name=path.stem,
-    )
+    if image_layout not in [ImageLayout.ZCYX, ImageLayout.CZYX, ImageLayout.CYX]:
+        if m_slicing is not None:
+            data = dp.image_crop(data, m_slicing)
 
-    return PlantSegImage(data=data, properties=image_properties)
+        image_properties = ImageProperties(
+            name=image_name,
+            semantic_type=SemanticType(semantic_type),
+            voxel_size=voxel_size,
+            image_layout=image_layout,
+            original_voxel_size=voxel_size,
+            source_file_name=path.stem,
+        )
+
+        return PlantSegImage(data=data, properties=image_properties)
+
+    elif image_layout is ImageLayout.CYX:
+        if data.shape[0] > min(data.shape) and (time.time() - last_warning) > 120:
+            last_warning = time.time()
+            raise ValueError(
+                f"Double check the stack layout and try again!\nData shape {data.shape}"
+            )
+
+        for ch in range(data.shape[0]):
+            image_properties = ImageProperties(
+                name=image_name + f"_{ch}",
+                semantic_type=SemanticType(semantic_type),
+                voxel_size=voxel_size,
+                image_layout=ImageLayout.YX,
+                original_voxel_size=voxel_size,
+                source_file_name=path.stem,
+            )
+            images.append(PlantSegImage(data=data[ch], properties=image_properties))
+
+    elif image_layout is ImageLayout.CZYX:
+        if data.shape[0] > min(data.shape) and (time.time() - last_warning) > 120:
+            last_warning = time.time()
+            raise ValueError(
+                f"Double check the stack layout and try again!\nData shape {data.shape}"
+            )
+
+        for ch in range(data.shape[0]):
+            image_properties = ImageProperties(
+                name=image_name + f"_{ch}",
+                semantic_type=SemanticType(semantic_type),
+                voxel_size=voxel_size,
+                image_layout=ImageLayout.ZYX,
+                original_voxel_size=voxel_size,
+                source_file_name=path.stem,
+            )
+            images.append(PlantSegImage(data=data[ch], properties=image_properties))
+
+    elif image_layout is ImageLayout.ZCYX:
+        if data.shape[1] > min(data.shape) and (time.time() - last_warning) > 120:
+            last_warning = time.time()
+            raise ValueError(
+                f"Double check the stack layout and try again!\nData shape {data.shape}"
+            )
+
+        for ch in range(data.shape[1]):
+            image_properties = ImageProperties(
+                name=image_name + f"_{ch}",
+                semantic_type=SemanticType(semantic_type),
+                voxel_size=voxel_size,
+                image_layout=ImageLayout.ZYX,
+                original_voxel_size=voxel_size,
+                source_file_name=path.stem,
+            )
+            images.append(PlantSegImage(data=data[:, ch], properties=image_properties))
+
+    return images
 
 
 def _image_postprocessing(
     image: PlantSegImage, scale_to_origin: bool, export_dtype: str
 ) -> tuple[np.ndarray, VoxelSize]:
+    assert isinstance(image, PlantSegImage), f"type: {type(image)}"
     if scale_to_origin and image.requires_scaling:
         data = dp.scale_image_to_voxelsize(
             image.get_data(),
