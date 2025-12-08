@@ -1,7 +1,12 @@
+import os
+
 import numpy as np
 import pytest
+from numba.typed import List
 
 from plantseg.functionals.proofreading import utils
+
+os.environ["NUMBA_JIT_COVERAGE"] = "1"
 
 
 def test_get_bboxes3D():
@@ -9,8 +14,10 @@ def test_get_bboxes3D():
     segmentation[:2, :2, :2] = 1
     segmentation[3:5, 3:6, 3:7] = 2
     labels_idx = [0, 1, 2]
+    typed_labels_idx = List()
+    [typed_labels_idx.append(x) for x in labels_idx]
 
-    bboxes = utils._get_bboxes3D(segmentation, labels_idx)
+    bboxes = utils._get_bboxes3D(segmentation, typed_labels_idx)
 
     assert all([k in bboxes for k in labels_idx])
     assert np.all(bboxes[1] == [[0, 0, 0], [1, 1, 1]])
@@ -23,8 +30,10 @@ def test_get_bboxes2D():
     segmentation[:2, :2] = 1
     segmentation[3:5, 3:6] = 2
     labels_idx = [0, 1, 2]
+    typed_labels_idx = List()
+    [typed_labels_idx.append(x) for x in labels_idx]
 
-    bboxes = utils._get_bboxes2D(segmentation, labels_idx)
+    bboxes = utils._get_bboxes2D(segmentation, typed_labels_idx)
 
     assert all([k in bboxes for k in labels_idx])
     assert np.all(bboxes[1] == [[0, 0], [1, 1]])

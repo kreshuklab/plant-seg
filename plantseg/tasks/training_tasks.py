@@ -1,4 +1,5 @@
 import tempfile
+from functools import reduce
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -14,7 +15,7 @@ from plantseg.viewer_napari import log
 @task_tracker
 def unet_training_task(
     dataset_dir: Optional[Path],
-    image: Optional[Image],
+    image: Optional[Image] | list[Image],
     segmentation: Optional[Labels],
     model_name: str,
     in_channels: int,
@@ -37,9 +38,17 @@ def unet_training_task(
     if dataset_dir is not None and (image is not None or segmentation is not None):
         raise ValueError("dataset_dir or (image and segmentation) must be None!")
 
-    # make training dataset on the fly
+    # napari images -> make training dataset on the fly
     tmp_dir = None
     if image is not None and segmentation is not None:
+        if isinstance(image, list):
+            image_mc = PlantSegImage.from_napari_layer(image[0])
+            for im in image[1:]:
+                image_mc = image_mc.merge_with(PlantSegImage.from_napari_layer(im))
+            pl_image = image_mc
+        else:
+            pl_image = PlantSegImage.from_napari_layer(image)
+
         tmp_dir = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         out_path = Path(tmp_dir.name)
         train = out_path / "train"
@@ -47,7 +56,7 @@ def unet_training_task(
         val = out_path / "val"
         val.mkdir()
         save_image(
-            image=PlantSegImage.from_napari_layer(image),
+            image=pl_image,
             export_directory=train,
             name_pattern="to_train",
             key="raw",
