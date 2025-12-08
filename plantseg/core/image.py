@@ -317,7 +317,7 @@ class PlantSegImage:
             source_file_name=self.source_file_name,
         )
 
-        data = np.stack([image.get_data() for image in images])
+        data = np.stack([im.get_data() for im in images])
         return PlantSegImage(data, new_props)
 
     def to_napari_layer_tuple(self) -> LayerDataTuple:
