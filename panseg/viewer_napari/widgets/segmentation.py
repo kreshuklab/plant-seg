@@ -513,7 +513,7 @@ class Segmentation_Tab:
         self.widget_layer_select.nuclei.choices = raws + predictions + segmentations
         self.widget_layer_select.superpixels.choices = segmentations
 
-        # Hide empyt choices
+        # Hide empty choices
         if self.widget_layer_select.prediction.choices == ():
             self.widget_layer_select.prediction.hide()
         else:

@@ -39,9 +39,7 @@ correct_cells_cmap = CyclicLabelColormap(
 )
 
 try:
-    MAX_UNDO_ACTIONS = int(
-        os.getenv("PANSEG_MAX_UNDO_ACTIONS", str(MAX_UNDO_ACTIONS))
-    )
+    MAX_UNDO_ACTIONS = int(os.getenv("PANSEG_MAX_UNDO_ACTIONS", str(MAX_UNDO_ACTIONS)))
 except ValueError:
     log(
         "Invalid value for PANSEG_MAX_UNDO_ACTIONS, using default: 10",

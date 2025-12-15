@@ -49,7 +49,7 @@ def create_parser():
         nargs="?",
         default=False,
         const=None,
-        help="Lauch GUI to edit a workflow yaml file. Optionally provide a path.",
+        help="Launch GUI to edit a workflow yaml file. Optionally provide a path.",
         metavar="yaml",
     )
     arg_parser.add_argument(
