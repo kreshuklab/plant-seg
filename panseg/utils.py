@@ -174,9 +174,7 @@ def check_version(
                 feature_text_l.extend(new_features[:8])
 
         elif crr_version >= latest_version:
-            result = (
-                f"You are using a pre-release version of PanSeg: {current_version}"
-            )
+            result = f"You are using a pre-release version of PanSeg: {current_version}"
 
             if crr_version == latest_version:
                 if new_features:

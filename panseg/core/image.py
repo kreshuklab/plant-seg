@@ -659,7 +659,7 @@ def import_image(
 
     if not len(image_layout.name) == len(data.shape):
         raise ValueError(
-            f"Data to import has shape {data.shape}, incompatible with choosen layout {image_layout}"
+            f"Data to import has shape {data.shape}, incompatible with chosen layout {image_layout}"
         )
 
     if image_layout not in [ImageLayout.ZCYX, ImageLayout.CZYX, ImageLayout.CYX]:

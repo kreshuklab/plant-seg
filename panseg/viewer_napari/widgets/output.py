@@ -22,8 +22,8 @@ class Batch_Tab:
         self.widget_export_workflow.self.bind(self)
         self.widget_export_workflow.hide()
 
-        self.widget_edit_worflow = self.factory_edit_worflow()
-        self.widget_edit_worflow.self.bind(self)
+        self.widget_edit_workflow = self.factory_edit_workflow()
+        self.widget_edit_workflow.self.bind(self)
 
         self.widget_export_placeholder = Label(
             value="Export an image before saving the workflow\nfor batch execution!"
@@ -39,7 +39,7 @@ class Batch_Tab:
                 self.widget_export_placeholder,
                 self.widget_export_workflow,
                 div("Edit Batch Workflow"),
-                self.widget_edit_worflow,
+                self.widget_edit_workflow,
             ],
             labels=False,
         )
@@ -74,7 +74,7 @@ class Batch_Tab:
     @magic_factory(
         call_button="Edit a Workflow",
     )
-    def factory_edit_worflow(self) -> None:
+    def factory_edit_workflow(self) -> None:
         log("Starting workflow editor", thread="Workflow")
         Workflow_gui()
 
