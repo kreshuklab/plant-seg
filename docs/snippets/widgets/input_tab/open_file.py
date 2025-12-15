@@ -4,7 +4,7 @@ sys.path.append("docs/snippets")
 
 from napari_widgets_render import render_widget
 
-from plantseg.viewer_napari.widgets.input import Input_Tab
+from panseg.viewer_napari.widgets.input import Input_Tab
 
 input_tab = Input_Tab()
 

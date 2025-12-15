@@ -11,8 +11,8 @@ import torch
 import yaml
 from napari.layers import Image, Labels, Shapes
 
-from plantseg.core.image import SemanticType
-from plantseg.io.io import smart_load
+from panseg.core.image import SemanticType
+from panseg.io.io import smart_load
 
 TEST_FILES = Path(__file__).resolve().parent / "resources"
 VOXEL_SIZE = (0.235, 0.15, 0.15)

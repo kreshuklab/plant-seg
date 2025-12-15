@@ -1,6 +1,6 @@
 # Working with workflows
 
-Plantseg can create and execute workflows for batch processing.
+PanSeg can create and execute workflows for batch processing.
 A new workflow can be created in the napari gui, and it can be executed
 using the commandline interface.
 
@@ -9,22 +9,22 @@ using the commandline interface.
 To create a new workflow, one must process an example image through the napari GUI.
 Once the result has been exported, a button to `Export Workflow` will appear
 in the input/output tab in napari.
-Plantseg then creates a `yaml` file to repeat the workflow for any number of files.
+PanSeg then creates a `yaml` file to repeat the workflow for any number of files.
 
 The workflow includes input/output paths and naming schemes, so before the new
 workflow is useable, those need to be adjusted using the editor:
 
 ## Editing a workflow
 
-Plantseg comes with an editor for the workflow yaml files.
+PanSeg comes with an editor for the workflow yaml files.
 It can be opened through the napari gui (`Edit Workflow`),
 or from the cli:
 
 ```bash
-plantseg --editor [workflow.yaml]
+panseg --editor [workflow.yaml]
 ```
 
-![Workflow gui](https://github.com/kreshuklab/plant-seg/raw/refs/heads/assets/images/workflow_gui_overview.webp)
+![Workflow gui](https://github.com/kreshuklab/panseg/raw/refs/heads/assets/images/workflow_gui_overview.webp)
 
 ### Input/Output
 
@@ -49,5 +49,5 @@ name of the field, so you can edit the file in your favorite text editor.
 To finally run a workflow after you have modified the paths to your liking, please use the cli:
 
 ```bash
-plantseg --config your_workflow_file.yaml
+panseg --config your_workflow_file.yaml
 ```

@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 from napari.qt.threading import WorkerBase, thread_worker
 
-from plantseg.core.image import PlantSegImage
-from plantseg.viewer_napari.widgets import proofreading
+from panseg.core.image import PanSegImage
+from panseg.viewer_napari.widgets import proofreading
 
 
 def test_copy_if_not_none(mocker):
@@ -48,7 +48,7 @@ def test_update_layer(make_napari_viewer_proxy, napari_segmentation):
 
 
 def test_update_corrected_cells_mask_layer(mocker):
-    mock = mocker.patch("plantseg.viewer_napari.widgets.proofreading.update_layer")
+    mock = mocker.patch("panseg.viewer_napari.widgets.proofreading.update_layer")
     proofreading.update_corrected_cells_mask_layer(
         data=mocker.sentinel, scale=mocker.sentinel
     )
@@ -63,7 +63,7 @@ def test_update_corrected_cells_mask_layer(mocker):
 
 
 def test_update_scribbles_layer(mocker):
-    mock = mocker.patch("plantseg.viewer_napari.widgets.proofreading.update_layer")
+    mock = mocker.patch("panseg.viewer_napari.widgets.proofreading.update_layer")
     proofreading.update_scribbles_layer(data=mocker.sentinel, scale=mocker.sentinel)
     mock.assert_called_with(
         mocker.sentinel, proofreading.SCRIBBLES_LAYER_NAME, scale=mocker.sentinel
@@ -152,13 +152,13 @@ class TestProofreadingHandler:
         proof
 
     def test_reset_scribbles(self, mocker, proof):
-        mock = mocker.patch("plantseg.viewer_napari.widgets.proofreading.update_layer")
+        mock = mocker.patch("panseg.viewer_napari.widgets.proofreading.update_layer")
         proof.reset_scribbles()
         mock.assert_not_called()
 
         proof._state.active = True
         mocker.patch.multiple(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
             segmentation=mocker.DEFAULT,
             scale=mocker.DEFAULT,
         )
@@ -166,13 +166,13 @@ class TestProofreadingHandler:
         mock.assert_called_once()
 
     def test_reset_corrected(self, mocker, proof):
-        mock = mocker.patch("plantseg.viewer_napari.widgets.proofreading.update_layer")
+        mock = mocker.patch("panseg.viewer_napari.widgets.proofreading.update_layer")
         proof.reset_corrected()
         mock.assert_not_called()
 
         proof._state.active = True
         mocker.patch.multiple(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
             segmentation=mocker.DEFAULT,
             scale=mocker.DEFAULT,
         )
@@ -186,14 +186,14 @@ class TestProofreadingHandler:
         mock.assert_called_once()
 
     def test_reset_bboxes(self, mocker, proof):
-        mock = mocker.patch("plantseg.viewer_napari.widgets.proofreading.get_bboxes")
+        mock = mocker.patch("panseg.viewer_napari.widgets.proofreading.get_bboxes")
         with pytest.raises(ValueError):
             proof.reset_bboxes()
         mock.assert_not_called()
 
         proof._state.active = True
         mocker.patch(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.segmentation",
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler.segmentation",
             new_callable=mocker.PropertyMock,
         )
         proof.reset_bboxes()
@@ -207,7 +207,7 @@ class TestProofreadingHandler:
         mock_reset_bboxes = mocker.patch.object(proof, "reset_bboxes")
         mock_reset_corrected = mocker.patch.object(proof, "reset_corrected")
         mock_reset_scribbles = mocker.patch.object(proof, "reset_scribbles")
-        proof.setup(PlantSegImage.from_napari_layer(napari_segmentation))
+        proof.setup(PanSegImage.from_napari_layer(napari_segmentation))
         mock_reset.assert_called_once()
         mock_reset_bboxes.assert_called_once()
         mock_reset_corrected.assert_called_once()
@@ -215,7 +215,7 @@ class TestProofreadingHandler:
 
     def test_capture_state(self, proof, mocker):
         mocker.patch.multiple(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
             segmentation=mocker.DEFAULT,
             corrected_cells=mocker.DEFAULT,
             corrected_cells_mask=mocker.DEFAULT,
@@ -231,10 +231,10 @@ class TestProofreadingHandler:
 
     def test_restore_state(self, proof, mocker):
         mock_update_layer = mocker.patch(
-            "plantseg.viewer_napari.widgets.proofreading.update_layer",
+            "panseg.viewer_napari.widgets.proofreading.update_layer",
         )
         mocker.patch.multiple(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
             reset_scribbles=mocker.DEFAULT,
             seg_layer_name=mocker.DEFAULT,
             scale=mocker.DEFAULT,
@@ -245,7 +245,7 @@ class TestProofreadingHandler:
 
     def test__perform_undo_redo(self, proof, mocker):
         mock = mocker.patch.multiple(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
             _capture_state=mocker.DEFAULT,
             _restore_state=mocker.DEFAULT,
         )
@@ -261,20 +261,20 @@ class TestProofreadingHandler:
 
     def test_undo(self, proof, mocker):
         mock = mocker.patch(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler._perform_undo_redo"
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler._perform_undo_redo"
         )
         proof.undo()
         mock.assert_called_once()
 
     def test_redo(self, proof, mocker):
         mock = mocker.patch(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler._perform_undo_redo"
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler._perform_undo_redo"
         )
         proof.redo()
         mock.assert_called_once()
 
     def test_save_state_to_disk_suffix(self, proof, mocker):
-        mock = mocker.patch("plantseg.viewer_napari.widgets.proofreading.log")
+        mock = mocker.patch("panseg.viewer_napari.widgets.proofreading.log")
         proof.save_state_to_disk(Path("not_h5.file"), raw=None, pmap=None)
         mock.assert_called_once()
 
@@ -294,14 +294,14 @@ class TestProofreadingHandler:
         proof._state.current_seg_layer_name = "test_segmentation_3D"
 
         mocks = mocker.patch.multiple(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
             # corrected_cells_mask=napari_segmentation.data,
             corrected_cells_mask=[4],
             corrected_cells=set((1, 2, 3)),
             scale=mocker.DEFAULT,
         )
         mock_update_layer = mocker.patch(
-            "plantseg.viewer_napari.widgets.proofreading.update_layer",
+            "panseg.viewer_napari.widgets.proofreading.update_layer",
         )
 
         proof.save_state_to_disk(
@@ -333,12 +333,12 @@ class TestProofreadingHandler:
 
     def test_update_masks(self, proof, mocker):
         mocks = mocker.patch.multiple(
-            "plantseg.viewer_napari.widgets.proofreading",
+            "panseg.viewer_napari.widgets.proofreading",
             update_corrected_cells_mask_layer=mocker.DEFAULT,
             get_layer_data=mocker.DEFAULT,
         )
         mocks_handler = mocker.patch.multiple(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
             scale=mocker.DEFAULT,
             segmentation=mocker.DEFAULT,
         )
@@ -347,7 +347,7 @@ class TestProofreadingHandler:
 
     def test_toggle_corrected_cell_(self, mocker, proof):
         mocks = mocker.patch.multiple(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
             _toggle_corrected_cell=mocker.DEFAULT,
             _update_masks=mocker.DEFAULT,
         )
@@ -356,12 +356,12 @@ class TestProofreadingHandler:
 
     def test_update_corrected_cells_mask_slice_to_viewer(self, mocker, proof):
         mocks = mocker.patch.multiple(
-            "plantseg.viewer_napari.widgets.proofreading",
+            "panseg.viewer_napari.widgets.proofreading",
             update_region=mocker.DEFAULT,
             preserve_labels=mocker.DEFAULT,
         )
         mocker.patch(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.scale",
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler.scale",
         )
 
         proof.update_corrected_cells_mask_slice_to_viewer(
@@ -371,14 +371,14 @@ class TestProofreadingHandler:
 
     def test_update_after_proofreading(self, mocker, proof):
         mocks = mocker.patch.multiple(
-            "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
+            "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler",
             create=True,
             _state=mocker.DEFAULT,
             seg_layer_name=mocker.DEFAULT,
             scale=mocker.DEFAULT,
         )
         mocker.patch(
-            "plantseg.viewer_napari.widgets.proofreading.update_region",
+            "panseg.viewer_napari.widgets.proofreading.update_region",
         )
         proof.update_after_proofreading(
             mocker.sentinel, mocker.sentinel, mocker.sentinel
@@ -387,10 +387,10 @@ class TestProofreadingHandler:
 
 def test_widget_clean_scribble(mocker, make_napari_viewer_proxy, napari_raw):
     mock = mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.segmentation_handler.reset_scribbles",
+        "panseg.viewer_napari.widgets.proofreading.segmentation_handler.reset_scribbles",
     )
     mock_log = mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.log",
+        "panseg.viewer_napari.widgets.proofreading.log",
     )
     viewer = make_napari_viewer_proxy()
 
@@ -423,15 +423,15 @@ def test_widget_add_label_to_corrected(
         proofreading.widget_add_label_to_corrected(viewer, (0, 0, 0))
 
     mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.segmentation_handler._scale",
+        "panseg.viewer_napari.widgets.proofreading.segmentation_handler._scale",
         (1, 1, 1),
     )
     mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.segmentation_handler._state.current_seg_layer_name",
+        "panseg.viewer_napari.widgets.proofreading.segmentation_handler._state.current_seg_layer_name",
         proofreading.CORRECTED_CELLS_LAYER_NAME,
     )
     mock = mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.segmentation_handler.toggle_corrected_cell",
+        "panseg.viewer_napari.widgets.proofreading.segmentation_handler.toggle_corrected_cell",
     )
 
     napari_segmentation.name = proofreading.CORRECTED_CELLS_LAYER_NAME
@@ -443,7 +443,7 @@ def test_widget_add_label_to_corrected(
 def test_initialize_from_layer_wrong_layer(mocker, napari_segmentation):
     napari_segmentation.name = proofreading.SCRIBBLES_LAYER_NAME
     mock = mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.log",
+        "panseg.viewer_napari.widgets.proofreading.log",
     )
     proofreading.initialize_from_layer(napari_segmentation, False)
     mock.assert_called_with(
@@ -455,7 +455,7 @@ def test_initialize_from_layer_wrong_layer(mocker, napari_segmentation):
 
 def test_initialize_from_layer_not_sure(mocker, napari_segmentation):
     mock = mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.log",
+        "panseg.viewer_napari.widgets.proofreading.log",
     )
     proofreading.segmentation_handler._state.active = True
     proofreading.initialize_from_layer(napari_segmentation, False)
@@ -470,7 +470,7 @@ def test_initialize_from_layer(mocker, napari_segmentation, make_napari_viewer_p
     viewer = make_napari_viewer_proxy()
     viewer.add_layer(napari_segmentation)
     mocks = mocker.patch.multiple(
-        "plantseg.viewer_napari.widgets.proofreading",
+        "panseg.viewer_napari.widgets.proofreading",
         widget_proofreading_initialisation=mocker.DEFAULT,
     )
     proofreading.segmentation_handler._state.active = True
@@ -480,7 +480,7 @@ def test_initialize_from_layer(mocker, napari_segmentation, make_napari_viewer_p
 
 def test_initialize_from_file_not_sure(mocker):
     mock = mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.log",
+        "panseg.viewer_napari.widgets.proofreading.log",
     )
     proofreading.segmentation_handler._state.active = True
     proofreading.initialize_from_file(Path(), False)
@@ -493,7 +493,7 @@ def test_initialize_from_file_not_sure(mocker):
 
 def test_initialize_from_file(mocker):
     mocks = mocker.patch.multiple(
-        "plantseg.viewer_napari.widgets.proofreading",
+        "panseg.viewer_napari.widgets.proofreading",
         segmentation_handler=mocker.DEFAULT,
         setup_proofreading_widget=mocker.DEFAULT,
     )
@@ -507,7 +507,7 @@ def test_initialize_from_file(mocker):
 
 def test_widget_proofreading_initialisation(mocker, napari_segmentation):
     mocks = mocker.patch.multiple(
-        "plantseg.viewer_napari.widgets.proofreading",
+        "panseg.viewer_napari.widgets.proofreading",
         log=mocker.DEFAULT,
         initialize_from_layer=mocker.DEFAULT,
         initialize_from_file=mocker.DEFAULT,
@@ -546,7 +546,7 @@ def test_widget_proofreading_initialisation(mocker, napari_segmentation):
 
 def test_on_mode_change(mocker):
     mock = mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.widget_proofreading_initialisation"
+        "panseg.viewer_napari.widgets.proofreading.widget_proofreading_initialisation"
     )
     proofreading._on_mode_changed("New")
     mock.segmentation.show.assert_called_once()
@@ -558,7 +558,7 @@ def test_on_mode_change(mocker):
 
 def test_widget_split_and_merge_from_scribbles_log(mocker, napari_raw):
     mocks = mocker.patch.multiple(
-        "plantseg.viewer_napari.widgets.proofreading",
+        "panseg.viewer_napari.widgets.proofreading",
         log=mocker.DEFAULT,
         segmentation_handler=mocker.DEFAULT,
     )
@@ -580,10 +580,10 @@ def test_widget_split_and_merge_from_scribbles_log(mocker, napari_raw):
 def test_widget_split_and_merge_from_scribbles(mocker, napari_raw, run_id, qtbot):
     WorkerBase.await_workers(500)
     mock_split_merge = mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.split_merge_from_seeds",
+        "panseg.viewer_napari.widgets.proofreading.split_merge_from_seeds",
     )
     mock_scribble = mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.scribbles",
+        "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler.scribbles",
         new_callable=mocker.PropertyMock,
     )
     scribble = mocker.Mock()
@@ -591,7 +591,7 @@ def test_widget_split_and_merge_from_scribbles(mocker, napari_raw, run_id, qtbot
     scribble.sum.return_value = 0
 
     handler = mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.segmentation_handler",
+        "panseg.viewer_napari.widgets.proofreading.segmentation_handler",
         new=proofreading.ProofreadingHandler(),
     )
     handler._state.active = True
@@ -604,31 +604,31 @@ def test_widget_split_and_merge_from_scribbles(mocker, napari_raw, run_id, qtbot
 
     mock_save = mocker.patch.object(handler, "save_to_history")
     mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.segmentation",
+        "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler.segmentation",
         new_callable=mocker.PropertyMock,
     )
     mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.seg_layer_name",
+        "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler.seg_layer_name",
         new_callable=mocker.PropertyMock,
     )
     mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.scale",
+        "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler.scale",
         new_callable=mocker.PropertyMock,
     )
     mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.update_region",
+        "panseg.viewer_napari.widgets.proofreading.update_region",
     )
 
     mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.bboxes",
+        "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler.bboxes",
         new_callable=mocker.PropertyMock,
     )
     mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.max_label",
+        "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler.max_label",
         new_callable=mocker.PropertyMock,
     )
     mocker.patch(
-        "plantseg.viewer_napari.widgets.proofreading.ProofreadingHandler.corrected_cells",
+        "panseg.viewer_napari.widgets.proofreading.ProofreadingHandler.corrected_cells",
         new_callable=mocker.PropertyMock,
     )
     scribble.sum.return_value = 5
@@ -750,7 +750,7 @@ def test_locking_threaded_timeout(qtbot, i):
 
 def test_widget_filter_segmentation_log(mocker):
     mocks = mocker.patch.multiple(
-        "plantseg.viewer_napari.widgets.proofreading",
+        "panseg.viewer_napari.widgets.proofreading",
         log=mocker.DEFAULT,
         segmentation_handler=mocker.DEFAULT,
     )
@@ -766,11 +766,11 @@ def test_widget_filter_segmentation_log(mocker):
 
 def test_widget_filter_segmentation(mocker, make_napari_viewer_proxy):
     mocks = mocker.patch.multiple(
-        "plantseg.viewer_napari.widgets.proofreading",
+        "panseg.viewer_napari.widgets.proofreading",
         segmentation_handler=mocker.DEFAULT,
         split_merge_from_seeds=mocker.DEFAULT,
         ImageProperties=mocker.DEFAULT,
-        PlantSegImage=mocker.DEFAULT,
+        PanSegImage=mocker.DEFAULT,
         napari=mocker.DEFAULT,
     )
     mocker.sentinel._add_layer_from_data = mocker.Mock()
@@ -779,12 +779,12 @@ def test_widget_filter_segmentation(mocker, make_napari_viewer_proxy):
     proofreading.widget_filter_segmentation()
     sleep(0.1)
     mocks["ImageProperties"].assert_called_once()
-    mocks["PlantSegImage"].assert_called_once()
+    mocks["PanSegImage"].assert_called_once()
 
 
 def test_widget_undo(mocker):
     mocks = mocker.patch.multiple(
-        "plantseg.viewer_napari.widgets.proofreading",
+        "panseg.viewer_napari.widgets.proofreading",
         segmentation_handler=mocker.DEFAULT,
         log=mocker.DEFAULT,
     )
@@ -800,7 +800,7 @@ def test_widget_undo(mocker):
 
 def test_widget_redo(mocker):
     mocks = mocker.patch.multiple(
-        "plantseg.viewer_napari.widgets.proofreading",
+        "panseg.viewer_napari.widgets.proofreading",
         segmentation_handler=mocker.DEFAULT,
         log=mocker.DEFAULT,
     )
@@ -816,7 +816,7 @@ def test_widget_redo(mocker):
 
 def test_widget_save_state(mocker):
     mocks = mocker.patch.multiple(
-        "plantseg.viewer_napari.widgets.proofreading",
+        "panseg.viewer_napari.widgets.proofreading",
         segmentation_handler=mocker.DEFAULT,
     )
     proofreading.widget_save_state(mocker.sentinel)

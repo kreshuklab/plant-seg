@@ -1,12 +1,12 @@
 import pytest
 from napari.layers import Shapes
 
-from plantseg.tasks.dataprocessing_tasks import (
+from panseg.tasks.dataprocessing_tasks import (
     image_rescale_to_shape_task,
     image_rescale_to_voxel_size_task,
     set_voxel_size_task,
 )
-from plantseg.viewer_napari.widgets.preprocessing import (
+from panseg.viewer_napari.widgets.preprocessing import (
     Preprocessing_Tab,
     RescaleModes,
 )
@@ -102,7 +102,7 @@ def test_toggle_visibility_3(preprocessing_tab, mocker):
 
 def test_gaussian_smoothing_no_layer(preprocessing_tab, mocker):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     preprocessing_tab.widget_layer_select.layer.choices = (None,)
@@ -113,7 +113,7 @@ def test_gaussian_smoothing_no_layer(preprocessing_tab, mocker):
 
 def test_gaussian_smoothing_image(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     preprocessing_tab.widget_layer_select.layer.choices = (None,)
@@ -124,11 +124,11 @@ def test_gaussian_smoothing_image(preprocessing_tab, mocker, napari_raw):
 
 def test_cropping_no_image(preprocessing_tab, mocker):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.log",
+        target="panseg.viewer_napari.widgets.preprocessing.log",
         autospec=True,
     )
 
@@ -145,11 +145,11 @@ def test_cropping_no_image(preprocessing_tab, mocker):
 
 def test_cropping_no_shapes(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.log",
+        target="panseg.viewer_napari.widgets.preprocessing.log",
         autospec=True,
     )
 
@@ -166,11 +166,11 @@ def test_cropping_no_shapes(preprocessing_tab, mocker, napari_raw):
 
 def test_cropping_too_many_rectangels(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.log",
+        target="panseg.viewer_napari.widgets.preprocessing.log",
         autospec=True,
     )
 
@@ -192,11 +192,11 @@ def test_cropping_too_many_rectangels(preprocessing_tab, mocker, napari_raw):
 
 def test_cropping_ellipse(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.log",
+        target="panseg.viewer_napari.widgets.preprocessing.log",
         autospec=True,
     )
 
@@ -218,7 +218,7 @@ def test_cropping_ellipse(preprocessing_tab, mocker, napari_raw):
 
 def test_cropping_one_rectangle(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     shape = Shapes(
@@ -233,7 +233,7 @@ def test_cropping_one_rectangle(preprocessing_tab, mocker, napari_raw):
 
 def test_cropping_z_range(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     # is uninitialized
@@ -250,7 +250,7 @@ def test_cropping_activation(
 ):
     viewer = make_napari_viewer_proxy()
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
 
@@ -277,7 +277,7 @@ def test_cropping_activation(
 
 def test_cropping_no_rectangle(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     shape = Shapes()
@@ -288,11 +288,11 @@ def test_cropping_no_rectangle(preprocessing_tab, mocker, napari_raw):
 
 def test_rescaling_no_voxelsize(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.log",
+        target="panseg.viewer_napari.widgets.preprocessing.log",
         autospec=True,
     )
     napari_raw._metadata["original_voxel_size"]["voxels_size"] = None
@@ -309,7 +309,7 @@ def test_rescaling_no_voxelsize(preprocessing_tab, mocker, napari_raw):
 
 def test_rescaling_set_voxel_size(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
@@ -327,7 +327,7 @@ def test_rescaling_to_shape_none(preprocessing_tab, napari_raw):
 
 def test_rescaling_to_shape(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
@@ -340,7 +340,7 @@ def test_rescaling_to_shape(preprocessing_tab, mocker, napari_raw):
 
 def test_rescaling_from_factor(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
@@ -351,7 +351,7 @@ def test_rescaling_from_factor(preprocessing_tab, mocker, napari_raw):
 
 def test_rescaling_to_voxel_size(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
@@ -362,7 +362,7 @@ def test_rescaling_to_voxel_size(preprocessing_tab, mocker, napari_raw):
 
 def test_rescaling_to_model_voxel_size(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     preprocessing_tab.widget_layer_select.layer.choices = (napari_raw,)
@@ -373,11 +373,11 @@ def test_rescaling_to_model_voxel_size(preprocessing_tab, mocker, napari_raw):
 
 def test_image_pair_operations_missing(preprocessing_tab, mocker, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.schedule_task",
+        target="panseg.viewer_napari.widgets.preprocessing.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.preprocessing.log",
+        target="panseg.viewer_napari.widgets.preprocessing.log",
         autospec=True,
     )
     assert preprocessing_tab.widget_image_pair_operations(napari_raw, None) is None

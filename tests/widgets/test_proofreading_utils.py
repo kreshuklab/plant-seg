@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from numba.typed import List
 
-from plantseg.functionals.proofreading import utils
+from panseg.functionals.proofreading import utils
 
 os.environ["NUMBA_JIT_COVERAGE"] = "1"
 
@@ -43,7 +43,7 @@ def test_get_bboxes2D():
 
 def test_p_get_bboxes_2D(mocker):
     mocks = mocker.patch.multiple(
-        "plantseg.functionals.proofreading.utils",
+        "panseg.functionals.proofreading.utils",
         _get_bboxes2D=mocker.DEFAULT,
         _get_bboxes3D=mocker.DEFAULT,
     )
@@ -56,7 +56,7 @@ def test_p_get_bboxes_2D(mocker):
 
 def test_get_bboxes_3D(mocker):
     mocks = mocker.patch.multiple(
-        "plantseg.functionals.proofreading.utils",
+        "panseg.functionals.proofreading.utils",
         _get_bboxes2D=mocker.DEFAULT,
         _get_bboxes3D=mocker.DEFAULT,
     )
@@ -69,7 +69,7 @@ def test_get_bboxes_3D(mocker):
 
 def test_p_get_bboxes_4D(mocker):
     mocks = mocker.patch.multiple(
-        "plantseg.functionals.proofreading.utils",
+        "panseg.functionals.proofreading.utils",
         _get_bboxes2D=mocker.DEFAULT,
         _get_bboxes3D=mocker.DEFAULT,
     )

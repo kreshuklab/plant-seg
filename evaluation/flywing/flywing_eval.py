@@ -39,7 +39,7 @@ def relabel(tracks):
 
 def compute_seg_score(res_seg, gt_seg):
     SCRIPT_PATH = os.path.join(
-        expanduser("~"), ".plantseg_models", "segtra_measure", "Linux", "SEGMeasure"
+        expanduser("~"), ".panseg_models", "segtra_measure", "Linux", "SEGMeasure"
     )
     SCRIPT_URL = "https://github.com/maisli/tracking_evaluation/raw/master/segtra_measure/Linux/SEGMeasure"
 

@@ -5,13 +5,13 @@ from unittest.mock import patch
 import pytest
 import yaml
 
-from plantseg.workflow_gui.editor import Workflow_gui
+from panseg.workflow_gui.editor import Workflow_gui
 
 
 @pytest.fixture
 def mock_logger(mocker):
     """Fixture to mock the logger."""
-    return mocker.patch("plantseg.workflow_gui.widgets.logger")
+    return mocker.patch("panseg.workflow_gui.widgets.logger")
 
 
 @pytest.fixture
@@ -106,7 +106,7 @@ def test_load_missing_config(gui, mock_logger, workflow_yaml):
 
 
 def test_invalid_config(gui):
-    with patch("plantseg.workflow_gui.editor.logger") as mock_logger:
+    with patch("panseg.workflow_gui.editor.logger") as mock_logger:
         conf: dict = deepcopy(gui.config)
 
         conf_mod = deepcopy(conf)

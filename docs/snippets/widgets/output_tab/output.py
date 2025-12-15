@@ -4,7 +4,7 @@ sys.path.append("docs/snippets")
 
 from napari_widgets_render import render_widget
 
-from plantseg.viewer_napari.widgets.output import Output_Tab
+from panseg.viewer_napari.widgets.output import Output_Tab
 
 tab = Output_Tab()
 w = tab.widget_export_image

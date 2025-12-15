@@ -4,7 +4,7 @@ sys.path.append("docs/snippets")
 
 from napari_widgets_render import render_widget
 
-from plantseg.viewer_napari.widgets.training import Training_Tab
+from panseg.viewer_napari.widgets.training import Training_Tab
 
 tab = Training_Tab(None)
 w = tab.widget_unet_training

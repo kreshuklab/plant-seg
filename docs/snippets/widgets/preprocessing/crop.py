@@ -5,7 +5,7 @@ sys.path.append("docs/snippets")
 
 from napari_widgets_render import render_widget
 
-from plantseg.viewer_napari.widgets.preprocessing import Preprocessing_Tab
+from panseg.viewer_napari.widgets.preprocessing import Preprocessing_Tab
 
 tab = Preprocessing_Tab()
 w = tab.factory_cropping()

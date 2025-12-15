@@ -3,9 +3,9 @@ from magicgui.widgets import Label, Widget
 from napari.layers import Image, Labels
 from superqt.utils import WorkerBase
 
-from plantseg.core.image import PlantSegImage
-from plantseg.tasks.workflow_handler import task_tracker
-from plantseg.viewer_napari.widgets import utils
+from panseg.core.image import PanSegImage
+from panseg.tasks.workflow_handler import task_tracker
+from panseg.viewer_napari.widgets import utils
 
 
 def test_return_value_if_widget_is_widget(mocker):
@@ -35,7 +35,7 @@ def test_div_no_text():
 
 def test_add_ps_image_to_viewer(make_napari_viewer, napari_raw):
     viewer = make_napari_viewer()
-    ps_image = PlantSegImage.from_napari_layer(napari_raw)
+    ps_image = PanSegImage.from_napari_layer(napari_raw)
     utils.add_ps_image_to_viewer(ps_image, False)
     assert ps_image.name in viewer.layers
     assert isinstance(viewer.layers[0], Image)
@@ -43,7 +43,7 @@ def test_add_ps_image_to_viewer(make_napari_viewer, napari_raw):
 
 def test_add_ps_image_to_viewer_label(make_napari_viewer, napari_segmentation):
     viewer = make_napari_viewer()
-    ps_image = PlantSegImage.from_napari_layer(napari_segmentation)
+    ps_image = PanSegImage.from_napari_layer(napari_segmentation)
     utils.add_ps_image_to_viewer(ps_image, False)
     assert ps_image.name in viewer.layers
     assert isinstance(viewer.layers[0], Labels)
@@ -51,7 +51,7 @@ def test_add_ps_image_to_viewer_label(make_napari_viewer, napari_segmentation):
 
 def test_add_ps_image_to_viewer_replace(make_napari_viewer, napari_raw):
     viewer = make_napari_viewer()
-    ps_image = PlantSegImage.from_napari_layer(napari_raw)
+    ps_image = PanSegImage.from_napari_layer(napari_raw)
     utils.add_ps_image_to_viewer(ps_image, True)
     assert ps_image.name in viewer.layers
 
@@ -119,7 +119,7 @@ def test_decrease_font_size():
 
 
 def test_open_docs(mocker):
-    mock_browser = mocker.patch("plantseg.viewer_napari.widgets.utils.webbrowser")
+    mock_browser = mocker.patch("panseg.viewer_napari.widgets.utils.webbrowser")
     help = utils.Help_text()
     assert mocker.sentinel == help.open_docs(mocker.sentinel)
     mock_browser.open.assert_called_once()

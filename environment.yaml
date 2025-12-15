@@ -1,4 +1,4 @@
-name: plant-seg
+name: panseg
 channels:
   - conda-forge
 dependencies:

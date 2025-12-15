@@ -1,14 +1,14 @@
 import numpy as np
 import pytest
 
-from plantseg.core.image import (
+from panseg.core.image import (
     ImageLayout,
     ImageProperties,
-    PlantSegImage,
+    PanSegImage,
     SemanticType,
 )
-from plantseg.io.voxelsize import VoxelSize
-from plantseg.tasks.prediction_tasks import biio_prediction_task, unet_prediction_task
+from panseg.io.voxelsize import VoxelSize
+from panseg.tasks.prediction_tasks import biio_prediction_task, unet_prediction_task
 
 
 @pytest.mark.parametrize(
@@ -28,7 +28,7 @@ def test_unet_prediction_task(shape, layout, model_name):
         image_layout=layout,
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
     )
-    image = PlantSegImage(data=mock_data, properties=property)
+    image = PanSegImage(data=mock_data, properties=property)
 
     result = unet_prediction_task(
         image=image,
@@ -55,7 +55,7 @@ def test_unet_prediction_task(shape, layout, model_name):
     ),
 )
 def test_biio_prediction_task(raw_fixture_name, input_layout, model_id, request):
-    image = PlantSegImage(
+    image = PanSegImage(
         data=request.getfixturevalue(raw_fixture_name),
         properties=ImageProperties(
             name="test",

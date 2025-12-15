@@ -4,7 +4,7 @@ import magicgui
 import pytest
 from magicgui.widgets import Label
 
-from plantseg.viewer_napari.widgets.input import (
+from panseg.viewer_napari.widgets.input import (
     Docs_Container,
     Input_Tab,
     InputType,
@@ -26,7 +26,7 @@ def test_input_tab_initialization(input_tab):
 
 def test_input_tab_open_file(input_tab, mocker):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.input.schedule_task",
+        target="panseg.viewer_napari.widgets.input.schedule_task",
         autospec=True,
     )
     kwargs = {
@@ -59,7 +59,7 @@ def test_open_file_widget_path_handling(input_tab):
 
 def test_look_up_dataset_keys_empty(input_tab, zarr_file_empty, mocker):
     mock_gen_name = mocker.patch(
-        "plantseg.viewer_napari.widgets.input.Input_Tab.generate_layer_name"
+        "panseg.viewer_napari.widgets.input.Input_Tab.generate_layer_name"
     )
     input_tab.look_up_dataset_keys(zarr_file_empty)
     mock_gen_name.assert_not_called()
@@ -67,7 +67,7 @@ def test_look_up_dataset_keys_empty(input_tab, zarr_file_empty, mocker):
 
 def test_look_up_dataset_keys_3d(input_tab, zarr_file_3d, mocker):
     mock_gen_name = mocker.patch(
-        "plantseg.viewer_napari.widgets.input.Input_Tab.generate_layer_name"
+        "panseg.viewer_napari.widgets.input.Input_Tab.generate_layer_name"
     )
 
     input_tab.look_up_dataset_keys(zarr_file_3d)
@@ -78,7 +78,7 @@ def test_look_up_dataset_keys_3d(input_tab, zarr_file_3d, mocker):
 
 def test_look_up_dataset_keys_h5(input_tab, h5_file, mocker):
     mock_gen_name = mocker.patch(
-        "plantseg.viewer_napari.widgets.input.Input_Tab.generate_layer_name"
+        "panseg.viewer_napari.widgets.input.Input_Tab.generate_layer_name"
     )
 
     input_tab.look_up_dataset_keys(h5_file)
@@ -92,7 +92,7 @@ def test_set_voxel_size(input_tab, napari_raw, mocker):
     input_tab.widget_details_layer_select.layer.value = napari_raw
 
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.input.schedule_task",
+        target="panseg.viewer_napari.widgets.input.schedule_task",
         autospec=True,
     )
 
@@ -152,7 +152,7 @@ def test_update_layer_selection(
 def test_open_docs(mocker):
     docs = Docs_Container()
     mocked_open = mocker.patch(
-        "plantseg.viewer_napari.widgets.input.webbrowser.open", autospec=True
+        "panseg.viewer_napari.widgets.input.webbrowser.open", autospec=True
     )
     docs.open_docs(mocker.sentinel)
     mocked_open.assert_called_once()

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-from plantseg.io.voxelsize import VoxelSize
+from panseg.io.voxelsize import VoxelSize
 
 
 @pytest.mark.parametrize(

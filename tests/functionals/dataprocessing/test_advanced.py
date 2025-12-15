@@ -1,6 +1,6 @@
 import numpy as np
 
-from plantseg.functionals.dataprocessing.advanced_dataprocessing import (
+from panseg.functionals.dataprocessing.advanced_dataprocessing import (
     fix_over_under_segmentation_from_nuclei,
     remove_false_positives_by_foreground_probability,
 )

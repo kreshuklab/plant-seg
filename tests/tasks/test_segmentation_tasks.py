@@ -2,16 +2,16 @@ import numpy as np
 import pytest
 from torch import layout
 
-from plantseg.core.image import (
+from panseg.core.image import (
     ImageLayout,
     ImageProperties,
-    PlantSegImage,
+    PanSegImage,
     SemanticType,
 )
-from plantseg.io.h5 import load_h5
-from plantseg.io.voxelsize import VoxelSize
-from plantseg.tasks import segmentation_tasks
-from plantseg.tasks.segmentation_tasks import (
+from panseg.io.h5 import load_h5
+from panseg.io.voxelsize import VoxelSize
+from panseg.tasks import segmentation_tasks
+from panseg.tasks.segmentation_tasks import (
     aio_watershed_task,
     clustering_segmentation_task,
     dt_watershed_task,
@@ -48,7 +48,7 @@ def test_dt_watershed_and_clustering(
         image_layout=layout,
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
     )
-    image = PlantSegImage(data=mock_data, properties=property_)
+    image = PanSegImage(data=mock_data, properties=property_)
 
     result = dt_watershed_task(image=image, stacked=stacked, is_nuclei_image=is_nuclei)
 
@@ -79,7 +79,7 @@ def test_mutex():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
     )
-    image = PlantSegImage(data=mock_data, properties=property_)
+    image = PanSegImage(data=mock_data, properties=property_)
 
     result_clustering = clustering_segmentation_task(
         image=image, over_segmentation=None, mode="mutex_ws"
@@ -126,9 +126,9 @@ def test_lmc_segmentation_pred(mocker):
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
     )
 
-    pred_image = PlantSegImage(data=mock_data, properties=pred_property)
-    raw_image = PlantSegImage(data=mock_data, properties=raw_property)
-    seg_image = PlantSegImage(data=mock_seg, properties=seg_property)
+    pred_image = PanSegImage(data=mock_data, properties=pred_property)
+    raw_image = PanSegImage(data=mock_data, properties=raw_property)
+    seg_image = PanSegImage(data=mock_seg, properties=seg_property)
 
     result = lmc_segmentation_task(
         boundary_pmap=pred_image,
@@ -155,10 +155,10 @@ def test_lmc_segmentation_seg(mocker, napari_prediction, napari_segmentation, h5
     )
 
     raw_data = load_h5(h5_file, "raw")
-    pred_image = PlantSegImage.from_napari_layer(napari_prediction)
-    seg_image = PlantSegImage.from_napari_layer(napari_segmentation)
-    pred2_image = PlantSegImage.derive_new(pred_image, raw_data, name="pred2")
-    seg2_image = PlantSegImage.derive_new(seg_image, raw_data, name="seg2")
+    pred_image = PanSegImage.from_napari_layer(napari_prediction)
+    seg_image = PanSegImage.from_napari_layer(napari_segmentation)
+    pred2_image = PanSegImage.derive_new(pred_image, raw_data, name="pred2")
+    seg2_image = PanSegImage.derive_new(seg_image, raw_data, name="seg2")
 
     result = lmc_segmentation_task(
         boundary_pmap=pred2_image,
@@ -200,7 +200,7 @@ def test_aio_watershed_and_clustering(shape, layout, stacked, is_nuclei, mode):
         image_layout=layout,
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
     )
-    image = PlantSegImage(data=mock_data, properties=raw_property)
+    image = PanSegImage(data=mock_data, properties=raw_property)
     if mode == "lmc":
         nuc_property = ImageProperties(
             name="test",
@@ -209,7 +209,7 @@ def test_aio_watershed_and_clustering(shape, layout, stacked, is_nuclei, mode):
             image_layout=layout,
             original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
         )
-        nuclei = PlantSegImage(data=mock_data, properties=nuc_property)
+        nuclei = PanSegImage(data=mock_data, properties=nuc_property)
     else:
         nuclei = None
 

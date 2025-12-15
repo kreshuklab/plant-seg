@@ -3,8 +3,8 @@ import os
 import pytest
 import torch
 
-from plantseg.core.zoo import model_zoo
-from plantseg.functionals.training.model import UNet2D
+from panseg.core.zoo import model_zoo
+from panseg.functionals.training.model import UNet2D
 from tests.conftest import IS_CUDA_AVAILABLE
 
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
@@ -18,8 +18,8 @@ MODEL_NAMES = [
 ]
 
 
-class TestPlantSegModelZoo:
-    """Test the PlantSeg model zoo"""
+class TestPanSegModelZoo:
+    """Test the PanSeg model zoo"""
 
     @pytest.mark.skipif(not IS_CUDA_AVAILABLE, reason="CUDA is not available")
     @pytest.mark.skipif(

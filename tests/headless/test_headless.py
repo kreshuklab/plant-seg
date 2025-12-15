@@ -3,17 +3,17 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-from plantseg.core.image import PlantSegImage
-from plantseg.headless.headless import run_headless_workflow
-from plantseg.io.tiff import create_tiff
-from plantseg.io.voxelsize import VoxelSize
-from plantseg.tasks.dataprocessing_tasks import gaussian_smoothing_task
-from plantseg.tasks.io_tasks import (
+from panseg.core.image import PanSegImage
+from panseg.headless.headless import run_headless_workflow
+from panseg.io.tiff import create_tiff
+from panseg.io.voxelsize import VoxelSize
+from panseg.tasks.dataprocessing_tasks import gaussian_smoothing_task
+from panseg.tasks.io_tasks import (
     export_image_task,
     import_image_task,
     merge_channels_task,
 )
-from plantseg.tasks.workflow_handler import workflow_handler
+from panseg.tasks.workflow_handler import workflow_handler
 
 
 def create_random_tiff(tmpdir, name, shape=(32, 32), layout="YX") -> Path:
@@ -36,9 +36,9 @@ def test_create_workflow(tmp_path):
     ps_1 = import_image_task(
         input_path=path_tiff, key="raw", semantic_type="raw", stack_layout="YX"
     )
-    assert isinstance(ps_1, PlantSegImage)
+    assert isinstance(ps_1, PanSegImage)
     ps_2 = gaussian_smoothing_task(image=ps_1, sigma=1.0)
-    assert isinstance(ps_2, PlantSegImage)
+    assert isinstance(ps_2, PanSegImage)
     export_image_task(
         image=ps_2,
         export_directory=path_tiff.parent,
@@ -96,11 +96,11 @@ def test_create_workflow_channels(tmp_path):
     )
     assert isinstance(ps_1s, list)
     ps_2 = gaussian_smoothing_task(image=ps_1s[0], sigma=1.0)
-    assert isinstance(ps_2, PlantSegImage)
+    assert isinstance(ps_2, PanSegImage)
     ps_3 = merge_channels_task(
         **{f"image_{i}": ps for i, ps in enumerate(ps_1s + [ps_2])}
     )
-    assert isinstance(ps_3, PlantSegImage)
+    assert isinstance(ps_3, PanSegImage)
     export_image_task(
         image=ps_3,
         export_directory=path_tiff.parent,

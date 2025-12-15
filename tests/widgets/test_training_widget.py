@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from plantseg.functionals.training.model import UNet2D, UNet3D
-from plantseg.functionals.training.train import find_h5_files
-from plantseg.viewer_napari.widgets.training import Training_Tab
+from panseg.functionals.training.model import UNet2D, UNet3D
+from panseg.functionals.training.train import find_h5_files
+from panseg.viewer_napari.widgets.training import Training_Tab
 
 
 @pytest.fixture
@@ -18,13 +18,13 @@ def test_get_container(training_tab):
 
 
 def test_unet_training_run(training_tab, mocker, tmp_path):
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_get_models = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
+        "panseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
     )
-    m_schedule = mocker.patch("plantseg.viewer_napari.widgets.training.schedule_task")
+    m_schedule = mocker.patch("panseg.viewer_napari.widgets.training.schedule_task")
     m_model_path = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.PATH_PLANTSEG_MODELS", new=tmp_path
+        "panseg.viewer_napari.widgets.training.PATH_PANSEG_MODELS", new=tmp_path
     )
 
     training_tab.widget_unet_training(
@@ -54,11 +54,11 @@ def test_unet_training_run(training_tab, mocker, tmp_path):
 
 
 def test_unet_training_no_dataset(training_tab, mocker):
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_get_models = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
+        "panseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
     )
-    m_schedule = mocker.patch("plantseg.viewer_napari.widgets.training.schedule_task")
+    m_schedule = mocker.patch("panseg.viewer_napari.widgets.training.schedule_task")
 
     training_tab.widget_unet_training(
         from_disk="Disk",
@@ -92,11 +92,11 @@ def test_unet_training_no_image(
     napari_segmentation,
     napari_raw,
 ):
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_get_models = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
+        "panseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
     )
-    m_schedule = mocker.patch("plantseg.viewer_napari.widgets.training.schedule_task")
+    m_schedule = mocker.patch("panseg.viewer_napari.widgets.training.schedule_task")
 
     training_tab.widget_unet_training(
         from_disk="Current Data",
@@ -159,11 +159,11 @@ def test_unet_training_channels(
     napari_segmentation,
     napari_raw,
 ):
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_get_models = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
+        "panseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
     )
-    m_schedule = mocker.patch("plantseg.viewer_napari.widgets.training.schedule_task")
+    m_schedule = mocker.patch("panseg.viewer_napari.widgets.training.schedule_task")
 
     m_additional_inputs = [mocker.Mock() for _ in range(3)]
     for m in m_additional_inputs:
@@ -197,11 +197,11 @@ def test_unet_training_channels(
 
 
 def test_unet_training_none(training_tab, mocker):
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_get_models = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
+        "panseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
     )
-    m_schedule = mocker.patch("plantseg.viewer_napari.widgets.training.schedule_task")
+    m_schedule = mocker.patch("panseg.viewer_napari.widgets.training.schedule_task")
 
     training_tab.widget_unet_training(
         from_disk="Disk",
@@ -258,11 +258,11 @@ def test_unet_training_none(training_tab, mocker):
 
 
 def test_unet_training_custom(training_tab, mocker):
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_get_models = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
+        "panseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
     )
-    m_schedule = mocker.patch("plantseg.viewer_napari.widgets.training.schedule_task")
+    m_schedule = mocker.patch("panseg.viewer_napari.widgets.training.schedule_task")
 
     training_tab.widget_unet_training(
         from_disk="Disk",
@@ -319,11 +319,11 @@ def test_unet_training_custom(training_tab, mocker):
 
 
 def test_unet_training_no_name(training_tab, mocker):
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_get_models = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
+        "panseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
     )
-    m_schedule = mocker.patch("plantseg.viewer_napari.widgets.training.schedule_task")
+    m_schedule = mocker.patch("panseg.viewer_napari.widgets.training.schedule_task")
 
     training_tab.widget_unet_training(
         from_disk="Disk",
@@ -353,13 +353,13 @@ def test_unet_training_no_name(training_tab, mocker):
 
 
 def test_unet_training_feature_maps(training_tab, mocker, tmp_path):
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_get_models = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
+        "panseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
     )
-    m_schedule = mocker.patch("plantseg.viewer_napari.widgets.training.schedule_task")
+    m_schedule = mocker.patch("panseg.viewer_napari.widgets.training.schedule_task")
     m_model_path = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.PATH_PLANTSEG_MODELS", new=tmp_path
+        "panseg.viewer_napari.widgets.training.PATH_PANSEG_MODELS", new=tmp_path
     )
 
     training_tab.widget_unet_training(
@@ -416,14 +416,14 @@ def test_unet_training_feature_maps(training_tab, mocker, tmp_path):
 
 
 def test_unet_training_pretrained(training_tab, mocker, tmp_path):
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_get_models = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
+        "panseg.viewer_napari.widgets.training.model_zoo.get_model_by_name"
     )
     m_get_models.return_value = [1, 2, mocker.sentinel]
-    m_schedule = mocker.patch("plantseg.viewer_napari.widgets.training.schedule_task")
+    m_schedule = mocker.patch("panseg.viewer_napari.widgets.training.schedule_task")
     m_model_path = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.PATH_PLANTSEG_MODELS", new=tmp_path
+        "panseg.viewer_napari.widgets.training.PATH_PANSEG_MODELS", new=tmp_path
     )
 
     training_tab.widget_unet_training(
@@ -530,7 +530,7 @@ def test_on_custom_output_type_change(training_tab, mocker):
 
 def test_on_dataset_change(training_tab, mocker):
     m_finder = mocker.patch(
-        "plantseg.viewer_napari.widgets.training.find_h5_files",
+        "panseg.viewer_napari.widgets.training.find_h5_files",
         wraps=find_h5_files,
     )
 
@@ -549,8 +549,8 @@ def test_on_dataset_change(training_tab, mocker):
 
 
 def test_on_pretrained_changed(training_tab, mocker):
-    m_zoo = mocker.patch("plantseg.viewer_napari.widgets.training.model_zoo")
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_zoo = mocker.patch("panseg.viewer_napari.widgets.training.model_zoo")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_zoo.get_model_by_name.return_value = (
         mocker.Mock(spec=UNet3D),
         {"f_maps": [16], "in_channels": 1, "out_channels": 1},
@@ -569,8 +569,8 @@ def test_on_pretrained_changed(training_tab, mocker):
 
 
 def test_on_pretrained_changed_channels(training_tab, mocker):
-    m_zoo = mocker.patch("plantseg.viewer_napari.widgets.training.model_zoo")
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_zoo = mocker.patch("panseg.viewer_napari.widgets.training.model_zoo")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_zoo.get_model_by_name.return_value = (
         mocker.Mock(spec=UNet3D),
         {"f_maps": [16], "in_channels": 2, "out_channels": 1},
@@ -595,8 +595,8 @@ def test_on_pretrained_changed_channels(training_tab, mocker):
 
 
 def test_on_pretrained_changed_wrong_2Dmodel(training_tab, mocker):
-    m_zoo = mocker.patch("plantseg.viewer_napari.widgets.training.model_zoo")
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_zoo = mocker.patch("panseg.viewer_napari.widgets.training.model_zoo")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_zoo.get_model_by_name.return_value = (
         mocker.Mock(spec=UNet2D),
         {"f_maps": [16], "in_channels": 1, "out_channels": 1},
@@ -619,8 +619,8 @@ def test_on_pretrained_changed_wrong_2Dmodel(training_tab, mocker):
 
 
 def test_on_pretrained_changed_wrong_3Dmodel(training_tab, mocker):
-    m_zoo = mocker.patch("plantseg.viewer_napari.widgets.training.model_zoo")
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_zoo = mocker.patch("panseg.viewer_napari.widgets.training.model_zoo")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     m_zoo.get_model_by_name.return_value = (
         mocker.Mock(spec=UNet3D),
         {"f_maps": [16], "in_channels": 1, "out_channels": 1},
@@ -729,7 +729,7 @@ def test_update_channels(training_tab):
 
 
 def test_update_channels_error(training_tab, mocker):
-    m_log = mocker.patch("plantseg.viewer_napari.widgets.training.log")
+    m_log = mocker.patch("panseg.viewer_napari.widgets.training.log")
     ch = training_tab.widget_unet_training.channels
 
     # YX, ZYX

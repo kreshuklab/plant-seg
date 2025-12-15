@@ -1,4 +1,4 @@
-name: PlantSeg
+name: PanSeg
 version: "2.0.0rc10"
 channels:
   - conda-forge
