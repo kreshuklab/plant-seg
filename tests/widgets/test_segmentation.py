@@ -1,10 +1,10 @@
 import pytest
 
-from plantseg.tasks.segmentation_tasks import (
+from panseg.tasks.segmentation_tasks import (
     clustering_segmentation_task,
     lmc_segmentation_task,
 )
-from plantseg.viewer_napari.widgets.segmentation import (
+from panseg.viewer_napari.widgets.segmentation import (
     AGGLOMERATION_MODES,
     Segmentation_Tab,
 )
@@ -93,11 +93,11 @@ def test_toggle_visibility_aio_2(segmentation_tab, mocker):
 
 def test_dt_watershed_no_prediction(segmentation_tab, mocker):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
+        target="panseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.log",
+        target="panseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
     segmentation_tab.widget_layer_select.prediction.choices = (None,)
@@ -113,11 +113,11 @@ def test_dt_watershed_no_prediction(segmentation_tab, mocker):
 
 def test_dt_watershed(segmentation_tab, mocker, napari_prediction):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
+        target="panseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.log",
+        target="panseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
     segmentation_tab.widget_layer_select.prediction.choices = (napari_prediction,)
@@ -129,11 +129,11 @@ def test_dt_watershed(segmentation_tab, mocker, napari_prediction):
 
 def test_agglomeration_no_layer(segmentation_tab, mocker):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
+        target="panseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.log",
+        target="panseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
     segmentation_tab.widget_layer_select.layer.choices = (None,)
@@ -150,11 +150,11 @@ def test_agglomeration_no_layer(segmentation_tab, mocker):
 
 def test_agglomeration_no_superpixels(segmentation_tab, mocker, napari_prediction):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
+        target="panseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.log",
+        target="panseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
     segmentation_tab.widget_layer_select.prediction.choices = (napari_prediction,)
@@ -175,11 +175,11 @@ def test_agglomeration(
     segmentation_tab, mocker, napari_prediction, napari_segmentation
 ):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
+        target="panseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.log",
+        target="panseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
     segmentation_tab.widget_layer_select.prediction.choices = (napari_prediction,)
@@ -213,11 +213,11 @@ def test_agglomeration_lmc(
     segmentation_tab, mocker, napari_raw, napari_prediction, napari_segmentation
 ):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
+        target="panseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.log",
+        target="panseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
     segmentation_tab.widget_layer_select.prediction.choices = (napari_prediction,)
@@ -236,11 +236,11 @@ def test_agglomeration_lmc_missing(
     segmentation_tab, mocker, napari_raw, napari_prediction, napari_segmentation
 ):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
+        target="panseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.log",
+        target="panseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
     segmentation_tab.widget_layer_select.prediction.choices = (napari_prediction,)
@@ -338,11 +338,11 @@ def test_show_button(segmentation_tab, mocker):
 
 def test_aio_ws_no_boundary(segmentation_tab, mocker):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
+        target="panseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.log",
+        target="panseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
 
@@ -361,11 +361,11 @@ def test_aio_ws_no_boundary(segmentation_tab, mocker):
 
 def test_aio_ws_missing_lmc(segmentation_tab, mocker, napari_prediction):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
+        target="panseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.log",
+        target="panseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
 
@@ -384,11 +384,11 @@ def test_aio_ws_missing_lmc(segmentation_tab, mocker, napari_prediction):
 
 def test_aio_ws_lmc(segmentation_tab, mocker, napari_prediction, napari_raw):
     mocked_scheduler = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.schedule_task",
+        target="panseg.viewer_napari.widgets.segmentation.schedule_task",
         autospec=True,
     )
     mocked_log = mocker.patch(
-        target="plantseg.viewer_napari.widgets.segmentation.log",
+        target="panseg.viewer_napari.widgets.segmentation.log",
         autospec=True,
     )
 

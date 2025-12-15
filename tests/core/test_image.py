@@ -6,16 +6,16 @@ import numpy as np
 import pytest
 from napari.layers import Image
 
-from plantseg.core.image import (
+from panseg.core.image import (
     ImageDimensionality,
     ImageLayout,
     ImageProperties,
     ImageType,
-    PlantSegImage,
+    PanSegImage,
     SemanticType,
     import_image,
 )
-from plantseg.io.voxelsize import VoxelSize
+from panseg.io.voxelsize import VoxelSize
 
 
 # Tests for Enum classes
@@ -150,8 +150,8 @@ def test_image_properties_interpolation_order():
     assert raw_image_props.interpolation_order() == 1
 
 
-# Tests for PlantSegImage class
-def test_plantseg_image_initialization():
+# Tests for PanSegImage class
+def test_panseg_image_initialization():
     data = np.random.rand(10, 10, 10)
     voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
     image_props = ImageProperties(
@@ -161,14 +161,14 @@ def test_plantseg_image_initialization():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image = PlantSegImage(data, image_props)
+    ps_image = PanSegImage(data, image_props)
 
     assert ps_image.shape == (10, 10, 10)
     assert ps_image.voxel_size == voxel_size
     assert ps_image.name == "test_image"
 
 
-def test_plantseg_image_derive_new():
+def test_panseg_image_derive_new():
     data = np.random.rand(10, 10, 10)
     voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
     image_props = ImageProperties(
@@ -178,7 +178,7 @@ def test_plantseg_image_derive_new():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image = PlantSegImage(data, image_props)
+    ps_image = PanSegImage(data, image_props)
 
     new_data = np.random.rand(10, 10, 10)
     new_image = ps_image.derive_new(new_data, name="new_image")
@@ -189,7 +189,7 @@ def test_plantseg_image_derive_new():
     assert new_image.original_voxel_size == voxel_size
 
 
-def test_plantseg_image_get_data():
+def test_panseg_image_get_data():
     data = np.random.rand(10, 10, 10)
     voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
     image_props = ImageProperties(
@@ -199,7 +199,7 @@ def test_plantseg_image_get_data():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image = PlantSegImage(data, image_props)
+    ps_image = PanSegImage(data, image_props)
 
     # Test without normalization
     normalised_data = (data - np.min(data)) / (np.max(data) - np.min(data) + 1e-12)
@@ -213,7 +213,7 @@ def test_plantseg_image_get_data():
     np.testing.assert_allclose(retrieved_data, data)
 
 
-def test_plantseg_image_from_napari_layer():
+def test_panseg_image_from_napari_layer():
     data = np.random.rand(10, 10, 10)
     voxel_size = (1.0, 1.0, 1.0)
     metadata = {
@@ -225,14 +225,14 @@ def test_plantseg_image_from_napari_layer():
     }
     napari_layer = Image(data, metadata=metadata, name="test_image")
 
-    ps_image = PlantSegImage.from_napari_layer(napari_layer)
+    ps_image = PanSegImage.from_napari_layer(napari_layer)
     assert ps_image.name == "test_image"
     assert ps_image.shape == (10, 10, 10)
     assert ps_image.voxel_size.voxels_size == voxel_size
     assert tuple(ps_image.voxel_size) == voxel_size
 
 
-def test_plantseg_image_to_napari_layer_tuple():
+def test_panseg_image_to_napari_layer_tuple():
     data = np.random.rand(2, 2, 2)
     voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
     image_props = ImageProperties(
@@ -242,7 +242,7 @@ def test_plantseg_image_to_napari_layer_tuple():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image = PlantSegImage(data, image_props)
+    ps_image = PanSegImage(data, image_props)
     layer_tuple = ps_image.to_napari_layer_tuple()
 
     assert isinstance(layer_tuple, tuple)
@@ -252,7 +252,7 @@ def test_plantseg_image_to_napari_layer_tuple():
     assert layer_tuple[2] == ps_image.image_type.value
 
 
-def test_plantseg_image_scale_property():
+def test_panseg_image_scale_property():
     data = np.random.rand(10, 10, 10)
     voxel_size = VoxelSize(voxels_size=(0.5, 1.0, 1.0), unit="um")
     image_props = ImageProperties(
@@ -262,7 +262,7 @@ def test_plantseg_image_scale_property():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image = PlantSegImage(data, image_props)
+    ps_image = PanSegImage(data, image_props)
     assert ps_image.scale == (0.5, 1.0, 1.0)
 
 
@@ -282,7 +282,7 @@ def test_requires_scaling():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=original_voxel_size,
     )
-    ps_image = PlantSegImage(data, image_props)
+    ps_image = PanSegImage(data, image_props)
     assert ps_image.requires_scaling is True
 
     image_props = ImageProperties(
@@ -292,7 +292,7 @@ def test_requires_scaling():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=same_voxel_size,
     )
-    ps_image = PlantSegImage(data, image_props)
+    ps_image = PanSegImage(data, image_props)
     assert ps_image.requires_scaling is False
 
     assert same_voxel_size == voxel_size
@@ -311,7 +311,7 @@ def test_import_image_YX(test_h5_dir):
         key="raw",
         stack_layout="YX",
     )
-    assert isinstance(image, PlantSegImage)
+    assert isinstance(image, PanSegImage)
     assert image.semantic_type == SemanticType.RAW
     assert image.image_layout == ImageLayout.YX
 
@@ -324,15 +324,15 @@ def test_import_image_CYX(test_h5_dir):
         stack_layout="CYX",
     )
     assert isinstance(images, list)
-    assert all([isinstance(i, PlantSegImage) for i in images])
+    assert all([isinstance(i, PanSegImage) for i in images])
     assert len(images) == 2
     assert images[0].semantic_type == SemanticType.RAW
     assert images[0].image_layout == ImageLayout.YX
 
 
 def test_import_image_CYX_warning(mocker, test_h5_dir):
-    mocker.patch("plantseg.core.image.last_warning", new=0.0)
-    mock_loader = mocker.patch("plantseg.core.image.smart_load_with_vs")
+    mocker.patch("panseg.core.image.last_warning", new=0.0)
+    mock_loader = mocker.patch("panseg.core.image.smart_load_with_vs")
     mock_loader.return_value = (
         np.random.rand(3, 2, 11),
         VoxelSize(voxels_size=(1.0, 1.0, 1.0)),
@@ -375,15 +375,15 @@ def test_import_image_CZYX(test_h5_dir):
         stack_layout="CZYX",
     )
     assert isinstance(images, list)
-    assert all([isinstance(i, PlantSegImage) for i in images])
+    assert all([isinstance(i, PanSegImage) for i in images])
     assert len(images) == 2
     assert images[0].semantic_type == SemanticType.RAW
     assert images[0].image_layout == ImageLayout.ZYX
 
 
 def test_import_image_CZYX_warning(mocker, test_h5_dir):
-    mocker.patch("plantseg.core.image.last_warning", new=0.0)
-    mock_loader = mocker.patch("plantseg.core.image.smart_load_with_vs")
+    mocker.patch("panseg.core.image.last_warning", new=0.0)
+    mock_loader = mocker.patch("panseg.core.image.smart_load_with_vs")
     mock_loader.return_value = (
         np.random.rand(3, 2, 10, 11),
         VoxelSize(voxels_size=(1.0, 1.0, 1.0)),
@@ -398,7 +398,7 @@ def test_import_image_CZYX_warning(mocker, test_h5_dir):
 
 
 def test_import_image_ZCYX(mocker, test_h5_dir):
-    mocker.patch("plantseg.core.image.last_warning", new=time.time())
+    mocker.patch("panseg.core.image.last_warning", new=time.time())
     file = test_h5_dir / "train_3Dc_3D.h5"
     images = import_image(
         path=file,
@@ -406,14 +406,14 @@ def test_import_image_ZCYX(mocker, test_h5_dir):
         stack_layout="ZCYX",
     )
     assert isinstance(images, list)
-    assert all([isinstance(i, PlantSegImage) for i in images])
+    assert all([isinstance(i, PanSegImage) for i in images])
     assert len(images) == 75
     assert images[0].semantic_type == SemanticType.RAW
     assert images[0].image_layout == ImageLayout.ZYX
 
 
 def test_import_image_ZCYX_warning(mocker, test_h5_dir):
-    mocker.patch("plantseg.core.image.last_warning", new=0.0)
+    mocker.patch("panseg.core.image.last_warning", new=0.0)
     file = test_h5_dir / "train_3Dc_3D.h5"
     with pytest.raises(ValueError):
         import_image(
@@ -433,7 +433,7 @@ def test_split_image_CZYX():
         image_layout=ImageLayout.CZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image = PlantSegImage(data, image_props)
+    ps_image = PanSegImage(data, image_props)
     splits = ps_image.split_channels()
 
     assert len(splits) == 3
@@ -453,7 +453,7 @@ def test_split_image_ZCYX():
         image_layout=ImageLayout.ZCYX,
         original_voxel_size=voxel_size,
     )
-    ps_image = PlantSegImage(data, image_props)
+    ps_image = PanSegImage(data, image_props)
     splits = ps_image.split_channels()
 
     assert len(splits) == 4
@@ -473,7 +473,7 @@ def test_split_image_CYX():
         image_layout=ImageLayout.CYX,
         original_voxel_size=voxel_size,
     )
-    ps_image = PlantSegImage(data, image_props)
+    ps_image = PanSegImage(data, image_props)
     splits = ps_image.split_channels()
 
     assert len(splits) == 4
@@ -493,8 +493,8 @@ def test_merge_images_2d():
         image_layout=ImageLayout.YX,
         original_voxel_size=voxel_size,
     )
-    ps_image_1 = PlantSegImage(data, image_props)
-    ps_image_2 = PlantSegImage(data, image_props)
+    ps_image_1 = PanSegImage(data, image_props)
+    ps_image_2 = PanSegImage(data, image_props)
 
     merged = ps_image_1.merge_with(ps_image_2)
     assert merged.dimensionality == ImageDimensionality.TWO
@@ -512,8 +512,8 @@ def test_merge_images_3d():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image_1 = PlantSegImage(data, image_props)
-    ps_image_2 = PlantSegImage(data, image_props)
+    ps_image_1 = PanSegImage(data, image_props)
+    ps_image_2 = PanSegImage(data, image_props)
 
     merged = ps_image_1.merge_with(ps_image_2)
     assert merged.dimensionality == ImageDimensionality.THREE
@@ -531,7 +531,7 @@ def test_merge_images_3dc():
         image_layout=ImageLayout.CZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image_1 = PlantSegImage(data, image_props)
+    ps_image_1 = PanSegImage(data, image_props)
     data = np.random.rand(2, 9, 10, 11)
     voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
     image_props = ImageProperties(
@@ -541,7 +541,7 @@ def test_merge_images_3dc():
         image_layout=ImageLayout.CZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image_2 = PlantSegImage(data, image_props)
+    ps_image_2 = PanSegImage(data, image_props)
 
     merged = ps_image_1.merge_with(ps_image_2)
     assert merged.dimensionality == ImageDimensionality.THREE
@@ -557,7 +557,7 @@ def test_merge_images_3dc():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image_3 = PlantSegImage(data, image_props)
+    ps_image_3 = PanSegImage(data, image_props)
     merged = merged.merge_with(ps_image_3)
     assert merged.dimensionality == ImageDimensionality.THREE
     assert merged.is_multichannel
@@ -574,7 +574,7 @@ def test_merge_images_wrong_semantic():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image_1 = PlantSegImage(data, image_props)
+    ps_image_1 = PanSegImage(data, image_props)
     image_props = ImageProperties(
         name="image",
         semantic_type=SemanticType.PREDICTION,
@@ -582,7 +582,7 @@ def test_merge_images_wrong_semantic():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image_2 = PlantSegImage(data, image_props)
+    ps_image_2 = PanSegImage(data, image_props)
 
     with pytest.raises(ValueError):
         ps_image_1.merge_with(ps_image_2)
@@ -598,7 +598,7 @@ def test_merge_images_2d_3d():
         image_layout=ImageLayout.ZYX,
         original_voxel_size=voxel_size,
     )
-    ps_image_1 = PlantSegImage(data, image_props)
+    ps_image_1 = PanSegImage(data, image_props)
     data = np.random.rand(10, 11)
     voxel_size = VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um")
     image_props = ImageProperties(
@@ -608,7 +608,7 @@ def test_merge_images_2d_3d():
         image_layout=ImageLayout.YX,
         original_voxel_size=voxel_size,
     )
-    ps_image_2 = PlantSegImage(data, image_props)
+    ps_image_2 = PanSegImage(data, image_props)
 
     with pytest.raises(ValueError):
         ps_image_1.merge_with(ps_image_2)

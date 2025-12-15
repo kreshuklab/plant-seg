@@ -6,7 +6,7 @@
     * Windows
     * nvidia GPU
 
-On Windows using a nvidia GPUs PlantSeg might appear stuck running the prediction.
+On Windows using a nvidia GPUs PanSeg might appear stuck running the prediction.
 If this error occurs, check the GPU memory in the task manager, it is probably full.
 
 GPUs can use the system memory after running out of memory
@@ -26,7 +26,7 @@ Set `Batch size` to `One (low VRAM usage)`.
 
 Open your nvidia control panel. Navigate to `3D-Settings`(1), `Program specific` (not global)(2).
 Click on `add` and choose Python, afterwards it should display the path to the python
-executable **in you PlantSeg installation**(3).
+executable **in you PanSeg installation**(3).
 
 Scroll to `CUDA - Sysmem Fallback Policy` and change that to `Prefer No Sysmem Fallback`(4).
 

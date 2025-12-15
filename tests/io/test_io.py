@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from plantseg.io.io import smart_load
-from plantseg.io.voxelsize import VoxelSize
-from plantseg.io.zarr import list_zarr_keys
+from panseg.io.io import smart_load
+from panseg.io.voxelsize import VoxelSize
+from panseg.io.zarr import list_zarr_keys
 
 
 class TestIO:
@@ -19,7 +19,7 @@ class TestIO:
         )
 
     def test_create_read_h5(self, path_h5):
-        from plantseg.io.h5 import create_h5, load_h5, read_h5_shape, read_h5_voxel_size
+        from panseg.io.h5 import create_h5, load_h5, read_h5_shape, read_h5_voxel_size
 
         # Create an HDF5 file
         data = np.random.rand(10, 10, 10)
@@ -53,7 +53,7 @@ class TestIO:
         )
 
     def test_create_read_zarr(self, path_zarr):
-        from plantseg.io.zarr import (
+        from panseg.io.zarr import (
             create_zarr,
             load_zarr,
             read_zarr_shape,
@@ -96,7 +96,7 @@ class TestIO:
         assert list_zarr_keys(path_zarr) == ["raw"]
 
     def test_create_read_tiff(self, path_tiff):
-        from plantseg.io.tiff import create_tiff, load_tiff, read_tiff_voxel_size
+        from panseg.io.tiff import create_tiff, load_tiff, read_tiff_voxel_size
 
         # Create a TIFF file
         data = 255 * np.random.rand(10, 10, 10)
@@ -122,7 +122,7 @@ class TestIO:
         import numpy as np
         from PIL import Image
 
-        from plantseg.io.pil import load_pil
+        from panseg.io.pil import load_pil
 
         # Create a JPG file
         data = np.random.randint(0, 256, (10, 10, 3), dtype=np.uint8)

@@ -3,8 +3,8 @@ requires = ["setuptools >= 77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "plantseg"
-version = "2.0.0rc9"
+name = "panseg"
+version = "2.0.0rc10"
 authors = [
   { name = "Qin Yu", email = "qin.yu@embl.de" },
   { name = "Lorenzo Cerrone", email = "lorenzo.cerrone@uzh.ch" },
@@ -43,7 +43,7 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://kreshuklab.github.io/plant-seg/"
+Homepage = "https://kreshuklab.github.io/panseg/"
 
 [project.scripts]
 plantseg = "plantseg.run_plantseg:main"
@@ -57,11 +57,7 @@ ome = "ome"     # Open Microscopy Environment (OME)
 datas = "datas" # pyinstaller
 
 [tool.typos.files]
-extend-exclude = [
-  "tests/**",
-  "plantseg/**",
-  "examples/**",
-]
+extend-exclude = ["tests/**", "plantseg/**", "examples/**"]
 
 [tool.ruff.lint]
 extend-select = ["I"]
@@ -70,19 +66,19 @@ extend-select = ["I"]
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
 exclude_also = [
-    # Don't complain if tests don't hit defensive assertion code:
-    "raise AssertionError",
-    "raise NotImplementedError",
+  # Don't complain if tests don't hit defensive assertion code:
+  "raise AssertionError",
+  "raise NotImplementedError",
 
-    # Don't complain if non-runnable code isn't run:
-    "if 0:",
-    "if __name__ == .__main__.:",
+  # Don't complain if non-runnable code isn't run:
+  "if 0:",
+  "if __name__ == .__main__.:",
 
-    # Don't complain about abstract methods, they aren't run:
-    "@(abc\\.)?abstractmethod",
-    ]
-source = ["plantseg/"]
-omit = [ "/tmp/*" ]
+  # Don't complain about abstract methods, they aren't run:
+  "@(abc\\.)?abstractmethod",
+]
+source = ["panseg/"]
+omit = ["/tmp/*"]
 
 [tool.bumpversion]
 current_version = "2.0.0rc9"
@@ -118,7 +114,7 @@ optional_value = "stable"
 values = ["a", "b", "rc", "stable"]
 
 [[tool.bumpversion.files]]
-filename = "plantseg/__version__.py"
+filename = "panseg/__version__.py"
 
 [[tool.bumpversion.files]]
 filename = "constructor/construct.yaml"

@@ -1,18 +1,19 @@
-# PlantSeg  <!-- omit in toc -->
+# PanSeg  <!-- omit in toc -->
 
-![alt text](docs/logos/logo.png)
+![alt text](panseg/resources/header_h.png)
 
-[![Conda Build and Test](https://github.com/kreshuklab/plant-seg/actions/workflows/build-and-test-package.yml/badge.svg)](https://github.com/kreshuklab/plant-seg/actions/workflows/build-and-test-package.yml)
-[![Docs Build and Publish](https://github.com/kreshuklab/plant-seg/actions/workflows/build-and-publish-docs.yml/badge.svg)](https://github.com/kreshuklab/plant-seg/actions/workflows/build-and-publish-docs.yml)
+[![Conda Build and Test](https://github.com/kreshuklab/panseg/actions/workflows/build-and-test-package.yml/badge.svg)](https://github.com/kreshuklab/panseg/actions/workflows/build-and-test-package.yml)
+[![Docs Build and Publish](https://github.com/kreshuklab/panseg/actions/workflows/build-and-publish-docs.yml/badge.svg)](https://github.com/kreshuklab/panseg/actions/workflows/build-and-publish-docs.yml)
 
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/version.svg)](https://anaconda.org/conda-forge/plant-seg)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/plant-seg)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/downloads.svg)](https://anaconda.org/conda-forge/plant-seg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/panseg/badges/version.svg)](https://anaconda.org/conda-forge/panseg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/panseg/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/panseg)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/downloads.svg)](https://anaconda.org/conda-forge/plant-seg) <!--- TODO: remove -->
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/panseg/badges/downloads.svg)](https://anaconda.org/conda-forge/panseg)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/plant-seg/badges/license.svg)](https://anaconda.org/conda-forge/plant-seg)
 
 ![Illustration of Pipeline](../assets/images/main_figure_nologo.png)
 
-[PlantSeg](plantseg) is a tool for cell instance aware segmentation in densely packed 3D volumetric images.
+PanSeg is a tool for cell instance aware segmentation in densely packed 3D volumetric images.
 The pipeline uses a two stages segmentation strategy (Neural Network + Segmentation).
 The pipeline is tuned for plant cell tissue acquired with confocal and light sheet microscopy.
 Pre-trained models are provided.
@@ -26,17 +27,16 @@ Pre-trained models are provided.
 
 ## Getting Started
 
-Checkout the [**documentation** 📖](https://kreshuklab.github.io/plant-seg/latest/chapters/getting_started/) for more details.
+Checkout the [**documentation** 📖](https://kreshuklab.github.io/panseg/latest/chapters/getting_started/) for more details.
 
-https://github.com/user-attachments/assets/9551210b-0ed6-4f06-b1d1-4059aadecd11
-
+<https://github.com/user-attachments/assets/9551210b-0ed6-4f06-b1d1-4059aadecd11>
 
 ## Installation
 
-The easiest way to get PlantSeg is using the installer. [**Download it here**](https://heibox.uni-heidelberg.de/d/72b4bd3ba5f14409bfee/)
+The easiest way to get PanSeg is using the installer. [**Download it here**](https://heibox.uni-heidelberg.de/d/72b4bd3ba5f14409bfee/)
 
 The installer comes with python and conda.
-Please go to the [documentation](https://kreshuklab.github.io/plant-seg/latest/chapters/getting_started/installation/) for more detailed instructions.
+Please go to the [documentation](https://kreshuklab.github.io/panseg/latest/chapters/getting_started/installation/) for more detailed instructions.
 
 For development, we recommend to clone the repo and install using:
 
@@ -44,23 +44,35 @@ For development, we recommend to clone the repo and install using:
 conda env create -f environment-dev.yaml
 ```
 
-The above command will create new conda environment `plant-seg-dev` together with all required dependencies.
+The above command will create new conda environment `panseg-dev` together with all required dependencies.
 
 ## Repository Index
 
-The PlantSeg repository is organised as follows:
+The PanSeg repository is organised as follows:
 
-* **plantseg**: Contains the source code of PlantSeg.
-* **docs**: Contains the documentation of PlantSeg.
-* **examples**: Contains the files required to test PlantSeg.
-* **tests**: Contains automated tests that ensures the PlantSeg functionality are not compromised during an update.
+* **panseg**: Contains the source code of PanSeg.
+* **docs**: Contains the documentation of PanSeg.
+* **examples**: Contains the files required to test PanSeg.
+* **tests**: Contains automated tests that ensures the PanSeg functionality are not compromised during an update.
 * **evaluation**: Contains all script required to reproduce the quantitative evaluation in
 [Wolny et al.](https://doi.org/10.7554/eLife.57613).
 * **conda-reicpe**: Contains all necessary code and configuration to create the anaconda package.
 * **constructor**: Contains scripts for the installer creation.
 * **Menu**: Contains scripts for OS Menu entries
 
+## PanSeg & PlantSeg
+
+This project stated 2020 as `PlantSeg`, but its capabilities are not
+restricted to plant cells! To better reflect that, for the 2.0 release
+we changed the name to `PanSeg`, referring to plant and animal cells.
+
 ## Citation
+
+### PanSeg 2.0
+
+#### TODO
+
+### Plantseg 1.0
 
 ```text
 @article{wolny2020accurate,

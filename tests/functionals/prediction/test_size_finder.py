@@ -3,8 +3,8 @@ import os
 import pytest
 import torch
 
-from plantseg.core.zoo import model_zoo
-from plantseg.functionals.prediction.utils.size_finder import (
+from panseg.core.zoo import model_zoo
+from panseg.functionals.prediction.utils.size_finder import (
     find_a_max_patch_shape,
     find_batch_size,
     find_patch_and_halo_shapes,
@@ -140,7 +140,7 @@ def test_find_batch_size_error_handling():
 )
 def test_find_patch_shape_error_handling():
     model, _, _ = model_zoo.get_model_by_name(
-        "PlantSeg_3Dnuc_platinum", model_update=DOWNLOAD_MODELS
+        "PanSeg_3Dnuc_platinum", model_update=DOWNLOAD_MODELS
     )
     found_patch_shape = find_a_max_patch_shape(model, 1, "cuda:0")
     if "NVIDIA A100-PCIE-40GB" == GPU_DEVICE_NAME:

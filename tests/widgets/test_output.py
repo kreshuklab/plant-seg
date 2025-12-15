@@ -1,7 +1,7 @@
 import pytest
 
-import plantseg
-from plantseg.viewer_napari.widgets.output import Output_Tab
+import panseg
+from panseg.viewer_napari.widgets.output import Output_Tab
 
 
 @pytest.fixture
@@ -16,7 +16,7 @@ def test_output_initialization(output_tab):
 
 def test_export_shape(output_tab, mocker, napari_shapes):
     mocked_export = mocker.patch(
-        "plantseg.viewer_napari.widgets.output.export_image_task"
+        "panseg.viewer_napari.widgets.output.export_image_task"
     )
     output_tab.widget_export_image(image=None)
     mocked_export.assert_not_called()
@@ -26,7 +26,7 @@ def test_export_shape(output_tab, mocker, napari_shapes):
 
 def test_export_image(output_tab, mocker, napari_raw):
     mocked_export = mocker.patch(
-        "plantseg.viewer_napari.widgets.output.export_image_task"
+        "panseg.viewer_napari.widgets.output.export_image_task"
     )
     output_tab.widget_export_image(image=napari_raw)
     mocked_export.assert_called_once()

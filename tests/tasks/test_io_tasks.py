@@ -1,19 +1,19 @@
 import numpy as np
 import pytest
 
-from plantseg.core.image import (
+from panseg.core.image import (
     ImageLayout,
     ImageProperties,
-    PlantSegImage,
+    PanSegImage,
     SemanticType,
 )
-from plantseg.io.voxelsize import VoxelSize
-from plantseg.tasks.io_tasks import (
+from panseg.io.voxelsize import VoxelSize
+from panseg.tasks.io_tasks import (
     export_image_task,
     import_image_task,
     merge_channels_task,
 )
-from plantseg.tasks.workflow_handler import Task_message
+from panseg.tasks.workflow_handler import Task_message
 
 
 @pytest.mark.parametrize(
@@ -38,7 +38,7 @@ def test_image_io_round_trip(tmp_path, shape, layout, export_format):
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
         source_file_name="test",
     )
-    image = PlantSegImage(data=mock_data, properties=property)
+    image = PanSegImage(data=mock_data, properties=property)
 
     export_image_task(
         image=image,
@@ -67,7 +67,7 @@ def test_image_io_round_trip(tmp_path, shape, layout, export_format):
         stack_layout=layout,
         m_slicing=None,
     )
-    assert isinstance(imported_image, PlantSegImage)
+    assert isinstance(imported_image, PanSegImage)
 
     original_data = image.get_data()
     imported_data = imported_image.get_data()
@@ -102,7 +102,7 @@ def test_label_io_round_trip(tmp_path, shape, layout, export_format):
         image_layout=layout,
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
     )
-    image = PlantSegImage(data=mock_data, properties=property)
+    image = PanSegImage(data=mock_data, properties=property)
 
     export_image_task(
         image=image,
@@ -131,7 +131,7 @@ def test_label_io_round_trip(tmp_path, shape, layout, export_format):
         stack_layout=layout,
         m_slicing=None,
     )
-    assert isinstance(imported_image, PlantSegImage)
+    assert isinstance(imported_image, PanSegImage)
 
     original_data = image.get_data()
     imported_data = imported_image.get_data()
@@ -158,7 +158,7 @@ def test_label_import_image_task_error_message(tmp_path):
         image_layout=layout,
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
     )
-    image = PlantSegImage(data=mock_data, properties=property)
+    image = PanSegImage(data=mock_data, properties=property)
 
     export_image_task(
         image=image,
@@ -197,7 +197,7 @@ def test_io_slicing_trip(tmp_path):
         image_layout=layout,
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
     )
-    image = PlantSegImage(data=mock_data, properties=property)
+    image = PanSegImage(data=mock_data, properties=property)
 
     export_image_task(
         image=image,
@@ -219,7 +219,7 @@ def test_io_slicing_trip(tmp_path):
         stack_layout=layout,
         m_slicing="5:10,:, :50",
     )
-    assert isinstance(imported_image, PlantSegImage)
+    assert isinstance(imported_image, PanSegImage)
 
     imported_data = imported_image.get_data()
 
@@ -238,12 +238,12 @@ def test_merge_channels():
         image_layout=layout,
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
     )
-    image_1 = PlantSegImage(data=mock_data, properties=property)
-    image_2 = PlantSegImage(data=mock_data, properties=property)
-    image_3 = PlantSegImage(data=mock_data, properties=property)
+    image_1 = PanSegImage(data=mock_data, properties=property)
+    image_2 = PanSegImage(data=mock_data, properties=property)
+    image_3 = PanSegImage(data=mock_data, properties=property)
 
     merged = merge_channels_task(image_1=image_1, image_2=image_2, image_3=image_3)
-    assert isinstance(merged, PlantSegImage)
+    assert isinstance(merged, PanSegImage)
     assert merged.semantic_type == SemanticType.RAW
     assert merged.image_layout == ImageLayout.CZYX
     assert merged.shape == (3, 32, 64, 64)
@@ -261,10 +261,10 @@ def test_merge_channels_one():
         image_layout=layout,
         original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
     )
-    image_1 = PlantSegImage(data=mock_data, properties=property)
+    image_1 = PanSegImage(data=mock_data, properties=property)
 
     merged = merge_channels_task(images=image_1)
-    assert isinstance(merged, PlantSegImage)
+    assert isinstance(merged, PanSegImage)
     assert merged.semantic_type == SemanticType.RAW
     assert merged.image_layout == ImageLayout.ZYX
     assert merged.shape == (32, 64, 64)

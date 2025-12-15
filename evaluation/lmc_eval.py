@@ -10,7 +10,7 @@ from elf.segmentation.multicut import (
     transform_probabilities_to_costs,
 )
 from elf.segmentation.watershed import distance_transform_watershed
-from plantseg.segmentation.functional.segmentation import (
+from panseg.segmentation.functional.segmentation import (
     lifted_multicut_from_nuclei_pmaps,
 )
 

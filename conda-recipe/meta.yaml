@@ -1,6 +1,6 @@
 package:
-  name: plant-seg
-  version: "2.0.0rc9"
+  name: panseg
+  version: "2.0.0rc10"
 
 source:
   path: ..
@@ -11,7 +11,7 @@ build:
   script:
     - "pip install . --no-deps --ignore-installed --no-cache-dir -vvv"
     - "mkdir -p {{ PREFIX }}/Menu" # [not win]
-    - "cp {{ RECIPE_DIR }}/../Menu/plant-seg.json {{ PREFIX }}/Menu/{{ PKG_NAME }}_menu.json" # [not win]
+    - "cp {{ RECIPE_DIR }}/../Menu/panseg.json {{ PREFIX }}/Menu/{{ PKG_NAME }}_menu.json" # [not win]
     - "cp {{ RECIPE_DIR }}/../Menu/icon.png {{ PREFIX }}/Menu/icon.png" # [not win]
     - "cp {{ RECIPE_DIR }}/../Menu/icon.ico {{ PREFIX }}/Menu/icon.ico" # [not win]
     - "cp {{ RECIPE_DIR }}/../Menu/logo_horizontal.png {{ PREFIX }}/Menu/logo_horizontal.png" # [not win]
@@ -25,7 +25,7 @@ build:
     # - 'cp {{ RECIPE_DIR }}\..\Menu\logo_vertical.png {{ PREFIX }}\Menu\logo_vertical.png' # [win]
 
   entry_points:
-    - plantseg = plantseg.run_plantseg:main
+    - panseg = panseg.run_panseg:main
 
 requirements:
   build:
@@ -56,12 +56,12 @@ requirements:
 
 test:
   imports:
-    - plantseg
+    - panseg
   requires:
     - pytest
   run:
     - pytest
 
 about:
-  home: https://kreshuklab.github.io/plant-seg/
+  home: https://kreshuklab.github.io/panseg/
   license: MIT

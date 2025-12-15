@@ -1,12 +1,12 @@
 import napari
 import pytest
 
-from plantseg.viewer_napari.viewer import Plantseg_viewer
+from panseg.viewer_napari.viewer import Panseg_viewer
 
 
 @pytest.fixture
-def plantseg_viewer(make_napari_viewer):
-    pv = Plantseg_viewer(make_napari_viewer())
+def panseg_viewer(make_napari_viewer):
+    pv = Panseg_viewer(make_napari_viewer())
     pv.init_tabs()
     pv.setup_layer_updates()
     yield pv
@@ -15,8 +15,8 @@ def plantseg_viewer(make_napari_viewer):
 
 
 @pytest.fixture
-def all_fields(plantseg_viewer):
-    pv = plantseg_viewer
+def all_fields(panseg_viewer):
+    pv = panseg_viewer
     return {
         pv.input_tab.widget_details_layer_select.layer: "input_tab",  # all
         pv.preprocessing_tab.widget_layer_select.layer: "preprocessing_tab",  # all
@@ -37,8 +37,8 @@ def all_fields(plantseg_viewer):
 
 
 @pytest.fixture
-def all_raw_fields(plantseg_viewer):
-    pv = plantseg_viewer
+def all_raw_fields(panseg_viewer):
+    pv = panseg_viewer
     return {
         pv.input_tab.widget_details_layer_select.layer: "input_tab",  # all
         pv.preprocessing_tab.widget_layer_select.layer: "preprocessing_tab",  # all
@@ -52,8 +52,8 @@ def all_raw_fields(plantseg_viewer):
 
 
 @pytest.fixture
-def all_pred_fields(plantseg_viewer):
-    pv = plantseg_viewer
+def all_pred_fields(panseg_viewer):
+    pv = panseg_viewer
     return {
         pv.input_tab.widget_details_layer_select.layer: "input_tab",  # all
         pv.preprocessing_tab.widget_layer_select.layer: "preprocessing_tab",  # all
@@ -66,8 +66,8 @@ def all_pred_fields(plantseg_viewer):
 
 
 @pytest.fixture
-def all_segm_fields(plantseg_viewer):
-    pv = plantseg_viewer
+def all_segm_fields(panseg_viewer):
+    pv = panseg_viewer
     return {
         pv.input_tab.widget_details_layer_select.layer: "input_tab",  # all
         pv.preprocessing_tab.widget_layer_select.layer: "preprocessing_tab",  # all
@@ -91,42 +91,42 @@ def test_layer_empty(
 
 
 def test_layer_segmentation(
-    plantseg_viewer,
+    panseg_viewer,
     all_segm_fields,
     napari_segmentation,
 ):
-    plantseg_viewer.viewer.add_layer(napari_segmentation)
+    panseg_viewer.viewer.add_layer(napari_segmentation)
 
     for field, name in all_segm_fields.items():
         assert napari_segmentation in field.choices, f"{name}: {field.choices}"
 
 
 def test_layer_raw(
-    plantseg_viewer,
+    panseg_viewer,
     all_raw_fields,
     napari_raw,
 ):
-    plantseg_viewer.viewer.add_layer(napari_raw)
+    panseg_viewer.viewer.add_layer(napari_raw)
 
     for field, name in all_raw_fields.items():
         assert napari_raw in field.choices, f"{name}: {field.choices}"
 
 
 def test_layer_prediction(
-    plantseg_viewer,
+    panseg_viewer,
     all_pred_fields,
     napari_prediction,
 ):
-    plantseg_viewer.viewer.add_layer(napari_prediction)
+    panseg_viewer.viewer.add_layer(napari_prediction)
 
     for field, name in all_pred_fields.items():
         assert napari_prediction in field.choices, f"{name}: {field.choices}"
 
 
-def test_viewer_setup(plantseg_viewer, mocker):
-    mock_run = mocker.patch("plantseg.viewer_napari.viewer.napari.run")
-    plantseg_viewer.start_viewer()
-    tabs = list(plantseg_viewer.viewer.window.dock_widgets.keys())
+def test_viewer_setup(panseg_viewer, mocker):
+    mock_run = mocker.patch("panseg.viewer_napari.viewer.napari.run")
+    panseg_viewer.start_viewer()
+    tabs = list(panseg_viewer.viewer.window.dock_widgets.keys())
     assert tabs == [
         "Input",
         "Preprocessing",

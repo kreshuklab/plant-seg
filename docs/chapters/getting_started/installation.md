@@ -1,7 +1,7 @@
 # Installation
 
-This is the installation guide for the latest PlantSeg.
-Please check the installation guide for PlantSeg v1 at [PlantSeg Legacy Installation](../plantseg_legacy/installation.md).
+This is the installation guide for the latest PanSeg.
+Please check the installation guide for PanSeg v1 at [PanSeg Legacy Installation](../panseg_legacy/installation.md).
 
 ## Download
 
@@ -22,22 +22,22 @@ The installer comes complete with its own python installation. During the instal
     Download the installer, then open a terminal and run the installer:
 
     ```bash
-    bash PlantSeg*.sh
+    bash PanSeg*.sh
     ```
 
-    On linux, you can start PlantSeg through your start menu.
+    On linux, you can start PanSeg through your start menu.
 
-    To start PlantSeg in the terminal, navigate to your installation directory
-    (default `~/plantseg/`) and run `bin/plantseg --napari`.
+    To start PanSeg in the terminal, navigate to your installation directory
+    (default `~/panseg/`) and run `bin/panseg --napari`.
 
     You might want to add a link to this file to some directory on your $PATH.
 
-    Alternatively, you can activate the plantseg conda environment:  
+    Alternatively, you can activate the panseg conda environment:  
     (Replace [INSTALLATION DIR] with the absolute(!) path to your installation)
 
     ```bash
     eval "$("[INSTALLATION DIR]/bin/conda" shell.bash activate "[INSTALLATION DIR]")
-    plantseg --help
+    panseg --help
     ```
 
 ===  "Windows"
@@ -52,26 +52,26 @@ The installer comes complete with its own python installation. During the instal
 
 === "conda-forge"
 
-    If you want to install PlantSeg without the installer, you need to have
+    If you want to install PanSeg without the installer, you need to have
     conda. (We recommend Microforge to get conda,
     see [installing mamba](contributing.md#install-mamba))
 
     ```bash
-    conda create --name plant-seg plant-seg
-    conda activate plant-seg
-    plantseg --napari
+    conda create --name panseg panseg
+    conda activate panseg
+    panseg --napari
     ```
 
 === "latest git version"
 
-    To get the latest pre-release features, install PlantSeg from git. You need to have conda and git installed. (We recommend Microforge to get conda, see [installing mamba](contributing.md#install-mamba))
+    To get the latest pre-release features, install PanSeg from git. You need to have conda and git installed. (We recommend Microforge to get conda, see [installing mamba](contributing.md#install-mamba))
 
     ```bash
-    git clone https://github.com/kreshuklab/plant-seg.git
-    cd plant-seg
+    git clone https://github.com/kreshuklab/panseg.git
+    cd panseg
     conda env create -f environment.yaml
-    conda activate plant-seg
-    plantseg --napari
+    conda activate panseg
+    panseg --napari
     ```
 
     For development, we recommend using the `environment-dev.yaml` instead! 
@@ -81,35 +81,35 @@ The installer comes complete with its own python installation. During the instal
 
 !!! info
     Due to an external change, this only works from version 2.0.0rc5 onward.  
-    If you are running an older version, please uninstall and reinstall PlantSeg.
+    If you are running an older version, please uninstall and reinstall PanSeg.
 
-If you have installed PlantSeg *via* the installer or from Conda-forge, you can update to a new version right in the GUI!
-Go to the `Plugins` menu on top, then click `Update Plantset`!
+If you have installed PanSeg *via* the installer or from Conda-forge, you can update to a new version right in the GUI!
+Go to the `Plugins` menu on top, then click `Update Panseg`!
 
 If you have cloned the git repository, you need to update your local repo:
 
 ```bash
-cd plant-seg
+cd panseg
 git pull
 conda env update -f environment.yaml # environment-dev.yaml for development
 ```
 
 ## Optional dependencies
 
-Certain compressed TIFF files (e.g., Zlib, ZSTD, LZMA formats) require additional codecs to be processed correctly by PlantSeg. To handle such files, install the `imagecodecs` package:
+Certain compressed TIFF files (e.g., Zlib, ZSTD, LZMA formats) require additional codecs to be processed correctly by PanSeg. To handle such files, install the `imagecodecs` package:
 
 ```bash
-conda activate plant-seg
+conda activate panseg
 pip install imagecodecs
 ```
 
 If you plan to use SimpleITK-based watershed segmentation, you will need to install `SimpleITK` as an additional dependency:
 
 ```bash
-conda activate plant-seg
+conda activate panseg
 pip install SimpleITK
 ```
 
-## Installing PlantSeg v1
+## Installing PanSeg v1
 
-Please check the installation guide for PlantSeg v1 at [PlantSeg Legacy Installation](../plantseg_legacy/installation.md).
+Please check the installation guide for PanSeg v1 at [PanSeg Legacy Installation](../panseg_legacy/installation.md).

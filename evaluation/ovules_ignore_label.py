@@ -9,7 +9,7 @@ from scipy.ndimage import binary_dilation
 
 def _ignore_unlabeled(label, seg, ignore_label=-1):
     """
-    Given the ground truth 'label' image and the segmentation from PlantSeg 'seg'
+    Given the ground truth 'label' image and the segmentation from PanSeg 'seg'
     the function assigns 'ignore_label' to the unlabeled regions in the ovule ground truth.
 
     Returns:
@@ -24,7 +24,7 @@ def _ignore_unlabeled(label, seg, ignore_label=-1):
 
     # zero out ground truth mask in seg volume
     seg[gt_mask] = 0
-    # get the ignore mask (we choose everything bigger than 1, cause the output from PlantSeg assigns 1 to the background)
+    # get the ignore mask (we choose everything bigger than 1, cause the output from PanSeg assigns 1 to the background)
     ignore_mask = seg > 1
     # dilate the ignore mask
     ignore_mask = binary_dilation(ignore_mask)
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--seg_dir",
         type=str,
-        help="Path to the PlantSeg segmentation directory",
+        help="Path to the PanSeg segmentation directory",
         required=True,
     )
 

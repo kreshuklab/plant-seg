@@ -2,4 +2,4 @@
 
 ## UNet prediction task
 
-::: plantseg.tasks.prediction_tasks.unet_prediction_task
+::: panseg.tasks.prediction_tasks.unet_prediction_task

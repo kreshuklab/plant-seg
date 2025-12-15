@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from plantseg.functionals.segmentation import dt_watershed
+from panseg.functionals.segmentation import dt_watershed
 
 shapes = [(32, 64, 64), (64, 64)]
 stacked_options = [True, False]
