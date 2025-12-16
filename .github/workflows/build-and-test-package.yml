@@ -23,12 +23,12 @@ jobs:
           /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
           --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
 
-      # Set the PlantSeg version based on the current date and time
-      - name: Set PlantSeg Version
+      # Set the PanSeg version based on the current date and time
+      - name: Set PanSeg Version
         run: echo "RELEASE_VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
-      # Print the PlantSeg version name (for debugging purposes)
-      - name: Print PlantSeg Version
+      # Print the PanSeg version name (for debugging purposes)
+      - name: Print PanSeg Version
         run: echo $RELEASE_VERSION
 
       # Set up Miniconda
@@ -50,23 +50,23 @@ jobs:
         run: |
           echo "anaconda_telemetry: false" > ~/.condarc
 
-      # Build the PlantSeg Conda package
-      - name: Build PlantSeg Package
+      # Build the PanSeg Conda package
+      - name: Build PanSeg Package
         shell: bash -l {0}
         run: |
           conda install -q conda-build conda-verify
           conda build -c conda-forge conda-recipe
 
       # Create a Conda environment for testing
-      - name: Create PlantSeg Test Environment
+      - name: Create PanSeg Test Environment
         run: |
-          conda create -n plant-seg -c local -c conda-forge plantseg pytest pytest-qt pytest-cov pytest-mock requests-mock
+          conda create -n panseg -c local -c conda-forge panseg pytest pytest-qt pytest-cov pytest-mock requests-mock
 
       # Run tests using pytest
       - name: Run Tests with Pytest
         shell: bash -l {0}
         run: |
-          conda activate plant-seg
+          conda activate panseg
           pytest -s --cov --cov-report=xml
           conda deactivate
 
