@@ -340,6 +340,7 @@ class ModelZoo:
             model_url = config.get(model_name, {}).get("model_url")
             if model_url:
                 self._download_model_files(model_url, model_dir, config_only)
+                logger_zoo.info(f"Download finished for {model_name}")
             else:
                 logger_zoo.warning(
                     f"Model {model_name} not found in the models zoo configuration."

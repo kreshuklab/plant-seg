@@ -5,7 +5,7 @@ formatter_viewer_napari = logging.Formatter(
     "%(message)s"
 )  # Napari prepends '%(levelname)s: '.upper()
 formatter_default = logging.Formatter(
-    "%(levelname)s: %(handler_name)s [%(threadName)s] %(asctime)s %(name)s - %(message)s"
+    "%(levelname)s: %(handler_name)s %(asctime)s - %(message)s"
 )
 
 

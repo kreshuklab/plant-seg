@@ -226,7 +226,7 @@ def unet_prediction(
     if patch_halo is None:
         try:
             patch_halo = model_zoo.compute_3D_halo_for_pytorch3dunet(model)
-            logger.info("Computed theoretical minimum halo from model: {patch_halo}")
+            logger.info(f"Computed theoretical minimum halo from model: {patch_halo}")
         except Exception:
             logger.warning(
                 "Could not compute halo from model. Using 0 halo size, you may experience edge artifacts."
