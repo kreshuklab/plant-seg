@@ -44,6 +44,7 @@ def download_file(url: str, filename: Path) -> None:
 
 def download_files(urls: dict, out_dir: Path) -> None:
     """Download files from URLs to a specified directory."""
+    logger.debug(f"Queued download of files: {urls}")
     out_dir = Path(out_dir)
     if not out_dir.exists():
         out_dir.mkdir(parents=True)  # Create the directory and any parent directories
@@ -53,10 +54,10 @@ def download_files(urls: dict, out_dir: Path) -> None:
         for filename, url in urls.items():
             file_path = out_dir / filename
             if not file_path.exists():  # Skip download if file already exists
-                logger.info(f"Downloading file {filename} from {url}...")
+                logger.debug(f"Downloading file {filename} from {url}...")
                 futures.append(executor.submit(download_file, url, file_path))
             else:
-                logger.info(f"File {filename} already exists. Skipping download.")
+                logger.debug(f"File {filename} already exists. Skipping download.")
 
         for future in futures:
             future.result()  # Wait for all downloads to complete

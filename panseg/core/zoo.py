@@ -35,7 +35,7 @@ from panseg.functionals.training.model import (
 )
 from panseg.utils import download_files, get_class, load_config, save_config
 
-logger_zoo = logging.getLogger("PanSeg.Zoo")
+logger_zoo = logging.getLogger(__name__)
 
 
 class Author(str, Enum):
@@ -323,13 +323,15 @@ class ModelZoo:
         model_dir.mkdir(parents=True, exist_ok=True)
 
         # Check if the model configuration file exists and download it if it doesn't
-        if not (model_dir / FILE_CONFIG_TRAIN_YAML).exists() or update_files:
+        if len(list(model_dir.glob("*.pytorch"))) < 1 or update_files:
+            logger_zoo.info(f"Starting download for {model_name}")
             model_file = PATH_MODEL_ZOO
             config = load_config(model_file)
 
             model_url = config.get(model_name, {}).get("model_url")
             if model_url:
                 self._download_model_files(model_url, model_dir, config_only)
+                logger_zoo.info(f"Download finished for {model_name}")
             else:
                 warn(f"Model {model_name} not found in the models zoo configuration.")
 
