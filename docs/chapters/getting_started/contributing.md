@@ -49,6 +49,7 @@ Please refer to [Python API](../python_api/index.md).
 ## Coding Style
 
 PanSeg uses _Ruff_ for linting and formatting. _Ruff_ is compatible with _Black_ for formatting.
+Commit messages should adhere to conventional commits.
 
 To ensure proper formatting and commit messages, pre-commit is used.
 This runs on PRs automatically, to run it locally check out [Pre-commit](https://pre-commit.com/#quick-start).
@@ -74,6 +75,37 @@ pre-commit run --all-files
 Commit messages are important. Please follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
 
 For efficiency, pytest is not included in the pre-commit hooks. Please run the tests separately.
+
+## Release
+
+The versions of dependencies in the conda package are pinned to a max version.
+Before releasing, you might want to update those pins.
+
+To release, run the github workflow `release`, then manually publish to `conda-forge`.
+
+### Github release workflow
+
+The workflow will:
+
+* run tests
+* bump version number
+* create a github release
+* build a conda package
+* upload to github
+* build documentation
+* build an installer for win/mac/linux
+* upload installer to heibox
+
+### Conda-Forge release
+
+**Run after gh release workflow**
+
+* git clone personal panseg-feedstock fork
+* Update hash and version in `recipe/meta.yaml`
+  * `curl -sL https://github.com/kreshuklab/panseg/archive/refs/tags/VERSION.tar.gz | openssl sha256`
+* Create PR
+* Re-render
+* Merge
 
 ## Videos
 

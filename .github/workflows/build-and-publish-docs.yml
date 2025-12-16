@@ -44,7 +44,7 @@ jobs:
           mamba-version: "*"
           channels: conda-forge
           environment-file: "environment-dev.yaml"
-          activate-environment: "plant-seg-dev"
+          activate-environment: "panseg-dev"
           conda-remove-defaults: true
 
       # Install MkDocs and deploy the documentation to GitHub Pages
@@ -53,7 +53,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          conda activate plant-seg-dev
+          conda activate panseg-dev
           mike deploy --push --update-aliases ${{ inputs.version }} latest
         env:
           MKDOCS_GIT_COMMITTERS_APIKEY: ${{ secrets.MKDOCS_GIT_COMMITTERS_APIKEY }}

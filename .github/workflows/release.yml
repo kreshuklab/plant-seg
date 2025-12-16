@@ -46,7 +46,7 @@ jobs:
           mamba-version: "*"
           channels: conda-forge
           environment-file: "environment-dev.yaml"
-          activate-environment: "plant-seg-dev"
+          activate-environment: "panseg-dev"
           conda-remove-defaults: true
 
       - name: List Conda Environments
@@ -54,7 +54,7 @@ jobs:
 
       - name: Run Tests with Pytest
         run: |
-          conda activate plant-seg-dev
+          conda activate panseg-dev
           pytest -s --cov --cov-report=xml
           conda deactivate
 
@@ -102,7 +102,7 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: plantseg-conda-build
+          name: panseg-conda-build
           path: constructor/build.gz
           overwrite: true
           if-no-files-found: error
@@ -135,11 +135,11 @@ jobs:
           git fetch
           git checkout master
           git pull
-          cat plantseg/__version__.py
+          cat panseg/__version__.py
 
       - uses: actions/download-artifact@v4
         with:
-          name: plantseg-conda-build
+          name: panseg-conda-build
           path: ./constructor
 
       - name: Display downloaded files
@@ -177,7 +177,7 @@ jobs:
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "plantseg-installer-${{ matrix.os }}"
-          path: installer/PlantSeg*
+          name: "panseg-installer-${{ matrix.os }}"
+          path: installer/PanSeg*
           overwrite: true
           if-no-files-found: error

@@ -27,12 +27,12 @@ jobs:
           /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
           --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
 
-      # Set the PlantSeg version based on the current date and time
-      - name: Set PlantSeg Version
+      # Set the PanSeg version based on the current date and time
+      - name: Set PanSeg Version
         run: echo "RELEASE_VERSION=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
-      # Print the PlantSeg version name (for debugging purposes)
-      - name: Print PlantSeg Version
+      # Print the PanSeg version name (for debugging purposes)
+      - name: Print PanSeg Version
         run: echo $RELEASE_VERSION
 
       # Set up Miniconda
@@ -44,7 +44,7 @@ jobs:
           mamba-version: "*"
           channels: local,conda-forge
           environment-file: "environment-dev.yaml"
-          activate-environment: "plant-seg-dev"
+          activate-environment: "panseg-dev"
           conda-remove-defaults: true
 
       # Display available Conda environments (for debugging purposes)
@@ -56,7 +56,7 @@ jobs:
       - name: Run Tests with Pytest
         shell: bash -l {0}
         run: |
-          conda activate plant-seg-dev
+          conda activate panseg-dev
           pytest --cov --cov-report=xml --durations=10
           conda deactivate
 

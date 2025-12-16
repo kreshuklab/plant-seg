@@ -46,7 +46,7 @@ docs = [
 Homepage = "https://kreshuklab.github.io/panseg/"
 
 [project.scripts]
-plantseg = "plantseg.run_plantseg:main"
+panseg = "panseg.run_panseg:main"
 
 
 # Tools
@@ -57,7 +57,7 @@ ome = "ome"     # Open Microscopy Environment (OME)
 datas = "datas" # pyinstaller
 
 [tool.typos.files]
-extend-exclude = ["tests/**", "plantseg/**", "examples/**"]
+extend-exclude = ["tests/**", "panseg/**", "examples/**"]
 
 [tool.ruff.lint]
 extend-select = ["I"]
