@@ -81,6 +81,12 @@ For efficiency, pytest is not included in the pre-commit hooks. Please run the t
 The versions of dependencies in the conda package are pinned to a max version.
 Before releasing, you might want to update those pins.
 
+Keep the pins in sync between:
+
+* `panseg-feedstock/recipe/meta.yaml`
+* `conda-recipe/meta.yaml`
+* `environment.yaml`
+
 To release, run the github workflow `release`, then manually publish to `conda-forge`.
 
 ### Github release workflow
