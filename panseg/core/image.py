@@ -2,7 +2,7 @@ import logging
 import time
 from enum import Enum
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 from uuid import UUID, uuid4
 
 import h5py
@@ -14,6 +14,7 @@ from pydantic import BaseModel
 import panseg.functionals.dataprocessing as dp
 from panseg.io.h5 import H5_EXTENSIONS, create_h5
 from panseg.io.io import smart_load_with_vs
+from panseg.io.mesh import create_mesh
 from panseg.io.tiff import create_tiff
 from panseg.io.voxelsize import VoxelSize
 from panseg.io.zarr import create_zarr
@@ -783,6 +784,8 @@ def save_image(
     scale_to_origin: bool = True,
     export_format: str = "tiff",
     data_type: str = "uint16",
+    export_mesh: Optional[str] = None,
+    close_mesh: bool = False,
 ) -> None:
     """
     Write a PanSegImage object to disk.
@@ -841,4 +844,17 @@ def save_image(
     else:
         raise ValueError(
             f"Export format {export_format} not recognized, should be tiff, h5 or zarr"
+        )
+
+    if export_mesh:
+        if image.image_type != ImageType.LABEL:
+            raise ValueError(
+                f"Mesh export only supported for Segmentations, received: {image.image_type}"
+            )
+        file_path_name = directory / f"{name_pattern}.{export_mesh}"
+        create_mesh(
+            path=file_path_name,
+            stack=data,
+            voxel_size=voxel_size,
+            close_mesh=close_mesh,
         )

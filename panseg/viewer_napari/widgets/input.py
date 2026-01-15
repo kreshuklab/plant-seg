@@ -425,7 +425,7 @@ class Docs_Container:
         button.changed.connect(self.open_docs)
         container = Container(
             widgets=[button],
-            label=f'<img src="{self.logo_path}" width=300>',
+            label=f'<img src="{self.logo_path}" width=250>',
             layout="horizontal",
             labels=False,
         )

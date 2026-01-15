@@ -26,6 +26,8 @@ dependencies:
   - requests
   - pyyaml
   - pydantic>2
+  - trimesh
+  - zmesh
   # Test
   - pytest
   - pytest-cov
