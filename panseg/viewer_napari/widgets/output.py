@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 from magicgui import magic_factory
-from magicgui.widgets import ComboBox, Container, Label
+from magicgui.widgets import CheckBox, ComboBox, Container, Label
 from napari.layers import Image, Labels, Layer
 from psygnal import Signal
 
@@ -94,10 +94,13 @@ class Output_Tab:
         self.export_details = [
             self.widget_export_image.directory,
             self.widget_export_image.name_pattern,
+            self.widget_export_image.n_channels,
             self.widget_export_image.export_format,
             self.widget_export_image.data_type,
             self.widget_export_image.scale_to_origin,
             self.widget_export_image.key,
+            self.widget_export_image.export_mesh,
+            self.widget_export_image.close_mesh,
         ]
         self._toggle_export_details_widgets(False)
         self._toggle_key(False)
@@ -159,6 +162,19 @@ class Output_Tab:
             "label": "Key",
             "tooltip": "Key to be used in the h5 or zarr file.",
         },
+        export_mesh={
+            "label": "Export Mesh",
+            "tooltip": "Convert segmentation to mesh.\nglb is encuraged, "
+            "other formats might have missing color, or merge meshes.",
+            "choices": ["No", "glb", "obj", "ply"],
+            "widget_type": "RadioButtons",
+            "orientation": "horizontal",
+            "value": "No",
+        },
+        close_mesh={
+            "label": "Close mesh",
+            "tooltip": "Whether to close the mesh at the edges of the image.",
+        },
         scale_to_origin={
             "label": "Rescale to original resolution",
             "tooltip": "Rescale the image to the original voxel size.",
@@ -177,6 +193,8 @@ class Output_Tab:
         name_pattern: str = "{file_name}_export",
         export_format: str = "tiff",
         key: str = "raw",
+        export_mesh: str = "No",
+        close_mesh: bool = False,
         scale_to_origin: bool = True,
         data_type: str = "uint16",
     ) -> None | bool:
@@ -207,6 +225,8 @@ class Output_Tab:
             ps_image = merge_channels_task(
                 **{f"image_{i}": image for i, image in enumerate(images)}
             )
+        if export_mesh == "No":
+            export_mesh = None
 
         timer = time.time()
         log("export_image_task started", thread="Output", level="info")
@@ -218,6 +238,8 @@ class Output_Tab:
             scale_to_origin=scale_to_origin,
             export_format=export_format,
             data_type=data_type,
+            export_mesh=export_mesh,
+            close_mesh=close_mesh,
         )
         timer = time.time() - timer
         log(
@@ -247,6 +269,18 @@ class Output_Tab:
             self._toggle_export_details_widgets(False)
             self._toggle_key(False)
             return
+
+        # Multichannel not allowed for segmentations
+        if isinstance(image, Labels):
+            self.widget_export_image.n_channels.value = 1
+            self.widget_export_image.n_channels.enabled = False
+            self.widget_export_image.export_mesh.enabled = True
+            self.widget_export_image.close_mesh.enabled = True
+        else:
+            self.widget_export_image.n_channels.enabled = True
+            self.widget_export_image.export_mesh.value = "No"
+            self.widget_export_image.export_mesh.enabled = False
+            self.widget_export_image.close_mesh.enabled = False
 
         if isinstance(image, Labels) or isinstance(image, Image):
             self._toggle_export_details_widgets(True)

@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from panseg.io.io import smart_load
+from panseg.io.mesh import create_mesh
 from panseg.io.voxelsize import VoxelSize
 from panseg.io.zarr import list_zarr_keys
 
@@ -135,3 +136,22 @@ class TestIO:
         assert data.shape[:2] == data_read.shape, (
             "Data read from JPG file is not equal to the original data"
         )
+
+    def test_mesh(self, tmp_path):
+        data = np.zeros((10, 10, 5), dtype=np.uint8)
+        data[0:4, 3:5, 0:2] = 1
+        data[0:4, 3:5, 2:5] = 2
+        data[6:10, 3:5, :] = 3
+
+        out_file = tmp_path / "scene.glb"
+        scene = create_mesh(
+            path=out_file,
+            stack=data,
+            voxelsize=self.voxel_size,
+            reduction_factor=1.0,
+        )
+        assert out_file.exists()
+        assert len(scene.geometry) == 3
+        vc0 = scene.geometry["geometry_0"].visual.vertex_colors
+        vc1 = scene.geometry["geometry_1"].visual.vertex_colors
+        assert not np.all(vc0[0] == vc1[0])

@@ -93,7 +93,12 @@ def test_image_io_round_trip(tmp_path, shape, layout, export_format):
     ],
 )
 def test_label_io_round_trip(tmp_path, shape, layout, export_format):
-    mock_data = np.random.randint(0, 10, size=shape).astype("uint16")
+    mock_data = np.random.randint(0, 10, size=[4] * len(shape))
+    repeats = np.array(shape) // 4
+    for i, rep in enumerate(repeats):
+        mock_data = mock_data.repeat(rep, axis=i)
+    mock_data = mock_data.astype("uint16")
+    assert np.all(mock_data.shape == shape)
 
     property = ImageProperties(
         name="test",
@@ -111,6 +116,7 @@ def test_label_io_round_trip(tmp_path, shape, layout, export_format):
         key="raw",
         export_format=export_format,
         data_type="uint16",
+        export_mesh=True if len(shape) == 3 else False,
     )
 
     if export_format == "tiff":
@@ -182,6 +188,38 @@ def test_label_import_image_task_error_message(tmp_path):
     )
     assert isinstance(result, Task_message)
     assert "Data to import has shape (64, 64)" in result.message
+
+
+def test_label_io_mesh_error(tmp_path):
+    shape = (64, 64)
+    export_format = "tiff"
+
+    mock_data = np.random.randint(0, 10, size=[4] * len(shape))
+    repeats = np.array(shape) // 4
+    for i, rep in enumerate(repeats):
+        mock_data = mock_data.repeat(rep, axis=i)
+    mock_data = mock_data.astype("uint16")
+    assert np.all(mock_data.shape == shape)
+
+    property = ImageProperties(
+        name="test",
+        voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
+        semantic_type=SemanticType.SEGMENTATION,
+        image_layout=ImageLayout.YX,
+        original_voxel_size=VoxelSize(voxels_size=(1.0, 1.0, 1.0), unit="um"),
+    )
+    image = PanSegImage(data=mock_data, properties=property)
+
+    with pytest.raises(AssertionError):
+        export_image_task(
+            image=image,
+            export_directory=tmp_path,
+            name_pattern="test",
+            key="raw",
+            export_format=export_format,
+            data_type="uint16",
+            export_mesh=True,
+        )
 
 
 def test_io_slicing_trip(tmp_path):

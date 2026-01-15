@@ -58,6 +58,8 @@ requirements:
     - requests==2.32.5
     - pyyaml==6.0.3
     - pydantic==2.11.10
+    - trimesh==4.11.0
+    - zmesh==1.8.0
 
 test:
   imports:
