@@ -35,7 +35,7 @@ from plantseg.functionals.training.model import (
 )
 from plantseg.utils import download_files, get_class, load_config, save_config
 
-logger_zoo = logging.getLogger("PlantSeg.Zoo")
+logger_zoo = logging.getLogger(__name__)
 
 
 class Author(str, Enum):
@@ -324,8 +324,18 @@ class ModelZoo:
         model_dir = PATH_PLANTSEG_MODELS / model_name
         model_dir.mkdir(parents=True, exist_ok=True)
 
-        # Check if the model configuration file exists and download it if it doesn't
-        if not (model_dir / FILE_CONFIG_TRAIN_YAML).exists() or update_files:
+        logger_zoo.debug(
+            f"check_models, model_name: {model_name}, "
+            f"update_files {update_files}, config_only {config_only}"
+        )
+        # Check if the model exists and download it if it doesn't
+        loaded = all(
+            [
+                (model_dir / FILE_CONFIG_TRAIN_YAML).exists(),
+                (model_dir / FILE_BEST_MODEL_PYTORCH).exists(),
+            ]
+        )
+        if (not loaded) or update_files:
             model_file = PATH_MODEL_ZOO
             config = load_config(model_file)
 
@@ -333,7 +343,9 @@ class ModelZoo:
             if model_url:
                 self._download_model_files(model_url, model_dir, config_only)
             else:
-                warn(f"Model {model_name} not found in the models zoo configuration.")
+                logger_zoo.warning(
+                    f"Model {model_name} not found in the models zoo configuration."
+                )
 
     def _get_model_config_path_by_name(self, model_name: str) -> Path:
         """Return the path to the training configuration for a model in zoo."""
@@ -361,17 +373,15 @@ class ModelZoo:
         model = self._create_model_by_config(model_config)
         if model_weights_path is None:
             model_weights_path = config_path.parent / FILE_BEST_MODEL_PYTORCH
-        logger_zoo.info(
-            f"Loaded model from user specified weights: {model_weights_path}"
-        )
+        logger_zoo.info(f"Loading model from weights: {model_weights_path}")
         return model, model_config, model_weights_path
 
     def get_model_by_name(self, model_name: str, model_update: bool = False):
         """Load configuration for a model in zoo; return the model, configuration and path."""
-        self.check_models(model_name, update_files=model_update)
+        self.check_models(model_name, update_files=model_update, config_only=False)
         config_path = self._get_model_config_path_by_name(model_name)
         model_weights_path = PATH_PLANTSEG_MODELS / model_name / FILE_BEST_MODEL_PYTORCH
-        logger_zoo.info(f"Loaded model from PlantSeg zoo: {model_name}")
+        logger_zoo.info(f"Loading model from PlantSeg zoo: {model_name}")
         return self.get_model_by_config_path(config_path, model_weights_path)
 
     def get_model_by_id(self, model_id: str):

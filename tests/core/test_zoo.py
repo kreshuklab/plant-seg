@@ -31,6 +31,7 @@ class TestPlantSegModelZoo:
         model, _, model_path = model_zoo.get_model_by_name(
             model_name, model_update=True
         )
+        assert model_path.exists()
         state = torch.load(model_path, map_location="cpu", weights_only=True)
         model.load_state_dict(state)
         model.eval()
