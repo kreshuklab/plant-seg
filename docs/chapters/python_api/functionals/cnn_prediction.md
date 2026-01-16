@@ -1,3 +1,3 @@
-# PlantSeg CNN Prediction
+# PanSeg CNN Prediction
 
-::: plantseg.functionals.prediction.prediction.unet_prediction
+::: panseg.functionals.prediction.prediction.unet_prediction

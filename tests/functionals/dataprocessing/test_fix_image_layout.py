@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from plantseg.functionals.dataprocessing import (
+from panseg.functionals.dataprocessing import (
     fix_layout,
 )
 

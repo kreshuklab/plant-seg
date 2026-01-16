@@ -1,8 +1,8 @@
 import pytest
 import torch
 
-from plantseg.functionals.training.embeddings import embeddings_to_affinities
-from plantseg.functionals.training.model import SpocoNet, UNet2D
+from panseg.functionals.training.embeddings import embeddings_to_affinities
+from panseg.functionals.training.model import SpocoNet, UNet2D
 from tests.conftest import IS_CUDA_AVAILABLE
 
 

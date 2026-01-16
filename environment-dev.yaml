@@ -1,9 +1,6 @@
-name: plant-seg-dev
+name: panseg-dev
 channels:
   - conda-forge
-  # `defaults` is optional, unless e.g. `conda-forge` has no cudnn 9.* when `defaults` has.
-  # `defaults` of Anaconda is not accessible for many non-profit institutes such as EMBL.
-  # - defaults
 dependencies:
   - python>=3.11
   - pip
@@ -18,8 +15,8 @@ dependencies:
   - python-elf
   - python-graphviz
   - scikit-image
-  - bioimageio.core>=0.9.0
-  - bioimageio.spec>=0.5.4.3
+  - bioimageio.core
+  - bioimageio.spec
   # GUI
   - pyside6
   - qtpy
@@ -47,5 +44,4 @@ dependencies:
   - mike
   - pip:
       - markdown-exec
-      # PlantSeg
       - -e .

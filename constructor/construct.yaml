@@ -1,9 +1,9 @@
-name: PlantSeg
-version: "2.0.0rc10"
+name: PanSeg
+version: "2.0.0rc11"
 channels:
   - conda-forge
 specs:
-  - python=3.12
+  - python=3.13
   - conda
   - menuinst
 exclude:

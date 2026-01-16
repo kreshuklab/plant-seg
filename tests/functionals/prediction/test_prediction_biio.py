@@ -1,6 +1,6 @@
 import pytest
 
-from plantseg.functionals.prediction.prediction import biio_prediction
+from panseg.functionals.prediction.prediction import biio_prediction
 
 
 @pytest.mark.parametrize(

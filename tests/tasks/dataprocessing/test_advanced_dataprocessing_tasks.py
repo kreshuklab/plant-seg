@@ -1,22 +1,22 @@
 import numpy as np
 import pytest
 
-from plantseg.core.image import (
+from panseg.core.image import (
     ImageLayout,
     ImageProperties,
-    PlantSegImage,
+    PanSegImage,
     SemanticType,
 )
-from plantseg.io.voxelsize import VoxelSize
-from plantseg.tasks.dataprocessing_tasks import (
+from panseg.io.voxelsize import VoxelSize
+from panseg.tasks.dataprocessing_tasks import (
     fix_over_under_segmentation_from_nuclei_task,
 )
 
 
 @pytest.fixture
-def complex_test_PlantSegImages(complex_test_data):
+def complex_test_PanSegImages(complex_test_data):
     """
-    Pytest fixture to convert raw test data into PlantSegImage objects with metadata.
+    Pytest fixture to convert raw test data into PanSegImage objects with metadata.
 
     Args:
         complex_test_data (tuple): A tuple containing:
@@ -26,14 +26,14 @@ def complex_test_PlantSegImages(complex_test_data):
 
     Returns:
         tuple: A tuple containing:
-            - cell_seg (PlantSegImage): Cell segmentation as a PlantSegImage object.
-            - nuclei_seg (PlantSegImage): Nuclei segmentation as a PlantSegImage object.
-            - boundary_pmap (PlantSegImage | None): Boundary probability map as a PlantSegImage object, or None.
+            - cell_seg (PanSegImage): Cell segmentation as a PanSegImage object.
+            - nuclei_seg (PanSegImage): Nuclei segmentation as a PanSegImage object.
+            - boundary_pmap (PanSegImage | None): Boundary probability map as a PanSegImage object, or None.
     """
     cell_seg, nuclei_seg, boundary_pmap = complex_test_data
 
-    # Convert cell segmentation data to PlantSegImage
-    cell_seg = PlantSegImage(
+    # Convert cell segmentation data to PanSegImage
+    cell_seg = PanSegImage(
         data=cell_seg,
         properties=ImageProperties(
             name="cell_seg",
@@ -44,8 +44,8 @@ def complex_test_PlantSegImages(complex_test_data):
         ),
     )
 
-    # Convert nuclei segmentation data to PlantSegImage
-    nuclei_seg = PlantSegImage(
+    # Convert nuclei segmentation data to PanSegImage
+    nuclei_seg = PanSegImage(
         data=nuclei_seg,
         properties=ImageProperties(
             name="nuclei_seg",
@@ -56,9 +56,9 @@ def complex_test_PlantSegImages(complex_test_data):
         ),
     )
 
-    # Convert boundary probability map data to PlantSegImage, if provided
+    # Convert boundary probability map data to PanSegImage, if provided
     boundary_pmap = (
-        PlantSegImage(
+        PanSegImage(
             data=boundary_pmap,
             properties=ImageProperties(
                 name="boundary_pmap",
@@ -75,22 +75,22 @@ def complex_test_PlantSegImages(complex_test_data):
     return cell_seg, nuclei_seg, boundary_pmap
 
 
-def test_fix_over_under_segmentation_from_nuclei_task(complex_test_PlantSegImages):
+def test_fix_over_under_segmentation_from_nuclei_task(complex_test_PanSegImages):
     """
     Test the fix_over_under_segmentation_from_nuclei_task function.
 
     Args:
-        complex_test_PlantSegImages (tuple): A tuple containing:
-            - cell_seg (PlantSegImage): PlantSegImage object for cell segmentation.
-            - nuclei_seg (PlantSegImage): PlantSegImage object for nuclei segmentation.
-            - boundary_pmap (PlantSegImage | None): PlantSegImage object for boundary probability map, or None.
+        complex_test_PanSegImages (tuple): A tuple containing:
+            - cell_seg (PanSegImage): PanSegImage object for cell segmentation.
+            - nuclei_seg (PanSegImage): PanSegImage object for nuclei segmentation.
+            - boundary_pmap (PanSegImage | None): PanSegImage object for boundary probability map, or None.
 
     Tests:
         - Ensures that the task processes input data correctly.
-        - Verifies that the output is a PlantSegImage.
+        - Verifies that the output is a PanSegImage.
         - Confirms that merging and splitting thresholds, as well as quantile-based filtering, are applied correctly.
     """
-    cell_seg, nuclei_seg, boundary_pmap = complex_test_PlantSegImages
+    cell_seg, nuclei_seg, boundary_pmap = complex_test_PanSegImages
 
     # Run the task with defined parameters
     result = fix_over_under_segmentation_from_nuclei_task(
@@ -103,8 +103,8 @@ def test_fix_over_under_segmentation_from_nuclei_task(complex_test_PlantSegImage
         boundary=boundary_pmap,
     )
 
-    # Assert that the result is a PlantSegImage object
-    assert isinstance(result, PlantSegImage), "Task result is not a PlantSegImage."
+    # Assert that the result is a PanSegImage object
+    assert isinstance(result, PanSegImage), "Task result is not a PanSegImage."
 
     # Ensure the output segmentation data is modified compared to the input (functional tested elsewhere)
     assert not np.array_equal(result.get_data(), cell_seg.get_data()), (

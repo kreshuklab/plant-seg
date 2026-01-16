@@ -1,13 +1,13 @@
 import pytest
 import requests
 
-from plantseg.utils import check_version
+from panseg.utils import check_version
 
 
 @pytest.fixture
 def mock_logger(mocker):
     """Fixture to mock the logger."""
-    return mocker.patch("plantseg.utils.logger")
+    return mocker.patch("panseg.utils.logger")
 
 
 def test_check_version_new_version(mock_logger, requests_mock):
@@ -17,7 +17,7 @@ def test_check_version_new_version(mock_logger, requests_mock):
 
     # Mock the API response
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases?per_page=100",
+        "https://api.github.com/repos/kreshuklab/panseg/releases?per_page=100",
         json=[
             {
                 "tag_name": latest_version,
@@ -34,8 +34,8 @@ def test_check_version_new_version(mock_logger, requests_mock):
 
     # Assert logger warning was called with appropriate message
     true_logline = (
-        f"You are using PlantSeg {current_version}\n"
-        f"New release of PlantSeg available: {latest_version}.\n"
+        f"You are using PanSeg {current_version}\n"
+        f"New release of PanSeg available: {latest_version}.\n"
         "Please update to the latest version."
     )
     mock_logger.warning.assert_called_once_with(true_logline)
@@ -52,7 +52,7 @@ def test_check_version_same_version(mock_logger, requests_mock):
 
     # Mock the API response
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases?per_page=100",
+        "https://api.github.com/repos/kreshuklab/panseg/releases?per_page=100",
         json=[
             {
                 "tag_name": latest_version,
@@ -68,7 +68,7 @@ def test_check_version_same_version(mock_logger, requests_mock):
     logline, features = check_version(current_version)
 
     # Assert logger info was called with appropriate message
-    true_logline = f"You are using the latest release of PlantSeg: {current_version}"
+    true_logline = f"You are using the latest release of PanSeg: {current_version}"
     mock_logger.info.assert_called_once_with(true_logline)
     assert logline == true_logline
     assert features == "New features in this release:\n\nfirst feature\nsecond feature"
@@ -81,7 +81,7 @@ def test_check_version_old_version(mock_logger, requests_mock):
 
     # Mock the API response
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases?per_page=100",
+        "https://api.github.com/repos/kreshuklab/panseg/releases?per_page=100",
         json=[
             {
                 "tag_name": latest_version,
@@ -97,7 +97,7 @@ def test_check_version_old_version(mock_logger, requests_mock):
     logline, features = check_version(current_version)
 
     # Assert logger info was called with appropriate message
-    true_logline = f"You are using a pre-release version of PlantSeg: {current_version}"
+    true_logline = f"You are using a pre-release version of PanSeg: {current_version}"
 
     mock_logger.info.assert_called_once_with(true_logline)
     assert logline == true_logline
@@ -111,7 +111,7 @@ def test_check_version_beta_version(mock_logger, requests_mock):
 
     # Mock the API response
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases?per_page=100",
+        "https://api.github.com/repos/kreshuklab/panseg/releases?per_page=100",
         json=[
             {
                 "tag_name": latest_version,
@@ -129,8 +129,8 @@ def test_check_version_beta_version(mock_logger, requests_mock):
 
     # Assert logger info was called with appropriate message
     true_logline = (
-        f"You are using PlantSeg {current_version}\n"
-        f"New version of PlantSeg available: {latest_version}.\n"
+        f"You are using PanSeg {current_version}\n"
+        f"New version of PanSeg available: {latest_version}.\n"
         "Please update to the latest version."
     )
     mock_logger.warning.assert_called_once_with(true_logline)
@@ -147,7 +147,7 @@ def test_check_version_new_beta_version(mock_logger, requests_mock):
 
     # Mock the API response
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases?per_page=100",
+        "https://api.github.com/repos/kreshuklab/panseg/releases?per_page=100",
         json=[
             {"tag_name": latest_version, "prerelease": True, "body": ""},
         ],
@@ -157,8 +157,8 @@ def test_check_version_new_beta_version(mock_logger, requests_mock):
 
     # Assert logger warning was called with appropriate message
     mock_logger.warning.assert_called_once_with(
-        f"You are using PlantSeg {current_version}\n"
-        f"New version of PlantSeg available: {latest_version}.\n"
+        f"You are using PanSeg {current_version}\n"
+        f"New version of PanSeg available: {latest_version}.\n"
         "Please update to the latest version."
     )
 
@@ -169,7 +169,7 @@ def test_check_version_request_exception(mock_logger, requests_mock):
 
     # Mock the API to raise a RequestException
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases?per_page=100",
+        "https://api.github.com/repos/kreshuklab/panseg/releases?per_page=100",
         exc=requests.RequestException,
     )
 
@@ -187,7 +187,7 @@ def test_check_version_value_error(mock_logger, requests_mock):
 
     # Mock the API response with an invalid version format
     requests_mock.get(
-        "https://api.github.com/repos/kreshuklab/plant-seg/releases?per_page=100",
+        "https://api.github.com/repos/kreshuklab/panseg/releases?per_page=100",
         json=[{"tag_name": "invalid_version", "prerelease": False, "body": ""}],
     )
 

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from plantseg.functionals.dataprocessing.dataprocessing import (
+from panseg.functionals.dataprocessing.dataprocessing import (
     compute_scaling_factor,
     compute_scaling_voxelsize,
     image_crop,

@@ -17,7 +17,7 @@ assert len(upload_url) > 50, f"Failed to get upload url: {upload_url}"
 print("Obtained upload url")
 
 to_upload = None
-for to_upload in Path("installer").glob("PlantSeg*"):
+for to_upload in Path("installer").glob("PanSeg*"):
     print("Uploading ", to_upload)
     with open(to_upload, "rb") as fp:
         files = {"file": (to_upload.name, fp, "application/octet-stream")}
@@ -47,4 +47,4 @@ if to_upload:
     )
 else:
     print("Could not upload anything!")
-    print(list(Path("installer").glob("PlantSeg*")))
+    print(list(Path("installer").glob("PanSeg*")))

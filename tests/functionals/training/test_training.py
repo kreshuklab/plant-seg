@@ -9,8 +9,8 @@ import numpy as np
 import pytest
 import yaml
 
-from plantseg import FILE_CONFIG_TRAIN_YAML
-from plantseg.functionals.training.train import (
+from panseg import FILE_CONFIG_TRAIN_YAML
+from panseg.functionals.training.train import (
     create_datasets,
     create_model_config,
     find_h5_files,
@@ -157,7 +157,7 @@ class TestCreateDatasets:
 
             assert len(datasets) == 3
             # Each dataset should be an HDF5Dataset instance
-            from plantseg.functionals.training.h5dataset import HDF5Dataset
+            from panseg.functionals.training.h5dataset import HDF5Dataset
 
             for dataset in datasets:
                 assert isinstance(dataset, HDF5Dataset)
@@ -201,9 +201,9 @@ class TestCreateDatasets:
 class TestUnetTraining:
     """Tests for unet_training function."""
 
-    @patch("plantseg.functionals.training.train.UNetTrainer")
-    @patch("plantseg.functionals.training.train.create_datasets")
-    @patch("plantseg.functionals.training.train.create_model_config")
+    @patch("panseg.functionals.training.train.UNetTrainer")
+    @patch("panseg.functionals.training.train.create_datasets")
+    @patch("panseg.functionals.training.train.create_model_config")
     def test_unet_training_2d(
         self, mock_create_config, mock_create_datasets, mock_trainer
     ):
@@ -227,9 +227,9 @@ class TestUnetTraining:
             # Test parameters
             model_name = "test_model_2d"
 
-            # Patch PATH_PLANTSEG_MODELS to use temp directory
+            # Patch PATH_PANSEG_MODELS to use temp directory
             with patch(
-                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                "panseg.functionals.training.train.PATH_PANSEG_MODELS",
                 Path(temp_dir),
             ):
                 unet_training(
@@ -254,9 +254,9 @@ class TestUnetTraining:
             # Verify that create_model_config was called
             mock_create_config.assert_called_once()
 
-    @patch("plantseg.functionals.training.train.UNetTrainer")
-    @patch("plantseg.functionals.training.train.create_datasets")
-    @patch("plantseg.functionals.training.train.create_model_config")
+    @patch("panseg.functionals.training.train.UNetTrainer")
+    @patch("panseg.functionals.training.train.create_datasets")
+    @patch("panseg.functionals.training.train.create_model_config")
     def test_unet_training_3d(
         self, mock_create_config, mock_create_datasets, mock_trainer
     ):
@@ -280,9 +280,9 @@ class TestUnetTraining:
             # Test parameters
             model_name = "test_model_3d"
 
-            # Patch PATH_PLANTSEG_MODELS to use temp directory
+            # Patch PATH_PANSEG_MODELS to use temp directory
             with patch(
-                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                "panseg.functionals.training.train.PATH_PANSEG_MODELS",
                 Path(temp_dir),
             ):
                 unet_training(
@@ -301,9 +301,9 @@ class TestUnetTraining:
             # Verify that trainer was called
             mock_trainer_instance.train.assert_called_once()
 
-    @patch("plantseg.functionals.training.train.UNetTrainer")
-    @patch("plantseg.functionals.training.train.create_datasets")
-    @patch("plantseg.functionals.training.train.create_model_config")
+    @patch("panseg.functionals.training.train.UNetTrainer")
+    @patch("panseg.functionals.training.train.create_datasets")
+    @patch("panseg.functionals.training.train.create_model_config")
     def test_unet_training_with_existing_checkpoint_dir(
         self, mock_create_config, mock_create_datasets, mock_trainer
     ):
@@ -324,9 +324,9 @@ class TestUnetTraining:
             checkpoint_dir = Path(temp_dir) / "test_model"
             checkpoint_dir.mkdir(parents=True)
 
-            # Patch PATH_PLANTSEG_MODELS to use temp directory
+            # Patch PATH_PANSEG_MODELS to use temp directory
             with patch(
-                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                "panseg.functionals.training.train.PATH_PANSEG_MODELS",
                 Path(temp_dir),
             ):
                 with pytest.raises(
@@ -345,13 +345,13 @@ class TestUnetTraining:
                         device="cpu",
                     )
 
-    @patch("plantseg.functionals.training.train.UNetTrainer")
-    @patch("plantseg.functionals.training.train.create_datasets")
-    @patch("plantseg.functionals.training.train.create_model_config")
+    @patch("panseg.functionals.training.train.UNetTrainer")
+    @patch("panseg.functionals.training.train.create_datasets")
+    @patch("panseg.functionals.training.train.create_model_config")
     @patch("torch.cuda.device_count")
     @patch("torch.nn.DataParallel")
-    @patch("plantseg.functionals.training.train.Adam")
-    @patch("plantseg.functionals.training.train.ReduceLROnPlateau")
+    @patch("panseg.functionals.training.train.Adam")
+    @patch("panseg.functionals.training.train.ReduceLROnPlateau")
     def test_unet_training_multi_gpu(
         self,
         mock_reduce_lr,
@@ -395,9 +395,9 @@ class TestUnetTraining:
             (dataset_dir / "train").mkdir()
             (dataset_dir / "val").mkdir()
 
-            # Patch PATH_PLANTSEG_MODELS to use temp directory
+            # Patch PATH_PANSEG_MODELS to use temp directory
             with patch(
-                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                "panseg.functionals.training.train.PATH_PANSEG_MODELS",
                 Path(temp_dir),
             ):
                 unet_training(
@@ -425,9 +425,9 @@ class TestUnetTraining:
             # Verify that ReduceLROnPlateau scheduler was called
             mock_reduce_lr.assert_called_once()
 
-    @patch("plantseg.functionals.training.train.UNetTrainer")
-    @patch("plantseg.functionals.training.train.create_datasets")
-    @patch("plantseg.functionals.training.train.create_model_config")
+    @patch("panseg.functionals.training.train.UNetTrainer")
+    @patch("panseg.functionals.training.train.create_datasets")
+    @patch("panseg.functionals.training.train.create_model_config")
     def test_unet_training_dimensionality_lowercase(
         self, mock_create_config, mock_create_datasets, mock_trainer
     ):
@@ -448,9 +448,9 @@ class TestUnetTraining:
             (dataset_dir / "train").mkdir()
             (dataset_dir / "val").mkdir()
 
-            # Patch PATH_PLANTSEG_MODELS to use temp directory
+            # Patch PATH_PANSEG_MODELS to use temp directory
             with patch(
-                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                "panseg.functionals.training.train.PATH_PANSEG_MODELS",
                 Path(temp_dir),
             ):
                 unet_training(
@@ -469,9 +469,9 @@ class TestUnetTraining:
             # Verify that trainer was called
             mock_trainer_instance.train.assert_called_once()
 
-    @patch("plantseg.functionals.training.train.UNetTrainer")
-    @patch("plantseg.functionals.training.train.create_datasets")
-    @patch("plantseg.functionals.training.train.create_model_config")
+    @patch("panseg.functionals.training.train.UNetTrainer")
+    @patch("panseg.functionals.training.train.create_datasets")
+    @patch("panseg.functionals.training.train.create_model_config")
     def test_unet_training_model_parameter_validation(
         self, mock_create_config, mock_create_datasets, mock_trainer
     ):
@@ -492,9 +492,9 @@ class TestUnetTraining:
             (dataset_dir / "train").mkdir()
             (dataset_dir / "val").mkdir()
 
-            # Patch PATH_PLANTSEG_MODELS to use temp directory
+            # Patch PATH_PANSEG_MODELS to use temp directory
             with patch(
-                "plantseg.functionals.training.train.PATH_PLANTSEG_MODELS",
+                "panseg.functionals.training.train.PATH_PANSEG_MODELS",
                 Path(temp_dir),
             ):
                 unet_training(

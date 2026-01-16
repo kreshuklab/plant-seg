@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import torch
 
-from plantseg.functionals.training import augs
+from panseg.functionals.training import augs
 
 
 def test_compose(mocker):
@@ -645,7 +645,7 @@ def test_label_to_tensor():
 
 def test_gaussian_blur_3d_execution_probability(mocker, raw_cell_3d_100x128x128):
     img = raw_cell_3d_100x128x128
-    mock_random = mocker.patch("plantseg.functionals.training.augs.random")
+    mock_random = mocker.patch("panseg.functionals.training.augs.random")
     mock_random.random.return_value = 0.6  # Above probability threshold
 
     gb = augs.GaussianBlur3D(execution_probability=0.5)
@@ -656,7 +656,7 @@ def test_gaussian_blur_3d_execution_probability(mocker, raw_cell_3d_100x128x128)
 
 def test_gaussian_blur_3d_execution(mocker, raw_cell_3d_100x128x128):
     img = raw_cell_3d_100x128x128
-    mock_random = mocker.patch("plantseg.functionals.training.augs.random")
+    mock_random = mocker.patch("panseg.functionals.training.augs.random")
     mock_random.random.return_value = 0.3  # Below probability threshold
     mock_random.uniform = np.random.RandomState().uniform
 
