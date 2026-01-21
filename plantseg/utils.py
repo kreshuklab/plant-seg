@@ -30,8 +30,14 @@ def save_config(config: dict, config_path: Path) -> None:
 
 def download_file(url: str, filename: Path) -> None:
     """Download a single file from a URL to a specified filename."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:147.0) Gecko/20100101 Firefox/147.0",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
     try:
-        response = requests.get(url, stream=True)  # Use stream for large files
+        # Use stream for large files
+        response = requests.get(url, stream=True, headers=headers)
         response.raise_for_status()
         with open(filename, "wb") as f:
             for chunk in response.iter_content(
