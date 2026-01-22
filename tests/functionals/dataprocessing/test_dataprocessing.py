@@ -15,7 +15,6 @@ from panseg.functionals.dataprocessing.dataprocessing import (
 )
 
 
-# Test compute_scaling_factor
 def test_compute_scaling_factor():
     input_voxel_size = (2.0, 2.0, 2.0)
     output_voxel_size = (1.0, 1.0, 1.0)
@@ -26,7 +25,6 @@ def test_compute_scaling_factor():
         compute_scaling_factor((2.0, 2.0), (1.0, 1.0, 1.0))
 
 
-# Test compute_scaling_voxelsize
 def test_compute_scaling_voxelsize():
     input_voxel_size = (2.0, 2.0, 2.0)
     scaling_factor = (2.0, 2.0, 2.0)
@@ -37,7 +35,6 @@ def test_compute_scaling_voxelsize():
         compute_scaling_voxelsize((2.0, 2.0), (2.0, 2.0, 2.0))
 
 
-# Test scale_image_to_voxelsize
 def test_scale_image_to_voxelsize():
     image = np.random.rand(10, 10, 10)
     input_voxel_size = (2.0, 2.0, 2.0)
@@ -46,19 +43,34 @@ def test_scale_image_to_voxelsize():
     assert scaled_image.shape == (20, 20, 20)
 
 
-# Test image_rescale
 def test_image_rescale():
     image = np.random.rand(10, 10, 10)
     factor = (2.0, 2.0, 2.0)
     rescaled_image = image_rescale(image, factor, order=1)
     assert rescaled_image.shape == (20, 20, 20)
 
-    # No rescaling (factor is 1)
     rescaled_image = image_rescale(image, (1.0, 1.0, 1.0), order=1)
     assert np.array_equal(rescaled_image, image)
 
 
-# Test image_median
+def test_image_rescale_2d():
+    image = np.random.rand(10, 10)
+    factor = (2.0, 2.0)
+    rescaled_image = image_rescale(image, factor, order=1)
+    assert rescaled_image.shape == (20, 20)
+
+    rescaled_image = image_rescale(image, (1.0, 1.0, 1.0), order=1)
+    assert np.array_equal(rescaled_image, image)
+
+    factor = (1.0, 2.0, 2.0)
+    rescaled_image = image_rescale(image, factor, order=1)
+    assert rescaled_image.shape == (20, 20)
+
+    factor = (2.0, 2.0, 2.0)
+    with pytest.raises(ValueError):
+        rescaled_image = image_rescale(image, factor, order=1)
+
+
 def test_image_median():
     radius = 1
 
@@ -75,16 +87,22 @@ def test_image_median():
     assert median_image_3d.shape == (10, 10, 10)
 
 
-# Test image_gaussian_smoothing
 def test_image_gaussian_smoothing():
     image = np.random.rand(10, 10, 10)
-    sigma = 1.0
+    sigma = 2.0
     smoothed_image = image_gaussian_smoothing(image, sigma)
     assert smoothed_image.shape == (10, 10, 10)
     assert smoothed_image.dtype == np.float32
 
 
-# Test image_crop
+def test_image_gaussian_smoothing_2d():
+    image = np.random.rand(10, 10)
+    sigma = 2.0
+    smoothed_image = image_gaussian_smoothing(image, sigma)
+    assert smoothed_image.shape == (10, 10)
+    assert smoothed_image.dtype == np.float32
+
+
 def test_image_crop():
     image = np.random.rand(10, 10, 10)
     cropped_image = image_crop(image, "[2:8, 2:8, 2:8]")
@@ -94,7 +112,6 @@ def test_image_crop():
     assert cropped_image.shape == (8, 8, 8)
 
 
-# Test normalize_01
 def test_normalize_01():
     data = np.random.rand(10, 10, 10)
     normalized_data = normalize_01(data)
@@ -104,7 +121,6 @@ def test_normalize_01():
     assert normalized_data.max() <= 1.0 + 1e-6
 
 
-# Test select_channel
 def test_select_channel():
     data = np.random.rand(5, 10, 10, 10)
 
@@ -115,7 +131,6 @@ def test_select_channel():
     assert channel_data.shape == (5, 10, 10)
 
 
-# Test normalize_01_channel_wise
 def test_normalize_01_channel_wise():
     data = np.random.rand(3, 10, 10, 10)
     normalized_data = normalize_01_channel_wise(data, channel_axis=0)
