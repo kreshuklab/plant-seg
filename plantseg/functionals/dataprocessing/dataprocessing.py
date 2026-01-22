@@ -63,24 +63,30 @@ def scale_image_to_voxelsize(
     return image_rescale(image, factor, order=order)
 
 
-def image_rescale(
-    image: np.ndarray, factor: tuple[float, float, float], order: int
-) -> np.ndarray:
+def image_rescale(image: np.ndarray, factor: tuple, order: int) -> np.ndarray:
     """
-    Scale an image by a given factor in each dimension
+    Scale an image by a given factor in each dimension.
+    factor should have dimensionality of image.
+    If image is 2d factor can be 3d and padded with a 1.0 in first place.
 
     Args:
         image (np.ndarray): Input image to scale
-        factor (tuple[float, float, float]): Scaling factor in each dimension
+        factor (tuple): Scaling factor in each dimension
         order (int): Interpolation order, must be 0 for segmentation and 1, 2 for images
 
     Returns:
         scaled_image (np.ndarray): Scaled image as numpy array
     """
-    if np.array_equal(factor, [1.0, 1.0, 1.0]):
+    if all([f == 1.0 for f in factor]):
         return image
-    else:
-        return zoom(image, zoom=factor, order=order)
+    if len(factor) != image.ndim:
+        if image.ndim == 2 and len(factor) == 3 and factor[0] == 1.0:
+            factor = factor[1:]
+        else:
+            raise ValueError(
+                f"Image and factor do not align: img shape {image.shape}, factor len {len(factor)}"
+            )
+    return zoom(image, zoom=factor, order=order)
 
 
 def image_median(image: np.ndarray, radius: int) -> np.ndarray:
