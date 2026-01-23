@@ -4,13 +4,14 @@
 
 import json
 import logging
+import ssl
 from enum import Enum
 from pathlib import Path
 from shutil import copy2
 from typing import Optional, Self
-from warnings import warn
 
 import pooch
+import requests
 from bioimageio.spec import InvalidDescr, load_description
 from bioimageio.spec.model.v0_4 import ModelDescr as ModelDescr_v0_4
 from bioimageio.spec.model.v0_5 import ModelDescr as ModelDescr_v0_5
@@ -47,6 +48,35 @@ class Author(str, Enum):
 BIOIMAGE_IO_COLLECTION_URL = (
     "https://uk1s3.embassy.ebi.ac.uk/public-datasets/bioimage.io/collection.json"
 )
+
+
+class TLS12HTTPDownloader(pooch.HTTPDownloader):
+    """Custom pooch downloader that forces TLS 1.2 for compatibility with firewalls.
+
+    Some institutional firewalls block TLS 1.3 handshakes but allow TLS 1.2.
+    This downloader forces TLS 1.2 to work around such network restrictions.
+    """
+
+    def __call__(self, url, output_file, pooch_obj):
+        from requests.adapters import HTTPAdapter
+        from urllib3.util.ssl_ import create_urllib3_context
+
+        class TLS12Adapter(HTTPAdapter):
+            def init_poolmanager(self, *args, **kwargs):
+                context = create_urllib3_context()
+                context.minimum_version = ssl.TLSVersion.TLSv1_2
+                context.maximum_version = ssl.TLSVersion.TLSv1_2
+                kwargs['ssl_context'] = context
+                return super().init_poolmanager(*args, **kwargs)
+
+        session = requests.Session()
+        session.mount('https://', TLS12Adapter())
+
+        with session.get(url, stream=True, timeout=self.timeout) as response:
+            response.raise_for_status()
+            with open(output_file, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=self.chunk_size):
+                    f.write(chunk)
 
 
 class ModelZooRecord(BaseModel):
@@ -490,9 +520,34 @@ class ModelZoo:
         logger_zoo.info(
             f"Fetching BioImage.IO Model Zoo collection from {BIOIMAGE_IO_COLLECTION_URL}"
         )
-        collection_path = Path(
-            pooch.retrieve(BIOIMAGE_IO_COLLECTION_URL, known_hash=None)
-        )
+
+        # Try with default downloader first, fallback to TLS 1.2 if it fails
+        collection_path = None
+        try:
+            collection_path = Path(
+                pooch.retrieve(BIOIMAGE_IO_COLLECTION_URL, known_hash=None, timeout=30)
+            )
+        except (requests.exceptions.ReadTimeout, requests.exceptions.SSLError) as e:
+            logger_zoo.warning(
+                f"Failed to download with default settings ({e}). "
+                f"Retrying with TLS 1.2 (firewall compatibility mode)..."
+            )
+            try:
+                downloader_tls12 = TLS12HTTPDownloader(timeout=60)
+                collection_path = Path(
+                    pooch.retrieve(
+                        BIOIMAGE_IO_COLLECTION_URL,
+                        known_hash=None,
+                        downloader=downloader_tls12,
+                    )
+                )
+                logger_zoo.info("Successfully downloaded using TLS 1.2")
+            except Exception as e2:
+                logger_zoo.error(f"Failed to download even with TLS 1.2: {e2}")
+                raise
+
+        if collection_path is None:
+            raise RuntimeError("Failed to download BioImage.IO collection")
         with collection_path.open(encoding="utf-8") as f:
             collection = json.load(f)
 

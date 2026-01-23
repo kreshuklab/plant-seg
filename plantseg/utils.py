@@ -1,6 +1,7 @@
 import importlib
 import logging
 import re
+import ssl
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from shutil import rmtree
@@ -29,17 +30,50 @@ def save_config(config: dict, config_path: Path) -> None:
 
 
 def download_file(url: str, filename: Path) -> None:
-    """Download a single file from a URL to a specified filename."""
-    try:
-        response = requests.get(url, stream=True)  # Use stream for large files
+    """Download a single file from a URL to a specified filename.
+
+    Automatically retries with TLS 1.2 if the initial request fails with timeout
+    or SSL errors (common with institutional firewalls).
+    """
+    def _download_with_session(session, url, filename):
+        response = session.get(url, stream=True, timeout=30)
         response.raise_for_status()
         with open(filename, "wb") as f:
-            for chunk in response.iter_content(
-                chunk_size=8192
-            ):  # Adjust chunk size as needed
+            for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
+
+    try:
+        # Try with default session first
+        with requests.Session() as session:
+            _download_with_session(session, url, filename)
+    except (requests.exceptions.ReadTimeout, requests.exceptions.SSLError) as e:
+        logger.warning(
+            f"Failed to download {url} with default settings ({e}). "
+            f"Retrying with TLS 1.2 (firewall compatibility mode)..."
+        )
+        try:
+            # Retry with TLS 1.2
+            from requests.adapters import HTTPAdapter
+            from urllib3.util.ssl_ import create_urllib3_context
+
+            class TLS12Adapter(HTTPAdapter):
+                def init_poolmanager(self, *args, **kwargs):
+                    context = create_urllib3_context()
+                    context.minimum_version = ssl.TLSVersion.TLSv1_2
+                    context.maximum_version = ssl.TLSVersion.TLSv1_2
+                    kwargs['ssl_context'] = context
+                    return super().init_poolmanager(*args, **kwargs)
+
+            with requests.Session() as session:
+                session.mount('https://', TLS12Adapter())
+                _download_with_session(session, url, filename)
+                logger.info(f"Successfully downloaded {url} using TLS 1.2")
+        except requests.RequestException as e2:
+            logger.warning(f"Failed to download {url} even with TLS 1.2. Error: {e2}")
+            raise
     except requests.RequestException as e:
         logger.warning(f"Failed to download {url}. Error: {e}")
+        raise
 
 
 def download_files(urls: dict, out_dir: Path) -> None:
