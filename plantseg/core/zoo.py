@@ -525,7 +525,7 @@ class ModelZoo:
         collection_path = None
         try:
             collection_path = Path(
-                pooch.retrieve(BIOIMAGE_IO_COLLECTION_URL, known_hash=None, timeout=30)
+                pooch.retrieve(BIOIMAGE_IO_COLLECTION_URL, known_hash=None)
             )
         except (requests.exceptions.ReadTimeout, requests.exceptions.SSLError) as e:
             logger_zoo.warning(
