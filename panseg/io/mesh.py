@@ -1,10 +1,10 @@
 from pathlib import Path
 
 import numpy as np
-
-from panseg.io.voxelsize import VoxelSize
 import trimesh
 from zmesh import Mesher
+
+from panseg.io.voxelsize import VoxelSize
 
 
 def create_mesh(
