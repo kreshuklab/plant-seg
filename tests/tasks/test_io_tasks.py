@@ -116,7 +116,8 @@ def test_label_io_round_trip(tmp_path, shape, layout, export_format):
         key="raw",
         export_format=export_format,
         data_type="uint16",
-        export_mesh=True if len(shape) == 3 else False,
+        export_mesh="glb" if len(shape) == 3 else "No",
+        close_mesh=False,
     )
 
     if export_format == "tiff":
@@ -210,7 +211,7 @@ def test_label_io_mesh_error(tmp_path):
     )
     image = PanSegImage(data=mock_data, properties=property)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         export_image_task(
             image=image,
             export_directory=tmp_path,
@@ -218,7 +219,8 @@ def test_label_io_mesh_error(tmp_path):
             key="raw",
             export_format=export_format,
             data_type="uint16",
-            export_mesh=True,
+            export_mesh="glb",
+            close_mesh=True,
         )
 
 

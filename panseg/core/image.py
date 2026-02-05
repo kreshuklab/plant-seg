@@ -846,10 +846,16 @@ def save_image(
             f"Export format {export_format} not recognized, should be tiff, h5 or zarr"
         )
 
-    if export_mesh:
+    if export_mesh is not None and export_mesh.lower() != "no":
         if image.image_type != ImageType.LABEL:
             raise ValueError(
-                f"Mesh export only supported for Segmentations, received: {image.image_type}"
+                "Mesh export only supported for Segmentations, "
+                f"received: {image.image_type}, {image.name}"
+            )
+        if image.dimensionality != ImageDimensionality.THREE:
+            raise ValueError(
+                "Mesh export only supported for 3D, "
+                f"received: {image.dimensionality}, {image.name}"
             )
         file_path_name = directory / f"{name_pattern}.{export_mesh}"
         create_mesh(
