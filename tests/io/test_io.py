@@ -147,7 +147,7 @@ class TestIO:
         scene = create_mesh(
             path=out_file,
             stack=data,
-            voxelsize=self.voxel_size,
+            voxel_size=self.voxel_size,
             reduction_factor=1.0,
         )
         assert out_file.exists()
