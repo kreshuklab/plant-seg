@@ -15,12 +15,14 @@ def mock_logger(mocker):
 
 
 @pytest.fixture
-def gui(qtbot, workflow_yaml):
+def gui(qtbot, request):
+    workflow_yaml = request.getfixturevalue(request.param)
     gui = Workflow_gui(config_path=workflow_yaml, run=False)
     qtbot.addWidget(gui.main_window.native)
     return gui
 
 
+@pytest.mark.parametrize("gui", ["workflow_yaml"], indirect=True)
 def test_loading_dialog(gui, workflow_yaml):
     with open(workflow_yaml, "r") as f:
         parsed_in = yaml.safe_load(f)
@@ -35,7 +37,26 @@ def test_loading_dialog(gui, workflow_yaml):
     assert parsed_in == gui.config
 
 
-def test_load_save_unchanged(gui, workflow_yaml, tmp_path):
+@pytest.mark.parametrize(
+    "gui, workflow",
+    [
+        (
+            "workflow_complete_yaml",
+            "workflow_complete_yaml",
+        ),
+        (
+            "workflow_aio_yaml",
+            "workflow_aio_yaml",
+        ),
+        (
+            "workflow_yaml",
+            "workflow_yaml",
+        ),
+    ],
+    indirect=["gui"],
+)
+def test_load_save_unchanged_complete(gui, workflow, tmp_path, request):
+    workflow_yaml = request.getfixturevalue(workflow)
     out_file = tmp_path / "test_workflow_out.yaml"
     with open(workflow_yaml, "r") as f:
         parsed_in = yaml.safe_load(f)
@@ -63,34 +84,7 @@ def test_load_save_unchanged(gui, workflow_yaml, tmp_path):
     assert parsed_out == parsed_in
 
 
-def test_load_save_unchanged_complete(gui, workflow_complete_yaml, tmp_path):
-    out_file = tmp_path / "test_workflow_out.yaml"
-    with open(workflow_complete_yaml, "r") as f:
-        parsed_in = yaml.safe_load(f)
-    parsed_in["runner"] = "serial"
-    assert parsed_in == gui.config
-
-    gui.save_b.native.click()
-    gui.save.path.value = str(out_file)
-    gui.save.call_button.native.click()
-
-    with open(out_file, "r") as f:
-        parsed_out = yaml.safe_load(f)
-
-    # Step through task_list
-    for k, v in parsed_in.items():
-        if isinstance(v, list):
-            for i, l in enumerate(v):
-                if isinstance(l, dict):
-                    for kk, vv in l.items():
-                        assert vv == parsed_out.get(k)[i].get(kk)
-
-        else:
-            assert v == parsed_out.get(k)
-
-    assert parsed_out == parsed_in
-
-
+@pytest.mark.parametrize("gui", ["workflow_yaml"], indirect=["gui"])
 def test_load_missing_config(gui, mock_logger, workflow_yaml):
     gui.change_config.call_button.native.click()
 
@@ -105,6 +99,7 @@ def test_load_missing_config(gui, mock_logger, workflow_yaml):
     mock_logger.error.assert_called_with("Please provide a yaml file!")
 
 
+@pytest.mark.parametrize("gui", ["workflow_yaml"], indirect=["gui"])
 def test_invalid_config(gui):
     with patch("panseg.workflow_gui.editor.logger") as mock_logger:
         conf: dict = deepcopy(gui.config)
@@ -136,6 +131,7 @@ def test_invalid_config(gui):
         mock_logger.reset_mock()
 
 
+@pytest.mark.parametrize("gui", ["workflow_yaml"], indirect=["gui"])
 def test_toggle_theme(gui):
     gui.toggle_theme()
     gui.toggle_theme()

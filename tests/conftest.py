@@ -249,6 +249,11 @@ def workflow_complete_yaml(tmpdir: Path):
 
 
 @pytest.fixture
+def workflow_aio_yaml(tmpdir: Path):
+    return Path(shutil.copy2(TEST_FILES / "test_workflow_aio.yaml", tmpdir))
+
+
+@pytest.fixture
 def zarr_file_empty():
     return TEST_FILES / "empty.zarr"
 

@@ -26,5 +26,7 @@ dependencies:
   - requests<=2.32
   - pyyaml<=6.0
   - pydantic<=2.11
+  - trimesh<=4.11.0
+  - zmesh<=1.8.0
   - pip:
       - -e .

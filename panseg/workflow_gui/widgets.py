@@ -8,6 +8,7 @@ from typing import Optional
 import yaml
 from magicgui import magic_factory, magicgui
 from magicgui.widgets import (
+    CheckBox,
     ComboBox,
     Container,
     FloatSlider,
@@ -403,11 +404,28 @@ class Task_node:
                     ),
                 )
             )
+            export_cont.append(
+                ComboBox(  # pyright: ignore
+                    label="Export Mesh as",
+                    value=self.parameters["export_mesh"],
+                    choices=["No", "glb", "obj", "ply"],
+                )
+            )
+            export_cont.append(
+                CheckBox(  # pyright: ignore
+                    label="Close Meshes",
+                    value=self.parameters["close_mesh"],
+                )
+            )
             self.changing_fields[self.id] = lambda: {
                 "images_inputs": {
                     "export_directory": export_cont[0].value,
                     "name_pattern": export_cont[1].value,
-                }
+                },
+                "parameters": {
+                    "export_mesh": export_cont[2].value,
+                    "close_mesh": export_cont[3].value,
+                },
             }
             return Container(widgets=[export_cont])
 
@@ -464,9 +482,9 @@ class Task_node:
 
         elif self.func == "image_rescale_to_voxel_size_task":
             x, y, z, unit = (
-                FloatSpinBox(value=self.parameters["new_voxels_size"][0]),
-                FloatSpinBox(value=self.parameters["new_voxels_size"][1]),
-                FloatSpinBox(value=self.parameters["new_voxels_size"][2]),
+                FloatSpinBox(value=self.parameters["new_voxels_size"][0], step=0.001),
+                FloatSpinBox(value=self.parameters["new_voxels_size"][1], step=0.001),
+                FloatSpinBox(value=self.parameters["new_voxels_size"][2], step=0.001),
                 LineEdit(value=self.parameters["new_unit"]),
             )
             w = Container(
@@ -572,7 +590,7 @@ class Task_node:
             mode = ComboBox(
                 label="Mode",
                 value=self.parameters["mode"],
-                choices=["gasp", "multicut", "mutex_ws"],
+                choices=["gasp", "multicut", "mutex_ws", "lmc"],
             )
             cont = Container(
                 widgets=[Label(value="Clustering Segmentation"), beta, minsize, mode],
@@ -585,6 +603,47 @@ class Task_node:
                 "parameters": {
                     "beta": beta.value,
                     "post_min_size": minsize.value,
+                    "mode": mode.value,
+                }
+            }
+            return Container(widgets=[cont])
+
+        elif self.func == "aio_watershed_task":
+            threshold = FloatSlider(
+                label="Threshold",
+                value=self.parameters["threshold"],
+                min=0.0,
+                max=1.0,
+            )
+            minsize = Slider(
+                label="Min size",
+                value=self.parameters["min_size"],
+                min=1,
+                max=1000,
+            )
+            beta = FloatSlider(
+                label="Beta",
+                value=self.parameters["beta"],
+                min=0.0,
+                max=1.0,
+            )
+            mode = ComboBox(
+                label="Mode",
+                value=self.parameters["mode"],
+                choices=["gasp", "multicut", "mutex_ws", "lmc"],
+            )
+            cont = Container(
+                widgets=[Label(value=label), threshold, minsize, beta, mode],
+                labels=True,
+                layout="vertical",
+            )
+            cont.margins = (0, 0, 0, 0)
+
+            self.changing_fields[self.id] = lambda: {
+                "parameters": {
+                    "threshold": threshold.value,
+                    "min_size": minsize.value,
+                    "beta": beta.value,
                     "mode": mode.value,
                 }
             }

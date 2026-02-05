@@ -168,4 +168,6 @@ list_tasks:
       export_format: h5
       key: segmentation
       scale_to_origin: true
+      close_mesh: false
+      export_mesh: glb
     skip: false

@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 from panseg.core.image import PanSegImage, import_image, save_image
 from panseg.tasks import task_tracker
@@ -75,6 +76,8 @@ def export_image_task(
     scale_to_origin: bool = True,
     export_format: str = "tiff",
     data_type: str = "uint16",
+    export_mesh: Optional[str] = None,
+    close_mesh: bool = False,
 ) -> None:
     """
     Task wrapper for saving an PanSegImage object to disk.
@@ -97,6 +100,8 @@ def export_image_task(
         scale_to_origin=scale_to_origin,
         export_format=export_format,
         data_type=data_type,
+        export_mesh=export_mesh,
+        close_mesh=close_mesh,
     )
     return None
 
