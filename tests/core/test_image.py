@@ -14,7 +14,9 @@ from panseg.core.image import (
     PanSegImage,
     SemanticType,
     import_image,
+    stack_sort,
 )
+from panseg.io import voxelsize
 from panseg.io.voxelsize import VoxelSize
 
 
@@ -612,3 +614,58 @@ def test_merge_images_2d_3d():
 
     with pytest.raises(ValueError):
         ps_image_1.merge_with(ps_image_2)
+
+
+def test_stack_sort_3dc():
+    stack_layout = "ZCXY"
+    data = np.empty((2, 3, 4, 5))
+    voxel_size = VoxelSize(voxels_size=(3, 4, 5))
+
+    n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
+    assert n_stack_layout == "CZYX"
+    assert n_data.shape == (3, 2, 5, 4)
+    assert n_voxel_size.voxels_size == (3, 5, 4)
+
+
+def test_stack_sort_3d():
+    stack_layout = "ZXY"
+    data = np.empty((3, 4, 5))
+    voxel_size = VoxelSize(voxels_size=(3, 4, 5))
+
+    n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
+    assert n_stack_layout == "ZYX"
+    assert n_data.shape == (3, 5, 4)
+    assert n_voxel_size.voxels_size == (3, 5, 4)
+
+
+def test_stack_sort_2dc():
+    stack_layout = "XYC"
+    data = np.empty((3, 4, 5))
+    voxel_size = VoxelSize(voxels_size=(3, 4, 5))
+
+    n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
+    assert n_stack_layout == "CYX"
+    assert n_data.shape == (5, 4, 3)
+    assert n_voxel_size.voxels_size == (3, 5, 4)
+
+
+def test_stack_sort_2dc2():
+    stack_layout = "YCX"
+    data = np.empty((3, 4, 5))
+    voxel_size = VoxelSize(voxels_size=(3, 4, 5))
+
+    n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
+    assert n_stack_layout == "CYX"
+    assert n_data.shape == (4, 3, 5)
+    assert n_voxel_size.voxels_size == (3, 4, 5)
+
+
+def test_stack_sort_2d():
+    stack_layout = "YX"
+    data = np.empty((3, 4))
+    voxel_size = VoxelSize(voxels_size=(3, 4, 5))
+
+    n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
+    assert n_stack_layout == "YX"
+    assert n_data.shape == (3, 4)
+    assert n_voxel_size.voxels_size == (3, 4, 5)

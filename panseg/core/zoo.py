@@ -8,8 +8,8 @@ from enum import Enum
 from pathlib import Path
 from shutil import copy2
 from typing import Optional, Self
-from warnings import warn
 
+import numpy as np
 import pooch
 from bioimageio.spec import InvalidDescr, load_description
 from bioimageio.spec.model.v0_4 import ModelDescr as ModelDescr_v0_4
@@ -155,6 +155,7 @@ class ModelZoo:
             records,
             columns=list(ModelZooRecord.model_fields.keys()),
         ).set_index("name")
+        self.models = self.models.replace({np.nan: None})
 
     def refresh(
         self,

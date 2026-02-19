@@ -64,7 +64,7 @@ def test_image_io_round_trip(tmp_path, shape, layout, export_format):
         key=key,
         image_name="tesi_import",
         semantic_type="raw",
-        stack_layout=layout,
+        stack_layout=layout.name,
         m_slicing=None,
     )
     assert isinstance(imported_image, PanSegImage)
@@ -135,7 +135,7 @@ def test_label_io_round_trip(tmp_path, shape, layout, export_format):
         key=key,
         image_name="tesi_import",
         semantic_type="segmentation",
-        stack_layout=layout,
+        stack_layout=layout.name,
         m_slicing=None,
     )
     assert isinstance(imported_image, PanSegImage)
@@ -184,7 +184,7 @@ def test_label_import_image_task_error_message(tmp_path):
         key=key,
         image_name="tesi_import",
         semantic_type="segmentation",
-        stack_layout=ImageLayout.CYX,
+        stack_layout="CYX",
         m_slicing=None,
     )
     assert isinstance(result, Task_message)
@@ -256,7 +256,7 @@ def test_io_slicing_trip(tmp_path):
         key=key,
         image_name="tesi_import",
         semantic_type="segmentation",
-        stack_layout=layout,
+        stack_layout="zyx",
         m_slicing="5:10,:, :50",
     )
     assert isinstance(imported_image, PanSegImage)

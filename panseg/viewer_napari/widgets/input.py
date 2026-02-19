@@ -12,8 +12,11 @@ from qtpy import QtGui
 from panseg import logger
 from panseg.core.image import ImageLayout, ImageType, PanSegImage, SemanticType
 from panseg.io import H5_EXTENSIONS, ZARR_EXTENSIONS
-from panseg.io.h5 import list_h5_keys
-from panseg.io.zarr import list_zarr_keys
+from panseg.io.h5 import list_h5_keys, read_h5_shape
+from panseg.io.io import shape_to_stack_layout
+from panseg.io.pil import PIL_EXTENSIONS, read_pil_shape
+from panseg.io.tiff import TIFF_EXTENSIONS, read_tiff_shape
+from panseg.io.zarr import list_zarr_keys, read_zarr_shape
 from panseg.tasks.dataprocessing_tasks import set_voxel_size_task
 from panseg.tasks.io_tasks import import_image_task
 from panseg.viewer_napari import log
@@ -133,12 +136,10 @@ class Input_Tab:
             "choices": InputType.to_choices(),
         },
         stack_layout={
-            "value": ImageLayout.ZYX.value,
+            "value": "",
             "label": "Stack layout",
-            "choices": ImageLayout.to_choices(),
-            "tooltip": "Stack layout",
-            "widget_type": "RadioButtons",
-            "orientation": "horizontal",
+            "tooltip": "c for channel, xyz for dimensions, e.g., zyxc\nWill be reshaped to [C][Z]YX",
+            "widget_type": "LineEdit",
         },
     )
     def factory_open_file(
@@ -274,6 +275,7 @@ class Input_Tab:
         logger.debug("_on_path_changed called!")
         self.path_changed_once = True
         self.look_up_dataset_keys(path)
+        self.update_stack_layout()
 
     def _on_refresh_keys_button(self, press: bool):
         logger.debug("_on_refresh_keys_button called!")
@@ -286,6 +288,29 @@ class Input_Tab:
             self.widget_open_file.new_layer_name.value = self.generate_layer_name(
                 self.widget_open_file.path.value, dataset_key
             )
+        self.update_stack_layout()
+
+    def update_stack_layout(self):
+        path = self.widget_open_file.path.value
+        ext = path.suffix.lower()
+
+        if ext in H5_EXTENSIONS:
+            key = self.dataset_key.value
+            shape = read_h5_shape(path=path, key=key)
+            self.widget_open_file.stack_layout.value = shape_to_stack_layout(shape)
+
+        elif ext in ZARR_EXTENSIONS:
+            key = self.dataset_key.value
+            shape = read_zarr_shape(path=path, key=key)
+            self.widget_open_file.stack_layout.value = shape_to_stack_layout(shape)
+
+        elif ext in TIFF_EXTENSIONS:
+            shape = read_tiff_shape(path)
+            self.widget_open_file.stack_layout.value = shape_to_stack_layout(shape)
+
+        elif ext in PIL_EXTENSIONS:
+            shape = read_pil_shape(path)
+            self.widget_open_file.stack_layout.value = shape_to_stack_layout(shape)
 
     def _on_done(self):
         logger.debug("_on_done called!")
