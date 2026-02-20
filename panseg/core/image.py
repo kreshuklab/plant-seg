@@ -698,6 +698,7 @@ def import_image(
             f"Data to import has shape {data.shape}, incompatible with chosen layout {stack_layout}"
         )
 
+    original_data_shape = data.shape
     stack_layout, data, voxel_size = stack_sort(stack_layout, data, voxel_size)
 
     images = []
@@ -719,10 +720,12 @@ def import_image(
         return PanSegImage(data=data, properties=image_properties)
 
     elif image_layout is ImageLayout.CYX:
-        if data.shape[0] > min(data.shape) and (time.time() - last_warning) > 120:
+        if (data.shape[0] > min(data.shape) or data.shape[0] > 9) and (
+            time.time() - last_warning
+        ) > 120:
             last_warning = time.time()
             raise ValueError(
-                f"Double check the stack layout and try again!\nData shape {data.shape}"
+                f"Double check the stack layout and try again!\nData shape {original_data_shape}"
             )
 
         for ch in range(data.shape[0]):
@@ -737,10 +740,12 @@ def import_image(
             images.append(PanSegImage(data=data[ch], properties=image_properties))
 
     elif image_layout is ImageLayout.CZYX:
-        if data.shape[0] > min(data.shape) and (time.time() - last_warning) > 120:
+        if (data.shape[0] > min(data.shape) or data.shape[0] > 9) and (
+            time.time() - last_warning
+        ) > 120:
             last_warning = time.time()
             raise ValueError(
-                f"Double check the stack layout and try again!\nData shape {data.shape}"
+                f"Double check the stack layout and try again!\nData shape {original_data_shape}"
             )
 
         for ch in range(data.shape[0]):
@@ -756,10 +761,12 @@ def import_image(
 
     elif image_layout is ImageLayout.ZCYX:
         logger.warning("##### WARNING: Depricated image layout ZCYX used #####")
-        if data.shape[1] > min(data.shape) and (time.time() - last_warning) > 120:
+        if (data.shape[1] > min(data.shape) or data.shape[1] > 9) and (
+            time.time() - last_warning
+        ) > 120:
             last_warning = time.time()
             raise ValueError(
-                f"Double check the stack layout and try again!\nData shape {data.shape}"
+                f"Double check the stack layout and try again!\nData shape {original_data_shape}"
             )
 
         for ch in range(data.shape[1]):
