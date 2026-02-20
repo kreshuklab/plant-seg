@@ -629,12 +629,49 @@ class PanSegImage:
         return self.original_voxel_size.voxels_size is not None
 
 
+def stack_sort(stack_layout, data, voxel_size):
+    """Sort the stack layout, data, and voxelsize
+
+    Makes the image stack layout unique for any number of dimensions.
+    """
+    sort_order = [
+        ("C", 0),
+        ("Z", 1),
+        ("Y", 2),
+        ("X", 3),
+    ]
+
+    sort_idxs = []
+    sort_idxs_wo_channel = []
+    # ZCXY -> [1,0,3,2]
+    for c in stack_layout:
+        sort_idxs.extend([n for c_sorted, n in sort_order if c == c_sorted])
+        sort_idxs_wo_channel.extend(
+            [n for c_sorted, n in sort_order if c == c_sorted and c != "C"]
+        )
+    # fill in gaps, like missing channel dimension:
+    sort_idxs = np.argsort(sort_idxs)
+
+    data = np.transpose(data, axes=sort_idxs)
+    stack_layout = "".join([stack_layout[i] for i in sort_idxs])
+
+    # ZCXY -> [1,0,3,2] -> [1,3,2] -> [0,2,1]
+    # layout..sort_idxs...sort_wo_ch..sorting for voxelsize
+    sort_idxs_wo_channel = np.argsort(sort_idxs_wo_channel)
+    if len(sort_idxs_wo_channel) == 2:
+        sort_idxs_wo_channel = np.insert(sort_idxs_wo_channel + 1, 0, 0)
+    if voxel_size.voxels_size is not None:
+        new_voxels = np.array(voxel_size.voxels_size)[sort_idxs_wo_channel]
+        voxel_size = VoxelSize(voxels_size=tuple(new_voxels))
+    return stack_layout, data, voxel_size
+
+
 def import_image(
     path: Path,
     key: str | None = None,
     image_name: str = "image",
     semantic_type: str = "raw",
-    stack_layout: str | ImageLayout = "YX",
+    stack_layout: str = "YX",
     m_slicing: str | None = None,
 ) -> PanSegImage | list[PanSegImage]:
     """
@@ -651,19 +688,23 @@ def import_image(
             with the format [start:stop, ...] for each dimension.
     """
     global last_warning
+    stack_layout = stack_layout.upper()
     data, voxel_size = smart_load_with_vs(path, key)
     if voxel_size is None:
         voxel_size = VoxelSize()
 
+    if not len(stack_layout) == len(data.shape):
+        raise ValueError(
+            f"Data to import has shape {data.shape}, incompatible with chosen layout {stack_layout}"
+        )
+
+    original_data_shape = data.shape
+    stack_layout, data, voxel_size = stack_sort(stack_layout, data, voxel_size)
+
     images = []
     image_layout = ImageLayout(stack_layout)
 
-    if not len(image_layout.name) == len(data.shape):
-        raise ValueError(
-            f"Data to import has shape {data.shape}, incompatible with chosen layout {image_layout}"
-        )
-
-    if image_layout not in [ImageLayout.ZCYX, ImageLayout.CZYX, ImageLayout.CYX]:
+    if image_layout in [ImageLayout.ZYX, ImageLayout.YX]:
         if m_slicing is not None:
             data = dp.image_crop(data, m_slicing)
 
@@ -679,10 +720,12 @@ def import_image(
         return PanSegImage(data=data, properties=image_properties)
 
     elif image_layout is ImageLayout.CYX:
-        if data.shape[0] > min(data.shape) and (time.time() - last_warning) > 120:
+        if (data.shape[0] > min(data.shape) or data.shape[0] > 9) and (
+            time.time() - last_warning
+        ) > 120:
             last_warning = time.time()
             raise ValueError(
-                f"Double check the stack layout and try again!\nData shape {data.shape}"
+                f"Double check the stack layout and try again!\nData shape {original_data_shape}"
             )
 
         for ch in range(data.shape[0]):
@@ -697,10 +740,12 @@ def import_image(
             images.append(PanSegImage(data=data[ch], properties=image_properties))
 
     elif image_layout is ImageLayout.CZYX:
-        if data.shape[0] > min(data.shape) and (time.time() - last_warning) > 120:
+        if (data.shape[0] > min(data.shape) or data.shape[0] > 9) and (
+            time.time() - last_warning
+        ) > 120:
             last_warning = time.time()
             raise ValueError(
-                f"Double check the stack layout and try again!\nData shape {data.shape}"
+                f"Double check the stack layout and try again!\nData shape {original_data_shape}"
             )
 
         for ch in range(data.shape[0]):
@@ -715,10 +760,13 @@ def import_image(
             images.append(PanSegImage(data=data[ch], properties=image_properties))
 
     elif image_layout is ImageLayout.ZCYX:
-        if data.shape[1] > min(data.shape) and (time.time() - last_warning) > 120:
+        logger.warning("##### WARNING: Depricated image layout ZCYX used #####")
+        if (data.shape[1] > min(data.shape) or data.shape[1] > 9) and (
+            time.time() - last_warning
+        ) > 120:
             last_warning = time.time()
             raise ValueError(
-                f"Double check the stack layout and try again!\nData shape {data.shape}"
+                f"Double check the stack layout and try again!\nData shape {original_data_shape}"
             )
 
         for ch in range(data.shape[1]):

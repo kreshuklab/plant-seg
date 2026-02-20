@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from panseg.io.io import smart_load
+from panseg.io.io import shape_to_stack_layout, smart_load
 from panseg.io.mesh import create_mesh
 from panseg.io.voxelsize import VoxelSize
 from panseg.io.zarr import list_zarr_keys
@@ -155,3 +155,27 @@ class TestIO:
         vc0 = scene.geometry["geometry_0"].visual.vertex_colors
         vc1 = scene.geometry["geometry_1"].visual.vertex_colors
         assert not np.all(vc0[0] == vc1[0])
+
+
+def test_shape_to_stack_layout_empty():
+    assert shape_to_stack_layout(()) == ""
+
+
+def test_shape_to_stack_layout_yx():
+    assert shape_to_stack_layout((200, 300)) == "YX"
+
+
+def test_shape_to_stack_layout_ycx():
+    assert shape_to_stack_layout((200, 4, 300)) == "YCX"
+
+
+def test_shape_to_stack_layout_zyx():
+    assert shape_to_stack_layout((200, 50, 300)) == "ZYX"
+
+
+def test_shape_to_stack_layout_czyx():
+    assert shape_to_stack_layout((8, 200, 50, 300)) == "CZYX"
+
+
+def test_shape_to_stack_layout_none():
+    assert shape_to_stack_layout(None) == ""

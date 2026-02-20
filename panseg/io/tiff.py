@@ -1,6 +1,7 @@
 import logging
 import warnings
 from pathlib import Path
+from typing import Optional
 from xml.etree import cElementTree as ElementTree
 
 import numpy as np
@@ -121,12 +122,22 @@ def read_tiff_voxel_size(file_path: Path) -> VoxelSize:
         return VoxelSize()
 
 
+def read_tiff_shape(path: Path) -> Optional[tuple[int, ...]]:
+    shape = None
+    with tifffile.TiffFile(path) as tiff:
+        meta = tiff.shaped_metadata
+        if meta is not None:
+            shape = meta[0].get("shape")
+        if shape is None:
+            shape = tiff.asarray().shape
+    return shape
+
+
 def load_tiff(path: Path) -> np.ndarray:
     """
     Load a dataset from a tiff file and returns some meta info about it.
     Args:
         path (str): path to the tiff files to load
-        info_only (bool): if true will return a tuple with infos such as voxel resolution, units and shape.
 
     Returns:
         np.ndarray: loaded data as numpy array

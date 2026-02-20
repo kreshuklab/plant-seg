@@ -6,6 +6,7 @@ import numpy as np
 from panseg.io.h5 import H5_EXTENSIONS, load_h5, read_h5_voxel_size
 from panseg.io.pil import PIL_EXTENSIONS, load_pil
 from panseg.io.tiff import TIFF_EXTENSIONS, load_tiff, read_tiff_voxel_size
+from panseg.io.voxelsize import VoxelSize
 from panseg.io.zarr import ZARR_EXTENSIONS, load_zarr, read_zarr_voxel_size
 
 logger = logging.getLogger(__name__)
@@ -83,7 +84,7 @@ def smart_load_with_vs(path: Path, key: str | None = None, default=load_tiff) ->
         return load_tiff(path), read_tiff_voxel_size(path)
 
     if ext in PIL_EXTENSIONS:
-        return load_pil(path), None
+        return load_pil(path), VoxelSize()
 
     if ext in ZARR_EXTENSIONS:
         return load_zarr(path, key), read_zarr_voxel_size(path, key)
@@ -92,4 +93,29 @@ def smart_load_with_vs(path: Path, key: str | None = None, default=load_tiff) ->
         logger.warning(
             f"No default found for {ext}, reverting to default loader with no voxel size reader."
         )
-        return default(path), None
+        return default(path), VoxelSize()
+
+
+def shape_to_stack_layout(shape) -> str:
+    """Guess the stack layout of an image based on its shape
+
+    Might return empty string if shape could not be guessed.
+    """
+    if shape is None:
+        return ""
+    if len(shape) > 4:
+        return ""
+
+    d_to_put = ["Z", "Y", "X"]
+    stack = []
+    d_small = [i for i, d in enumerate(shape) if d < 10]
+    channel = None
+    if len(d_small) == 1:
+        channel = d_small[0]
+
+    for i in range(len(shape))[::-1]:
+        if i == channel:
+            stack.insert(0, "C")
+        else:
+            stack.insert(0, d_to_put.pop())
+    return "".join(stack)

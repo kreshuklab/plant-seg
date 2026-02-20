@@ -87,7 +87,7 @@ def load_h5(
     return data
 
 
-def read_h5_shape(path: Path, key: Optional[str] = None) -> tuple[int]:
+def read_h5_shape(path: Path, key: Optional[str] = None) -> tuple[int, ...]:
     """
     Load a dataset from a h5 file and returns some meta info about it.
 

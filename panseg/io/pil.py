@@ -26,3 +26,8 @@ def load_pil(path: Path) -> np.ndarray:
     image = np.array(image)
 
     return image
+
+
+def read_pil_shape(path: Path) -> tuple[int, ...]:
+    image = Image.open(path)
+    return image.size
