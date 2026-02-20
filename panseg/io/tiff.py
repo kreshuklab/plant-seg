@@ -1,7 +1,7 @@
 import logging
-from typing import Optional
 import warnings
 from pathlib import Path
+from typing import Optional
 from xml.etree import cElementTree as ElementTree
 
 import numpy as np
