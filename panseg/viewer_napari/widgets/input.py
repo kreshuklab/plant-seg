@@ -138,7 +138,7 @@ class Input_Tab:
         stack_layout={
             "value": "",
             "label": "Stack layout",
-            "tooltip": "c for channel, xyz for dimensions, e.g., zyxc\nWill be reshaped to [C][Z]YX",
+            "tooltip": "c for channel, xyz for dimensions, e.g.:\nzyxc will be reshaped to [C][Z]YX.\nInvert an axis by adding `-` infront of the letter.",
             "widget_type": "LineEdit",
         },
     )
