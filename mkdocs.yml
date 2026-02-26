@@ -4,7 +4,7 @@ site_description: Cell instance aware segmentation in densely packed 3D volumetr
 repo_name: kreshuklab/panseg
 repo_url: https://github.com/kreshuklab/panseg
 edit_uri: edit/main/docs/
-copyright: Copyright &copy; 2019 - 2025 Lorenzo Cerrone, Adrian Wolny, Qin Yu
+copyright: Copyright &copy; 2019 - 2026 Lorenzo Cerrone, Adrian Wolny, Qin Yu, Kai Riedmiller
 
 theme:
   name: material
