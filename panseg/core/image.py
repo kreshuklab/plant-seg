@@ -629,7 +629,7 @@ class PanSegImage:
         return self.original_voxel_size.voxels_size is not None
 
 
-def stack_sort(stack_layout, data, voxel_size):
+def stack_sort(stack_layout: str, data, voxel_size):
     """Sort the stack layout, data, and voxelsize
 
     Makes the image stack layout unique for any number of dimensions.
@@ -644,7 +644,17 @@ def stack_sort(stack_layout, data, voxel_size):
     sort_idxs = []
     sort_idxs_wo_channel = []
     # ZCXY -> [1,0,3,2]
+    invert = []
+    invert_next = False
     for c in stack_layout:
+        if c == "-":
+            invert_next = True
+            continue
+        if invert_next:
+            invert.append(True)
+            invert_next = False
+        else:
+            invert.append(False)
         sort_idxs.extend([n for c_sorted, n in sort_order if c == c_sorted])
         sort_idxs_wo_channel.extend(
             [n for c_sorted, n in sort_order if c == c_sorted and c != "C"]
@@ -652,7 +662,9 @@ def stack_sort(stack_layout, data, voxel_size):
     # fill in gaps, like missing channel dimension:
     sort_idxs = np.argsort(sort_idxs)
 
+    data = np.flip(data, axis=np.nonzero(invert)[0])
     data = np.transpose(data, axes=sort_idxs)
+    stack_layout = stack_layout.replace("-", "")
     stack_layout = "".join([stack_layout[i] for i in sort_idxs])
 
     # ZCXY -> [1,0,3,2] -> [1,3,2] -> [0,2,1]
@@ -693,7 +705,7 @@ def import_image(
     if voxel_size is None:
         voxel_size = VoxelSize()
 
-    if not len(stack_layout) == len(data.shape):
+    if not len(stack_layout.replace("-", "")) == len(data.shape):
         raise ValueError(
             f"Data to import has shape {data.shape}, incompatible with chosen layout {stack_layout}"
         )

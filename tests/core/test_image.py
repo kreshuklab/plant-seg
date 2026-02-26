@@ -369,6 +369,17 @@ def test_import_image_ZYX(test_h5_dir):
     assert image.image_layout == ImageLayout.ZYX
 
 
+def test_import_image_ZYX_inv(test_h5_dir):
+    file = test_h5_dir / "train_3D_3D.h5"
+    image = import_image(
+        path=file,
+        key="raw",
+        stack_layout="Z-YX",
+    )
+    assert image.semantic_type == SemanticType.RAW
+    assert image.image_layout == ImageLayout.ZYX
+
+
 def test_import_image_CZYX(test_h5_dir):
     file = test_h5_dir / "train_3Dc_3D.h5"
     images = import_image(
@@ -616,6 +627,18 @@ def test_merge_images_2d_3d():
         ps_image_1.merge_with(ps_image_2)
 
 
+def test_stack_sort_noop():
+    stack_layout = "CZYX"
+    data = np.empty((2, 3, 4, 5))
+    voxel_size = VoxelSize(voxels_size=(3, 4, 5))
+
+    n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
+    assert n_stack_layout == "CZYX"
+    assert n_data.shape == (2, 3, 4, 5)
+    assert n_voxel_size.voxels_size == (3, 4, 5)
+    assert np.all(n_data == data)
+
+
 def test_stack_sort_3dc():
     stack_layout = "ZCXY"
     data = np.empty((2, 3, 4, 5))
@@ -669,3 +692,51 @@ def test_stack_sort_2d():
     assert n_stack_layout == "YX"
     assert n_data.shape == (3, 4)
     assert n_voxel_size.voxels_size == (3, 4, 5)
+
+
+def test_stack_sort_3dc_invZ():
+    stack_layout = "CYX-Z"
+    data = np.empty((2, 3, 4, 5))
+    voxel_size = VoxelSize(voxels_size=(3, 4, 5))
+
+    n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
+    assert n_stack_layout == "CZYX"
+    assert n_data.shape == (2, 5, 3, 4)
+    assert n_voxel_size.voxels_size == (5, 3, 4)
+    assert np.all(n_data[:, ::-1, :, :] == np.transpose(data, axes=[0, 3, 1, 2]))
+
+
+def test_stack_sort_3dc_invC():
+    stack_layout = "-CZYX"
+    data = np.empty((2, 3, 4, 5))
+    voxel_size = VoxelSize(voxels_size=(3, 4, 5))
+
+    n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
+    assert n_stack_layout == "CZYX"
+    assert n_data.shape == (2, 3, 4, 5)
+    assert n_voxel_size.voxels_size == (3, 4, 5)
+    assert np.all(n_data[::-1, :, :, :] == data)
+
+
+def test_stack_sort_3dc_invCX():
+    stack_layout = "-CZX-Y"
+    data = np.empty((2, 3, 4, 5))
+    voxel_size = VoxelSize(voxels_size=(3, 4, 5))
+
+    n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
+    assert n_stack_layout == "CZYX"
+    assert n_data.shape == (2, 3, 5, 4)
+    assert n_voxel_size.voxels_size == (3, 5, 4)
+    assert np.all(n_data[::-1, :, ::-1, :] == np.transpose(data, axes=[0, 1, 3, 2]))
+
+
+def test_stack_sort_2dc_invX():
+    stack_layout = "CY-X"
+    data = np.empty((2, 3, 4))
+    voxel_size = VoxelSize(voxels_size=(3, 4, 5))
+
+    n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
+    assert n_stack_layout == "CYX"
+    assert n_data.shape == (2, 3, 4)
+    assert n_voxel_size.voxels_size == (3, 4, 5)
+    assert np.all(n_data[:, :, ::-1] == data)
