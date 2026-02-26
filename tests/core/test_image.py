@@ -629,7 +629,7 @@ def test_merge_images_2d_3d():
 
 def test_stack_sort_noop():
     stack_layout = "CZYX"
-    data = np.empty((2, 3, 4, 5))
+    data = np.arange(120).reshape((2, 3, 4, 5))
     voxel_size = VoxelSize(voxels_size=(3, 4, 5))
 
     n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
@@ -696,7 +696,7 @@ def test_stack_sort_2d():
 
 def test_stack_sort_3dc_invZ():
     stack_layout = "CYX-Z"
-    data = np.empty((2, 3, 4, 5))
+    data = np.arange(120).reshape((2, 3, 4, 5))
     voxel_size = VoxelSize(voxels_size=(3, 4, 5))
 
     n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
@@ -708,7 +708,7 @@ def test_stack_sort_3dc_invZ():
 
 def test_stack_sort_3dc_invC():
     stack_layout = "-CZYX"
-    data = np.empty((2, 3, 4, 5))
+    data = np.arange(120).reshape((2, 3, 4, 5))
     voxel_size = VoxelSize(voxels_size=(3, 4, 5))
 
     n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
@@ -720,7 +720,7 @@ def test_stack_sort_3dc_invC():
 
 def test_stack_sort_3dc_invCX():
     stack_layout = "-CZX-Y"
-    data = np.empty((2, 3, 4, 5))
+    data = np.arange(120).reshape((2, 3, 4, 5))
     voxel_size = VoxelSize(voxels_size=(3, 4, 5))
 
     n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
@@ -732,7 +732,7 @@ def test_stack_sort_3dc_invCX():
 
 def test_stack_sort_2dc_invX():
     stack_layout = "CY-X"
-    data = np.empty((2, 3, 4))
+    data = np.arange(24).reshape((2, 3, 4))
     voxel_size = VoxelSize(voxels_size=(3, 4, 5))
 
     n_stack_layout, n_data, n_voxel_size = stack_sort(stack_layout, data, voxel_size)
