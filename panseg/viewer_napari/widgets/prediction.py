@@ -53,7 +53,7 @@ class Prediction_Widgets:
         self.model_filters = Container(
             widgets=[
                 ComboBox(
-                    choices=[self.ALL_DIMENSIONS]
+                    choices=lambda _: [self.ALL_DIMENSIONS]
                     + model_zoo.get_unique_dimensionalities(),
                     label="Dimensionality",
                     name="dimensionality",
@@ -61,12 +61,14 @@ class Prediction_Widgets:
                 ComboBox(
                     name="modality",
                     label="Microscopy modality",
-                    choices=[self.ALL_MODALITIES] + model_zoo.get_unique_modalities(),
+                    choices=lambda _: [self.ALL_MODALITIES]
+                    + model_zoo.get_unique_modalities(),
                 ),
                 ComboBox(
                     name="output_type",
                     label="Prediction type",
-                    choices=[self.ALL_TYPES] + model_zoo.get_unique_output_types(),
+                    choices=lambda _: [self.ALL_TYPES]
+                    + model_zoo.get_unique_output_types(),
                 ),
             ],
             label="Model filters",
