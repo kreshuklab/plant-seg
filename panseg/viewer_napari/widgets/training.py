@@ -313,8 +313,12 @@ class Training_Tab:
             self.widget_unet_training.pretrained,
         ]
         if self.prediction_tab:
-            widgets_to_reset.append(
-                self.prediction_tab.widget_unet_prediction.model_name
+            widgets_to_reset.extend(
+                [
+                    self.prediction_tab.widget_unet_prediction.model_name,
+                    self.prediction_tab.model_filters[1],
+                    self.prediction_tab.model_filters[2],
+                ]
             )
 
         log("Starting training task", thread="train_gui")
