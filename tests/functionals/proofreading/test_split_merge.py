@@ -3,6 +3,7 @@ import numpy as np
 from panseg.functionals.proofreading.split_merge_tools import (
     _merge_from_seeds,
     _split_from_seed,
+    split_merge_from_seeds,
 )
 
 
@@ -306,7 +307,6 @@ def test_split_from_seed_with_zero_segmentation():
         ]
     )
 
-    # Use explicit image data instead of random
     image = np.array(
         [
             [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
@@ -355,7 +355,6 @@ def test_split_from_seed_preserves_unrelated_segments():
         ]
     )
 
-    # Use explicit image data instead of random
     image = np.array(
         [
             [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
@@ -396,3 +395,93 @@ def test_split_from_seed_preserves_unrelated_segments():
     assert result_seg.shape == segmentation.shape
     assert all([rs == slice(0, 3, None) for rs in result_slice])
     assert len(result_bboxes) == 4
+
+
+def test_split_merge_from_seeds_mocked(mocker):
+    seeds = np.array(
+        [
+            [[0, 0, 0], [0, 1, 0], [0, 0, 0]],
+            [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
+            [[0, 0, 0], [0, 1, 0], [0, 0, 0]],
+        ]
+    )
+
+    segmentation = np.array(
+        [
+            [[1, 1, 1], [1, 2, 1], [1, 1, 1]],
+            [[1, 2, 1], [2, 2, 2], [1, 2, 1]],
+            [[1, 1, 1], [1, 2, 1], [1, 1, 1]],
+        ]
+    )
+
+    image = np.array(
+        [
+            [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
+            [[0.2, 0.3, 0.4], [0.5, 0.6, 0.7], [0.8, 0.9, 0.1]],
+            [[0.3, 0.4, 0.5], [0.6, 0.7, 0.8], [0.9, 0.1, 0.2]],
+        ]
+    )
+
+    bboxes = {1: np.array([[0, 0, 0], [2, 2, 2]]), 2: np.array([[0, 0, 0], [2, 2, 2]])}
+    max_label = 2
+    correct_labels = set()
+
+    mock_merge_result = (
+        np.array(
+            [
+                [[1, 1, 1], [1, 1, 1], [1, 1, 1]],
+                [[1, 1, 1], [1, 1, 1], [1, 1, 1]],
+                [[1, 1, 1], [1, 1, 1], [1, 1, 1]],
+            ]
+        ),
+        (slice(0, 3), slice(0, 3), slice(0, 3)),
+        {1: np.array([[0, 0, 0], [3, 3, 3]])},
+    )
+
+    mock_split_result = (
+        np.array(
+            [
+                [[1, 1, 1], [1, 2, 1], [1, 1, 1]],
+                [[1, 2, 1], [2, 2, 2], [1, 2, 1]],
+                [[1, 1, 1], [1, 2, 1], [1, 1, 1]],
+            ]
+        ),
+        (slice(0, 3), slice(0, 3), slice(0, 3)),
+        {1: np.array([[0, 0, 0], [3, 3, 3]]), 2: np.array([[0, 0, 0], [3, 3, 3]])},
+    )
+
+    mock_merge = mocker.patch(
+        "panseg.functionals.proofreading.split_merge_tools._merge_from_seeds",
+        return_value=mock_merge_result,
+    )
+
+    mock_split = mocker.patch(
+        "panseg.functionals.proofreading.split_merge_tools._split_from_seed",
+        return_value=mock_split_result,
+    )
+
+    result_seg, result_slice, result_bboxes = split_merge_from_seeds(
+        seeds, segmentation, image, bboxes, max_label, correct_labels
+    )
+
+    mock_merge.assert_called_once()
+    mock_split.assert_not_called()
+
+    seeds_multi = np.array(
+        [
+            [[0, 0, 0], [0, 1, 0], [0, 0, 0]],
+            [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
+            [[0, 0, 0], [0, 1, 0], [0, 0, 0]],
+        ]
+    )
+    seeds_multi[1, 1, 1] = 2
+
+    mock_merge.reset_mock()
+    mock_split.reset_mock()
+
+    result_seg2, result_slice2, result_bboxes2 = split_merge_from_seeds(
+        seeds_multi, segmentation, image, bboxes, max_label, correct_labels
+    )
+
+    mock_split.assert_called_once()
+    mock_merge.assert_not_called()
