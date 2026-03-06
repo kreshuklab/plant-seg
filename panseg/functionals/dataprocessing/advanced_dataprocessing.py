@@ -16,6 +16,7 @@ def get_bbox(
 ) -> tuple[tuple[slice, slice, slice], int, int, int]:
     """
     Returns the bounding box around a binary mask with optional padding.
+    Bounding boxes are half-open intervals [lower,upper)
 
     Args:
         mask (np.ndarray): Binary mask to calculate the bounding box.
@@ -24,21 +25,18 @@ def get_bbox(
     Returns:
         tuple[tuple[slice, slice, slice], int, int, int]: Bounding box slices and minimum coordinates.
     """
+    assert mask.ndim == 3, "Error: get_bbox assumes 3d masks"
     coords = np.nonzero(mask)
 
-    z_min, z_max = (
-        max(coords[0].min() - pixel_tolerance, 0),
-        min(coords[0].max() + pixel_tolerance, mask.shape[0]),
-    )
+    z_min = max(coords[0].min() - pixel_tolerance, 0)
+    z_max = min(coords[0].max() + 1 + pixel_tolerance, mask.shape[0])
     z_max = max(z_max, z_min + 1)  # Ensure non-zero size
-    x_min, x_max = (
-        max(coords[1].min() - pixel_tolerance, 0),
-        min(coords[1].max() + pixel_tolerance, mask.shape[1]),
-    )
-    y_min, y_max = (
-        max(coords[2].min() - pixel_tolerance, 0),
-        min(coords[2].max() + pixel_tolerance, mask.shape[2]),
-    )
+
+    x_min = max(coords[1].min() - pixel_tolerance, 0)
+    x_max = min(coords[1].max() + 1 + pixel_tolerance, mask.shape[1])
+
+    y_min = max(coords[2].min() - pixel_tolerance, 0)
+    y_max = min(coords[2].max() + 1 + pixel_tolerance, mask.shape[2])
 
     return (
         (slice(z_min, z_max), slice(x_min, x_max), slice(y_min, y_max)),

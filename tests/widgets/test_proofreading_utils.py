@@ -90,18 +90,40 @@ def test_get_bboxes():
     assert np.all(out[2] == [[0, 1], [7, 8]])
 
 
+def test_get_bboxes_slack():
+    segmentation = np.zeros((10, 10), dtype=int)
+    segmentation[:2, :2] = 1
+    segmentation[3:5, 4:6] = 2
+    out = utils.get_bboxes(segmentation, slack=(-1, 2, 2))
+
+    assert np.all(out[0] == [[8, 8], [2, 2]])
+    assert np.all(out[1] == [[0, 0], [3, 3]])
+    assert np.all(out[2] == [[1, 2], [6, 7]])
+
+
+def test_get_bboxes_no_slack():
+    segmentation = np.zeros((10, 10), dtype=int)
+    segmentation[:2, :2] = 1
+    segmentation[3:5, 4:6] = 2
+    out = utils.get_bboxes(segmentation, slack=(-1, 0, 0))
+
+    assert np.all(out[0] == [[10, 10], [0, 0]])
+    assert np.all(out[1] == [[0, 0], [1, 1]])
+    assert np.all(out[2] == [[3, 4], [4, 5]])
+
+
 def test_get_idx_slice():
     bboxes = {
         0: [[7, 7], [3, 3]],
-        1: [[0, 0], [4, 4]],
+        1: [[0, 0], [8, 4]],
         2: [[0, 1], [7, 8]],
     }
     out = utils.get_idx_slice(1, bboxes)
-    assert out[0] == (slice(0, 4), slice(0, 4))
+    assert out[0] == (slice(0, 8), slice(0, 4))
     assert np.all(out[1] == bboxes[1])
     assert np.all(out[2] == [0, 0])
 
     out = utils.get_idx_slice([1, 2], bboxes)
-    assert out[0] == (slice(0, 7), slice(0, 8))
-    assert np.all(out[1] == [[0, 0], [7, 8]])
+    assert out[0] == (slice(0, 8), slice(0, 8))
+    assert np.all(out[1] == [[0, 0], [8, 8]])
     assert np.all(out[2] == [0, 0])
