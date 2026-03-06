@@ -20,8 +20,8 @@ def test_get_bboxes3D():
     bboxes = utils._get_bboxes3D(segmentation, typed_labels_idx)
 
     assert all([k in bboxes for k in labels_idx])
-    assert np.all(bboxes[1] == [[0, 0, 0], [1, 1, 1]])
-    assert np.all(bboxes[2] == [[3, 3, 3], [4, 5, 6]])
+    assert np.all(bboxes[1] == [[0, 0, 0], [2, 2, 2]])
+    assert np.all(bboxes[2] == [[3, 3, 3], [5, 6, 7]])
     assert np.all(bboxes[0] == [segmentation.shape, [0, 0, 0]])
 
 
@@ -36,8 +36,8 @@ def test_get_bboxes2D():
     bboxes = utils._get_bboxes2D(segmentation, typed_labels_idx)
 
     assert all([k in bboxes for k in labels_idx])
-    assert np.all(bboxes[1] == [[0, 0], [1, 1]])
-    assert np.all(bboxes[2] == [[3, 3], [4, 5]])
+    assert np.all(bboxes[1] == [[0, 0], [2, 2]])
+    assert np.all(bboxes[2] == [[3, 3], [5, 6]])
     assert np.all(bboxes[0] == [segmentation.shape, [0, 0]])
 
 
@@ -86,8 +86,8 @@ def test_get_bboxes():
     out = utils.get_bboxes(segmentation)
 
     assert np.all(out[0] == [[7, 7], [3, 3]])
-    assert np.all(out[1] == [[0, 0], [4, 4]])
-    assert np.all(out[2] == [[0, 1], [7, 8]])
+    assert np.all(out[1] == [[0, 0], [5, 5]])
+    assert np.all(out[2] == [[0, 1], [8, 9]])
 
 
 def test_get_bboxes_slack():
@@ -97,8 +97,8 @@ def test_get_bboxes_slack():
     out = utils.get_bboxes(segmentation, slack=(-1, 2, 2))
 
     assert np.all(out[0] == [[8, 8], [2, 2]])
-    assert np.all(out[1] == [[0, 0], [3, 3]])
-    assert np.all(out[2] == [[1, 2], [6, 7]])
+    assert np.all(out[1] == [[0, 0], [4, 4]])
+    assert np.all(out[2] == [[1, 2], [7, 8]])
 
 
 def test_get_bboxes_no_slack():
@@ -108,8 +108,8 @@ def test_get_bboxes_no_slack():
     out = utils.get_bboxes(segmentation, slack=(-1, 0, 0))
 
     assert np.all(out[0] == [[10, 10], [0, 0]])
-    assert np.all(out[1] == [[0, 0], [1, 1]])
-    assert np.all(out[2] == [[3, 4], [4, 5]])
+    assert np.all(out[1] == [[0, 0], [2, 2]])
+    assert np.all(out[2] == [[3, 4], [5, 6]])
 
 
 def test_get_idx_slice():
