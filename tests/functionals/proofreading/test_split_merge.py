@@ -1,12 +1,13 @@
 import numpy as np
-import pytest
 
-from panseg.functionals.proofreading.split_merge_tools import _merge_from_seeds
+from panseg.functionals.proofreading.split_merge_tools import (
+    _merge_from_seeds,
+    _split_from_seed,
+)
 
 
 def test_merge_from_seeds_all_to_one():
     """Test basic merging functionality"""
-    # Create a simple 3D segmentation
     segmentation = np.array(
         [
             [[1, 2, 1], [2, 1, 2], [1, 2, 1]],
@@ -142,3 +143,256 @@ def test_merge_from_seeds_2d():
 
     assert 1 in result_bboxes
     assert np.array_equal(result_bboxes[1], region_bbox)
+
+
+def test_split_from_seed_single_seed():
+    """Test splitting with one seed - should merge segments but leave others unchanged"""
+    segmentation = np.array(
+        [
+            [[1, 1, 2], [1, 1, 2], [2, 2, 2]],
+            [[1, 1, 2], [1, 1, 2], [2, 2, 2]],
+            [[1, 1, 2], [1, 1, 2], [2, 2, 2]],
+        ]
+    )
+
+    # Use explicit image data instead of random
+    image = np.array(
+        [
+            [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
+            [[0.2, 0.3, 0.4], [0.5, 0.6, 0.7], [0.8, 0.9, 0.1]],
+            [[0.3, 0.4, 0.5], [0.6, 0.7, 0.8], [0.9, 0.1, 0.2]],
+        ]
+    )
+
+    seeds_list = (
+        [0, 0, 0, 1, 1, 2],
+        [0, 1, 2, 0, 1, 2],
+        [0, 0, 0, 0, 0, 0],
+    )
+    seeds_values = np.array([1, 1, 1, 1, 1, 1])
+
+    region_slice = (slice(0, 3), slice(0, 3), slice(0, 3))
+    all_idx = np.array([1, 2])
+    offsets = np.array([0, 0, 0])
+    bboxes = {1: np.array([[0, 0, 0], [2, 2, 2]]), 2: np.array([[0, 0, 0], [2, 2, 2]])}
+    max_label = 2
+
+    result_seg, result_slice, result_bboxes = _split_from_seed(
+        segmentation,
+        seeds_list,
+        region_slice,
+        all_idx,
+        offsets,
+        bboxes,
+        image,
+        seeds_values,
+        max_label,
+    )
+
+    assert result_seg.shape == segmentation.shape
+
+    assert all([rs == slice(0, 3, None) for rs in result_slice])
+
+    assert len(result_bboxes) == 3
+
+
+def test_split_from_seed_two_seeds_same_segment():
+    """Test splitting with two seeds on the same segment"""
+    segmentation = np.array(
+        [
+            [[1, 1, 1], [1, 2, 2], [1, 2, 2]],
+            [[1, 1, 1], [1, 2, 2], [1, 2, 2]],
+            [[1, 1, 1], [1, 2, 2], [1, 2, 2]],
+        ]
+    )
+
+    # Use explicit image data instead of random
+    image = np.array(
+        [
+            [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
+            [[0.2, 0.3, 0.4], [0.5, 0.6, 0.7], [0.8, 0.9, 0.1]],
+            [[0.3, 0.4, 0.5], [0.6, 0.7, 0.8], [0.9, 0.1, 0.2]],
+        ]
+    )
+
+    seeds_list = (
+        [0, 0, 1, 1],
+        [0, 1, 0, 1],
+        [0, 0, 0, 0],
+    )
+    seeds_values = np.array([1, 1, 1, 1])  # All seeds have value 1
+
+    region_slice = (slice(0, 3), slice(0, 3), slice(0, 3))
+    all_idx = np.array([1, 2])
+    offsets = np.array([0, 0, 0])
+    bboxes = {1: np.array([[0, 0, 0], [2, 2, 2]]), 2: np.array([[0, 0, 0], [2, 2, 2]])}
+    max_label = 2
+
+    result_seg, result_slice, result_bboxes = _split_from_seed(
+        segmentation,
+        seeds_list,
+        region_slice,
+        all_idx,
+        offsets,
+        bboxes,
+        image,
+        seeds_values,
+        max_label,
+    )
+
+    assert result_seg.shape == segmentation.shape
+    assert all([rs == slice(0, 3, None) for rs in result_slice])
+    assert len(result_bboxes) == 3
+
+
+def test_split_from_seed_two_seeds_different_segments():
+    """Test splitting with two seeds on different segments"""
+    # Create a simple 3D segmentation
+    segmentation = np.array(
+        [
+            [[1, 1, 1], [2, 2, 2], [1, 1, 1]],
+            [[1, 1, 1], [2, 2, 2], [1, 1, 1]],
+            [[1, 1, 1], [2, 2, 2], [1, 1, 1]],
+        ]
+    )
+
+    # Create explicit image data instead of random
+    image = np.array(
+        [
+            [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
+            [[0.2, 0.3, 0.4], [0.5, 0.6, 0.7], [0.8, 0.9, 0.1]],
+            [[0.3, 0.4, 0.5], [0.6, 0.7, 0.8], [0.9, 0.1, 0.2]],
+        ]
+    )
+
+    # Define seeds for splitting - two seeds on segment 1 and one on segment 2
+    seeds_list = (
+        [0, 0, 1],
+        [0, 1, 1],
+        [0, 0, 0],
+    )
+    seeds_values = np.array([1, 1, 2])  # Seeds have values 1, 1, 2
+
+    region_slice = (slice(0, 3), slice(0, 3), slice(0, 3))
+    all_idx = np.array([1, 2])
+    offsets = np.array([0, 0, 0])
+    bboxes = {1: np.array([[0, 0, 0], [2, 2, 2]]), 2: np.array([[0, 0, 0], [2, 2, 2]])}
+    max_label = 2
+
+    result_seg, result_slice, result_bboxes = _split_from_seed(
+        segmentation,
+        seeds_list,
+        region_slice,
+        all_idx,
+        offsets,
+        bboxes,
+        image,
+        seeds_values,
+        max_label,
+    )
+
+    assert result_seg.shape == segmentation.shape
+    assert all([rs == slice(0, 3, None) for rs in result_slice])
+    assert len(result_bboxes) == 4
+
+
+def test_split_from_seed_with_zero_segmentation():
+    """Test splitting behavior with zero in segmentation"""
+    segmentation = np.array(
+        [
+            [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
+            [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
+            [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
+        ]
+    )
+
+    # Use explicit image data instead of random
+    image = np.array(
+        [
+            [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
+            [[0.2, 0.3, 0.4], [0.5, 0.6, 0.7], [0.8, 0.9, 0.1]],
+            [[0.3, 0.4, 0.5], [0.6, 0.7, 0.8], [0.9, 0.1, 0.2]],
+        ]
+    )
+
+    seeds_list = (
+        [0, 0, 1, 1],
+        [0, 1, 0, 1],
+        [0, 0, 0, 0],
+    )
+    seeds_values = np.array([1, 1, 1, 1])  # All seeds have value 1
+
+    region_slice = (slice(0, 3), slice(0, 3), slice(0, 3))
+    all_idx = np.array([0, 1])
+    offsets = np.array([0, 0, 0])
+    bboxes = {0: np.array([[0, 0, 0], [2, 2, 2]]), 1: np.array([[0, 0, 0], [2, 2, 2]])}
+    max_label = 1
+
+    result_seg, result_slice, result_bboxes = _split_from_seed(
+        segmentation,
+        seeds_list,
+        region_slice,
+        all_idx,
+        offsets,
+        bboxes,
+        image,
+        seeds_values,
+        max_label,
+    )
+
+    assert result_seg.shape == segmentation.shape
+    assert all([rs == slice(0, 3, None) for rs in result_slice])
+    assert len(result_bboxes) == 3
+
+
+def test_split_from_seed_preserves_unrelated_segments():
+    """Test that segments not in seeds_list remain unchanged"""
+    segmentation = np.array(
+        [
+            [[1, 1, 1], [2, 2, 2], [3, 3, 3]],
+            [[1, 1, 1], [2, 2, 2], [3, 3, 3]],
+            [[1, 1, 1], [2, 2, 2], [3, 3, 3]],
+        ]
+    )
+
+    # Use explicit image data instead of random
+    image = np.array(
+        [
+            [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9]],
+            [[0.2, 0.3, 0.4], [0.5, 0.6, 0.7], [0.8, 0.9, 0.1]],
+            [[0.3, 0.4, 0.5], [0.6, 0.7, 0.8], [0.9, 0.1, 0.2]],
+        ]
+    )
+
+    seeds_list = (
+        [0, 0, 1, 1],
+        [0, 1, 0, 1],
+        [0, 0, 0, 0],
+    )
+    seeds_values = np.array([1, 1, 1, 1])
+
+    region_slice = (slice(0, 3), slice(0, 3), slice(0, 3))
+    all_idx = np.array([1, 2])
+    offsets = np.array([0, 0, 0])
+    bboxes = {
+        1: np.array([[0, 0, 0], [2, 2, 2]]),
+        2: np.array([[0, 0, 0], [2, 2, 2]]),
+        3: np.array([[0, 0, 0], [2, 2, 2]]),
+    }
+    max_label = 3
+
+    result_seg, result_slice, result_bboxes = _split_from_seed(
+        segmentation,
+        seeds_list,
+        region_slice,
+        all_idx,
+        offsets,
+        bboxes,
+        image,
+        seeds_values,
+        max_label,
+    )
+
+    assert result_seg.shape == segmentation.shape
+    assert all([rs == slice(0, 3, None) for rs in result_slice])
+    assert len(result_bboxes) == 4
