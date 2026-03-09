@@ -8,6 +8,8 @@ from skimage.filters import gaussian
 from skimage.measure import regionprops
 from skimage.segmentation import relabel_sequential, watershed
 
+from panseg.functionals.proofreading.utils import get_bboxes
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,25 +27,9 @@ def get_bbox(
     Returns:
         tuple[tuple[slice, slice, slice], int, int, int]: Bounding box slices and minimum coordinates.
     """
-    assert mask.ndim == 3, "Error: get_bbox assumes 3d masks"
-    coords = np.nonzero(mask)
 
-    z_min = max(coords[0].min() - pixel_tolerance, 0)
-    z_max = min(coords[0].max() + 1 + pixel_tolerance, mask.shape[0])
-    z_max = max(z_max, z_min + 1)  # Ensure non-zero size
-
-    x_min = max(coords[1].min() - pixel_tolerance, 0)
-    x_max = min(coords[1].max() + 1 + pixel_tolerance, mask.shape[1])
-
-    y_min = max(coords[2].min() - pixel_tolerance, 0)
-    y_max = min(coords[2].max() + 1 + pixel_tolerance, mask.shape[2])
-
-    return (
-        (slice(z_min, z_max), slice(x_min, x_max), slice(y_min, y_max)),
-        z_min,
-        x_min,
-        y_min,
-    )
+    bboxes_d = get_bboxes(mask, (pixel_tolerance) * 3)
+    return tuple([slice(a[0], a[1], None) for a in zip(*bboxes_d[1])])
 
 
 def get_quantile_mask(
@@ -200,7 +186,7 @@ def split_from_seeds(
     """
     segmentation_copy = copy.deepcopy(segmentation)
     mask = np.isin(segmentation_copy, all_idx)
-    bbox, _, _, _ = get_bbox(mask)
+    bbox = get_bbox(mask)
 
     cropped_boundary_pmap = boundary_pmap[bbox]
     cropped_seeds = seeds[bbox]
