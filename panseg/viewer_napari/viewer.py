@@ -34,7 +34,7 @@ def scroll_wrap(w):
 class Panseg_viewer:
     def __init__(self, viewer=None):
         if viewer is None:
-            viewer = napari.Viewer(title="PanSeg v2")
+            viewer = napari.Viewer(title="PanSeg v2", show_welcome_screen=True)
         self.viewer = viewer
 
         self._container_list = []
@@ -184,7 +184,7 @@ class Panseg_viewer:
         self.init_tabs()
         self.add_containers_to_dock()
         self.setup_layer_updates()
-        self.setup_welcome_page()
+        # self.setup_welcome_page()
         self.finalize_viewer()
 
         napari.run()
