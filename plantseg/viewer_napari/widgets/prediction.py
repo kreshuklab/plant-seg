@@ -78,8 +78,8 @@ class Prediction_Widgets:
         # @@@@@ Unet Prediction @@@@@
         self.widget_unet_prediction = self.factory_unet_prediction()
         self.widget_unet_prediction.self.bind(self)
-        self.widget_unet_prediction.model_name._default_choices = (
-            lambda _: model_zoo.list_models() + [self.ADD_MODEL]
+        self.widget_unet_prediction.model_name._default_choices = lambda _: (
+            model_zoo.list_models() + [self.ADD_MODEL]
         )
         self.widget_unet_prediction.model_name.reset_choices()
         self.widget_unet_prediction.plantseg_filter._default_choices = (
