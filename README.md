@@ -1,3 +1,10 @@
+> [!WARNING]
+> # PlantSeg was renamed to PanSeg
+> To highlight our capablilites beyond plant tissue segmentation, we changed our name to PanSeg!
+> 
+> Please head over to our [new repository](https://github.com/kreshuklab/panseg)
+> All future development will continue over there, this repo stays up as an archive.
+
 # PlantSeg  <!-- omit in toc -->
 
 ![alt text](docs/logos/logo.png)
